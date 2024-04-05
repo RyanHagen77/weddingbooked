@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Manage Staff Assignments for Contract #{{ contract.contract_id }}</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Assign Staff</button>
+    </form>
+{% endblock %}

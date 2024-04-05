@@ -1,0 +1,29 @@
+<!-- task_list_snippet.html -->
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Sender</th>
+            <th>Assigned</th>
+            <th>Note</th>
+            <th>Due Date</th>
+            <th>Description</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for task in tasks %}
+        <tr>
+            <td>{{ task.sender.username }}</td>
+            <td>{{ task.assigned_to.username }}</td>
+            <td>{{ task.note }}</td>
+            <td>{{ task.due_date|date:"Y-m-d" }}</td>
+            <td>{{ task.description }}</td>
+            <td>{{ task.is_completed|yesno:"Completed,Incomplete" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No tasks.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

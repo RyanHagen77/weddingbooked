@@ -1,0 +1,13 @@
+<!-- client_portal_login.html -->
+<form method="post" action="{% url 'contracts:client_portal_login' %}">
+    {% csrf_token %}
+    <label for="id_email">Email:</label>
+    <input type="text" name="email" id="id_email" required>
+
+    <label for="id_password">Password:</label>
+    <input type="password" name="password" id="id_password" required>
+
+    <button type="submit">Login</button>
+    <a href="{% url 'password_reset' %}">Forgot Password?</a>
+</form>
+

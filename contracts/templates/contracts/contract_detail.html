@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <meta charset="UTF-8">
+    <title>Contract Detail</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Include Bootstrap Datepicker CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+    <!-- Include your custom CSS file -->
+    <link rel="stylesheet" href="{% static 'users/dashboard.css' %}">
+
+    <link rel="stylesheet" href="{% static 'contracts/styles.css' %}">
+
+
+
+</head>
+
+<body data-contract-id="{{ contract.contract_id }}" data-payment-schedule-id="{{ contract.payment_schedule.id }}">
+
+<div class="header">
+    <div class="logo">
+        <!-- Add your logo here -->
+        <img src="{% static 'path/to/your/logo.png' %}" alt="Logo">
+    </div>
+    <ul class="menu">
+        <li class="menu-item"><a href="{% url 'users:tasks' %}">Tasks</a></li>
+        <li class="menu-item"><a href="{% url 'contracts:contract_new' %}">New Contract</a></li>
+        <li class="menu-item"><a href="{% url 'users:financial_reports' %}">Reports</a></li>
+        <li class="menu-item"><a href="{% url 'admin:index' %}">Admin</a></li>
+        <li class="menu-item"><a href="{% url 'contracts:contract_search' %}">Search</a></li>
+    </ul>
+    <div class="user-info">
+        <span>Hello, {{ request.user.first_name }}</span>
+        <form action="{% url 'users:logout' %}" method="post" style="margin-left: 10px;">
+            {% csrf_token %}
+            <input type="submit" value="Logout" class="logout-button">
+        </form>
+    </div>
+</div>
+
+    <!-- Top Grey Bar -->
+    <div class="bg-light text-dark py-2">
+        <div class="container">
+            <div class="row justify-content-between">
+                <div class="col-auto">
+                    <h2>Contract ID: {{ contract.custom_contract_number }}</h2>
+                </div>
+                <div class="col-auto">
+                    <button id="printContractButton" class="btn bg-copper-rose text-white mr-2">Print Contract</button>
+                    <button id="email-button" class="btn bg-copper-rose text-white">Send Quote</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header Section -->
+    <header class="{% if contract.is_code_92 %}bg-dark-sienna{% else %}bg-cool-grey{% endif %} text-white py-3">
+        <div class="container">
+            <div class="row">
+                <!-- Contract Date, Location, Lead Source, CSR, Status -->
+                <div class="col-lg-4">
+                    <p>Contract Date: {{ contract.contract_date|date:"Y-m-d" }}</p>
+                    <p id="header-location">Location: {{ contract.location.name }}</p>
+                    <p id="header-lead-source">Lead Source: {{ contract.get_lead_source_display }}</p>
+                    <p id="header-csr">Sales Person: {{ contract.csr.get_full_name }}</p>
+                    <p id="header-status">Status: {{ contract.get_status_display }}</p>
+                </div>
+
+                <!-- Primary Contact Information -->
+                <div class="col-lg-4">
+                    <p>Event Date: {{ contract.event_date }}</p>
+                    <p id="header-primary-contact">Primary Contact: {{ contract.client.primary_contact }}</p>
+                    <p id="header-partner-contact">Partner Contact: {{ contract.client.partner_contact }}</p>
+                    <p id="header-primary-email">Primary Email: {{ contract.client.primary_email }}</p>
+                    <p id="header-primary-phone">Primary Phone 1: {{ contract.client.primary_phone1 }}</p>
+                </div>
+
+                <!-- Partner Contact Information -->
+                <div class="col-lg-4">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mt-3">
+        <!-- Hidden Field for Total Cost -->
+        <input type="hidden" id="total_cost" name="total_cost" value="">
+        <input type="hidden" id="total_service_cost" name="total_service_cost" value="">
+
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a class="nav-link active text-dark-sienna" href="#info" data-toggle="tab">Info</a></li>
+            <li class="nav-item"><a class="nav-link text-dark-sienna" href="#client" data-toggle="tab">Client</a></li>
+            <li class="nav-item"><a class="nav-link text-dark-sienna" href="#event" data-toggle="tab">Event</a></li>
+            <li class="nav-item"><a class="nav-link text-dark-sienna" href="#services" data-toggle="tab">Services</a></li>
+            <li class="nav-item"><a class="nav-link text-dark-sienna" href="#products" data-toggle="tab">Products</a></li>
+            <li class="nav-item"><a class="nav-link text-dark-sienna" href="#docs" data-toggle="tab">Docs</a></li>
+            <li class="nav-item"><a class="nav-link text-dark-sienna" href="#financial" data-toggle="tab">Financial</a></li>
+            <li class="nav-item"><a class="nav-link text-dark-sienna" href="#communication" data-toggle="tab">Communication</a></li>
+        </ul>
+
+        <!-- Tab content -->
+        <div class="content-below-nav">
+            <div class="tab-content field-box">
+                <div class="tab-pane container fade show active" id="info">
+                    <!-- Static Contract Info -->
+                    <div id="contract-info">
+                        <!-- Static details -->
+                        <p id="contract-location" data-location-id="{{ contract.location.id }}">Location: {{ contract.location.name }}</p>
+                        <p id="contract-event-date">Event Date: {{ contract.event_date }}</p>
+                        <p id="contract-status">Status: {{ contract.get_status_display }}</p>
+                        <p id="contract-csr">Sales Person: {{ contract.csr.get_full_name }}</p>
+                        <p id="contract-lead-source">Lead Source: {{ contract.get_lead_source_display }}</p>
+                        <!-- Edit Button -->
+                        <button id="edit-contract-info-button" class="btn btn-copper-rose" onclick="toggleEditForm(true)">Edit Contract Info</button>
+                    </div>
+
+                    <div id="edit-contract-info" style="display:none;">
+                        <form id="edit-contract-info-form" method="post" action="{% url 'contracts:edit_contract' id=contract.contract_id %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {{ contract_info_edit_form.as_p }}  <!-- Renders the form fields -->
+                            <button type="submit">Save Changes</button>
+                            <button type="button" onclick="toggleEditForm(false)">Cancel</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="tab-pane container fade" id="client">
+                    <div class="row">
+                        <!-- Left Column for Editable Client Fields -->
+                        <div class="col-md-6">
+                            <form id="edit-client-form" method="post" action="{% url 'contracts:edit_contract' id=contract.contract_id %}">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <!-- Column 1 -->
+                                    <div class="col-md-6">
+                                        <label for="{{ client_edit_form.primary_contact.id_for_label }}">Primary Contact:</label>
+                                        {{ client_edit_form.primary_contact }}
+                                        <label for="{{ client_edit_form.primary_email.id_for_label }}">Primary Email:</label>
+                                        {{ client_edit_form.primary_email }}
+                                        <label for="{{ client_edit_form.primary_phone1.id_for_label }}">Primary Phone 1:</label>
+                                        {{ client_edit_form.primary_phone1 }}
+                                        <!-- ... more fields for the first column ... -->
+                                    </div>
+
+                                    <!-- Column 2 -->
+                                    <div class="col-md-6">
+                                        <label for="{{ client_edit_form.partner_contact.id_for_label }}">Partner Contact:</label>
+                                        {{ client_edit_form.partner_contact }}
+                                        <label for="{{ client_edit_form.partner_email.id_for_label }}">Partner Email:</label>
+                                        {{ client_edit_form.partner_email }}
+                                        <label for="{{ client_edit_form.partner_phone1.id_for_label }}">Partner Phone 1:</label>
+                                        {{ client_edit_form.partner_phone1}}
+                                        <!-- ... more fields for the second column ... -->
+                                    </div>
+                                </div>
+
+                                <!-- Button to Show/Hide Additional Client Fields -->
+                                <button type="button" id="toggleClientInfo" class="btn btn-copper-rose">Show More Client Info</button>
+                                <!-- Additional Client Fields (Initially Hidden) -->
+                                <div id="additionalClientInfo" style="display: none;">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="{{ client_edit_form.primary_address1.id_for_label }}">Primary Address 1:</label>
+                                            {{ client_edit_form.primary_address1 }}
+                                            <label for="{{ client_edit_form.primary_address2.id_for_label }}">Primary Address 2:</label>
+                                            {{ client_edit_form.primary_address2 }}
+                                            <label for="{{ client_edit_form.city.id_for_label }}">City:</label>
+                                            {{ client_edit_form.city }}
+                                            <label for="{{ client_edit_form.state.id_for_label }}">State:</label>
+                                            {{ client_edit_form.state }}
+                                            <label for="{{ client_edit_form.postal_code.id_for_label }}">Postal Code:</label>
+                                            {{ client_edit_form.postal_code }}
+                                            <!-- ... additional fields for the first column ... -->
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="{{ client_edit_form.alt_contact.id_for_label }}">Alternative Contact:</label>
+                                            {{ client_edit_form.alt_contact }}
+                                            <label for="{{ client_edit_form.alt_email.id_for_label }}">Alternative Email:</label>
+                                            {{ client_edit_form.alt_email }}
+                                            <label for="{{ client_edit_form.alt_phone.id_for_label }}">Alternative Phone:</label>
+                                            {{ client_edit_form.alt_phone }}
+                                            <!-- ... additional fields for the second column ... -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Form Submit Button -->
+                                <button type="submit" class="btn btn-copper-rose">Save Changes</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane container fade" id="event">
+                    <div class="row">
+                        <!-- Editable Event Details Form -->
+                        <div class="col-md-6">
+                            <form id="edit-event-form" method="post" action="{% url 'contracts:edit_contract' id=contract.contract_id %}">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <!-- Column 1 -->
+                                    <div class="col-md-6">
+                                        <label for="{{ event_edit_form.bridal_party_qty.id_for_label }}">Bridal Party Quantity:</label>
+                                        {{ event_edit_form.bridal_party_qty }}
+                                        <label for="{{ event_edit_form.ceremony_site.id_for_label }}">Ceremony Site:</label>
+                                        {{ event_edit_form.ceremony_site }}
+                                        <label for="{{ event_edit_form.ceremony_city.id_for_label }}">Ceremony City:</label>
+                                        {{ event_edit_form.ceremony_city }}
+                                        <label for="{{ event_edit_form.ceremony_state.id_for_label }}">Ceremony State:</label>
+                                        {{ event_edit_form.ceremony_state }}
+                                        <!-- ... other fields for the first column ... -->
+                                    </div>
+
+                                    <!-- Column 2 -->
+                                    <div class="col-md-6">
+                                        <label for="{{ event_edit_form.guests_qty.id_for_label }}">Guests Quantity:</label>
+                                        {{ event_edit_form.guests_qty }}
+                                        <label for="{{ event_edit_form.reception_site.id_for_label }}">Reception Site:</label>
+                                        {{ event_edit_form.reception_site }}
+                                        <label for="{{ event_edit_form.reception_city.id_for_label }}">Reception City:</label>
+                                        {{ event_edit_form.reception_city }}
+                                        <label for="{{ event_edit_form.reception_state.id_for_label }}">Reception State:</label>
+                                        {{ event_edit_form.reception_state }}
+                                        <!-- ... other fields for the second column ... -->
+                                    </div>
+                                </div>
+
+                                <!-- Toggle Button for Additional Event Fields -->
+                                <button type="button" id="toggleEventDetails" class="btn btn-copper-rose mt-3 mb-3">Show More Event Details</button>
+
+                                <!-- Additional Event Fields (Initially Hidden) -->
+                                <div id="additionalEventDetails" style="display: none;">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <!-- Ceremony Contact -->
+                                            <label for="{{ event_edit_form.ceremony_contact.id_for_label }}">Ceremony Contact:</label>
+                                            {{ event_edit_form.ceremony_contact }}
+
+                                            <!-- Ceremony Phone -->
+                                            <label for="{{ event_edit_form.ceremony_phone.id_for_label }}">Ceremony Phone:</label>
+                                            {{ event_edit_form.ceremony_phone }}
+
+                                            <!-- Ceremony Email -->
+                                            <label for="{{ event_edit_form.ceremony_email.id_for_label }}">Ceremony Email:</label>
+                                            {{ event_edit_form.ceremony_email }}
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <!-- Reception Contact -->
+                                            <label for="{{ event_edit_form.reception_contact.id_for_label }}">Reception Contact:</label>
+                                            {{ event_edit_form.reception_contact }}
+
+                                            <!-- Reception Phone -->
+                                            <label for="{{ event_edit_form.reception_phone.id_for_label }}">Reception Phone:</label>
+                                            {{ event_edit_form.reception_phone }}
+
+                                            <!-- Reception Email -->
+                                            <label for="{{ event_edit_form.reception_email.id_for_label }}">Reception Email:</label>
+                                            {{ event_edit_form.reception_email }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Form Submit Button -->
+                                <button type="submit" class="btn btn-copper-rose mt-3 mb-3">Save Changes</button>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Services Tab -->
+                <div class="tab-pane container fade" id="services" style="padding-bottom: 30px;">
+                    <!-- Tab Navigation for Services -->
+                    <ul class="nav nav-tabs" id="serviceTabs">
+                        <li class="nav-item"><a class="nav-link active text-dark-sienna" href="#photography" data-toggle="tab">Photography</a></li>
+                        <li class="nav-item"><a class="nav-link text-dark-sienna" href="#videography" data-toggle="tab">Videography</a></li>
+                        <li class="nav-item"><a class="nav-link text-dark-sienna" href="#dj" data-toggle="tab">DJ</a></li>
+                        <li class="nav-item"><a class="nav-link text-dark-sienna" href="#photobooth" data-toggle="tab">Photobooth</a></li>
+                        <li class="nav-item"><a class="nav-link text-dark-sienna" href="#discounts" data-toggle="tab">Discounts</a></li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content">
+                        <!-- Photography Tab Content -->
+                        <div class="tab-pane active" id="photography">
+                            <form method="post" action="{% url 'contracts:edit_services' id=contract.contract_id %}">
+                                {% csrf_token %}
+                                                            <!-- Hidden Fields -->
+                                <input type="hidden" id="contractId" value="{{ contract.contract_id }}">
+                                <input type="hidden" id="id_event_date" value="{{ contract.event_date|date:'Y-m-d' }}">
+                                <input type="hidden" id="discount" value="{{ initial_discount_value }}">
+                                <input type="hidden" id="overtimeServiceType" value="">
+                                <input type="hidden" name="section" value="{{ current_tab }}">
+                                <input type="hidden" id="hiddenSavedPhotographyPackageId" value="{{ contract.photography_package_id }}">
+                                <input type="hidden" id="hiddenSavedPhotographyAdditionalStaffId" value="{{ contract.photography_additional_id }}">
+                                <input type="hidden" id="hiddenSavedEngagementSessionId" value="{{ contract.engagement_session_id }}">
+
+                                <!-- Photography Services Section -->
+                                <div class="service-category">
+                                    <h3>Photography</h3>
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Service</th>
+                                                <th>Hours</th>
+                                                <th>Price</th>
+                                                <th>Assigned Staff</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        <!-- Photography Package -->
+                                        <tr>
+                                            <td>
+                                                <select id="id_photography_package" name="photography_package">
+                                                    <option value="">Select a Photography Package</option>
+                                                    {% for package in photography_packages %}
+                                                        <option value="{{ package.id }}"
+                                                                data-price="{{ package.price|floatformat:2 }}"
+                                                                data-hours="{{ package.hours }}"
+                                                                {% if contract.photography_package.id == package.id %}selected="selected"{% endif %}>
+                                                            {{ package.name }} - ${{ package.price|floatformat:2 }} - {{ package.hours }} hours
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </td>
+
+                                            <td id="photography-package-hours"></td>
+                                            <td id="photography-package-price"><!-- Dynamically populated price --></td>
+                                            <td id="assigned-photographer1"><!-- Dynamically populated assigned staff --></td>
+                                            <td>
+                                                <button type="button" class="btn btn-copper-rose book-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOGRAPHER1" data-service-type="Photography">Book/Change Staff</button>
+                                            </td>
+                                        </tr>
+                                        <!-- Additional Photographer -->
+                                        <tr>
+                                            <td>
+                                                <select id="id_photography_additional" name="photography_additional">
+                                                    <option value="">Select Additional Photographer</option>
+                                                    {% for option in additional_photography_options %}
+                                                        <option value="{{ option.id }}" data-price="{{ option.price|floatformat:2 }}"
+                                                            {% if contract.photography_additional and contract.photography_additional.id == option.id %}selected="selected"{% endif %}>
+                                                            {{ option.name }} - ${{ option.price|floatformat:2 }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </td>
+                                            <td id="additional-photography-hours"></td>
+                                            <td id="additional-photography-price"><!-- Dynamically populated price --></td>
+                                            <td id="assigned-photographer2"><!-- Dynamically populated assigned staff --></td>
+                                            <td>
+                                                <button type="button" class="btn btn-copper-rose book-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOGRAPHER2" data-service-type="Photography">Book/Change Staff</button>
+                                            </td>
+                                        </tr>
+                                        <!-- Engagement Session -->
+                                        <tr>
+                                            <td>
+                                                <select id="id_engagement_session" name="engagement_session">
+                                                    <option value="">Select an Engagement Session</option>
+                                                    {% for session in engagement_session_options %}
+                                                        <option value="{{ session.id }}" data-price="{{ session.price|floatformat:2 }}"
+                                                            {% if contract.engagement_session and contract.engagement_session.id == session.id %}selected="selected"{% endif %}>
+                                                            {{ session.name }} - ${{ session.price|floatformat:2 }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </td>
+                                            <td id="engagement-session-hours"></td>
+                                            <td id="engagement-session-price"><!-- Dynamically populated price --></td>
+                                            <td id="engagement-session-staff"><!-- Dynamically populated staff --></td>
+                                            <td>
+                                                <button type="button" class="btn btn-copper-rose book-button" data-toggle="modal" data-target="#bookingModal">Book/Change Staff</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- Overtime Details Section -->
+                            <div>
+                                <h4>Overtime Details</h4>
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Service</th>
+                                            <th>Hours</th>
+                                            <th>Cost</th>
+                                            <th>Assigned Staff</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="photographyOvertimeEntriesDisplay" class="overtime-entries-display">
+                                        <!-- Dynamically added overtime entries will be inserted here -->
+                                        <!-- Example entry -->
+                                        <tr>
+                                            <td>Photography</td>
+                                            <td>2 hours</td>
+                                            <td>$200</td>
+                                            <td>John Doe</td>
+                                            <td>
+                                                <button type="button" class="btn btn-copper-rose edit-overtime-button" data-id="1" data-service="Photography">Edit</button>
+                                                <button type="button" class="btn btn-copper-rose remove-overtime-button" data-id="1" data-service="Photography">Remove</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                    <button id="addPhotographyOvertimeEntryButton" type="button" class="btn btn-copper-rose">Add Overtime Entry</button>
+                                <div id="photographyOvertimeEntryForm" style="display:none;">
+                                    <input type="hidden" id="photographyOvertimeEntryId" value="">
+                                    <select id="photographyOvertimeOptionSelect"></select>
+                                    <input type="number" id="photographyOvertimeHours" placeholder="Hours">
+                                    <button type="button" id="savePhotographyOvertimeEntryButton" class="btn btn-copper-rose">Save Overtime Entry</button>
+                                </div>
+                            </div>
+                            <!-- Total Overtime and Photography Cost -->
+                            <div class="text-right total-cost-container">
+                                <p><strong>Total Overtime Cost:</strong> <span id="total-photography-overtime-cost"></span></p>
+                                <p><strong>Total Photography Cost:</strong> <span id="total-photography-cost"></span></p>
+                            </div>
+                                <button type="button" id="savePhotographySection" class="btn btn-copper-rose float-right">Save Changes</button>
+                            </form>
+                            <!-- Prospect Photographer Dropdowns -->
+                            <div class="prospect-photographers" style="width: 30%;">
+                                <div class="form-group">
+                                    <label for="id_prospect_photographer1">Prospect Photographer 1:</label>
+                                    {{ form.prospect_photographer1 }}
+                                </div>
+                                <div class="form-group">
+                                    <label for="id_prospect_photographer2">Prospect Photographer 2:</label>
+                                    {{ form.prospect_photographer2 }}
+                                </div>
+                                <div class="form-group">
+                                    <label for="id_prospect_photographer3">Prospect Photographer 3:</label>
+                                    {{ form.prospect_photographer3 }}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Videography Tab Content -->
+                        <div class="tab-pane" id="videography">
+                            <form method="post" action="{% url 'contracts:edit_services' id=contract.contract_id %}">
+                                {% csrf_token %}
+                                <!-- Hidden Fields -->
+                                <input type="hidden" name="section" value="videography">
+                                <input type="hidden" id="hiddenSavedVideographyPackageId" value="{{ contract.videography_package_id }}">
+                                <input type="hidden" id="hiddenSavedVideographyAdditionalStaffId" value="{{ contract.videography_additional_id }}">
+
+                                <!-- Videography Services Section -->
+                                <div class="service-category">
+                                    <h3>Videography</h3>
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Service</th>
+                                                <th>Hours</th>
+                                                <th>Price</th>
+                                                <th>Assigned Staff</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Videography Package -->
+                                            <tr>
+                                                <td>
+                                                    <select id="id_videography_package" name="videography_package">
+                                                        <option value="">Select a Videography Package</option>
+                                                        {% for package in videography_packages %}
+                                                            <option value="{{ package.id }}"
+                                                                    data-price="{{ package.price|floatformat:2 }}"
+                                                                    data-hours="{{ package.hours }}"
+                                                                    {% if contract.videography_package.id == package.id %}selected="selected"{% endif %}>
+                                                                {{ package.name }} - ${{ package.price|floatformat:2 }} - {{ package.hours }} hours
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </td>
+                                                <td id="videography-package-hours"></td>
+                                                <td id="videography-package-price"><!-- Dynamically populated price --></td>
+                                                <td id="assigned-videographer1"><!-- Dynamically populated assigned staff --></td>
+                                                <td>
+                                                    <button type="button" class="btn btn-copper-rose book-button" data-toggle="modal" data-target="#bookingModal" data-role="VIDEOGRAPHER1" data-service-type="Videography">Book/Change Staff</button>
+                                                </td>
+                                            </tr>
+                                            <!-- Additional Videographer -->
+                                            <tr>
+                                                <td>
+                                                    <select id="id_videography_additional" name="videography_additional">
+                                                        <option value="">Select Additional Videographer</option>
+                                                        {% for option in additional_videography_options %}
+                                                            <option value="{{ option.id }}" data-price="{{ option.price|floatformat:2 }}"
+                                                                {% if contract.videography_additional and contract.videography_additional.id == option.id %}selected="selected"{% endif %}>
+                                                                {{ option.name }} - ${{ option.price|floatformat:2 }}
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </td>
+                                                <td id="additional-videography-hours"></td>
+                                                <td id="additional-videography-price"><!-- Dynamically populated price --></td>
+                                                <td id="assigned-videographer2"><!-- Dynamically populated assigned staff --></td>
+                                                <td>
+                                                    <button type="button" class="btn btn-copper-rose book-button" data-toggle="modal" data-target="#bookingModal" data-role="VIDEOGRAPHER2" data-service-type="Videography">Book/Change Staff</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <!-- Overtime Details Section for Videography -->
+                                <div>
+                                    <h4>Videography Overtime Details</h4>
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Service</th>
+                                                <th>Hours</th>
+                                                <th>Cost</th>
+                                                <th>Assigned Staff</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="videographyOvertimeEntriesDisplay" class="overtime-entries-display">
+                                            <!-- Dynamically added overtime entries for videography will be inserted here -->
+                                            <!-- Example entry -->
+                                            <tr>
+                                                <td>Videography</td>
+                                                <td>3 hours</td>
+                                                <td>$300</td>
+                                                <td>Jane Smith</td>
+                                                <td>
+                                                    <button type="button" class="btn btn-copper-rose edit-overtime-button" data-id="2" data-service="Videography">Edit</button>
+                                                    <button type="button" class="btn btn-copper-rose remove-overtime-button" data-id="2" data-service="Videography">Remove</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button id="addVideographyOvertimeEntryButton" type="button" class="btn btn-copper-rose">Add Overtime Entry</button>
+                                    <!-- Overtime Entry Form for Videography (hidden by default) -->
+                                    <div id="videographyOvertimeEntryForm" style="display:none;">
+                                        <input type="hidden" id="videographyOvertimeEntryId" value="">
+                                        <select id="videographyOvertimeOptionSelect"></select>
+                                        <input type="number" id="videographyOvertimeHours" placeholder="Hours">
+                                        <button type="button" id="saveVideographyOvertimeEntryButton" class="btn btn-copper-rose">Save Overtime Entry</button>
+                                    </div>
+                                </div>
+                                <!-- Total Overtime and Videography Cost -->
+                                <div class="text-right total-cost-container">
+                                    <p><strong>Total Videography Overtime Cost:</strong> <span id="total-videography-overtime-cost"></span></p>
+                                    <p><strong>Total Videography Cost:</strong> <span id="total-videography-cost"></span></p>
+                                </div>
+                                <button type="button" id="saveVideographySection" class="btn btn-copper-rose float-right">Save Changes</button>
+                            </form>
+                        </div>
+                        <!-- DJ Tab Content -->
+                        <div class="tab-pane" id="dj">
+                            <form method="post" action="{% url 'contracts:edit_services' id=contract.contract_id %}">
+                                {% csrf_token %}
+                                <!-- Hidden Fields -->
+                                <input type="hidden" name="section" value="dj">
+                                <input type="hidden" id="hiddenSavedDjPackageId" value="{{ contract.dj_package_id }}">
+                                <input type="hidden" id="hiddenSavedDjAdditionalStaffId" value="{{ contract.dj_additional_id }}">
+
+                                <!-- DJ Services Section -->
+                                <div class="service-category">
+                                    <h3>DJ</h3>
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Service</th>
+                                                <th>Hours</th>
+                                                <th>Price</th>
+                                                <th>Assigned Staff</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- DJ Package -->
+                                            <tr>
+                                                <td>
+                                                    <select id="id_dj_package" name="dj_package">
+                                                        <option value="">Select a DJ Package</option>
+                                                        {% for package in dj_packages %}
+                                                            <option value="{{ package.id }}"
+                                                                    data-price="{{ package.price|floatformat:2 }}"
+                                                                    data-hours="{{ package.hours }}"
+                                                                    {% if contract.dj_package.id == package.id %}selected="selected"{% endif %}>
+                                                                {{ package.name }} - ${{ package.price|floatformat:2 }} - {{ package.hours }} hours
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </td>
+                                                <td id="dj-package-hours"></td>
+                                                <td id="dj-package-price"><!-- Dynamically populated price --></td>
+                                                <td id="assigned-dj1"><!-- Dynamically populated assigned staff --></td>
+                                                <td>
+                                                    <button type="button" class="btn btn-copper-rose book-button" data-toggle="modal" data-target="#bookingModal" data-role="DJ1">Book/Change Staff</button>
+                                                </td>
+                                            </tr>
+                                            <!-- Additional DJ -->
+                                            <tr>
+                                                <td>
+                                                    <select id="id_dj_additional" name="dj_additional">
+                                                        <option value="">Select Additional DJ</option>
+                                                        {% for option in additional_dj_options %}
+                                                            <option value="{{ option.id }}" data-price="{{ option.price|floatformat:2 }}"
+                                                                {% if contract.dj_additional and contract.dj_additional.id == option.id %}selected="selected"{% endif %}>
+                                                                {{ option.name }} - ${{ option.price|floatformat:2 }}
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </td>
+                                                <td id="additional-dj-hours"></td>
+                                                <td id="additional-dj-price"><!-- Dynamically populated price --></td>
+                                                <td id="assigned-dj2"><!-- Dynamically populated assigned staff --></td>
+                                                <td>
+                                                    <button type="button" class="btn btn-copper-rose book-button" data-toggle="modal" data-target="#bookingModal" data-role="DJ2">Book/Change Staff</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <!-- Overtime Details Section for DJ -->
+                                <div>
+                                    <h4>DJ Overtime Details</h4>
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Service</th>
+                                                <th>Hours</th>
+                                                <th>Cost</th>
+                                                <th>Assigned Staff</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="djOvertimeEntriesDisplay" class="overtime-entries-display">
+                                            <!-- Dynamically added overtime entries for DJ will be inserted here -->
+                                            <!-- Example entry -->
+                                            <tr>
+                                                <td>DJ</td>
+                                                <td>2 hours</td>
+                                                <td>$150</td>
+                                                <td>Jane Doe</td>
+                                                <td>
+                                                    <button type="button" class="btn btn-copper-rose edit-overtime-button" data-id="3" data-service="DJ">Edit</button>
+                                                    <button type="button" class="btn btn-copper-rose remove-overtime-button" data-id="3" data-service="DJ">Remove</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button id="addDjOvertimeEntryButton" type="button" class="btn btn-copper-rose">Add Overtime Entry</button>
+                                    <!-- Overtime Entry Form for DJ (hidden by default) -->
+                                    <div id="djOvertimeEntryForm" style="display:none;">
+                                        <input type="hidden" id="djOvertimeEntryId" value="">
+                                        <select id="djOvertimeOptionSelect"></select>
+                                        <input type="number" id="djOvertimeHours" placeholder="Hours">
+                                        <button type="button" id="saveDjOvertimeEntryButton" class="btn btn-copper-rose">Save Overtime Entry</button>
+                                    </div>
+                                </div>
+                                <!-- Total Overtime and DJ Cost -->
+                                <div class="text-right total-cost-container">
+                                    <p><strong>Total DJ Overtime Cost:</strong> <span id="total-dj-overtime-cost"></span></p>
+                                    <p><strong>Total DJ Cost:</strong> <span id="total-dj-cost"></span></p>
+                                </div>
+                                <button type="button" id="saveDjSection" class="btn btn-copper-rose float-right">Save Changes</button>
+                            </form>
+                        </div>
+                        <!-- Photobooth Tab Content -->
+                        <div class="tab-pane" id="photobooth">
+                            <form method="post" action="{% url 'contracts:edit_services' id=contract.contract_id %}">
+                                {% csrf_token %}
+                                <!-- Hidden Fields -->
+                                <input type="hidden" name="section" value="photobooth">
+                                <input type="hidden" id="hiddenSavedPhotoboothPackageId" value="{{ contract.photobooth_package_id }}">
+                                <input type="hidden" id="hiddenSavedPhotoboothAdditionalStaffId" value="{{ contract.photobooth_additional_id }}">
+
+
+                                <!-- Photobooth Services Section -->
+                                <div class="service-category">
+                                    <h3>Photobooth</h3>
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Service</th>
+                                                <th>Hours</th>
+                                                <th>Price</th>
+                                                <th>Assigned Staff</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                           <!-- Photobooth Service -->
+                                            <tr>
+                                                <td>
+                                                    <select id="id_photobooth_package" name="photobooth_package">
+                                                        <option value="">Select a Photobooth Service</option>
+                                                        {% for package in photobooth_package %}
+                                                            <option value="{{ package.id }}"
+                                                                    data-price="{{ package.price|floatformat:2 }}"
+                                                                    data-hours="{{ package.hours }}"
+                                                                    {% if contract.photobooth_package.id == package.id %}selected="selected"{% endif %}>
+                                                                {{ package.name }} - ${{ package.price|floatformat:2 }} - {{ package.hours }} hours
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </td>
+                                                <td id="photobooth-package-hours"></td>
+                                                <td id="photobooth-package-price"><!-- Dynamically populated price --></td>
+                                                <td id="assigned-photobooth-staff"><!-- Dynamically populated assigned staff --></td>
+                                                <td>
+                                                    <button type="button" class="btn btn-copper-rose book-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOBOOTH">Book/Change Staff</button>
+                                                </td>
+                                            </tr>
+
+                                            <!-- Additional Photobooth -->
+                                            <tr>
+                                                <td>
+                                                    <select id="id_photobooth_additional" name="photobooth_additional">
+                                                        <option value="">Select Additional Photobooth</option>
+                                                        {% for option in additional_photobooth_options %}
+                                                            <option value="{{ option.id }}" data-price="{{ option.price|floatformat:2 }}"
+                                                                {% if contract.photobooth_additional and contract.photobooth_additional.id == option.id %}selected="selected"{% endif %}>
+                                                                {{ option.name }} - ${{ option.price|floatformat:2 }}
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </td>
+                                                <td id="additional-photobooth-hours"></td>
+                                                <td id="additional-photobooth-price"><!-- Dynamically populated price --></td>
+                                                <td id="assigned-photobooth"><!-- Dynamically populated assigned staff --></td>
+                                                <td>
+                                                    <button type="button" class="btn btn-copper-rose book-button" data-toggle="modal" data-target="#bookingModal" data-role="Photobooth">Book/Change Staff</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <!-- Overtime Details Section for Photobooth -->
+                                <div>
+                                    <h4>Photobooth Overtime Details</h4>
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Service</th>
+                                                <th>Hours</th>
+                                                <th>Cost</th>
+                                                <th>Assigned Staff</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="photoboothOvertimeEntriesDisplay" class="overtime-entries-display">
+                                            <!-- Dynamically added overtime entries for Photobooth will be inserted here -->
+                                            <!-- Example entry -->
+                                            <tr>
+                                                <td>Photobooth</td>
+                                                <td>1 hour</td>
+                                                <td>$100</td>
+                                                <td>Jane Doe</td>
+                                                <td>
+                                                    <button type="button" class="btn btn-copper-rose edit-overtime-button" data-id="4" data-service="Photobooth">Edit</button>
+                                                    <button type="button" class="btn btn-copper-rose remove-overtime-button" data-id="4" data-service="Photobooth">Remove</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button id="addPhotoboothOvertimeEntryButton" type="button" class="btn btn-copper-rose">Add Overtime Entry</button>
+                                    <!-- Overtime Entry Form for Photobooth (hidden by default) -->
+                                    <div id="photoboothOvertimeEntryForm" style="display:none;">
+                                        <input type="hidden" id="photoboothOvertimeEntryId" value="">
+                                        <select id="photoboothOvertimeOptionSelect"></select>
+                                        <input type="number" id="photoboothOvertimeHours" placeholder="Hours">
+                                        <button type="button" id="savePhotoboothOvertimeEntryButton" class="btn btn-copper-rose">Save Overtime Entry</button>
+                                    </div>
+                                </div>
+                                <!-- Total Overtime and Photobooth Cost -->
+                                <div class="text-right total-cost-container">
+                                    <p><strong>Total Photobooth Overtime Cost:</strong> <span id="total-photobooth-overtime-cost"></span></p>
+                                    <p><strong>Total Photobooth Cost:</strong> <span id="total-photobooth-cost"></span></p>
+                                </div>
+                                <button type="button" id="savePhotoboothSection" class="btn btn-copper-rose float-right">Save Changes</button>
+                            </form>
+                        </div>
+                        <div class="tab-pane fade" id="discounts">
+                            <!-- Form for entering discounts -->
+                            <form method="post" action="{% url 'contracts:discounts_view' contract_id=contract.contract_id%}">
+                                {% csrf_token %}
+                                <div class="form-row">
+                                    <div class="form-group col-md-4">
+                                        <label for="discountMemo">Discount Memo</label>
+                                        <textarea class="form-control" id="discountMemo" name="memo" placeholder="Enter discount memo"></textarea>
+                                    </div>
+                                    <div class="form-group col-md-3">
+                                        <label for="discountAmount">Amount</label>
+                                        <input type="number" class="form-control" id="discountAmount" name="amount" placeholder="Amount">
+                                    </div>
+                                    <div class="form-group col-md-5">
+                                        <label for="discountServiceType">Service Type (Optional)</label>
+                                        <select class="form-control" id="discountServiceType" name="service_type">
+                                            <option value="">None</option>
+                                            {% for service_type in service_types %}
+                                                <option value="{{ service_type.id }}">{{ service_type.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-3 align-self-end">
+                                        <button type="submit" class="btn btn-copper-rose">Submit</button>
+                                    </div>
+                                </div>
+                            </form>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Memo</th>
+                                        <th>Amount</th>
+                                        <th>Service Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for discount in discounts %}
+                                        <tr>
+                                            <td>{{ discount.memo }}</td>
+                                            <td>{{ discount.amount }}</td>
+                                            <td>{{ discount.service_type }}</td>
+                                            <td>
+                                                <a href="{% url 'contracts:remove_discount' contract_id=contract.contract_id discount_id=discount.id %}" onclick="return confirm('Are you sure?');">Remove</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div><!-- Closes the tab-content div for all service tabs within the Services div -->
+                </div> <!-- Closes the tab-pane container fade for the Services div -->
+                   <!-- Products Tab Content -->
+                <div class="tab-pane fade" id="products">
+                    <div class="row">
+                        <div class="col-12">
+                            <!-- Additional Products -->
+                            <div id="products-section" class="mt-4">
+                                <form method="post" action="{% url 'contracts:save_products' id=contract.contract_id %}">
+                                    {% csrf_token %}
+                                    {% load app_filters %}
+                                    <input type="hidden" name="contract_id" value="{{ contract.contract_id }}">
+                                    {{ products_formset.management_form }}
+                                    <table id="products-table" class="table table-bordered table-hover">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th class="product-column">Product</th>
+                                                <th class="description-column">Description</th>
+                                                <th class="quantity-column">Quantity</th>
+                                                <th class="special-notes-column">Special Notes</th>
+                                                <th class="price-column">Price</th>
+                                                <th class="remove-column">Remove</th>
+                                            </tr>
+                                        </thead>
+                                        {% load app_filters %} <!-- Load custom template tags/filters at the top of the template -->
+                                        <tbody>
+                                            {% for form in products_formset %}
+                                            <tr>
+                                                <td>{{ form.id }}{{ form.product }}</td>
+                                                <td>{{ form.instance.get_product_description }}</td>
+                                                <td>
+                                                    <input type="number" class="form-control quantity-input" name="{{ form.quantity.html_name }}" id="{{ form.quantity.id_for_label }}" value="{{ form.quantity.value }}">
+                                                </td>
+                                                <td>
+                                                    <textarea class="form-control special-notes-textarea" name="{{ form.special_notes.html_name }}" id="{{ form.special_notes.id_for_label }}">{{ form.special_notes.value }}</textarea>
+                                                </td>
+                                                <td class="product-price" data-base-price="{{ form.instance.get_product_price }}">
+                                                    {{ form.instance.get_product_price|floatformat:2|multiply:form.quantity.value }}
+                                                </td>
+                                                <td>
+                                                    {{ form.DELETE }} <!-- Include the DELETE field -->
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    <button type="button" class="btn btn-copper-rose" onclick="addProduct()" id="add-product-btn">Add Another Product</button>
+                                    <button type="submit" class="btn btn-copper-rose">Update Products</button>
+                                </form>
+                                <!-- Total Overtime and Photobooth Cost -->
+                                <div class="text-right total-product-cost-container">
+                                    <p><strong>Tax Amount:</strong> <span id="tax_amount"></span></p>
+                                    <p><strong>Total Products Cost:</strong> <span id="total-product-cost"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- Closes the tab-pane container fade for the Products div -->
+                <!-- Documents Tab Content -->
+                <div class="tab-pane fade" id="docs">
+                    <div class="row">
+                        <!-- Document List Section -->
+                        <div class="col-md-6">
+                            <h4>Documents</h4>
+                            {% if contract.documents.all %}
+                                <ul class="list-group">
+                                    {% for document in contract.documents.all %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <a href="{{ document.document.url }}">{{ document.document.name }}</a>
+                                            <!-- Form for deleting the document -->
+                                            <form action="{% url 'contracts:delete_document' document.id %}" method="post" style="display: inline;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-link text-danger p-0 ml-2">Remove</button>
+                                            </form>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>No contract documents available.</p>
+                            {% endif %}
+                        </div>
+                        <!-- Document Upload Section -->
+                        <div class="col-md-6">
+                            <div class="contract-upload mb-4">
+                                <h4>Upload Documents</h4>
+                                <form method="post" action="" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    {{ document_form.as_p }}
+                                    <button type="submit" name="upload_document" class="btn btn-copper-rose">Upload Document</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- Closes the tab-pane fade for the Docs tab -->
+                <div class="tab-pane container fade" id="financial">
+                    <input type="hidden" class="form-control" id="id_location" name="location">
+                    <!-- Tab Navigation -->
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active text-dark-sienna" id="sales-tab" data-toggle="tab" href="#sales" role="tab" aria-controls="sales" aria-selected="true">Sales</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark-sienna" id="payments-tab" data-toggle="tab" href="#payments" role="tab" aria-controls="payments" aria-selected="false">Payments</a>
+                        </li>
+                    </ul>
+                    <!-- Tab Content -->
+                    <div class="tab-content">
+                        <!-- Sales Tab -->
+                        <div class="tab-pane fade show active" id="sales" role="tabpanel" aria-labelledby="sales-tab">
+                            <!-- Financial Content -->
+                            <div class="financial-content">
+                                <!-- Services Section -->
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Service</th>
+                                            <th class="text-right">Totals</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Service Rows -->
+                                        <tr>
+                                            <td>Photography</td>
+                                            <td class="text-right">${{ photography_cost }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Videography</td>
+                                            <td class="text-right">${{ videography_cost }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>DJ</td>
+                                            <td class="text-right">${{ dj_cost }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Photobooth</td>
+                                            <td class="text-right">${{ photobooth_cost }}</td>
+                                        </tr>
+                                        <!-- Separator -->
+                                        <tr style="background-color: #f2f2f2;">
+                                            <td colspan="2"><strong>Discounts</strong></td>
+                                        </tr>
+                                        <!-- Discounts and Totals -->
+                                        <tr>
+                                            <td>Package Discount: ${{ contract.calculate_package_discount }}</td>
+                                            <td class="text-right">Subtotal: ${{ contract.calculate_total_service_cost }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sunday Discount: ${{ contract.calculate_sunday_discount }}</td>
+                                            <td class="text-right">Service Discounts: -${{ contract.calculate_discount }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Other Discount: ${{ contract.other_discounts_total }}</td>
+                                            <td class="text-right">Service Total after Discounts: ${{ contract.calculate_total_service_cost_after_discounts }}</td>
+                                        </tr>
+                                        <!-- Products Section -->
+                                        <tr style="background-color: #f2f2f2;">
+                                            <td colspan="2"><strong>Products</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Products Total w/ Tax: ${{ contract.calculate_total_product_cost }}</td>
+                                            <td class="text-right"><strong>Contract Total: ${{ contract.calculate_total_cost }}</strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- Payments Tab -->
+                        <div class="tab-pane fade" id="payments" role="tabpanel" aria-labelledby="payments-tab">
+                            <!-- Payments Content -->
+                            <div class="payments-content">
+                                <!-- Payment Schedule Selection -->
+                                <div class="payment-schedule-selection">
+                                    <label for="payment-schedule">Payment Schedule:</label>
+                                    <select id="payment-schedule" name="payment_schedule" onchange="handleScheduleChange(this.value)" disabled>
+                                        <option value="schedule_a" {% if contract.payment_schedule and contract.payment_schedule.schedule_type == 'schedule_a' %}selected{% endif %}>Schedule A</option>
+                                        <option value="custom" {% if contract.payment_schedule and contract.payment_schedule.schedule_type == 'custom' %}selected{% endif %}>Custom</option>
+                                    </select>
+                                    <button type="button" class="btn btn-copper-rose" data-toggle="modal" data-target="#scheduleModal">
+                                        Add or Update Schedule
+                                    </button>
+                                    <button type="button" id="receive-payment-button" class="btn btn-copper-rose" onclick="receivePayment()">Receive Payment</button>
+                                </div>
+                                <!-- Payment Schedule Table -->
+                                <div id="payment-schedule-table">
+                                    <!-- Table for displaying Schedule A or custom schedule -->
+                                    <!-- Populate this table based on the selected schedule -->
+                                </div>
+                                    <!-- Existing Payments Table -->
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h4>Existing Payments</h4>
+                                    <div>
+                                        <div class="contract-total" data-contract-total="{{ contract.calculate_total_cost }}">
+                                            <strong>Total Contract Amount:</strong> ${{ contract.calculate_total_cost }}
+                                        </div>
+                                        <div class="balance-due" data-initial-balance="{{ contract.balance_due }}">
+                                            <strong>Balance Due:</strong> <span id="balance-due-amount">${{ contract.balance_due|floatformat:2 }}</span>
+                                        </div>
+                                    </div>
+                                    </div>
+                                    <table class="existing-payments-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Amount</th>
+                                                <th>Method</th>
+                                                <th>Reference</th>
+                                                <th>Memo</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for payment in contract.payments.all %}
+                                                <tr data-payment-id="{{ payment.id }}">
+                                                    <td>{{ payment.date }}</td>
+                                                    <td>${{ payment.amount }}</td>
+                                                    <td>{{ payment.get_payment_method_display }}</td>
+                                                    <td>{{ payment.payment_reference }}</td>
+                                                    <td>{{ payment.memo }}</td>
+                                                    <td>
+                                                        <a href="javascript:void(0);" class="text-dark-sienna" onclick="editPayment('{{ payment.id }}', '{{ payment.amount }}', '{{ payment.payment_method }}', '{{ payment.payment_reference }}', '{{ payment.memo }}')">Edit</a>
+                                                        <a href="{% url 'contracts:delete_payment' payment.id %}" class="text-dark-sienna" onclick="return confirm('Are you sure?');">Delete</a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Messages Tab Content -->
+                    <div class="tab-pane fade" id="communication" role="tabpanel" aria-labelledby="communication-tab">
+                        <!-- Tasks Table -->
+                        <h3>Tasks</h3>
+                        <div id="taskListContainer">
+                            {% include 'contracts/task_list_snippet.html' %}
+                        </div>
+                        <!-- Button to trigger the message creation modal -->
+                        <button type="button" class="btn btn-copper-rose mb-3" data-toggle="modal" data-target="#createMessageModal">
+                            Create Message
+                        </button>
+                        <button type="button" class="btn btn-copper-rose mb-3" data-toggle="modal" data-target="#addTaskModal"
+                                data-sender-id="{{ request.user.id }}"
+                                data-contract-id="{{ contract.contract_id }}"
+                                data-note-id="">Add Task</button>
+                        {% for type, messages in messages_by_type.items %}
+                            <h3>{{ type|title }} Messages</h3>
+                            {% for message in messages %}
+                                <div class="message">
+                                    <p><strong>ID:</strong> {{ message.id }}</p>  <!-- Add this line to display the message ID -->
+                                    <p><strong>From:</strong> {{ message.created_by.username }}</p>
+                                    <p><strong>Date:</strong> {{ message.created_at }}</p>
+                                    <p>{{ message.content }}</p>
+                                    <!-- Button to trigger the task creation modal -->
+                                    <button type="button" class="btn btn-copper-rose" data-toggle="modal" data-target="#addTaskModal"
+                                            data-sender-id="{{ request.user.id }}"
+                                            data-contract-id="{{ contract.contract_id }}"
+                                            data-note-id="{{ message.id }}">Add Task</button>
+                                </div>
+                            {% empty %}
+                                <p>No {{ type|title }} messages.</p>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div> <!-- Closes the tab-content div for financial tabs -->
+            </div>
+        </div>    <!-- Closes the overarching div, if this is meant to close the container for all content above, ensure its opening tag is correctly placed -->
+
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <!-- Include Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <!-- Your custom script for handling tabs -->
+    <script>
+        $(document).ready(function() {
+            var hash = window.location.hash;
+            if (hash) {
+                $('.nav-tabs a[href="' + hash + '"]').tab('show');
+            }
+
+            $('.nav-tabs a').on('click', function(e) {
+                window.location.hash = this.hash;
+            });
+        });
+    </script>
+
+    <script>
+        let contractData = {
+            servicesTotalAfterDiscounts: {{ contract.calculate_total_service_cost_after_discounts }},
+            totalContractAmount: {{ contract.calculate_total_cost }},
+            eventDate: '{{ contract.event_date|date:"Y-m-d" }}',
+            paymentScheduleId: {{ schedule_id|default:"null" }},        };
+    </script>
+
+<!-- Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1" role="dialog" aria-labelledby="bookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bookingModalLabel">Book Staff</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'contracts:manage_staff_assignments' id=contract.contract_id %}" id="bookingForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="modal_event_date" name="event_date" value="">
+                    {{ booking_form.as_p }}
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary" id="submitBooking">Book</button>
+                <button type="button" class="btn btn-danger" id="deleteBooking">Delete</button> <!-- Add this line -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" role="dialog" aria-labelledby="paymentModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="paymentModalLabel"> Add/Edit Payment</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="payment-form" method="post">
+          <input type="hidden" id="payment-id" name="payment_id">
+          <input type="hidden" id="payment-action" name="payment_action">
+          <input type="hidden" id="original-payment-amount" value="">
+          <div class="form-group">
+            <label for="amount">Amount:</label>
+                    <input type="number" class="form-control" id="amount" name="amount" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label for="payment_method">Payment Method:</label>
+            <select class="form-control" id="payment_method" name="payment_method">
+              <option value="CASH">Cash</option>
+              <option value="CHECK">Check</option>
+              <option value="CREDIT_CARD">Credit Card</option>
+              <option value="ZELLE">Zelle</option>
+              <option value="VENMO">Venmo</option>
+            </select>
+          </div>
+          <div class="form-group">
+              <label for="memo">Memo:</label>
+              <input type="text" class="form-control" id="memo" name="memo" placeholder="Enter a note or memo">
+          </div>
+            <div class="form-group">
+                <label for="payment_reference">Reference:</label>
+                <input type="text" class="form-control" id="payment_reference" name="payment_reference" placeholder="Enter a reference number">
+            </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-copper-rose" onclick="confirmPayment()">Confirm Payment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Schedule Modal -->
+<div class="modal fade" id="scheduleModal" tabindex="-1" role="dialog" aria-labelledby="scheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="scheduleModalLabel">Add or Update Schedule</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="scheduleForm" method="post" action="{% url 'contracts:create_or_update_schedule' contract_id=contract.contract_id %}">
+                    {% csrf_token %}
+                    <hr>  <!-- Divider between contract number and schedule type -->
+                    {{ schedule_form.as_p }}
+                    <hr>  <!-- Divider between schedule type and payment entries -->
+                    {{ schedule_payment_formset.management_form }}
+                    <div id="paymentScheduleEntries">
+                        {% for form in schedule_payment_formset %}
+                            {{ form.as_p }}
+                            <hr>  <!-- Divider between each payment entry -->
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="btn btn-secondary" onclick="addFormsetEntry()">Add Payment Entry</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-copper-rose" form="scheduleForm">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Message Creation Modal -->
+<div class="modal fade" id="createMessageModal" tabindex="-1" role="dialog" aria-labelledby="createMessageModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createMessageModalLabel">Create Message</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form method="post" id="createMessageForm">
+          {% csrf_token %}
+          {{ communication_form.as_p }}
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary" form="createMessageForm">Send Message</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal fade" id="addTaskModal" tabindex="-1" role="dialog" aria-labelledby="taskModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="taskModalLabel">Add Task</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Task Form -->
+        <form method="post" id="addTaskForm" data-create-task-url="{% url 'contracts:create_task' %}">
+            {% csrf_token %}
+            {{ task_form.as_p }}
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary" form="addTaskForm">Save Task</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</body>
+
+
+<script>
+    // Initialize DjangoFilters as an empty object if it doesn't already exist
+    var DjangoFilters = DjangoFilters || {};
+
+    // JavaScript function to round up to the nearest 100
+    DjangoFilters['roundup_to_nearest_100'] = function(value) {
+        return Math.ceil(value / 100) * 100;
+    };
+
+    // JavaScript function to subtract days from a date
+    DjangoFilters['subtract_days'] = function(dateString, days) {
+        var date = new Date(dateString);
+        date.setDate(date.getDate() - days);
+        return date.toISOString().split('T')[0];
+    };
+</script>
+
+<!-- Include Moment.js from a CDN before your script -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+<!-- Common script -->
+
+    <!-- Include your script here -->
+<script type="module" src="{% static '***REMOVED***.js' %}"></script>
+<script type="module" src="{% static 'contracts/js/PhotographyMgmt.js' %}"></script>
+<script type="module" src="{% static 'contracts/js/eventStaffManagement.js' %}"></script>
+<script type="module" src="{% static 'contracts/js/costManagement.js' %}"></script>
+<script src="{% static 'contracts/js/ContractEdit.js' %}"></script>
+<script src="{% static 'contracts/js/moneyMgmt.js' %}" defer></script>
+<script src="{% static 'communication/js/tasks.js' %}"></script>
+
+
+
+
+
+
+</html>

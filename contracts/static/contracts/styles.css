@@ -1,0 +1,389 @@
+/* Basic styles */
+body {
+    font-family: Arial, sans-serif;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f3f3f3;
+    padding: 10px;
+}
+
+.logo img {
+    height: 50px; /* Adjust the height as needed */
+}
+
+.menu {
+    display: flex;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu-item {
+    padding: 10px;
+    background-color: #e3e3e3;
+    margin-left: 5px;
+    transition: background-color 0.3s;
+}
+
+.menu-item:first-child {
+    margin-left: 0;
+}
+
+.menu-item:hover {
+    background-color: #d3d3d3;
+}
+
+.menu-item a {
+    text-decoration: none;
+    color: black;
+    display: block;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+}
+
+.user-info span {
+    margin-right: 10px; /* Space between the text and the logout button */
+}
+
+.logout-button {
+    padding: 5px 10px;
+    background-color: #996666;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.bg-cool-grey {
+    background-color: #8A8A8F !important;
+}
+
+.bg-copper-rose {
+    background-color: #c67c85 !important; /* Dusty Rose */
+    /* or use #E0B0FF for Mauve */
+}
+
+.bg-dark-sienna {
+    background-color: #3C1414 !important;
+}
+
+.text-dark-sienna {
+    color: #3C1414 !important;
+}
+
+.btn-copper-rose {
+    background-color: #996666 !important; /* Copper Rose */
+    color: white; /* For contrast */
+    /* or use #8A3324 for Burnt Umber */
+}
+
+.your-parent-class .btn-copper-rose {
+    background-color: #996666 !important;
+    color: white;
+}
+
+.table .btn.btn-copper-rose {
+    background-color: #996666 !important; /* Copper Rose */
+    color: white;
+}
+
+
+/* Search form styling */
+.search-form {
+    margin: 20px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9; /* Light gray background */
+}
+
+/* Adjusting Quick Search Group */
+.quick-search-group {
+    text-align: left; /* Align group to the left */
+    margin-bottom: 10px; /* Add space below the group */
+}
+
+/* Adjusting Quick Search Field */
+.quick-search-group .form-group input[type="text"] {
+    height: 25px; /* Make field taller */
+    width: 300px; /* Adjust width as needed */
+}
+
+/* Adjusting Search Button */
+.quick-search-group .form-group input[type="submit"] {
+    width: 125px; /* Make button wider */
+    height: 40px; /* Align button height with field */
+}
+
+/* Form rows and groups */
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Three columns of equal width */
+    grid-gap: 10px;
+    margin-bottom: 10px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column; /* Keep elements in a column */
+}
+
+/* Styling for date range fields within the same form group */
+.date-range-group {
+    display: flex; /* Align date fields in a row */
+    justify-content: space-between; /* Space out the start and end date fields */
+}
+
+.date-range-group input[type="date"] {
+    width: 48%; /* Adjust the width to fit two inputs side by side */
+}
+
+/* Label styling */
+label {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+/* Search results styling */
+.search-results {
+    margin: 20px;
+}
+
+/* Button styling */
+input[type="submit"], input[type="reset"] {
+    background-color: #c67c85; /* Copper rose background */
+    font-size: 15px;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+input[type="submit"]:hover, input[type="reset"]:hover {
+    background-color: #b55f66; /* Darker dusty pink for hover */
+}
+
+/* Search results table styling */
+.search-results table {
+    width: 100%; /* Make table width match the container */
+    border-collapse: collapse; /* Collapses border to single line */
+}
+
+.search-results th, .search-results td {
+    border: 1px solid #ddd; /* Adds border to table cells */
+    padding: 8px; /* Padding inside cells */
+    text-align: left; /* Aligns text to the left */
+}
+
+/* Alternating row colors */
+.search-results tr:nth-child(odd) {
+    background-color: #f2f2f2; /* Light gray for odd rows */
+}
+
+.search-results tr:nth-child(even) {
+    background-color: #ffffff; /* White for even rows */
+}
+
+/* Hover effect for rows */
+.search-results tr:hover {
+    background-color: #ddd; /* Color when row is hovered */
+    cursor: pointer; /* Change cursor to indicate clickable */
+}
+
+/* Table header styling */
+.search-results th {
+    background-color: #5a5a5a; /* Dark gray for table headers */
+    color: white;
+    padding: 10px; /* Padding for headers */
+}
+
+/* Body or general styling */
+body {
+    background-color: #f2f2f2; /* Light gray background for the overall page */
+    color: #333; /* Dark gray for the text */
+    font-family: Arial, sans-serif;
+}
+
+/* Table header styling */
+.search-results th {
+    background-color: #c67c85; /* Copper rose for table headers */
+    color: white;
+}
+
+/* Alternating row colors in search results */
+.search-results tr:nth-child(odd) {
+    background-color: #e2e2e2; /* Slightly darker gray for odd rows */
+}
+
+.search-results tr:nth-child(even) {
+    background-color: #f9f9f9; /* Lighter gray for even rows */
+}
+
+
+/* Adjust other elements as needed to fit the color scheme */
+
+.field-box {
+    border: 1px solid #ddd; /* Light grey border */
+    border-radius: 5px; /* Rounded corners */
+    padding: 15px; /* Padding inside the box */
+    background-color: #f9f9f9; /* Light background color */
+    margin-top: 10px; /* Additional space above the box */
+}
+
+#edit-client-form button {
+    margin-top: 10px; /* Space above the button */
+    padding: 5px 10px; /* Padding inside the button */
+    /* Other styling as needed */
+}
+
+#products-section {
+    margin-top: 20px;
+}
+
+#products-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#products-table th, #products-table td {
+    text-align: left;
+    padding: 8px;
+}
+
+#products-table .thead-light {
+    background-color: #f3f3f3; /* Same grey as the header */
+}
+
+.product-column {
+    width: 18%;
+}
+
+.description-column {
+    width: 25%;
+}
+
+.quantity-column {
+    width: 7%;
+}
+
+#products-table .special-notes-column textarea {
+    width: 25% !important; /* Adjust the width as needed */
+    height: 30px !important; /* Adjust the height as needed */
+    resize: none !important; /* Force the textarea to be non-resizable */
+    max-width: 25% !important; /* Ensure the textarea doesn't exceed the cell width */
+    max-height: 30px !important; /* Set a maximum height */
+}
+
+
+
+.price-column {
+    width: 10%;
+}
+
+.remove-column {
+    width: 10%;
+}
+
+.quantity-input {
+    width: 60px; /* Adjust as needed */
+}
+
+/* Style the special notes input to fit in the cell */
+.special-notes-column textarea {
+    width: 100%;
+    height: 100%;
+    resize: none; /* Prevent resizing */
+}
+.payments-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.balance-due {
+    font-size: 1rem; /* Adjust the font size as needed */
+
+}
+/* Communication Tab Styles */
+.communication-tab {
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.communication-tab h3 {
+    margin-top: 0;
+}
+
+.communication-tab .message {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.communication-tab .message strong {
+    color: #007bff;
+}
+
+.message {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+.message p {
+    margin: 0;
+}
+
+.message strong {
+    font-weight: bold;
+}
+
+/* Add more styles as needed */
+.task-list-container {
+    max-width: 600px;
+    margin: auto;
+    background: #f8f8f8;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.task-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.task-item {
+    background: #ffffff;
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.task-details {
+    line-height: 1.6;
+}
+
+.task-item:last-child {
+    margin-bottom: 0;
+}
+
+.task-completed {
+    display: none;
+}

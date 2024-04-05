@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extra_head %}
+ <!-- Load the static files template tag library -->
+
+            <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'users/dashboard.css' %}">
+
+
+    <style>
+        /* Override Bootstrap styles here */
+        .header {
+            display: flex; !important;
+            justify-content: space-between; !important;
+            align-items: center; !important;
+            background-color: #f3f3f3; !important;
+            padding: 10px; !important;
+            color: #333; !important;
+            font-size: 16px; !important;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h2>Assigned Tasks</h2>
+
+    <!-- Button to open the modal -->
+    <button type="button" class="btn btn-copper-rose mb-2" data-toggle="modal" data-target="#addTaskModal"
+            data-sender-id="{{ request.user.id }}"
+            data-contract-id="{{ contract.contract_id }}"
+            data-note-id="{{ note.id }}">Add Task</button>
+    <!-- Task List Container -->
+    <div id="taskListContainer">
+        <table class="table table-striped">
+            <tbody>
+                {% include 'users/task_list_snippet.html' %}
+            </tbody>
+        </table>
+    </div>
+    <!-- Modal for adding a new task -->
+    <div class="modal fade" id="addTaskModal" tabindex="-1" role="dialog" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addTaskModalLabel">Add New Task</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" id="addTaskForm" data-create-task-url="{% url 'users:create_task' %}">
+                        {% csrf_token %}
+                        {{ task_form.as_p }}
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" form="addTaskForm">Save Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Edit Task Modal -->
+<div class="modal fade" id="editTaskModal" tabindex="-1" role="dialog" aria-labelledby="editTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editTaskModalLabel">Edit Task</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="editTaskForm">
+                    {% csrf_token %}
+                    {{ task_form.sender }}  <!-- Include the sender field as a hidden input -->
+                    <div class="form-group">
+                        <label for="id_assigned_to">Assigned To:</label>
+                        {{ task_form.assigned_to }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_due_date">Due Date:</label>
+                        <input type="date" id="id_due_date" name="due_date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="id_description">Description:</label>
+                        <textarea id="id_description" name="description" class="form-control"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary" form="editTaskForm">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+ <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <!-- Your custom JavaScript code -->
+    <script src="{% static 'communication/js/tasks.js' %}"></script>
+
+{% endblock %}

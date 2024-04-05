@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Contract Detail</title>
+</head>
+<body>
+    <button onclick="window.history.back();">Back</button>
+    <h1>Contract ID: {{ contract.contract_id }}</h1>
+    <p>Event Date: {{ contract.event_date }}</p>
+    <p>Primary Contact: {{ contract.client.primary_contact }}</p>
+    <p>Primary Contact Phone: {{ contract.client.primary_phone1 }}</p>
+    <p>Primary Contact Email: {{ contract.client.primary_email }}</p>
+    <p>Partner Contact: {{ contract.client.partner_contact }}</p>
+    <p>Ceremony Site: {{ contract.ceremony_site }}</p>
+    <p>Reception Site: {{ contract.reception_site }}</p>
+    <p>Bridal Party Quantity: {{ contract.bridal_party_qty }}</p>
+    <p>Guests Quantity: {{ contract.guests_qty }}</p>
+    <p>Staff Notes: {{ contract.staff_notes }}</p>
+    <p>Client Notes: {{ contract.client_notes }}</p>
+</body>
+</html>

@@ -1,0 +1,241 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f3f3f3;
+    padding: 10px;
+}
+
+.logo img {
+    height: 50px; /* Adjust the height as needed */
+}
+
+.menu {
+    display: flex;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu-item {
+    padding: 10px;
+    background-color: #e3e3e3;
+    margin-left: 5px;
+    transition: background-color 0.3s;
+}
+
+.menu-item:first-child {
+    margin-left: 0;
+}
+
+.menu-item:hover {
+    background-color: #d3d3d3;
+}
+
+.menu-item a {
+    text-decoration: none;
+    color: black;
+    display: block;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+}
+
+.user-info span {
+    margin-right: 10px; /* Space between the text and the logout button */
+}
+
+.logout-button {
+    padding: 5px 10px;
+    background-color: #996666;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.logout-button:hover {
+    background-color: #b55f66; /* Darker dusty pink for hover */
+}
+
+
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+    background-color: #f9f9f9;
+}
+
+.bg-copper-rose {
+    background-color: #996666 !important; /* Copper Rose */
+    /* or use #E0B0FF for Mauve */
+}
+.btn-dusty-pink {
+    background-color: #c67c85 !important; /* Dusty Pink*/
+    color: white; /* For contrast */
+    /* or use #8A3324 for Burnt Umber */
+}
+
+/* Header styling */
+
+
+/* Search form styling */
+.search-form {
+    margin: 20px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9; /* Light gray background */
+}
+
+/* Adjusting Quick Search Group */
+.quick-search-group {
+    text-align: left; /* Align group to the left */
+    margin-bottom: 10px; /* Add space below the group */
+}
+
+/* Adjusting Quick Search Field */
+.quick-search-group .form-group input[type="text"] {
+    height: 25px; /* Make field taller */
+    width: 300px; /* Adjust width as needed */
+}
+
+/* Adjusting Search Button */
+.quick-search-group .form-group input[type="submit"] {
+    width: 125px; /* Make button wider */
+    height: 40px; /* Align button height with field */
+}
+
+/* Form rows and groups */
+.form-row {
+    display: flex; /* Use flexbox for the form row */
+    justify-content: space-between; /* Space out the columns */
+    margin-bottom: 10px;
+}
+
+.form-group {
+    flex: 1; /* Allow form groups to grow and fill the available space */
+    display: flex;
+    flex-direction: column; /* Keep elements in a column */
+    margin-right: 10px; /* Add some space between form groups */
+}
+
+.form-group:last-child {
+    margin-right: 0; /* Remove margin for the last form group in a row */
+}
+
+/* Input and select field styling */
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group select {
+    width: 100%; /* Make fields take full width of their parent */
+}
+
+/* Date range group styling */
+.date-range-group {
+    display: flex; /* Align date fields in a row */
+    justify-content: space-between; /* Space out the start and end date fields */
+    width: 100%; /* Ensure date range group takes full width */
+}
+
+.date-range-group input[type="date"] {
+    width: calc(50% - 4px); /* Adjust the width to fit two inputs side by side, accounting for any margins or borders */
+}
+
+/* Label styling */
+label {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+/* Search results styling */
+.search-results {
+    margin: 20px;
+}
+
+/* Button styling */
+input[type="submit"], input[type="reset"] {
+    background-color: #c67c85; /* Copper rose background */
+    font-size: 15px;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+input[type="submit"]:hover, input[type="reset"]:hover {
+    background-color: #b55f66; /* Darker copper rose for hover */
+}
+
+/* Search results table styling */
+.search-results table {
+    width: 100%; /* Make table width match the container */
+    border-collapse: collapse; /* Collapses border to single line */
+}
+
+.search-results th, .search-results td {
+    border: 1px solid #ddd; /* Adds border to table cells */
+    padding: 8px; /* Padding inside cells */
+    text-align: left; /* Aligns text to the left */
+}
+
+/* Alternating row colors */
+.search-results tr:nth-child(odd) {
+    background-color: #f2f2f2; /* Light gray for odd rows */
+}
+
+.search-results tr:nth-child(even) {
+    background-color: #ffffff; /* White for even rows */
+}
+
+/* Hover effect for rows */
+.search-results tr:hover {
+    background-color: #ddd; /* Color when row is hovered */
+    cursor: pointer; /* Change cursor to indicate clickable */
+}
+
+/* Table header styling */
+.search-results th {
+    background-color: #5a5a5a; /* Dark gray for table headers */
+    color: white;
+    padding: 10px; /* Padding for headers */
+}
+
+/* Body or general styling */
+body {
+    background-color: #f2f2f2; /* Light gray background for the overall page */
+    color: #333; /* Dark gray for the text */
+    font-family: Arial, sans-serif;
+}
+
+/* Table header styling */
+.search-results th {
+    background-color: #c67c85; /* Copper rose for table headers */
+    color: white;
+}
+
+/* Alternating row colors in search results */
+.search-results tr:nth-child(odd) {
+    background-color: #e2e2e2; /* Slightly darker gray for odd rows */
+}
+
+.search-results tr:nth-child(even) {
+    background-color: #f9f9f9; /* Lighter gray for even rows */
+}
+
+.button-group {
+    display: flex;
+    justify-content: flex-start; /* Align buttons to the start of the row */
+}
+
+.btn {
+    margin-right: 10px; /* Add some space between the buttons */
+    width: auto; /* Prevent buttons from stretching to full width */
+    padding: 10px 15px; /* Adjust padding as needed */
+}
+
+.btn:last-child {
+    margin-right: 0; /* Remove margin for the last button */
+}

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contract</title>
+    <style>
+        .contract-header, .contact-info, .event-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .column {
+            flex: 1;
+        }
+        .divider {
+            border-top: 1px solid #000;
+            margin: 20px 0;
+        }
+        .text-box {
+            border: 1px solid #000;
+            min-height: 100px;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="contract-header">
+        <div>
+            <strong>Event Date:</strong> {{ contract.event_date }}<br>
+            <strong>Primary Contact:</strong> {{ contract.primary_contact }}<br>
+            <strong>Partner Contact:</strong> {{ contract.partner_contact }}
+        </div>
+        <div>
+            <strong># of Guests:</strong> {{ contract.guests_qty }}<br>
+            <strong># in Bridal Party:</strong> {{ contract.bridal_party_qty }}
+        </div>
+    </div>
+
+    <div class="contact-info">
+        <div class="column">
+            <strong>Primary Contact Info</strong><br>
+            Name: {{ contract.primary_contact }}<br>
+            Phone: {{ contract.primary_phone }}<br>
+            Email: {{ contract.primary_email }}<br>
+            Address: {{ contract.address }}<br>
+            City: {{ contract.city }}<br>
+            State: {{ contract.state }}
+        </div>
+        <div class="column">
+            <strong>Event Locations</strong><br>
+            Ceremony: {{ contract.ceremony_site }}<br>
+            Reception: {{ contract.reception_site }}
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="text-box" contenteditable="true">
+        {{ contract.package.default_text }}
+    </div>
+
+    <!-- Additional contract content goes here -->
+
+</body>
+</html>

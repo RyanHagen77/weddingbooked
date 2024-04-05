@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bookings</title>
+</head>
+<body>
+    <h1>Bookings</h1>
+    <form method="get" action="{% url 'contracts:booking_list' %}">
+    Event Date: <input type="date" name="event_date" value="{{ request.GET.event_date }}" />
+
+    Sort by:
+    <select name="sort_by">
+        <option value="event_date">Event Date</option>
+        <!-- Add other columns as options if desired -->
+    </select>
+
+    Order:
+    <select name="order">
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+    </select>
+
+    <input type="submit" value="Filter/Sort" />
+</form>
+
+    <table>
+        <tr>
+            <th>Event Staff</th>
+            <th>Contract</th>
+            <th>Event Date</th> <!-- New Column -->
+            <th>Primary Contact</th> <!-- New Column -->
+            <th>Role</th>
+            <th>Status</th>
+            <th>Confirmed</th>
+            <th>Hours Booked</th>
+            <th>Notes</th>
+            <th>Action</th>
+        </tr>
+        {% for booking in bookings %}
+        <tr>
+            <td>{{ booking.staff.username }}</td>
+            <td><a href="{% url 'contracts:booking_detail' booking.id %}">{{ booking.contract_id }}</a></td>
+            <td>{{ booking.contract.event_date }}</td>
+            <td>{{ booking.contract.client.primary_contact }}</td> <!-- Displaying primary_contact from the Client model -->
+            <td>{{ booking.role }}</td>
+            <td>{{ booking.status }}</td>
+            <td>{{ booking.confirmed }}</td>
+            <td>{{ booking.hours_booked }}</td>
+            <td>{{ booking.notes }}</td>
+            <td>
+                <!-- Clear Booking Form -->
+                <form method="post" action="{% url 'contracts:clear_booking' booking.id %}">
+                    {% csrf_token %}
+                    <button type="submit">Clear Booking</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
