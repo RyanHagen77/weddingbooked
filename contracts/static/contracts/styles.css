@@ -54,7 +54,7 @@ body {
 
 .logout-button {
     padding: 5px 10px;
-    background-color: #996666;
+    background-color: #c67c85;
     color: white;
     border: none;
     border-radius: 4px;
@@ -65,7 +65,7 @@ body {
     background-color: #8A8A8F !important;
 }
 
-.bg-copper-rose {
+.bg-dusty-pink {
     background-color: #c67c85 !important; /* Dusty Rose */
     /* or use #E0B0FF for Mauve */
 }
@@ -78,19 +78,19 @@ body {
     color: #3C1414 !important;
 }
 
-.btn-copper-rose {
-    background-color: #996666 !important; /* Copper Rose */
+.btn-dusty-pink {
+    background-color: #c67c85 !important; /* Dusty Pink*/
     color: white; /* For contrast */
     /* or use #8A3324 for Burnt Umber */
 }
 
-.your-parent-class .btn-copper-rose {
-    background-color: #996666 !important;
+.your-parent-class .btn-dusty-pink {
+    background-color: #c67c85 !important;
     color: white;
 }
 
-.table .btn.btn-copper-rose {
-    background-color: #996666 !important; /* Copper Rose */
+.table .btn.btn-dusty-pink{
+    background-color: #c67c85!important; /* Copper Rose */
     color: white;
 }
 

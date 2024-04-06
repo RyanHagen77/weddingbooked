@@ -50,8 +50,8 @@
                     <h2>Contract ID: {{ contract.custom_contract_number }}</h2>
                 </div>
                 <div class="col-auto">
-                    <button id="printContractButton" class="btn bg-copper-rose text-white mr-2">Print Contract</button>
-                    <button id="email-button" class="btn bg-copper-rose text-white">Send Quote</button>
+                    <button id="printContractButton" class="btn bg-dusty-pink text-white mr-2">Print Contract</button>
+                    <button id="email-button" class="btn bg-dusty-pink text-white">Send Quote</button>
                 </div>
             </div>
         </div>
@@ -116,7 +116,7 @@
                         <p id="contract-csr">Sales Person: {{ contract.csr.get_full_name }}</p>
                         <p id="contract-lead-source">Lead Source: {{ contract.get_lead_source_display }}</p>
                         <!-- Edit Button -->
-                        <button id="edit-contract-info-button" class="btn btn-copper-rose" onclick="toggleEditForm(true)">Edit Contract Info</button>
+                        <button id="edit-contract-info-button" class="btn btn-dusty-pink" onclick="toggleEditForm(true)">Edit Contract Info</button>
                     </div>
 
                     <div id="edit-contract-info" style="display:none;">
@@ -160,7 +160,7 @@
                                 </div>
 
                                 <!-- Button to Show/Hide Additional Client Fields -->
-                                <button type="button" id="toggleClientInfo" class="btn btn-copper-rose">Show More Client Info</button>
+                                <button type="button" id="toggleClientInfo" class="btn btn-dusty-pink">Show More Client Info</button>
                                 <!-- Additional Client Fields (Initially Hidden) -->
                                 <div id="additionalClientInfo" style="display: none;">
                                     <div class="row">
@@ -189,7 +189,7 @@
                                     </div>
                                 </div>
                                 <!-- Form Submit Button -->
-                                <button type="submit" class="btn btn-copper-rose">Save Changes</button>
+                                <button type="submit" class="btn btn-dusty-pink">Save Changes</button>
                             </form>
                         </div>
                     </div>
@@ -230,7 +230,7 @@
                                 </div>
 
                                 <!-- Toggle Button for Additional Event Fields -->
-                                <button type="button" id="toggleEventDetails" class="btn btn-copper-rose mt-3 mb-3">Show More Event Details</button>
+                                <button type="button" id="toggleEventDetails" class="btn btn-dusty-pink mt-3 mb-3">Show More Event Details</button>
 
                                 <!-- Additional Event Fields (Initially Hidden) -->
                                 <div id="additionalEventDetails" style="display: none;">
@@ -266,7 +266,7 @@
                                 </div>
 
                                 <!-- Form Submit Button -->
-                                <button type="submit" class="btn btn-copper-rose mt-3 mb-3">Save Changes</button>
+                                <button type="submit" class="btn btn-dusty-pink mt-3 mb-3">Save Changes</button>
 
                             </form>
                         </div>
@@ -334,7 +334,7 @@
                                             <td id="photography-package-price"><!-- Dynamically populated price --></td>
                                             <td id="assigned-photographer1"><!-- Dynamically populated assigned staff --></td>
                                             <td>
-                                                <button type="button" class="btn btn-copper-rose book-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOGRAPHER1" data-service-type="Photography">Book/Change Staff</button>
+                                                <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOGRAPHER1" data-service-type="Photography">Book/Change Staff</button>
                                             </td>
                                         </tr>
                                         <!-- Additional Photographer -->
@@ -354,7 +354,7 @@
                                             <td id="additional-photography-price"><!-- Dynamically populated price --></td>
                                             <td id="assigned-photographer2"><!-- Dynamically populated assigned staff --></td>
                                             <td>
-                                                <button type="button" class="btn btn-copper-rose book-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOGRAPHER2" data-service-type="Photography">Book/Change Staff</button>
+                                                <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOGRAPHER2" data-service-type="Photography">Book/Change Staff</button>
                                             </td>
                                         </tr>
                                         <!-- Engagement Session -->
@@ -374,7 +374,7 @@
                                             <td id="engagement-session-price"><!-- Dynamically populated price --></td>
                                             <td id="engagement-session-staff"><!-- Dynamically populated staff --></td>
                                             <td>
-                                                <button type="button" class="btn btn-copper-rose book-button" data-toggle="modal" data-target="#bookingModal">Book/Change Staff</button>
+                                                <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal">Book/Change Staff</button>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -402,8 +402,8 @@
                                             <td>$200</td>
                                             <td>John Doe</td>
                                             <td>
-                                                <button type="button" class="btn btn-copper-rose edit-overtime-button" data-id="1" data-service="Photography">Edit</button>
-                                                <button type="button" class="btn btn-copper-rose remove-overtime-button" data-id="1" data-service="Photography">Remove</button>
+                                                <button type="button" class="btn btn-dusty-pink edit-overtime-button" data-id="1" data-service="Photography">Edit</button>
+                                                <button type="button" class="btn btn-dusty-pink remove-overtime-button" data-id="1" data-service="Photography">Remove</button>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -421,7 +421,7 @@
                                 <p><strong>Total Overtime Cost:</strong> <span id="total-photography-overtime-cost"></span></p>
                                 <p><strong>Total Photography Cost:</strong> <span id="total-photography-cost"></span></p>
                             </div>
-                                <button type="button" id="savePhotographySection" class="btn btn-copper-rose float-right">Save Changes</button>
+                                <button type="button" id="savePhotographySection" class="btn btn-dusty-pink float-right">Save Changes</button>
                             </form>
                             <!-- Prospect Photographer Dropdowns -->
                             <div class="prospect-photographers" style="width: 30%;">
@@ -481,7 +481,7 @@
                                                 <td id="videography-package-price"><!-- Dynamically populated price --></td>
                                                 <td id="assigned-videographer1"><!-- Dynamically populated assigned staff --></td>
                                                 <td>
-                                                    <button type="button" class="btn btn-copper-rose book-button" data-toggle="modal" data-target="#bookingModal" data-role="VIDEOGRAPHER1" data-service-type="Videography">Book/Change Staff</button>
+                                                    <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="VIDEOGRAPHER1" data-service-type="Videography">Book/Change Staff</button>
                                                 </td>
                                             </tr>
                                             <!-- Additional Videographer -->
@@ -501,7 +501,7 @@
                                                 <td id="additional-videography-price"><!-- Dynamically populated price --></td>
                                                 <td id="assigned-videographer2"><!-- Dynamically populated assigned staff --></td>
                                                 <td>
-                                                    <button type="button" class="btn btn-copper-rose book-button" data-toggle="modal" data-target="#bookingModal" data-role="VIDEOGRAPHER2" data-service-type="Videography">Book/Change Staff</button>
+                                                    <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="VIDEOGRAPHER2" data-service-type="Videography">Book/Change Staff</button>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -529,19 +529,19 @@
                                                 <td>$300</td>
                                                 <td>Jane Smith</td>
                                                 <td>
-                                                    <button type="button" class="btn btn-copper-rose edit-overtime-button" data-id="2" data-service="Videography">Edit</button>
-                                                    <button type="button" class="btn btn-copper-rose remove-overtime-button" data-id="2" data-service="Videography">Remove</button>
+                                                    <button type="button" class="btn btn-dusty-pink edit-overtime-button" data-id="2" data-service="Videography">Edit</button>
+                                                    <button type="button" class="btn btn-dusty-pink remove-overtime-button" data-id="2" data-service="Videography">Remove</button>
                                                 </td>
                                             </tr>
                                         </tbody>
                                     </table>
-                                    <button id="addVideographyOvertimeEntryButton" type="button" class="btn btn-copper-rose">Add Overtime Entry</button>
+                                    <button id="addVideographyOvertimeEntryButton" type="button" class="btn btn-dusty-pink">Add Overtime Entry</button>
                                     <!-- Overtime Entry Form for Videography (hidden by default) -->
                                     <div id="videographyOvertimeEntryForm" style="display:none;">
                                         <input type="hidden" id="videographyOvertimeEntryId" value="">
                                         <select id="videographyOvertimeOptionSelect"></select>
                                         <input type="number" id="videographyOvertimeHours" placeholder="Hours">
-                                        <button type="button" id="saveVideographyOvertimeEntryButton" class="btn btn-copper-rose">Save Overtime Entry</button>
+                                        <button type="button" id="saveVideographyOvertimeEntryButton" class="btn btn-dusty-pink">Save Overtime Entry</button>
                                     </div>
                                 </div>
                                 <!-- Total Overtime and Videography Cost -->
@@ -549,7 +549,7 @@
                                     <p><strong>Total Videography Overtime Cost:</strong> <span id="total-videography-overtime-cost"></span></p>
                                     <p><strong>Total Videography Cost:</strong> <span id="total-videography-cost"></span></p>
                                 </div>
-                                <button type="button" id="saveVideographySection" class="btn btn-copper-rose float-right">Save Changes</button>
+                                <button type="button" id="saveVideographySection" class="btn btn-dusty-pink float-right">Save Changes</button>
                             </form>
                         </div>
                         <!-- DJ Tab Content -->
@@ -594,7 +594,7 @@
                                                 <td id="dj-package-price"><!-- Dynamically populated price --></td>
                                                 <td id="assigned-dj1"><!-- Dynamically populated assigned staff --></td>
                                                 <td>
-                                                    <button type="button" class="btn btn-copper-rose book-button" data-toggle="modal" data-target="#bookingModal" data-role="DJ1">Book/Change Staff</button>
+                                                    <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="DJ1">Book/Change Staff</button>
                                                 </td>
                                             </tr>
                                             <!-- Additional DJ -->
@@ -614,7 +614,7 @@
                                                 <td id="additional-dj-price"><!-- Dynamically populated price --></td>
                                                 <td id="assigned-dj2"><!-- Dynamically populated assigned staff --></td>
                                                 <td>
-                                                    <button type="button" class="btn btn-copper-rose book-button" data-toggle="modal" data-target="#bookingModal" data-role="DJ2">Book/Change Staff</button>
+                                                    <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="DJ2">Book/Change Staff</button>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -642,19 +642,19 @@
                                                 <td>$150</td>
                                                 <td>Jane Doe</td>
                                                 <td>
-                                                    <button type="button" class="btn btn-copper-rose edit-overtime-button" data-id="3" data-service="DJ">Edit</button>
-                                                    <button type="button" class="btn btn-copper-rose remove-overtime-button" data-id="3" data-service="DJ">Remove</button>
+                                                    <button type="button" class="btn btn-dusty-pink edit-overtime-button" data-id="3" data-service="DJ">Edit</button>
+                                                    <button type="button" class="btn btn-dusty-pink remove-overtime-button" data-id="3" data-service="DJ">Remove</button>
                                                 </td>
                                             </tr>
                                         </tbody>
                                     </table>
-                                    <button id="addDjOvertimeEntryButton" type="button" class="btn btn-copper-rose">Add Overtime Entry</button>
+                                    <button id="addDjOvertimeEntryButton" type="button" class="btn btn-dusty-pink">Add Overtime Entry</button>
                                     <!-- Overtime Entry Form for DJ (hidden by default) -->
                                     <div id="djOvertimeEntryForm" style="display:none;">
                                         <input type="hidden" id="djOvertimeEntryId" value="">
                                         <select id="djOvertimeOptionSelect"></select>
                                         <input type="number" id="djOvertimeHours" placeholder="Hours">
-                                        <button type="button" id="saveDjOvertimeEntryButton" class="btn btn-copper-rose">Save Overtime Entry</button>
+                                        <button type="button" id="saveDjOvertimeEntryButton" class="btn btn-dusty-pink">Save Overtime Entry</button>
                                     </div>
                                 </div>
                                 <!-- Total Overtime and DJ Cost -->
@@ -662,7 +662,7 @@
                                     <p><strong>Total DJ Overtime Cost:</strong> <span id="total-dj-overtime-cost"></span></p>
                                     <p><strong>Total DJ Cost:</strong> <span id="total-dj-cost"></span></p>
                                 </div>
-                                <button type="button" id="saveDjSection" class="btn btn-copper-rose float-right">Save Changes</button>
+                                <button type="button" id="saveDjSection" class="btn btn-dusty-pink float-right">Save Changes</button>
                             </form>
                         </div>
                         <!-- Photobooth Tab Content -->
@@ -708,7 +708,7 @@
                                                 <td id="photobooth-package-price"><!-- Dynamically populated price --></td>
                                                 <td id="assigned-photobooth-staff"><!-- Dynamically populated assigned staff --></td>
                                                 <td>
-                                                    <button type="button" class="btn btn-copper-rose book-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOBOOTH">Book/Change Staff</button>
+                                                    <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOBOOTH">Book/Change Staff</button>
                                                 </td>
                                             </tr>
 
@@ -729,7 +729,7 @@
                                                 <td id="additional-photobooth-price"><!-- Dynamically populated price --></td>
                                                 <td id="assigned-photobooth"><!-- Dynamically populated assigned staff --></td>
                                                 <td>
-                                                    <button type="button" class="btn btn-copper-rose book-button" data-toggle="modal" data-target="#bookingModal" data-role="Photobooth">Book/Change Staff</button>
+                                                    <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="Photobooth">Book/Change Staff</button>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -757,19 +757,19 @@
                                                 <td>$100</td>
                                                 <td>Jane Doe</td>
                                                 <td>
-                                                    <button type="button" class="btn btn-copper-rose edit-overtime-button" data-id="4" data-service="Photobooth">Edit</button>
-                                                    <button type="button" class="btn btn-copper-rose remove-overtime-button" data-id="4" data-service="Photobooth">Remove</button>
+                                                    <button type="button" class="btn btn-dusty-pink edit-overtime-button" data-id="4" data-service="Photobooth">Edit</button>
+                                                    <button type="button" class="btn btn-dusty-pink remove-overtime-button" data-id="4" data-service="Photobooth">Remove</button>
                                                 </td>
                                             </tr>
                                         </tbody>
                                     </table>
-                                    <button id="addPhotoboothOvertimeEntryButton" type="button" class="btn btn-copper-rose">Add Overtime Entry</button>
+                                    <button id="addPhotoboothOvertimeEntryButton" type="button" class="btn btn-dusty-pink">Add Overtime Entry</button>
                                     <!-- Overtime Entry Form for Photobooth (hidden by default) -->
                                     <div id="photoboothOvertimeEntryForm" style="display:none;">
                                         <input type="hidden" id="photoboothOvertimeEntryId" value="">
                                         <select id="photoboothOvertimeOptionSelect"></select>
                                         <input type="number" id="photoboothOvertimeHours" placeholder="Hours">
-                                        <button type="button" id="savePhotoboothOvertimeEntryButton" class="btn btn-copper-rose">Save Overtime Entry</button>
+                                        <button type="button" id="savePhotoboothOvertimeEntryButton" class="btn btn-dusty-pink">Save Overtime Entry</button>
                                     </div>
                                 </div>
                                 <!-- Total Overtime and Photobooth Cost -->
@@ -777,7 +777,7 @@
                                     <p><strong>Total Photobooth Overtime Cost:</strong> <span id="total-photobooth-overtime-cost"></span></p>
                                     <p><strong>Total Photobooth Cost:</strong> <span id="total-photobooth-cost"></span></p>
                                 </div>
-                                <button type="button" id="savePhotoboothSection" class="btn btn-copper-rose float-right">Save Changes</button>
+                                <button type="button" id="savePhotoboothSection" class="btn btn-dusty-pink float-right">Save Changes</button>
                             </form>
                         </div>
                         <div class="tab-pane fade" id="discounts">
@@ -803,7 +803,7 @@
                                         </select>
                                     </div>
                                     <div class="form-group col-md-3 align-self-end">
-                                        <button type="submit" class="btn btn-copper-rose">Submit</button>
+                                        <button type="submit" class="btn btn-dusty-pink">Submit</button>
                                     </div>
                                 </div>
                             </form>
@@ -875,8 +875,8 @@
                                             {% endfor %}
                                         </tbody>
                                     </table>
-                                    <button type="button" class="btn btn-copper-rose" onclick="addProduct()" id="add-product-btn">Add Another Product</button>
-                                    <button type="submit" class="btn btn-copper-rose">Update Products</button>
+                                    <button type="button" class="btn btn-dusty-pink" onclick="addProduct()" id="add-product-btn">Add Another Product</button>
+                                    <button type="submit" class="btn btn-dusty-pink">Update Products</button>
                                 </form>
                                 <!-- Total Overtime and Photobooth Cost -->
                                 <div class="text-right total-product-cost-container">
@@ -917,7 +917,7 @@
                                 <form method="post" action="" enctype="multipart/form-data">
                                     {% csrf_token %}
                                     {{ document_form.as_p }}
-                                    <button type="submit" name="upload_document" class="btn btn-copper-rose">Upload Document</button>
+                                    <button type="submit" name="upload_document" class="btn btn-dusty-pink">Upload Document</button>
                                 </form>
                             </div>
                         </div>
@@ -1006,10 +1006,10 @@
                                         <option value="schedule_a" {% if contract.payment_schedule and contract.payment_schedule.schedule_type == 'schedule_a' %}selected{% endif %}>Schedule A</option>
                                         <option value="custom" {% if contract.payment_schedule and contract.payment_schedule.schedule_type == 'custom' %}selected{% endif %}>Custom</option>
                                     </select>
-                                    <button type="button" class="btn btn-copper-rose" data-toggle="modal" data-target="#scheduleModal">
+                                    <button type="button" class="btn btn-dusty-pink" data-toggle="modal" data-target="#scheduleModal">
                                         Add or Update Schedule
                                     </button>
-                                    <button type="button" id="receive-payment-button" class="btn btn-copper-rose" onclick="receivePayment()">Receive Payment</button>
+                                    <button type="button" id="receive-payment-button" class="btn btn-dusty-pink" onclick="receivePayment()">Receive Payment</button>
                                 </div>
                                 <!-- Payment Schedule Table -->
                                 <div id="payment-schedule-table">
@@ -1067,10 +1067,10 @@
                             {% include 'contracts/task_list_snippet.html' %}
                         </div>
                         <!-- Button to trigger the message creation modal -->
-                        <button type="button" class="btn btn-copper-rose mb-3" data-toggle="modal" data-target="#createMessageModal">
+                        <button type="button" class="btn btn-dusty-pink mb-3" data-toggle="modal" data-target="#createMessageModal">
                             Create Message
                         </button>
-                        <button type="button" class="btn btn-copper-rose mb-3" data-toggle="modal" data-target="#addTaskModal"
+                        <button type="button" class="btn btn-dusty-pink mb-3" data-toggle="modal" data-target="#addTaskModal"
                                 data-sender-id="{{ request.user.id }}"
                                 data-contract-id="{{ contract.contract_id }}"
                                 data-note-id="">Add Task</button>
@@ -1083,7 +1083,7 @@
                                     <p><strong>Date:</strong> {{ message.created_at }}</p>
                                     <p>{{ message.content }}</p>
                                     <!-- Button to trigger the task creation modal -->
-                                    <button type="button" class="btn btn-copper-rose" data-toggle="modal" data-target="#addTaskModal"
+                                    <button type="button" class="btn btn-dusty-pink" data-toggle="modal" data-target="#addTaskModal"
                                             data-sender-id="{{ request.user.id }}"
                                             data-contract-id="{{ contract.contract_id }}"
                                             data-note-id="{{ message.id }}">Add Task</button>
@@ -1142,7 +1142,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-primary" id="submitBooking">Book</button>
+                <button type="submit" class="btn btn-dusty-pink" id="submitBooking">Book</button>
                 <button type="button" class="btn btn-danger" id="deleteBooking">Delete</button> <!-- Add this line -->
             </div>
         </div>
@@ -1190,7 +1190,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-copper-rose" onclick="confirmPayment()">Confirm Payment</button>
+        <button type="button" class="btn btn-dusty-pink" onclick="confirmPayment()">Confirm Payment</button>
       </div>
     </div>
   </div>
@@ -1224,7 +1224,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-copper-rose" form="scheduleForm">Save changes</button>
+                <button type="submit" class="btn btn-dusty-pink" form="scheduleForm">Save changes</button>
             </div>
         </div>
     </div>
@@ -1247,7 +1247,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-primary" form="createMessageForm">Send Message</button>
+        <button type="submit" class="btn btn-dusty-pink" form="createMessageForm">Send Message</button>
       </div>
     </div>
   </div>
@@ -1272,7 +1272,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-primary" form="addTaskForm">Save Task</button>
+        <button type="submit" class="btn btn-dusty-pink" form="addTaskForm">Save Task</button>
       </div>
     </div>
   </div>
