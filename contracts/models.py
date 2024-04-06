@@ -4,8 +4,13 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, EmailValidator
 from django.db import models
-from phonenumber_field.modelfields import PhoneNumberField
+from django.core.validators import RegexValidator
 from django.utils import timezone
+
+phone_validator = RegexValidator(
+    regex=r'^\d{3}-\d{3}-\d{4}$',
+    message='Phone number must be in the format XXX-XXX-XXXX.'
+)
 
 CustomUser = get_user_model()
 
@@ -40,8 +45,18 @@ class Client(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     primary_contact = models.CharField(max_length=255)
     primary_email = models.EmailField(unique=True)
-    primary_phone1 = PhoneNumberField()
-    primary_phone2 = PhoneNumberField(blank=True, null=True)
+    primary_phone1 = models.CharField(
+        max_length=12,  # Increase max_length to accommodate dashes
+        validators=[phone_validator],
+        blank=True,
+        null=True
+    )
+    primary_phone2 = models.CharField(
+        max_length=12,  # Increase max_length to accommodate dashes
+        validators=[phone_validator],
+        blank=True,
+        null=True
+    )
     primary_address1 = models.CharField(max_length=255, blank=True, null=True)
     primary_address2 = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=255, blank=True, null=True)
@@ -49,11 +64,26 @@ class Client(models.Model):
     postal_code = models.CharField(max_length=255, blank=True, null=True)
     partner_contact = models.CharField(max_length=255, blank=True, null=True)
     partner_email = models.EmailField(validators=[EmailValidator], blank=True, null=True)
-    partner_phone1 = PhoneNumberField(blank=True, null=True)
-    partner_phone2 = PhoneNumberField(blank=True, null=True)
+    partner_phone1 = models.CharField(
+        max_length=12,  # Increase max_length to accommodate dashes
+        validators=[phone_validator],
+        blank=True,
+        null=True
+    )
+    partner_phone2 = models.CharField(
+        max_length=12,  # Increase max_length to accommodate dashes
+        validators=[phone_validator],
+        blank=True,
+        null=True
+    )
     alt_contact = models.CharField(max_length=255, blank=True, null=True)
     alt_email = models.EmailField(validators=[EmailValidator], blank=True, null=True)
-    alt_phone = PhoneNumberField(blank=True, null=True)
+    alt_phone = models.CharField(
+        max_length=12,  # Increase max_length to accommodate dashes
+        validators=[phone_validator],
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
         return self.primary_contact
@@ -214,13 +244,23 @@ class Contract(models.Model):
     ceremony_city = models.CharField(max_length=255, null=True, blank=True)
     ceremony_state = models.CharField(max_length=255, null=True, blank=True)
     ceremony_contact = models.CharField(max_length=255, null=True, blank=True)
-    ceremony_phone = PhoneNumberField(null=True, blank=True)
+    ceremony_phone = models.CharField(
+        max_length=12,  # Increase max_length to accommodate dashes
+        validators=[phone_validator],
+        blank=True,
+        null=True
+    )
     ceremony_email = models.EmailField(validators=[EmailValidator], null=True, blank=True)
     reception_site = models.CharField(max_length=255, null=True, blank=True)
     reception_city = models.CharField(max_length=255, null=True, blank=True)
     reception_state = models.CharField(max_length=255, null=True, blank=True)
     reception_contact = models.CharField(max_length=255, null=True, blank=True)
-    reception_phone = PhoneNumberField(null=True, blank=True)
+    reception_phone = models.CharField(
+        max_length=12,  # Increase max_length to accommodate dashes
+        validators=[phone_validator],
+        blank=True,
+        null=True
+    )
     reception_email = models.EmailField(validators=[EmailValidator], null=True, blank=True)
     staff_notes = models.TextField(blank=True, null=True)
     contract_document = models.FileField(upload_to='contracts/', null=True, blank=True)

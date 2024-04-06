@@ -1,7 +1,11 @@
 from django.contrib.auth.models import AbstractUser, UserManager, Group, Permission
 from django.db import models
-from phonenumber_field.modelfields import PhoneNumberField
+from django.core.validators import RegexValidator
 
+phone_validator = RegexValidator(
+    regex=r'^\d{3}-\d{3}-\d{4}$',
+    message='Phone number must be in the format XXX-XXX-XXXX.'
+)
 
 class Role(models.Model):
     PHOTOGRAPHER = 'PHOTOGRAPHER'
@@ -47,8 +51,18 @@ class CustomUser(AbstractUser):
     user_type = models.CharField(max_length=10, choices=USER_TYPES, default='employee')
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
-    primary_phone1 = PhoneNumberField(blank=True, null=True)
-    primary_phone2 = PhoneNumberField(blank=True, null=True)
+    primary_phone1 = models.CharField(
+        max_length=12,  # Increase max_length to accommodate dashes
+        validators=[phone_validator],
+        blank=True,
+        null=True
+    )
+    primary_phone2 = models.CharField(
+        max_length=12,  # Increase max_length to accommodate dashes
+        validators=[phone_validator],
+        blank=True,
+        null=True
+    )
     primary_address1 = models.CharField(max_length=255, blank=True, null=True)
     primary_address2 = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=255, blank=True, null=True)

@@ -2,13 +2,16 @@ from django import forms
 from contracts.models import (Contract, ServiceType, Client, Payment, EventStaffBooking, Package, Discount, Location,
                               ContractDocument, Availability, PaymentSchedule, SchedulePayment,
                               AdditionalEventStaffOption, EngagementSessionOption, AdditionalProduct, ContractProduct)
-from phonenumber_field.formfields import PhoneNumberField
+from django.core.validators import RegexValidator
 from users.models import Role, CustomUser
 from django.forms.widgets import DateInput
 from django.forms import inlineformset_factory
 from django.contrib.auth import get_user_model
 
-
+phone_validator = RegexValidator(
+    regex=r'^\d{3}-\d{3}-\d{4}$',
+    message='Phone number must be in the format XXX-XXX-XXXX.'
+)
 
 class ContractSearchForm(forms.Form):
 
@@ -139,13 +142,21 @@ class ContractEventEditForm(forms.ModelForm):
     ceremony_city = forms.CharField(max_length=255, required=False)
     ceremony_state = forms.CharField(max_length=255, required=False)
     ceremony_contact = forms.CharField(max_length=255, required=False)
-    ceremony_phone = PhoneNumberField(required=False)
+    ceremony_phone = forms.CharField(
+    max_length=12,  # Adjusted to accommodate dashes
+    validators=[phone_validator],
+    required=False  # Instead of blank=True, null=True
+)
     ceremony_email = forms.EmailField(required=False)
     reception_site = forms.CharField(max_length=255, required=False)
     reception_city = forms.CharField(max_length=255, required=False)
     reception_state = forms.CharField(max_length=255, required=False)
     reception_contact = forms.CharField(max_length=255, required=False)
-    reception_phone = PhoneNumberField(required=False)
+    reception_phone = forms.CharField(
+    max_length=12,  # Adjusted to accommodate dashes
+    validators=[phone_validator],
+    required=False  # Instead of blank=True, null=True
+)
     reception_email = forms.EmailField(required=False)
 
     class Meta:
@@ -289,7 +300,11 @@ class NewContractForm(forms.ModelForm):
     primary_contact = forms.CharField(max_length=255, required=True)
     partner_contact = forms.CharField(max_length=255)
     primary_email = forms.EmailField(required=True)
-    primary_phone1 = PhoneNumberField(required=False)
+    primary_phone1 = forms.CharField(
+    max_length=12,  # Adjusted to accommodate dashes
+    validators=[phone_validator],
+    required=False  # Instead of blank=True, null=True
+)
     event_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
     csr = forms.ModelChoiceField(
         queryset=CustomUser.objects.none(),
@@ -298,18 +313,34 @@ class NewContractForm(forms.ModelForm):
     )
 
     # Optional fields
-    primary_phone2 = PhoneNumberField(required=False)
+    primary_phone2 = forms.CharField(
+    max_length=12,  # Adjusted to accommodate dashes
+    validators=[phone_validator],
+    required=False  # Instead of blank=True, null=True
+)
     primary_address1 = forms.CharField(max_length=255, required=False)
     primary_address2 = forms.CharField(max_length=255, required=False)
     city = forms.CharField(max_length=255, required=False)
     state = forms.CharField(max_length=255, required=False)
     postal_code = forms.CharField(max_length=255, required=False)
     partner_email = forms.EmailField(required=False)
-    partner_phone1 = PhoneNumberField(required=False)
-    partner_phone2 = PhoneNumberField(required=False)
+    partner_phone1 = forms.CharField(
+    max_length=12,  # Adjusted to accommodate dashes
+    validators=[phone_validator],
+    required=False  # Instead of blank=True, null=True
+)
+    partner_phone2 = forms.CharField(
+    max_length=12,  # Adjusted to accommodate dashes
+    validators=[phone_validator],
+    required=False  # Instead of blank=True, null=True
+)
     alt_contact = forms.CharField(max_length=255, required=False)
     alt_email = forms.EmailField(required=False)
-    alt_phone = PhoneNumberField(required=False)
+    alt_phone = forms.CharField(
+    max_length=12,  # Adjusted to accommodate dashes
+    validators=[phone_validator],
+    required=False  # Instead of blank=True, null=True
+)
 
 
     class Meta:
@@ -345,7 +376,11 @@ class ContractForm(forms.ModelForm):
     location = forms.ModelChoiceField(queryset=Location.objects.all())
     primary_contact = forms.CharField(max_length=255, required=True)
     primary_email = forms.EmailField(required=True)
-    primary_phone1 = PhoneNumberField(required=False)
+    primary_phone1 = forms.CharField(
+    max_length=12,  # Adjusted to accommodate dashes
+    validators=[phone_validator],
+    required=False  # Instead of blank=True, null=True
+)
     event_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
     csr = forms.ModelChoiceField(
         queryset=CustomUser.objects.none(),
@@ -360,13 +395,21 @@ class ContractForm(forms.ModelForm):
     ceremony_city = forms.CharField(max_length=255, required=False)
     ceremony_state = forms.CharField(max_length=255, required=False)
     ceremony_contact = forms.CharField(max_length=255, required=False)
-    ceremony_phone = PhoneNumberField(required=False)
+    ceremony_phone = forms.CharField(
+    max_length=12,  # Adjusted to accommodate dashes
+    validators=[phone_validator],
+    required=False  # Instead of blank=True, null=True
+)
     ceremony_email = forms.EmailField(required=False)
     reception_site = forms.CharField(max_length=255, required=False)
     reception_city = forms.CharField(max_length=255, required=False)
     reception_state = forms.CharField(max_length=255, required=False)
     reception_contact = forms.CharField(max_length=255, required=False)
-    reception_phone = PhoneNumberField(required=False)
+    reception_phone = forms.CharField(
+    max_length=12,  # Adjusted to accommodate dashes
+    validators=[phone_validator],
+    required=False  # Instead of blank=True, null=True
+)
     reception_email = forms.EmailField(required=False)
 
     photography_package = forms.ModelChoiceField(queryset=Package.objects.none(), required=False)
@@ -432,7 +475,11 @@ class ContractForm(forms.ModelForm):
             'prospect_photographer1', 'prospect_photographer2', 'prospect_photographer3'
         ]
     # Optional fields
-    primary_phone2 = PhoneNumberField(required=False)
+    primary_phone2 = forms.CharField(
+    max_length=12,  # Adjusted to accommodate dashes
+    validators=[phone_validator],
+    required=False  # Instead of blank=True, null=True
+)
     primary_address1 = forms.CharField(max_length=255, required=False)
     primary_address2 = forms.CharField(max_length=255, required=False)
     city = forms.CharField(max_length=255, required=False)
@@ -440,11 +487,23 @@ class ContractForm(forms.ModelForm):
     postal_code = forms.CharField(max_length=255, required=False)
     partner_contact = forms.CharField(max_length=255, required=False)
     partner_email = forms.EmailField(required=False)
-    partner_phone1 = PhoneNumberField(required=False)
-    partner_phone2 = PhoneNumberField(required=False)
+    partner_phone1 = forms.CharField(
+    max_length=12,  # Adjusted to accommodate dashes
+    validators=[phone_validator],
+    required=False  # Instead of blank=True, null=True
+)
+    partner_phone2 = forms.CharField(
+    max_length=12,  # Adjusted to accommodate dashes
+    validators=[phone_validator],
+    required=False  # Instead of blank=True, null=True
+)
     alt_contact = forms.CharField(max_length=255, required=False)
     alt_email = forms.EmailField(required=False)
-    alt_phone = PhoneNumberField(required=False)
+    alt_phone = forms.CharField(
+    max_length=12,  # Adjusted to accommodate dashes
+    validators=[phone_validator],
+    required=False  # Instead of blank=True, null=True
+)
 
     additional_products = forms.ModelMultipleChoiceField(
         queryset=AdditionalProduct.objects.all(),
