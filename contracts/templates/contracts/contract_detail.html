@@ -15,8 +15,6 @@
 
     <link rel="stylesheet" href="{% static 'contracts/styles.css' %}">
 
-
-
 </head>
 
 <body data-contract-id="{{ contract.contract_id }}" data-payment-schedule-id="{{ contract.payment_schedule.id }}">
@@ -31,7 +29,7 @@
         <li class="menu-item"><a href="{% url 'contracts:contract_new' %}">New Contract</a></li>
         <li class="menu-item"><a href="{% url 'users:financial_reports' %}">Reports</a></li>
         <li class="menu-item"><a href="{% url 'admin:index' %}">Admin</a></li>
-        <li class="menu-item"><a href="{% url 'contracts:contract_search' %}">Search</a></li>
+        <li class="menu-item"><a href="{% url 'contracts:search' %}">Search</a></li>
     </ul>
     <div class="user-info">
         <span>Hello, {{ request.user.first_name }}</span>
@@ -114,6 +112,7 @@
                         <p id="contract-event-date">Event Date: {{ contract.event_date }}</p>
                         <p id="contract-status">Status: {{ contract.get_status_display }}</p>
                         <p id="contract-csr">Sales Person: {{ contract.csr.get_full_name }}</p>
+                        <p id="contract-coordinator">Coordinator: {{ contract.coordinator.get_full_name }}</p>
                         <p id="contract-lead-source">Lead Source: {{ contract.get_lead_source_display }}</p>
                         <!-- Edit Button -->
                         <button id="edit-contract-info-button" class="btn btn-dusty-pink" onclick="toggleEditForm(true)">Edit Contract Info</button>
@@ -594,7 +593,7 @@
                                                 <td id="dj-package-price"><!-- Dynamically populated price --></td>
                                                 <td id="assigned-dj1"><!-- Dynamically populated assigned staff --></td>
                                                 <td>
-                                                    <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="DJ1">Book/Change Staff</button>
+                                                <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="DJ1" data-service-type="Dj">Book/Change Staff</button>
                                                 </td>
                                             </tr>
                                             <!-- Additional DJ -->
@@ -614,7 +613,7 @@
                                                 <td id="additional-dj-price"><!-- Dynamically populated price --></td>
                                                 <td id="assigned-dj2"><!-- Dynamically populated assigned staff --></td>
                                                 <td>
-                                                    <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="DJ2">Book/Change Staff</button>
+                                                <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="DJ2" data-service-type="Dj">Book/Change Staff</button>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -708,7 +707,7 @@
                                                 <td id="photobooth-package-price"><!-- Dynamically populated price --></td>
                                                 <td id="assigned-photobooth-staff"><!-- Dynamically populated assigned staff --></td>
                                                 <td>
-                                                    <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOBOOTH">Book/Change Staff</button>
+                                                <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOBOOTH_OP" data-service-type="Photobooth">Book/Change Staff</button>
                                                 </td>
                                             </tr>
 
@@ -729,7 +728,7 @@
                                                 <td id="additional-photobooth-price"><!-- Dynamically populated price --></td>
                                                 <td id="assigned-photobooth"><!-- Dynamically populated assigned staff --></td>
                                                 <td>
-                                                    <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="Photobooth">Book/Change Staff</button>
+                                                <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOBOOTH_OP" data-service-type="Photobooth">Book/Change Staff</button>
                                                 </td>
                                             </tr>
                                         </tbody>

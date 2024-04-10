@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Search{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="contracts-tab" data-toggle="tab" href="#contracts" role="tab" aria-controls="contracts" aria-selected="true">Contracts</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="bookings-tab" data-toggle="tab" href="#bookings" role="tab" aria-controls="bookings" aria-selected="false">Bookings</a>
+        </li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <!-- Contracts tab -->
+        <div class="tab-pane active" id="contracts" role="tabpanel" aria-labelledby="contracts-tab">
+            {% include 'contracts/contract_search_form.html' %}
+            {% if contracts %}
+                {% include 'contracts/contract_search_results.html' %}
+            {% else %}
+                <p>No contracts found</p>
+            {% endif %}
+        </div>
+
+        <!-- Bookings tab -->
+        <div class="tab-pane" id="bookings" role="tabpanel" aria-labelledby="bookings-tab">
+            {% include 'contracts/booking_search_form.html' %}
+            {% if bookings %}
+                {% include 'contracts/booking_search_results.html' %}
+            {% else %}
+                <p>No bookings found</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Include jQuery and Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+<script>
+    $(function () {
+        $('#myTab a').on('click', function (e) {
+            e.preventDefault();
+            $(this).tab('show');
+        });
+    });
+</script>
+{% endblock %}

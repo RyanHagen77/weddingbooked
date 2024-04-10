@@ -1,12 +1,4 @@
 
-{% load static %}
-
-{% block title %}Contract Search{% endblock %}
-
-
-{% endblock %}
-
-{% block content %}
 <form method="GET" action="{% url 'contracts:search' %}" class="search-form">
     {% csrf_token %}
     <div class="quick-search-group">
@@ -89,49 +81,7 @@
         </div>
     </div>
 </form>
-    {% if contracts %}
-    <div class="search-results">
-        <table>
-            <thead>
-                <tr>
-                    <th>Contract ID</th>
-                    <th>Event Date</th>
-                    <th>Primary Contact</th>
-                    <th>Partner Contact</th>
-                    <th>Photographer</th>
-                    <th>Videographer</th>
-                    <th>Photobooth Op</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Location</th>
-                    <th>Sales Person</th>
-                    <th>Contract Date</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for contract in contracts %}
-                    <tr onclick="window.location='{% url 'contracts:contract_detail' id=contract.pk %}';">
-                        <td>{{ contract.custom_contract_number }}</td>
-                        <td>{{ contract.event_date|date:"Y-m-d" }}</td>
-                        <td>{{ contract.client.primary_contact }}</td>
-                        <td>{{ contract.client.partner_contact }}</td>
-                        <td>{{ contract.photographer1 }}</td> <!-- This should show the user's ID or username -->                        <td>{{ contract.videographer1.get_full_name|default:"Not Assigned" }}</td>
-                        <td>{{ contract.photobooth_op.get_full_name|default:"Not Assigned" }}</td>
-                        <td>{{ contract.client.primary_email }}</td> <!-- Assuming primary_email field -->
-                        <td>{{ contract.client.primary_phone1 }}</td> <!-- Assuming primary_phone1 field -->
-                        <td>{{ contract.location }}</td>
-                        <td>{{ contract.csr }}</td> <!-- Assuming csr field -->
-                        <td>{{ contract.contract_date|date:"Y-m-d" }}</td>
-                        <td>{{ contract.status }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-{% else %}
-    <p>No contracts found</p>
-{% endif %}
+
 
     <!-- Include jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -149,4 +99,3 @@
             window.location.href = "{% url 'contracts:search' %}";
         }
     </script>
-{% endblock %}

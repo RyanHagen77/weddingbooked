@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser, UserManager, Group, Permission
 from django.db import models
 from django.core.validators import RegexValidator
+from django import forms
+from django.contrib.auth import get_user_model
 
 phone_validator = RegexValidator(
     regex=r'^\d{3}-\d{3}-\d{4}$',
@@ -15,7 +17,9 @@ class Role(models.Model):
     ADMIN = 'ADMIN'
     SALES_PERSON = 'SALES PERSON'
     MANAGER = 'MANAGER'
+    COORDINATOR = 'COORDINATOR'
     CLIENT = 'CLIENT'  # Newly added role
+
 
     ROLE_CHOICES = (
         (PHOTOGRAPHER, 'Photographer'),
@@ -25,6 +29,7 @@ class Role(models.Model):
         (ADMIN, 'Admin'),
         (SALES_PERSON, 'Sales Person'),
         (MANAGER, 'Manager'),
+        (COORDINATOR, 'Coordinator'),
         (CLIENT, 'Client')  # Newly added choice
     )
 
@@ -70,6 +75,7 @@ class CustomUser(AbstractUser):
     postal_code = models.CharField(max_length=255, blank=True, null=True)
     event_staff = EventStaffManager()  # Custom manager for specific queries
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True)
+    additional_roles = models.ManyToManyField(Role, related_name='additional_users', blank=True)
 
     STATUS_CHOICES = (
         ('TRAINEE', 'Trainee'),
@@ -91,7 +97,11 @@ class CustomUser(AbstractUser):
         office_roles = [Role.ADMIN, Role.SALES_PERSON, Role.MANAGER]
         return self.role.name in office_roles if self.role else False
 
+CustomUser = get_user_model()
 
+class UserModelChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return obj.get_full_name()  # Assumes your CustomUser model has a get_full_name() method
 class EventStaffProfile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_query_name='profile')
     # Additional fields for event staff

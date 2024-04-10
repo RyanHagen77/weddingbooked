@@ -1,20 +1,10 @@
-{% extends "base.html" %}
-{% load static %}
-
-{% block title %}Booking Search{% endblock %}
-
-{% block extra_head %}
-    <link rel="stylesheet" href="{% static 'users/dashboard.css' %}">
-{% endblock %}
-
-{% block content %}
 <form method="GET" action="{% url 'contracts:booking_list' %}" class="search-form">
     <div class="quick-search-group">
         <div class="form-group">
             <input type="text" name="q" placeholder="Quick Search" value="{{ request.GET.q }}">
         </div>
         <div class="form-group">
-            <input type="submit" value="Search" class="btn">
+            <input type="submit" value="Search">
         </div>
     </div>
 
@@ -29,6 +19,13 @@
                 <select name="role_filter">
                     <option value="">All Roles</option>
                     <option value="PHOTOGRAPHER1">Photographer 1</option>
+                    <option value="PHOTOGRAPHER2">Photographer 2</option>
+                    <option value="ENGAGEMENT">Engagement</option>
+                    <option value="VIDEOGRAPHER1">Videographer 1</option>
+                    <option value="VIDEOGRAPHER2">Videographer 2</option>
+                    <option value="DJ1">DJ 1</option>
+                    <option value="DJ2">DJ 2</option>
+                    <option value="PHOTOBOOTH_OP">Photobooth Operator</option>
                     <!-- Add other role options -->
                 </select>
             </div>
@@ -37,7 +34,10 @@
                 <select name="status_filter">
                     <option value="">All Statuses</option>
                     <option value="PROSPECT">Prospect</option>
-                    <!-- Add other status options -->
+                    <option value="PENDING">Pending</option>
+                    <option value="DECLINED">Declined</option>
+                    <option value="APPROVED">Approved</option>
+                    <option value="CLEARED">Cleared</option>
                 </select>
             </div>
         </div>
@@ -68,52 +68,3 @@
         </div>
     </div>
 </form>
-
-{% if bookings %}
-<div class="search-results">
-    <table>
-        <thead>
-            <tr>
-                <th>Event Staff</th>
-                <th>Contract Number</th>
-                <th>Event Date</th>
-                <th>Role</th>
-                <th>Status</th>
-                <!-- Add other table headers -->
-            </tr>
-        </thead>
-        <tbody>
-            {% for booking in bookings %}
-            <tr onclick="window.location='{% url 'contracts:booking_detail' booking.id %}';">
-                <td>{{ booking.staff.first_name }} {{ booking.staff.last_name }}</td>
-                <td>{{ booking.contract.custom_contract_number }}</td>
-                <td>{{ booking.contract.event_date|date:"Y-m-d" }}</td>
-                <td>{{ booking.role|title }}</td>
-                <td>{{ booking.status|title }}</td>
-                <!-- Add other table data -->
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% else %}
-<p>No bookings found</p>
-{% endif %}
-
-<!-- Include jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- Include Bootstrap Datepicker JS -->
-<script>
-    $(function() {
-        $('input[type="date"]').datepicker({
-            format: 'yyyy-mm-dd'
-        });
-    });
-
-    function clearForm(form) {
-        form.reset();
-        window.location.href = "{% url 'contracts:booking_list' %}";
-    }
-</script>
-{% endblock %}

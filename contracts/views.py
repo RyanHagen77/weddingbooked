@@ -59,7 +59,86 @@ def get_decimal(value):
 def success_view(request):
     return render(request, 'success.html')  # Replace 'success.html' with the actual template name for your success page
 
+def search(request):
+    form = ContractSearchForm(request.GET)
+    contracts = Contract.objects.all()
 
+    if form.is_valid():
+        # Existing fields filtering
+        if form.cleaned_data.get('location'):
+            contracts = contracts.filter(location=form.cleaned_data['location'])
+        if form.cleaned_data.get('ceremony_site'):
+            contracts = contracts.filter(ceremony_site__icontains=form.cleaned_data['ceremony_site'])
+        if form.cleaned_data.get('reception_site'):
+            contracts = contracts.filter(reception_site__icontains=form.cleaned_data['reception_site'])
+
+        # Event date range filter
+        event_date_start = form.cleaned_data.get('event_date_start')
+        event_date_end = form.cleaned_data.get('event_date_end')
+        if event_date_start and event_date_end:
+            contracts = contracts.filter(event_date__range=[event_date_start, event_date_end])
+
+        # Contract date range filter
+        contract_date_start = form.cleaned_data.get('contract_date_start')
+        contract_date_end = form.cleaned_data.get('contract_date_end')
+        if contract_date_start and contract_date_end:
+            contracts = contracts.filter(contract_date__range=[contract_date_start, contract_date_end])
+
+        # Custom contract number filter
+        if form.cleaned_data.get('contract_number'):
+            contracts = contracts.filter(custom_contract_number__icontains=form.cleaned_data['contract_number'])
+        if form.cleaned_data.get('primary_contact'):
+            contracts = contracts.filter(client__primary_contact__icontains=form.cleaned_data['primary_contact'])
+        if form.cleaned_data.get('status'):
+            contracts = contracts.filter(status=form.cleaned_data['status'])
+        if form.cleaned_data.get('csr'):
+            contracts = contracts.filter(csr=form.cleaned_data['csr'])
+
+        # Filtering by staff roles
+        if form.cleaned_data.get('photographer'):
+            photographer_contracts = EventStaffBooking.objects.filter(
+                staff=form.cleaned_data['photographer'],
+                role__in=['PHOTOGRAPHER1', 'PHOTOGRAPHER2']
+            ).values_list('contract_id', flat=True)
+            contracts = contracts.filter(contract_id__in=photographer_contracts)
+
+        if form.cleaned_data.get('videographer'):
+            videographer_contracts = EventStaffBooking.objects.filter(
+                staff=form.cleaned_data['videographer'],
+                role__in=['VIDEOGRAPHER1', 'VIDEOGRAPHER2']
+            ).values_list('contract_id', flat=True)
+            contracts = contracts.filter(contract_id__in=videographer_contracts)
+
+        if form.cleaned_data.get('photobooth_operator'):
+            photobooth_operator_contracts = EventStaffBooking.objects.filter(
+                staff=form.cleaned_data['photobooth_operator'],
+                role='PHOTOBOOTH_OP'
+            ).values_list('contract_id', flat=True)
+            contracts = contracts.filter(contract_id__in=photobooth_operator_contracts)
+
+    # Quick search logic
+    query = request.GET.get('q')
+    if query:
+        contracts = contracts.filter(
+            Q(custom_contract_number__icontains=query) |
+            Q(client__primary_contact__icontains=query) |
+            Q(client__partner_contact__icontains=query)
+        )
+    # Booking search
+    booking_search_query = request.GET.get('booking_q')
+    bookings = EventStaffBooking.objects.all()
+    if booking_search_query:
+        bookings = bookings.filter(
+            Q(staff__username__icontains=booking_search_query) |
+            Q(staff__first_name__icontains=booking_search_query) |
+            Q(staff__last_name__icontains=booking_search_query)
+        )
+
+    # Additional filtering for bookings
+    # ...
+
+    return render(request, 'contracts/search.html',
+                  {'form': form, "contracts": contracts, "bookings": bookings})
 def search_contracts(request):
     form = ContractSearchForm(request.GET)
     contracts = Contract.objects.all()
@@ -1389,13 +1468,32 @@ def clear_booking(request, booking_id):
 def booking_list(request):
     bookings = EventStaffBooking.objects.all()
 
+    # Fetch the 'q' parameter for quick search
+    search_query = request.GET.get('q')
+    if search_query:
+        bookings = bookings.filter(
+            Q(staff__username__icontains=search_query) |
+            Q(staff__first_name__icontains=search_query) |
+            Q(staff__last_name__icontains=search_query)
+        )
+
     # Fetch the 'event_date' parameter from the request if provided
     date_filter = request.GET.get('event_date')
     if date_filter:
         bookings = bookings.filter(contract__event_date=date_filter)
 
+    # Fetch the 'role_filter' parameter from the request if provided
+    role_filter = request.GET.get('role_filter')
+    if role_filter:
+        bookings = bookings.filter(role=role_filter)
+
+    # Fetch the 'status_filter' parameter from the request if provided
+    status_filter = request.GET.get('status_filter')
+    if status_filter:
+        bookings = bookings.filter(status=status_filter)
+
     # Sorting logic
-    sort_by = request.GET.get('sort_by', 'contract__event_date')  # Default to 'event_date' in Contract if not provided
+    sort_by = request.GET.get('sort_by', '')  # No default sort_by
     order = request.GET.get('order', 'asc')  # Default to ascending if not provided
 
     if sort_by:
@@ -1406,8 +1504,12 @@ def booking_list(request):
         # The '-' prefix indicates descending order in Django querysets
         order_prefix = '-' if order == 'desc' else ''
         bookings = bookings.order_by(order_prefix + sort_by)
+    elif status_filter:
+        # If no specific sorting is selected, sort by status when filtering by status
+        bookings = bookings.order_by('status')
 
     return render(request, 'contracts/booking_list.html', {'bookings': bookings})
+
 
 def get_available_prospect_staff(request):
     event_date_str = request.GET.get('event_date')
@@ -1424,19 +1526,26 @@ def get_available_prospect_staff(request):
     combined_name = Concat(F('first_name'), Value(' '), F('last_name'), output_field=CharField())
 
     data = {
-        'photographers': list(available_staff.filter(role__name=Role.PHOTOGRAPHER).annotate(name=combined_name).values
-                              ('id', 'name')),
-        'videographers': list(available_staff.filter(role__name=Role.VIDEOGRAPHER).annotate(name=combined_name).values
-                              ('id', 'name')),
-        'djs': list(available_staff.filter(role__name=Role.DJ).annotate(name=combined_name).values('id', 'name')),
-        'photobooth_operators': list(available_staff.filter(role__name=Role.PHOTOBOOTH_OPERATOR).annotate
-                                     (name=combined_name).values('id', 'name'))
+        'photographers': list(available_staff.filter(
+            Q(role__name='PHOTOGRAPHER') | Q(additional_roles__name='PHOTOGRAPHER')
+        ).annotate(name=combined_name).values('id', 'name')),
+        'videographers': list(available_staff.filter(
+            Q(role__name='VIDEOGRAPHER') | Q(additional_roles__name='VIDEOGRAPHER')
+        ).annotate(name=combined_name).values('id', 'name')),
+        'djs': list(available_staff.filter(
+            Q(role__name='DJ') | Q(additional_roles__name='DJ')
+        ).annotate(name=combined_name).values('id', 'name')),
+        'photobooth_operators': list(available_staff.filter(
+            Q(role__name='PHOTOBOOTH_OPERATOR') | Q(additional_roles__name='PHOTOBOOTH_OPERATOR')
+        ).annotate(name=combined_name).values('id', 'name')),
+        # Add any other event staff roles as needed...
     }
 
     return JsonResponse(data)
 def get_available_staff(request):
     event_date_str = request.GET.get('event_date')
     service_type = request.GET.get('service_type')
+    print("Service Type:", service_type)  # Debug print
 
     try:
         event_date = datetime.strptime(event_date_str, '%Y-%m-%d').date() if event_date_str else None
@@ -1446,25 +1555,33 @@ def get_available_staff(request):
     if not event_date:
         return JsonResponse({'error': 'Event date is required'}, status=400)
 
-    available_staff = Availability.get_available_staff_for_date(event_date)
+    available_staff = Availability.get_available_staff_for_date(event_date).distinct()
     combined_name = Concat(F('first_name'), Value(' '), F('last_name'), output_field=CharField())
 
     data = {
-        'photographers': list(available_staff.filter(role__name=Role.PHOTOGRAPHER).annotate(name=combined_name).values('id', 'name')),
-        'videographers': list(available_staff.filter(role__name=Role.VIDEOGRAPHER).annotate(name=combined_name).values('id', 'name')),
-        'djs': list(available_staff.filter(role__name=Role.DJ).annotate(name=combined_name).values('id', 'name')),
-        'photobooth_operators': list(available_staff.filter(role__name=Role.PHOTOBOOTH_OPERATOR).annotate(name=combined_name).values('id', 'name'))
+        'photographers': list(available_staff.filter(
+            Q(role__name='PHOTOGRAPHER') | Q(additional_roles__name='PHOTOGRAPHER')
+        ).annotate(name=combined_name).values('id', 'name')),
+        'videographers': list(available_staff.filter(
+            Q(role__name='VIDEOGRAPHER') | Q(additional_roles__name='VIDEOGRAPHER')
+        ).annotate(name=combined_name).values('id', 'name')),
+        'djs': list(available_staff.filter(
+            Q(role__name='DJ') | Q(additional_roles__name='DJ')
+        ).annotate(name=combined_name).values('id', 'name')),
+        'photobooth_operators': list(available_staff.filter(
+            Q(role__name='PHOTOBOOTH_OPERATOR') | Q(additional_roles__name='PHOTOBOOTH_OPERATOR')
+        ).annotate(name=combined_name).values('id', 'name')),
+        # Add any other event staff roles as needed...
     }
 
     if service_type:
         roles = Role.objects.filter(service_type__name=service_type).values_list('name', flat=True)
-        staff_data = list(available_staff.filter(role__name__in=roles).annotate(name=combined_name).values('id', 'name'))
+        staff_data = list(available_staff.filter(
+            Q(role__name__in=roles) | Q(additional_roles__name__in=roles)
+        ).annotate(name=combined_name).values('id', 'name'))
         data[f'{service_type.lower()}_staff'] = staff_data
 
     return JsonResponse(data)
-
-
-
 
 def manage_staff_assignments(request, id):
     contract = get_object_or_404(Contract, contract_id=id)

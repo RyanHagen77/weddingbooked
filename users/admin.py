@@ -28,9 +28,9 @@ class CustomUserAdmin(UserAdmin):
         'username', 'user_type', 'first_name', 'last_name', 'email', 'primary_phone1', 'primary_address1',
         'city', 'state', 'postal_code', 'is_staff', 'is_active', 'role', 'get_service_type',
     )
-    list_filter = ('username', 'email', 'is_staff', 'is_active', 'role', ServiceTypeFilter)
+    list_filter = ('username', 'email', 'is_staff', 'is_active', 'role', 'additional_roles', ServiceTypeFilter)
     fieldsets = (
-        (None, {'fields': ('username', 'password', 'user_type', 'email', 'profile_picture', 'website', 'role', 'status')}),
+        (None, {'fields': ('username', 'password', 'user_type', 'email', 'profile_picture', 'website', 'role', 'additional_roles', 'status')}),
         ('Personal Info', {'fields': ('first_name', 'last_name', 'primary_phone1', 'primary_phone2', 'primary_address1', 'primary_address2', 'city', 'state', 'postal_code')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),

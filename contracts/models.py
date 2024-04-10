@@ -6,6 +6,8 @@ from django.core.validators import MinValueValidator, EmailValidator
 from django.db import models
 from django.core.validators import RegexValidator
 from django.utils import timezone
+from .constants import SERVICE_ROLE_MAPPING  # Adjust the import path as needed
+
 
 phone_validator = RegexValidator(
     regex=r'^\d{3}-\d{3}-\d{4}$',
@@ -235,6 +237,14 @@ class Contract(models.Model):
         null=True,
         related_name='contracts_managed'
     )
+    coordinator = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='contracts_coordinated'
+    )
+
     is_code_92 = models.BooleanField(default=False, verbose_name="Code 92 Flag")
     client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True)
     bridal_party_qty = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=True, blank=True)
@@ -788,6 +798,17 @@ class EventStaffBooking(models.Model):
 
     objects = EventStaffBookingManager()
 
+    def is_user_available_for_role(self, user, role_name):
+        # Check if the user's primary role matches
+        if user.role.name == role_name:
+            return True
+
+        # Check if the user has the role in their additional roles
+        if user.additional_roles.filter(name=role_name).exists():
+            return True
+
+        return False
+
     def clear(self):
         """Clears the current booking by changing its status to 'CLEARED'."""
         self.status = 'CLEARED'
@@ -818,6 +839,20 @@ class EventStaffBooking(models.Model):
         """Calculates the total service cost for a given contract."""
         bookings = EventStaffBooking.objects.filter(contract_id=contract_id)
         return sum(booking.total_cost() for booking in bookings)
+
+    def update_contract_role(self):
+        role_field = SERVICE_ROLE_MAPPING.get(self.role)
+        print(f"Updating role: {self.role}, Field: {role_field}")  # Debug print
+        if role_field:
+            contract = self.contract
+            if not getattr(contract, role_field):
+                setattr(contract, role_field, self.staff)
+                contract.save()
+
+    def save(self, *args, **kwargs):
+        print("Saving EventStaffBooking instance")  # Debug print
+        super().save(*args, **kwargs)
+        self.update_contract_role()
 
 
 class Availability(models.Model):

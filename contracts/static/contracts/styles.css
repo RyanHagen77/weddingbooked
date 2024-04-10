@@ -79,7 +79,7 @@ body {
 }
 
 .btn-dusty-pink {
-    background-color: #c67c85 !important; /* Dusty Pink*/
+    background-color: #c67c85 !important; /* Dusty Pink */
     color: white; /* For contrast */
     /* or use #8A3324 for Burnt Umber */
 }
@@ -90,7 +90,7 @@ body {
 }
 
 .table .btn.btn-dusty-pink{
-    background-color: #c67c85!important; /* Copper Rose */
+    background-color: #c67c85!important; /* Dust Pink */
     color: white;
 }
 
@@ -155,21 +155,25 @@ label {
     margin: 20px;
 }
 
-/* Button styling */
-input[type="submit"], input[type="reset"] {
-    background-color: #c67c85; /* Copper rose background */
-    font-size: 15px;
+.btn-dusty-pink, button, input[type="submit"], input[type="reset"] {
+    background-color: #c67c85; /* Dusty Pink */
     color: white;
-    padding: 10px 15px;
     border: none;
-    border-radius: 4px;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    margin: 4px 2px;
     cursor: pointer;
-    margin-top: 10px;
+    border-radius: 5px; /* Adjust for rounded corners */
+    font-size: 16px; /* Standard font size */
+    font-weight: bold; /* Bold text */
 }
 
-input[type="submit"]:hover, input[type="reset"]:hover {
+.btn-dusty-pink:hover, button:hover, input[type="submit"]:hover, input[type="reset"]:hover {
     background-color: #b55f66; /* Darker dusty pink for hover */
 }
+
 
 /* Search results table styling */
 .search-results table {

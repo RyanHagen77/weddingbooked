@@ -167,6 +167,7 @@ function updateContractDisplay(contractId) {
 
         // Update the main contract info section
         updateField('contract-location', 'Location: ' + data.location);
+        updateField('contract-coordinator', 'Coordinator: ' + data.coordinator);
         updateField('contract-event-date', 'Event Date: ' + data.event_date);
         updateField('contract-status', 'Status: ' + data.status);
         updateField('contract-csr', 'Sales Person: ' + data.csr);

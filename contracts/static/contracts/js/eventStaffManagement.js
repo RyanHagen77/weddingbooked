@@ -1,8 +1,8 @@
 const eventStaffManagement = {
     // Function to fetch available staff based on the event date
-    fetchAvailableStaff(date) {
-        console.log(`Fetching available staff for date: ${date}`);
-        return fetch(`/contracts/get_available_staff/?event_date=${date}`)
+    fetchAvailableStaff(date, serviceType) {
+        console.log(`Fetching available staff for date: ${date} and service type: ${serviceType}`);
+        return fetch(`/contracts/get_available_staff/?event_date=${date}&service_type=${serviceType}`)
             .then(response => response.json())
             .then(data => {
                 console.log('Available staff data:', data);
@@ -10,6 +10,7 @@ const eventStaffManagement = {
             })
             .catch(error => console.error("Error fetching available staff:", error));
     },
+
 
 // Function to update dropdowns with available staff
 updateDropdowns(fieldNames, data) {
@@ -113,27 +114,30 @@ updateDropdowns(fieldNames, data) {
             });
     },
 
-    // Function to update the staff dropdown in the modal based on the selected event date
-    updateEventStaff() {
-        const eventDateInput = document.getElementById('id_event_date');
-        if (!eventDateInput) {
-            console.error("Event date input not found!");
-            return;
+updateEventStaff(serviceType) {
+    const eventDateInput = document.getElementById('id_event_date');
+    if (!eventDateInput) {
+        console.error("Event date input not found!");
+        return;
+    }
+
+    const eventDate = eventDateInput.value;
+
+    this.fetchAvailableStaff(eventDate, serviceType).then(data => {
+        // Determine the staff key based on the service type
+        const staffKey = `${serviceType.toLowerCase()}_staff`;
+
+        // Ensure that data is not undefined before calling updateDropdowns
+        if (data[staffKey] && data[staffKey].length > 0) {
+            this.updateDropdowns(['id_staff'], data[staffKey]);
+        } else {
+            console.error('Error updating event staff: data is undefined');
         }
+    }).catch(error => {
+        console.error("Error updating event staff:", error);
+    });
+},
 
-        const eventDate = eventDateInput.value;
-
-        this.fetchAvailableStaff(eventDate).then(data => {
-            // Ensure that data is not undefined before calling updateDropdowns
-            if (data) {
-                this.updateDropdowns(['id_staff'], data.photographers);  // Assuming 'photographers' is the correct key
-            } else {
-                console.error('Error updating event staff: data is undefined');
-            }
-        }).catch(error => {
-            console.error("Error updating event staff:", error);
-        });
-    },
 
 
     handleBookingFormSubmission: function() {
@@ -211,7 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Update assigned staff for all roles on page load
     const contractId = $('#contractId').val();
-    const roles = ['PHOTOGRAPHER1', 'PHOTOGRAPHER2', 'VIDEOGRAPHER1', 'VIDEOGRAPHER2'];
+    const roles = ['PHOTOGRAPHER1', 'PHOTOGRAPHER2', 'VIDEOGRAPHER1', 'VIDEOGRAPHER2', 'DJ1', 'DJ2', 'PHOTOBOOTH_OP'];
     roles.forEach(role => {
         fetch(`/contracts/get_current_booking/?contract_id=${contractId}&role=${role}`)
             .then(response => response.json())
@@ -303,28 +307,29 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
 
-        // Fetch available staff data
-        fetch(`/contracts/get_available_staff/?event_date=${$('#id_event_date').val()}&service_type=${serviceType}`)
-            .then(response => response.json())
-            .then(data => {
-                const staffKey = `${serviceType.toLowerCase()}_staff`;
+            // Fetch available staff data based on the service type
+        eventStaffManagement.fetchAvailableStaff(eventDate, serviceType).then(data => {
+            // Determine the staff key based on the service type
+            const staffKey = `${serviceType.toLowerCase()}_staff`;
 
-                if (data[staffKey] && data[staffKey].length > 0) {
-                    data[staffKey].forEach(staff => {
-                        if (staff.name.trim()) {
-                            const option = new Option(staff.name.trim(), staff.id);
-                            staffSelect.appendChild(option);
-                        }
-                    });
-                }
+            // Check if the data for the specified staff key exists and has length
+            if (data[staffKey] && data[staffKey].length > 0) {
+                // Add each staff member as an option in the dropdown
+                data[staffKey].forEach(staff => {
+                    if (staff.name.trim()) {
+                        const option = new Option(staff.name.trim(), staff.id);
+                        staffSelect.appendChild(option);
+                    }
+                });
+            }
 
-                // Add a "Select Staff" placeholder option only if there is no saved booking and no available staff
-                if (!currentBookingExists && staffSelect.options.length === 0) {
-                    const placeholderOption = new Option('Select Staff', '');
-                    staffSelect.appendChild(placeholderOption);
-                    staffSelect.value = '';
-                }
-            });
+            // Add a "Select Staff" placeholder option only if there is no saved booking and no available staff
+            if (!currentBookingExists && staffSelect.options.length === 0) {
+                const placeholderOption = new Option('Select Staff', '');
+                staffSelect.appendChild(placeholderOption);
+                staffSelect.value = '';
+            }
+        });
     });
 });
 

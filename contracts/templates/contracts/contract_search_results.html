@@ -1,0 +1,48 @@
+{% if contracts %}
+<div class="search-results">
+    <table>
+        <thead>
+            <tr>
+                <th>Contract ID</th>
+                <th>Event Date</th>
+                <th>Primary Contact</th>
+                <th>Photographer</th>
+                <th>Videographer</th>
+                <th>Photobooth</th>
+                <th>Location</th>
+                <th>Sales Person</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for contract in contracts %}
+                <tr onclick="window.location='{% url 'contracts:contract_detail' id=contract.pk %}';">
+                    <td>{{ contract.custom_contract_number }}</td>
+                    <td>{{ contract.event_date|date:"Y-m-d" }}</td>
+                    <td>{{ contract.client.primary_contact }}</td>
+                    {% if contract.photography_package %}
+                        <td>{{ contract.photographer1.get_full_name|default:"Not Assigned" }}</td>
+                    {% else %}
+                        <td>N/A</td>
+                    {% endif %}
+
+                    {% if contract.videography_package %}
+                        <td>{{ contract.videographer1.get_full_name|default:"Not Assigned" }}</td>
+                    {% else %}
+                        <td>N/A</td>
+                    {% endif %}
+
+                    {% if contract.photobooth_package %}
+                        <td>{{ contract.photobooth_op.get_full_name|default:"Not Assigned" }}</td>
+                    {% else %}
+                        <td>N/A</td>
+                    {% endif %}
+                    <td>{{ contract.location }}</td>
+                    <td>{{ contract.csr.get_full_name }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p>No contracts found</p>
+{% endif %}

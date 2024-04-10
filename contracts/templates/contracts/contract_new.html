@@ -58,7 +58,7 @@
             <li class="menu-item"><a href="{% url 'contracts:contract_new' %}">New Contract</a></li>
             <li class="menu-item"><a href="{% url 'users:financial_reports' %}">Reports</a></li>
             <li class="menu-item"><a href="{% url 'admin:index' %}">Admin</a></li>
-            <li class="menu-item"><a href="{% url 'contracts:contract_search' %}">Search</a></li>
+            <li class="menu-item"><a href="{% url 'contracts:search' %}">Search</a></li>
         </ul>
         <div class="user-info">
             <span>Hello, {{ request.user.first_name }}</span>
@@ -80,6 +80,7 @@
                 <p>{{ contract_form.is_code_92.label_tag }} {{ contract_form.is_code_92 }}</p>
                 <p>{{ contract_form.event_date.label_tag }} {{ contract_form.event_date }}</p>
                 <p>{{ contract_form.location.label_tag }} {{ contract_form.location }}</p>
+                <p>{{ contract_form.coordinator.label_tag }} {{ contract_form.coordinator }}</p>
                 <p>{{ client_form.primary_contact.label_tag }} {{ client_form.primary_contact }}</p>
                 <p>{{ client_form.partner_contact.label_tag }} {{ client_form.partner_contact }}</p>
                 <p>{{ client_form.primary_email.label_tag }} {{ client_form.primary_email }}</p>

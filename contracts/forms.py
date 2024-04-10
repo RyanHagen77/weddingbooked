@@ -8,10 +8,17 @@ from django.forms.widgets import DateInput
 from django.forms import inlineformset_factory
 from django.contrib.auth import get_user_model
 
+
 phone_validator = RegexValidator(
     regex=r'^\d{3}-\d{3}-\d{4}$',
     message='Phone number must be in the format XXX-XXX-XXXX.'
 )
+
+class UserModelChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return obj.get_full_name()  # Assumes your CustomUser model has a get_full_name() method
+
+
 
 class ContractSearchForm(forms.Form):
 
@@ -35,22 +42,25 @@ class ContractSearchForm(forms.Form):
     contract_number = forms.CharField(max_length=255, required=False, label="Custom Contract Number")
     primary_contact = forms.CharField(max_length=100, required=False)
     status = forms.ChoiceField(choices=STATUS_CHOICES, required=False)
-    csr = forms.ModelChoiceField(queryset=CustomUser.objects.filter(role__name='SALES PERSON'), required=False)
-
-    photographer = forms.ModelChoiceField(
-        queryset=CustomUser.objects.none(),  # Initialized as empty, set in __init__
+    csr = UserModelChoiceField(
+        queryset=CustomUser.objects.filter(groups__name='Sales', is_active=True),
+        required=False,
+        label="Sales Person"
+    )
+    photographer = UserModelChoiceField(
+        queryset=CustomUser.objects.filter(role__name='Photographer', is_active=True),
         required=False,
         label="Photographer"
     )
 
-    videographer = forms.ModelChoiceField(
-        queryset=CustomUser.objects.none(),  # Initialized as empty, set in __init__
+    videographer = UserModelChoiceField(
+        queryset=CustomUser.objects.filter(role__name='Videographer', is_active=True),
         required=False,
         label="Videographer"
     )
 
-    photobooth_operator = forms.ModelChoiceField(
-        queryset=CustomUser.objects.none(),  # Initialized as empty, set in __init__
+    photobooth_operator = UserModelChoiceField(
+        queryset=CustomUser.objects.filter(role__name='Photobooth Operator', is_active=True),
         required=False,
         label="Photobooth Operator"
     )
@@ -82,7 +92,16 @@ class ContractInfoEditForm(forms.ModelForm):
     # Customizing specific fields
     event_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     location = forms.ModelChoiceField(queryset=Location.objects.all(), required=False)
-    csr = forms.ModelChoiceField(queryset=CustomUser.objects.filter(is_active=True), required=False)
+    coordinator = UserModelChoiceField(
+        queryset=CustomUser.objects.filter(role__name='COORDINATOR', groups__name='Office Staff', is_active=True),
+        required=False,
+        label="Coordinator"
+    )
+    csr = UserModelChoiceField(
+        queryset=CustomUser.objects.filter(groups__name='Sales', is_active=True),
+        required=False,
+        label="Sales Person"
+    )
     status = forms.ChoiceField(choices=Contract.STATUS_CHOICES, required=False)
     lead_source = forms.ChoiceField(choices=Contract.LEAD_SOURCE_CHOICES, required=False)
 
@@ -90,7 +109,7 @@ class ContractInfoEditForm(forms.ModelForm):
 
     class Meta:
         model = Contract
-        fields = ['event_date', 'location', 'status', 'csr', 'lead_source']  # Include only the fields you want to edit
+        fields = ['event_date', 'location', 'coordinator', 'status', 'csr', 'lead_source']  # Include only the fields you want to edit
 
     def __init__(self, *args, **kwargs):
         super(ContractInfoEditForm, self).__init__(*args, **kwargs)
@@ -306,10 +325,15 @@ class NewContractForm(forms.ModelForm):
     required=False  # Instead of blank=True, null=True
 )
     event_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
-    csr = forms.ModelChoiceField(
-        queryset=CustomUser.objects.none(),
-        required=True,
+    csr = UserModelChoiceField(
+        queryset=CustomUser.objects.filter(groups__name='Sales', is_active=True),
+        required=False,
         label="Sales Person"
+    )
+    coordinator = UserModelChoiceField(
+        queryset=CustomUser.objects.filter(role__name='COORDINATOR', groups__name='Office Staff', is_active=True),
+        required=False,
+        label="Coordinator"
     )
 
     # Optional fields
@@ -346,7 +370,7 @@ class NewContractForm(forms.ModelForm):
     class Meta:
         model = Contract
         fields = [
-            'event_date', 'csr',
+            'event_date', 'csr', 'coordinator',
             'bridal_party_qty', 'guests_qty', 'lead_source',
             'ceremony_site', 'ceremony_city', 'ceremony_state', 'ceremony_contact', 'ceremony_phone', 'ceremony_email',
             'reception_site', 'reception_city', 'reception_state', 'reception_contact', 'reception_phone', 'reception_email',
@@ -356,6 +380,8 @@ class NewContractForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['csr'].queryset = CustomUser.objects.filter(is_active=True, groups__name='Sales')
+        self.fields['coordinator'].queryset = CustomUser.objects.filter(role__name='COORDINATOR',
+                                                                        groups__name='Office Staff')
 
     def save(self, commit=True):
         # Save the contract instance
@@ -387,6 +413,12 @@ class ContractForm(forms.ModelForm):
         required=True,
         label="Sales Person"
     )
+    coordinator = UserModelChoiceField(
+        queryset=CustomUser.objects.filter(role__name='coordinator', is_active=True),
+        required=False,
+        label="Coordinator"
+    )
+
     # Additional fields for Contract set as optional
     bridal_party_qty = forms.IntegerField(min_value=1, required=False)
     guests_qty = forms.IntegerField(min_value=1, required=False)
@@ -446,12 +478,10 @@ class ContractForm(forms.ModelForm):
     )
 
     # Fields for discounts
-
-
     class Meta:
         model = Contract
         fields = [
-            'event_date', 'csr',  # These fields are now at the top
+            'event_date', 'csr', 'coordinator', # These fields are now at the top
             # Client fields
             'is_code_92', 'primary_contact', 'primary_email', 'primary_phone1', 'primary_phone2',
             'primary_address1', 'primary_address2', 'city', 'state', 'postal_code',
@@ -551,7 +581,7 @@ class ContractForm(forms.ModelForm):
 
         # Set the queryset for the CSR field
         self.fields['csr'].queryset = CustomUser.objects.filter(role__name='SALES PERSON')
-
+        self.fields['coordinator'].queryset = CustomUser.objects.filter(groups__name='Office Staff')
         # Fetch the photographer role object
         photographer_role = Role.objects.filter(name='PHOTOGRAPHER').first()
 
