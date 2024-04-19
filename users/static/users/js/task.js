@@ -103,3 +103,4 @@ $(document).on('submit', '.mark-complete-form', function(event) {
         }
     });
 });
+

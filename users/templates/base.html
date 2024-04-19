@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 {% load static %}
 
+<html>
 <head>
-    <title>{% block title %}{% endblock %}</title>
     {% load static %}
+    <title>{% block title %}{% endblock %}</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'users/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'contracts/styles.css' %}">
+
+    <!-- Ensure jQuery is loaded first -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- Include additional scripts needed across all pages in the extra_head block -->
     {% block extra_head %}{% endblock %}
 </head>
 
 <body>
 <div class="header">
     <div class="logo">
-        <!-- Add your logo here -->
-        <img src="{% static 'path/to/your/logo.png' %}" alt="Logo">
+        <img src="{{ MEDIA_URL }}logo/Final_Logo.png" alt="Logo">
     </div>
     <ul class="menu">
         <li class="menu-item"><a href="{% url 'users:tasks' %}">Tasks</a></li>
@@ -26,20 +30,21 @@
     </ul>
     <div class="user-info">
         <span>Hello, {{ request.user.first_name }}</span>
-        <form action="{% url 'users:logout' %}" method="post" style="margin-left: 10px;">
+        <form action="{% url 'users:logout' %}" method="post">
             {% csrf_token %}
             <input type="submit" value="Logout" class="logout-button">
         </form>
     </div>
 </div>
-    <div class="main-content">
-        {% block content %}{% endblock %}
-    </div>
+<div class="main-content">
+    {% block content %}{% endblock %}
+</div>
 
-    <! <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-        <!-- Your custom JavaScript code -->
-    <script src="{% static 'communication/js/tasks.js' %}"></script>
+<!-- Bootstrap and other libraries should load after jQuery -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- Custom JavaScript can be included here or in extra_head, depending on dependencies -->
+<script src="{% static 'communication/js/tasks.js' %}"></script>
 </body>
 </html>

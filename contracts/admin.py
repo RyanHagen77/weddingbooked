@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from .models import (Client, ServiceType, EventStaffBooking, Contract, AdditionalProduct, TaxRate, DiscountRule, Package,
                      AdditionalEventStaffOption, EngagementSessionOption, Location, OvertimeOption, ContractOvertime,
-                     ContractProduct, PaymentPurpose, PaymentSchedule)
+                     ContractProduct, PaymentPurpose, PaymentSchedule, ChangeLog)
 
 
 admin.site.register(TaxRate)
@@ -41,10 +41,12 @@ class EngagementSessionOptionAdmin(admin.ModelAdmin):
 
 @admin.register(EventStaffBooking)
 class EventStaffBookingAdmin(admin.ModelAdmin):
-    list_display = ('id', 'staff', 'contract', 'role', 'status', 'hours_booked', 'booking_notes')
-    # Add any other configurations you might need
+    list_display = ('id', 'staff', 'get_event_date', 'contract', 'role', 'status', 'confirmed', 'hours_booked', 'booking_notes')
 
-
+    def get_event_date(self, obj):
+        # Assuming the related Contract model has a field named 'event_date'
+        return obj.contract.event_date if obj.contract else None
+    get_event_date.short_description = 'Event Date'  # Sets the column header
 
 @admin.register(AdditionalProduct)
 class AdditionalProductAdmin(admin.ModelAdmin):
@@ -120,7 +122,7 @@ class ContractAdmin(admin.ModelAdmin):
         }),
         ('Staff Assignments', {
             'fields': ('photographer1', 'photographer2', 'videographer1', 'videographer2', 'dj1', 'dj2',
-                       'photobooth_op')
+                       'photobooth_op', 'prospect_photographer1', 'prospect_photographer2', 'prospect_photographer3')
         }),
 
         ('Calculated Discount Fields', {
@@ -159,3 +161,8 @@ class PaymentScheduleAdmin(admin.ModelAdmin):
     list_filter = ('schedule_type',)
 
     readonly_fields = ('contract', 'created_at', 'payment_summary')
+
+    @admin.register(ChangeLog)
+    class ChangeLogAdmin(admin.ModelAdmin):
+        list_display = ['timestamp', 'user', 'description']
+        readonly_fields = list_display

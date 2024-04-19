@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h3>Staff Rankings</h3>
+    <form method="get" action="">
+        <label for="role">Select Role:</label>
+        <select id="role" name="role" onchange="this.form.submit()">
+            {% for role in roles %}
+            <option value="{{ role.name }}" {% if role.name == current_role %}selected{% endif %}>
+                {{ role.get_name_display }}
+            </option>
+            {% endfor %}
+        </select>
+    </form>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Staff Member</th>
+                <th>Current Year Bookings</th>
+                <th>Next Year Bookings</th>
+                <th>Days Off</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="staffList">
+            {% for item in staff_list %}
+            <tr id="staff-{{ item.staff.id }}" class="ui-state-default">
+                <td>{{ item.staff.get_full_name }}</td>
+                <td>{{ item.staff.current_year_bookings }}</td>
+                <td>{{ item.staff.next_year_bookings }}</td>
+                <td>{{ item.days_off_count }}</td>
+                <td>
+                    <button class="btn btn-dusty-pink" onclick="location.href='{% url 'users:event_staff_schedule' item.staff.id %}'">View Schedule</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button onclick="updateRankings()" class="btn btn-dusty-pink">Save New Order</button>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<script>
+$(function() {
+    $("#staffList").sortable({
+        placeholder: "ui-state-highlight",
+        update: function(event, ui) {
+            updateRankings();
+        }
+    });
+    $("#staffList").disableSelection();
+});
+
+function updateRankings() {
+    var orderedIds = $("#staffList").sortable("toArray").map(function(id) {
+        return id.split('-')[1];  // Assuming IDs are in the format "staff-{id}"
+    });
+
+    $.ajax({
+        type: 'POST',
+        url: '{% url "users:update_event_staff_ranking" %}',  // Adjust the URL to the correct one
+        data: {
+            'rankings[]': orderedIds,
+            'csrfmiddlewaretoken': getCSRFToken()
+        },
+        success: function(response) {
+            if (response.status === 'success') {
+                alert('Rankings updated successfully!');
+            } else {
+                alert('Failed to update rankings: ' + response.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            alert('Failed to update rankings: ' + error);
+        }
+    });
+}
+
+function getCSRFToken() {
+    return $('input[name="csrfmiddlewaretoken"]').val();
+}
+</script>
+{% endblock %}

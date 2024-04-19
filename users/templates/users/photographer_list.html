@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h2>Select a Role to View Schedules</h2>
+    <form method="get" action="{% url 'staff_schedule_by_role' %}">
+        <select name="role_id" onchange="this.form.submit()">
+            <option value="">Select a Role</option>
+            {% for role in roles %}
+            <option value="{{ role.id }}" {% if role.id|stringformat:"s" == request.GET.role_id %}selected{% endif %}>{{ role.get_name_display }}</option>
+            {% endfor %}
+        </select>
+    </form>
+
+    {% if staff_members %}
+    <h3>Staff Members</h3>
+    <ul>
+        {% for staff in staff_members %}
+        <li>{{ staff.get_full_name }} - {{ staff.role.name }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+<style>
+    .table td, .table th {
+        padding: 4px 8px; /* Reduced padding for shorter rows */
+    }
+
+    .btn-dusty-pink {
+        padding: 5px 10px; /* Smaller button */
+        font-size: 14px; /* Smaller text size */
+    }
+</style>
+<div class="container">
+    <h2 class="text-dark-sienna">Photographer Rankings</h2>
+    <div class="search-results">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Photographer</th>
+                    <th>Current Year Bookings</th>
+                    <th>Next Year Bookings</th>
+                    <th>Days Off</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="photographerList">
+                {% for item in photographers %}
+                <tr id="photographer-{{ item.photographer.id }}" class="ui-state-default">
+                    <td>{{ item.photographer.get_full_name }}</td>
+                    <td>{{ item.photographer.current_year_bookings }}</td>
+                    <td>{{ item.photographer.next_year_bookings }}</td>
+                    <td>{{ item.days_off_count }}</td>
+                    <td>
+                        <button class="btn btn-dusty-pink" onclick="location.href='{% url 'users:photographer_schedule' item.photographer.id %}'">View Schedule</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <button onclick="updateRankings()" class="btn btn-dusty-pink">Save New Order</button>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<script>
+$(function() {
+    $("#photographerList").sortable();
+    $("#photographerList").disableSelection();
+});
+
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
+function updateRankings() {
+    var orderedIds = $("#photographerList").sortable("toArray", { attribute: 'id' }).map(function(id) {
+        return id.split('-')[1]; // Extract user ID from 'photographer-{id}'
+    });
+
+    $.ajax({
+        type: 'POST',
+        url: '/users/update_photographer_ranking/',
+        data: { 'rankings[]': orderedIds }, // Note the key 'rankings[]' to ensure Django parses it as a list
+        headers: {'X-CSRFToken': getCSRFToken()},  // Set the CSRF token header
+        success: function(response) {
+            if (response.status === 'success') {
+                alert('Rankings updated successfully!');
+            } else {
+                alert('Failed to update rankings.');
+            }
+        },
+        error: function(xhr, status, error) {
+            alert('Failed to update rankings: ' + error);
+        }
+    });
+}
+
+</script>
+{% endblock %}

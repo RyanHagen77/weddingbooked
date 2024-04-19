@@ -3,6 +3,8 @@ from django.db import models
 from django.core.validators import RegexValidator
 from django import forms
 from django.contrib.auth import get_user_model
+from django.utils import timezone
+
 
 phone_validator = RegexValidator(
     regex=r'^\d{3}-\d{3}-\d{4}$',
@@ -18,8 +20,10 @@ class Role(models.Model):
     SALES_PERSON = 'SALES PERSON'
     MANAGER = 'MANAGER'
     COORDINATOR = 'COORDINATOR'
-    CLIENT = 'CLIENT'  # Newly added role
-
+    CLIENT = 'CLIENT'  # Existing role
+    PROSPECT1 = 'PROSPECT1'
+    PROSPECT2 = 'PROSPECT2'
+    PROSPECT3 = 'PROSPECT3'
 
     ROLE_CHOICES = (
         (PHOTOGRAPHER, 'Photographer'),
@@ -30,8 +34,12 @@ class Role(models.Model):
         (SALES_PERSON, 'Sales Person'),
         (MANAGER, 'Manager'),
         (COORDINATOR, 'Coordinator'),
-        (CLIENT, 'Client')  # Newly added choice
+        (CLIENT, 'Client'),  # Existing choice
+        (PROSPECT1, 'Prospect Photographer 1'),
+        (PROSPECT2, 'Prospect Photographer 2'),
+        (PROSPECT3, 'Prospect Photographer 3')
     )
+
 
     name = models.CharField(max_length=50, choices=ROLE_CHOICES, unique=True)
     service_type = models.ForeignKey('contracts.ServiceType', on_delete=models.CASCADE, related_name='roles')
@@ -75,7 +83,9 @@ class CustomUser(AbstractUser):
     postal_code = models.CharField(max_length=255, blank=True, null=True)
     event_staff = EventStaffManager()  # Custom manager for specific queries
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True)
+    rank = models.IntegerField(default=0, help_text="Determines the order of photographers.")
     additional_roles = models.ManyToManyField(Role, related_name='additional_users', blank=True)
+
 
     STATUS_CHOICES = (
         ('TRAINEE', 'Trainee'),
@@ -89,6 +99,16 @@ class CustomUser(AbstractUser):
     groups = models.ManyToManyField(Group, blank=True, related_name="customuser_set")
     user_permissions = models.ManyToManyField(Permission, blank=True, related_name="customuser_set")
 
+    @property
+    def is_coordinator(self):
+        """Check if the user is a coordinator."""
+        return self.groups.filter(name='Coordinator').exists()
+
+    @property
+    def is_client(self):
+        """Check if the user is a client based on user_type."""
+        return self.user_type == 'client'
+
     def is_event_staff(self):
         event_roles = [Role.PHOTOGRAPHER, Role.VIDEOGRAPHER, Role.DJ, Role.PHOTOBOOTH_OPERATOR]
         return self.role.name in event_roles if self.role else False
@@ -97,7 +117,25 @@ class CustomUser(AbstractUser):
         office_roles = [Role.ADMIN, Role.SALES_PERSON, Role.MANAGER]
         return self.role.name in office_roles if self.role else False
 
-CustomUser = get_user_model()
+    # Method to calculate booking totals dynamically
+    def current_year_bookings(self):
+        from contracts.models import EventStaffBooking  # Adjust the import path based on your project structure
+
+        current_year = timezone.now().year
+        return EventStaffBooking.objects.filter(
+            staff=self,
+            contract__event_date__year=current_year
+        ).count()
+
+    def next_year_bookings(self):
+        from contracts.models import EventStaffBooking  # Adjust the import path based on your project structure
+
+        next_year = timezone.now().year + 1
+        return EventStaffBooking.objects.filter(
+            staff=self,
+            contract__event_date__year=next_year
+        ).count()
+
 
 class UserModelChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):

@@ -22,7 +22,7 @@
 <div class="header">
     <div class="logo">
         <!-- Add your logo here -->
-        <img src="{% static 'path/to/your/logo.png' %}" alt="Logo">
+            <img src="{{ MEDIA_URL }}logo/Final_Logo.png" alt="Logo">
     </div>
     <ul class="menu">
         <li class="menu-item"><a href="{% url 'users:tasks' %}">Tasks</a></li>
@@ -48,7 +48,7 @@
                     <h2>Contract ID: {{ contract.custom_contract_number }}</h2>
                 </div>
                 <div class="col-auto">
-                    <button id="printContractButton" class="btn bg-dusty-pink text-white mr-2">Print Contract</button>
+                    <a href="{% url 'contracts:generate_contract_pdf' contract_id=contract.contract_id %}" class="btn bg-dusty-pink text-white mr-2" target="_blank">Print Contract</a>
                     <button id="email-button" class="btn bg-dusty-pink text-white">Send Quote</button>
                 </div>
             </div>
@@ -376,9 +376,44 @@
                                                 <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal">Book/Change Staff</button>
                                             </td>
                                         </tr>
+
+                                    <tr>
+                                        <td colspan="5"><strong>Prospect Photographers</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Prospect Photographer 1</td>
+                                        <td colspan="3">{{ contract.prospect_photographer1|default:"None" }}</td>
+                                        <td>
+                                            <!-- Trigger Modal for booking/change -->
+                                            <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PROSPECT1" data-service-type="Photography" data-staff-id="{{ contract.prospect_photographer1.id }}">
+                                                Add/Change
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Prospect Photographer 2</td>
+                                        <td colspan="3">{{ contract.prospect_photographer2|default:"None" }}</td>
+                                        <td>
+                                            <!-- Trigger Modal for booking/change -->
+                                            <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PROSPECT2" data-service-type="Photography" data-staff-id="{{ contract.prospect_photographer2.id }}">
+                                                Add/Change
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Prospect Photographer 3</td>
+                                        <td colspan="3">{{ contract.prospect_photographer3|default:"None" }}</td>
+                                        <td>
+                                            <!-- Trigger Modal for booking/change -->
+                                            <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PROSPECT3" data-service-type="Photography" data-staff-id="{{ contract.prospect_photographer3.id }}">
+                                                Add/Change
+                                            </button>
+                                        </td>
+                                    </tr>
                                     </tbody>
                                 </table>
                             </div>
+
                             <!-- Overtime Details Section -->
                             <div>
                                 <h4>Overtime Details</h4>
@@ -407,12 +442,12 @@
                                         </tr>
                                     </tbody>
                                 </table>
-                                    <button id="addPhotographyOvertimeEntryButton" type="button" class="btn btn-copper-rose">Add Overtime Entry</button>
+                                    <button id="addPhotographyOvertimeEntryButton" type="button" class="btn btn-dusty-pink">Add Overtime Entry</button>
                                 <div id="photographyOvertimeEntryForm" style="display:none;">
                                     <input type="hidden" id="photographyOvertimeEntryId" value="">
                                     <select id="photographyOvertimeOptionSelect"></select>
                                     <input type="number" id="photographyOvertimeHours" placeholder="Hours">
-                                    <button type="button" id="savePhotographyOvertimeEntryButton" class="btn btn-copper-rose">Save Overtime Entry</button>
+                                <button type="button" id="savePhotographyOvertimeEntryButton" class="btn btn-copper-rose">Save Overtime Entry</button>
                                 </div>
                             </div>
                             <!-- Total Overtime and Photography Cost -->
@@ -422,21 +457,6 @@
                             </div>
                                 <button type="button" id="savePhotographySection" class="btn btn-dusty-pink float-right">Save Changes</button>
                             </form>
-                            <!-- Prospect Photographer Dropdowns -->
-                            <div class="prospect-photographers" style="width: 30%;">
-                                <div class="form-group">
-                                    <label for="id_prospect_photographer1">Prospect Photographer 1:</label>
-                                    {{ form.prospect_photographer1 }}
-                                </div>
-                                <div class="form-group">
-                                    <label for="id_prospect_photographer2">Prospect Photographer 2:</label>
-                                    {{ form.prospect_photographer2 }}
-                                </div>
-                                <div class="form-group">
-                                    <label for="id_prospect_photographer3">Prospect Photographer 3:</label>
-                                    {{ form.prospect_photographer3 }}
-                                </div>
-                            </div>
                         </div>
                         <!-- Videography Tab Content -->
                         <div class="tab-pane" id="videography">
@@ -1136,13 +1156,21 @@
                 <form method="post" action="{% url 'contracts:manage_staff_assignments' id=contract.contract_id %}" id="bookingForm">
                     {% csrf_token %}
                     <input type="hidden" id="modal_event_date" name="event_date" value="">
+                    <!-- Place the hidden booking ID input here -->
+                    <input type="hidden" id="id_booking_id" name="booking_id" value="">
                     {{ booking_form.as_p }}
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 <button type="submit" class="btn btn-dusty-pink" id="submitBooking">Book</button>
-                <button type="button" class="btn btn-danger" id="deleteBooking">Delete</button> <!-- Add this line -->
+                <!-- Ensure the Delete button uses JavaScript to trigger the deletion -->
+            <button type="button" class="btn btn-danger" id="deleteBooking">Delete</button>
+            <script>
+                 function confirmBookingDeletion() {
+                     return confirm('Are you sure you want to clear this booking? This action cannot be undone.');
+                 }
+            </script>
             </div>
         </div>
     </div>

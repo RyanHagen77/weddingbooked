@@ -46,7 +46,6 @@ urlpatterns = [
     path('bookings/', views.booking_list, name='booking_list'),
     path('booking/<int:booking_id>/', views.booking_detail, name='booking_detail'),
     path('booking/<int:booking_id>/clear/', views.clear_booking, name='clear_booking'),  # Added this line
-    path('<int:contract_id>/transactions/', views.contract_transactions, name='contract_transactions'),
     path('<int:contract_id>/schedule/', views.create_or_update_schedule, name='create_or_update_schedule'),
     path('add_payment/<int:schedule_id>/', views.add_payment, name='add_payment'),
     path('<int:contract_id>/get_custom_schedule/', views.get_custom_schedule, name='get_custom_schedule'),

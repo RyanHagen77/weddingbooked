@@ -20,19 +20,35 @@
                     <td>{{ contract.event_date|date:"Y-m-d" }}</td>
                     <td>{{ contract.client.primary_contact }}</td>
                     {% if contract.photography_package %}
-                        <td>{{ contract.photographer1.get_full_name|default:"Not Assigned" }}</td>
+                        <td>
+                            {% if contract.photographer1 %} {{ contract.photographer1.get_full_name }}{% else %} Not Assigned{% endif %}
+                            <br>
+                            {% if contract.photography_additional %}
+                                {% if contract.photographer2 %} {{ contract.photographer2.get_full_name }}{% else %} Not Assigned{% endif %}
+                            {% endif %}
+                        </td>
                     {% else %}
                         <td>N/A</td>
                     {% endif %}
-
                     {% if contract.videography_package %}
-                        <td>{{ contract.videographer1.get_full_name|default:"Not Assigned" }}</td>
+                        <td>
+                            {% if contract.videographer1 %} {{ contract.videographer1.get_full_name }}{% else %} Not Assigned{% endif %}
+                            <br>
+                            {% if contract.videography_additional %}
+                                {% if contract.videographer2 %} {{ contract.videographer2.get_full_name }}{% else %} Not Assigned{% endif %}
+                            {% endif %}
+                        </td>
                     {% else %}
                         <td>N/A</td>
                     {% endif %}
-
                     {% if contract.photobooth_package %}
-                        <td>{{ contract.photobooth_op.get_full_name|default:"Not Assigned" }}</td>
+                        <td>
+                            {% if contract.photobooth_op1 %} {{ contract.photobooth_op1.get_full_name }}{% else %} Not Assigned{% endif %}
+                            <br>
+                            {% if contract.photobooth_additional %}
+                                {% if contract.photobooth_op2 %} {{ contract.photobooth_op2.get_full_name }}{% else %} Not Assigned{% endif %}
+                            {% endif %}
+                        </td>
                     {% else %}
                         <td>N/A</td>
                     {% endif %}

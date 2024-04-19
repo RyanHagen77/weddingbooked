@@ -1,3 +1,4 @@
+
 from decimal import Decimal, ROUND_HALF_UP
 from django.db.models import Sum
 from django.conf import settings
@@ -713,14 +714,37 @@ class Payment(models.Model):
     payment_reference = models.TextField(blank=True, null=True)
     memo = models.CharField(max_length=255, blank=True, null=True)
 
-
     def save(self, *args, **kwargs):
         if self._state.adding:  # Check if the instance is being added (not updated)
             total_cost = self.contract.total_cost
             amount_paid = self.contract.amount_paid
             if self.amount > (total_cost - amount_paid):
                 raise ValueError('Payment cannot exceed balance due.')
+            description = f"Added new payment of {self.amount} via {self.payment_method} for contract {self.contract.pk}"
+        else:
+            original = Payment.objects.get(pk=self.pk)
+            description = "Updated payment #{0}:".format(self.pk)
+            changes = []
+            if original.amount != self.amount:
+                changes.append(f"amount from {original.amount} to {self.amount}")
+            if original.payment_method != self.payment_method:
+                changes.append(f"method from {original.payment_method} to {self.payment_method}")
+            if original.memo != self.memo:
+                changes.append(f"memo from '{original.memo}' to '{self.memo}'")
+            description += ", ".join(changes)
+
+            if changes:
+                ChangeLog.objects.create(
+                    user=self.modified_by_user,  # Make sure this field is captured or passed
+                    description=description
+                )
+
         super().save(*args, **kwargs)
+        if self._state.adding:
+            ChangeLog.objects.create(
+                user=self.modified_by_user,  # This should be provided or derived from context
+                description=description
+            )
 
 
 class PaymentPurpose(models.Model):
@@ -755,6 +779,8 @@ class SchedulePayment(models.Model):
 
 class EventStaffBookingManager(models.Manager):
     pass
+
+
 class EventStaffBooking(models.Model):
     STATUS_CHOICES = (
         ('PROSPECT', 'Prospect'),
@@ -773,6 +799,9 @@ class EventStaffBooking(models.Model):
         ('DJ1', 'DJ 1'),
         ('DJ2', 'DJ 2'),
         ('PHOTOBOOTH_OP', 'Photobooth Operator'),
+        ('PROSPECT1', 'Prospect Photographer 1'),
+        ('PROSPECT2', 'Prospect Photographer 2'),
+        ('PROSPECT3', 'Prospect Photographer 3')
         # ... add any other roles you might have ...
     )
 
@@ -790,24 +819,16 @@ class EventStaffBooking(models.Model):
     )
     contract = models.ForeignKey('Contract', on_delete=models.CASCADE)  # Replace 'Contract' with your actual
     # Contract model
-    hours_booked = models.PositiveIntegerField(choices=HOURS_CHOICES, help_text="Number of hours staff is booked for",
+    hours_booked = models.PositiveIntegerField(choices=HOURS_CHOICES,
                                                null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
     confirmed = models.BooleanField(default=False)
-    booking_notes = models.TextField(blank=True, null=True, help_text="Notes for event staff")
+    booking_notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ('contract', 'role')  # Prevents duplicate roles within the same contract
 
     objects = EventStaffBookingManager()
-
-    def is_user_available_for_role(self, user, role_name):
-        # Check if the user's primary role matches
-        if user.role.name == role_name:
-            return True
-
-        # Check if the user has the role in their additional roles
-        if user.additional_roles.filter(name=role_name).exists():
-            return True
-
-        return False
 
     def clear(self):
         """Clears the current booking by changing its status to 'CLEARED'."""
@@ -840,19 +861,39 @@ class EventStaffBooking(models.Model):
         bookings = EventStaffBooking.objects.filter(contract_id=contract_id)
         return sum(booking.total_cost() for booking in bookings)
 
+    def delete(self, *args, **kwargs):
+        # Before deleting, clear the contract role
+        self.clear_contract_role()
+        super().delete(*args, **kwargs)  # Call the superclass method to delete the object
+
+    def clear_contract_role(self):
+        # Clear the role in the contract when the booking is deleted or cleared
+        role_field = SERVICE_ROLE_MAPPING.get(self.role, None)
+        if role_field and hasattr(self.contract, role_field):
+            setattr(self.contract, role_field, None)
+            self.contract.save()
+
     def update_contract_role(self):
-        role_field = SERVICE_ROLE_MAPPING.get(self.role)
-        print(f"Updating role: {self.role}, Field: {role_field}")  # Debug print
+        # Update the contract role when saving or clearing the booking
+        role_field = SERVICE_ROLE_MAPPING.get(self.role, None)
         if role_field:
-            contract = self.contract
-            if not getattr(contract, role_field):
-                setattr(contract, role_field, self.staff)
-                contract.save()
+            if self.status == 'CLEARED' or not self.staff:
+                setattr(self.contract, role_field, None)
+            else:
+                setattr(self.contract, role_field, self.staff)
+            self.contract.save()
 
     def save(self, *args, **kwargs):
-        print("Saving EventStaffBooking instance")  # Debug print
+        if not self._state.adding and self.pk:
+            original = EventStaffBooking.objects.get(pk=self.pk)
+            if original.status != self.status:
+                ChangeLog.objects.create(
+                    user=self.modified_by_user,  # Ensure this is passed or captured
+                    description=f"Changed status from {original.status} to {self.status} for booking ID {self.pk}",
+                    previous_value=original.status,
+                    new_value=self.status
+                )
         super().save(*args, **kwargs)
-        self.update_contract_role()
 
 
 class Availability(models.Model):
@@ -874,11 +915,10 @@ class Availability(models.Model):
         # Your method implementation
         # Use CustomUser instead of calling get_user_model() again
         unavailable_staff_ids = cls.objects.filter(date=date, available=False).values_list('staff_id', flat=True)
-        booked_staff_ids = EventStaffBooking.objects.filter(contract__event_date=date, confirmed=True).values_list('staff_id', flat=True)
+        booked_staff_ids = EventStaffBooking.objects.filter(contract__event_date=date, confirmed=True).values_list(
+            'staff_id', flat=True)
         all_unavailable_ids = list(set(unavailable_staff_ids) | set(booked_staff_ids))
         return CustomUser.objects.exclude(id__in=all_unavailable_ids)
-
-
 class Service(models.Model):
     role_identifier = models.CharField(max_length=30)  # Match this with ROLE_CHOICES in EventStaffBooking
     name = models.CharField(max_length=100)
@@ -886,4 +926,12 @@ class Service(models.Model):
     is_taxable = models.BooleanField(default=False)
 
 
+class ChangeLog(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    description = models.TextField()
+    previous_value = models.TextField(blank=True, null=True)
+    new_value = models.TextField(blank=True, null=True)
 
+    def __str__(self):
+        return f"{self.timestamp} - {self.user}"

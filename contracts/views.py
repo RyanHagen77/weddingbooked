@@ -6,17 +6,18 @@ from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 from users.models import Role, CustomUser, Group
 from communication.models import UnifiedCommunication, Task
+from communication.views import send_task_assignment_email
 from .forms import (ContractSearchForm, ClientForm, NewContractForm, ContractForm, ContractInfoEditForm, ContractClientEditForm,
                     ContractEventEditForm, ContractServicesForm, ContractDocumentForm,
                     EventStaffBookingForm, ContractProductFormset, PaymentForm, PaymentScheduleForm,
                     SchedulePaymentFormSet)
 from communication.forms import CommunicationForm, TaskForm  # Importing from the communication app
-from .models import (Location, Contract, ServiceType, Availability, Payment, Package,
+from .models import (Contract, ServiceType, Availability, Payment, Package,
                      AdditionalEventStaffOption, EngagementSessionOption, Discount, EventStaffBooking, ContractOvertime, AdditionalProduct,
                      OvertimeOption, PaymentPurpose, PaymentSchedule, SchedulePayment,
-                     TaxRate, ContractDocument)
+                     TaxRate, ContractDocument, ChangeLog)
 from django.db import transaction
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import send_mail
 from django.db.models.functions import Concat
 from django.views.decorators.http import require_POST
 from django.contrib import messages
@@ -24,6 +25,7 @@ from django.contrib.contenttypes.models import ContentType
 from decimal import Decimal, InvalidOperation
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model, authenticate, login
+from django.contrib.sites.shortcuts import get_current_site
 from .serializers import ContractSerializer
 from rest_framework import viewsets
 from datetime import datetime, timedelta
@@ -38,8 +40,7 @@ from django.contrib.auth.forms import PasswordResetForm
 from django.http import HttpRequest, HttpResponseRedirect
 from collections import defaultdict
 from django.contrib.auth import logout
-
-
+from .constants import SERVICE_ROLE_MAPPING  # Adjust the import path as needed
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +62,14 @@ def success_view(request):
 
 def search(request):
     form = ContractSearchForm(request.GET)
-    contracts = Contract.objects.all()
+    contracts = Contract.objects.all().order_by('-event_date')  # Descending order by default
+    tab = request.GET.get('tab', 'contracts')  # Default to 'contracts' if 'tab' is not specified
+
+    order = request.GET.get('order', 'desc')
+    if order == 'asc':
+        contracts = contracts.order_by('event_date')
+    else:
+        contracts = contracts.order_by('-event_date')
 
     if form.is_valid():
         # Existing fields filtering
@@ -138,7 +146,7 @@ def search(request):
     # ...
 
     return render(request, 'contracts/search.html',
-                  {'form': form, "contracts": contracts, "bookings": bookings})
+                  {'form': form, "contracts": contracts, "bookings": bookings, 'active_tab': tab})
 def search_contracts(request):
     form = ContractSearchForm(request.GET)
     contracts = Contract.objects.all()
@@ -207,6 +215,7 @@ def search_contracts(request):
 
     return render(request, 'contracts/contract_search.html', {'form': form, 'contracts': contracts})
 
+
 User = get_user_model()
 def new_contract(request):
     contract_form = NewContractForm(request.POST or None)
@@ -237,16 +246,13 @@ def new_contract(request):
                 contract.save()
 
                 # Redirect to the contract_detail page for the newly created contract
-                return redirect(reverse('contracts:contract_detail', kwargs={'contract_id': contract.id}))
+                return redirect('contracts/contract_detail', contract_id=contract.contract_id)
+
     context = {
         'contract_form': contract_form,
         'client_form': client_form,
     }
     return render(request, 'contracts/contract_new.html', context)
-
-
-
-
 
 def send_password_reset_email(user_email):
     # Create a PasswordResetForm instance with the user's email
@@ -319,29 +325,73 @@ def client_portal(request, contract_id):
     ).order_by('-created_at')
 
     if request.method == 'POST':
-        print("POST data received:", request.POST)  # Debugging line
         form = CommunicationForm(request.POST)
         if form.is_valid():
-            UnifiedCommunication.objects.create(
+            message = UnifiedCommunication.objects.create(
                 content=form.cleaned_data['message'],
-                note_type=UnifiedCommunication.CONTRACT,  # Hardcode the 'contract' type
+                note_type=UnifiedCommunication.CONTRACT,
                 created_by=request.user,
                 content_type=content_type,
                 object_id=contract.contract_id
             )
+            print("Message created:", message.content)  # Debugging line
+
+            # Send an email notification to the coordinator
+            if contract.coordinator:
+                send_contract_message_email(request, message, contract)
 
             return redirect('contracts:client_portal', contract_id=contract.contract_id)
         else:
             print("Form errors:", form.errors)  # Debugging line
-    else:
-        form = CommunicationForm()
 
+    form = CommunicationForm()
     context = {
         'contract': contract,
         'contract_notes': contract_notes,
         'form': form,
     }
     return render(request, 'contracts/client_portal.html', context)
+
+def send_contract_message_email(request, message, contract):
+    if contract.coordinator and contract.coordinator.email:
+        subject = f'New Message Posted for Contract {contract.custom_contract_number}'
+        message_body = render_to_string('communication/contract_message_email.html', {
+            'user': request.user,
+            'message': message,
+            'contract': contract,
+            'domain': get_current_site(request).domain,
+        })
+        send_mail(
+            subject,
+            message_body,
+            'testmydjango420@gmail.com',  # Use a valid sender email address
+            [contract.coordinator.email],
+            fail_silently=False,
+        )
+        print("Email sent to coordinator:", contract.coordinator.email)
+    else:
+        print("No coordinator assigned, or missing email.")
+
+def send_email_to_client(request, message, contract):
+    client_user = contract.client.user
+    if client_user and client_user.email:
+        subject = f'New Message from Coordinator for Contract {contract.custom_contract_number}'
+        message_body = render_to_string('communication/contract_message_email.html', {
+            'user': request.user,
+            'message': message,
+            'contract': contract,
+            'domain': get_current_site(request).domain,
+        })
+        send_mail(
+            subject,
+            message_body,
+            'testmydjango420@gmail.com',
+            [client_user.email],
+            fail_silently=False,
+        )
+        print("Email sent to client:", client_user.email)
+    else:
+        print("Client does not have a valid email.")
 
 
 def contract_detail(request, id):
@@ -407,13 +457,18 @@ def contract_detail(request, id):
     if request.method == 'POST':
         communication_form = CommunicationForm(request.POST)
         if communication_form.is_valid():
-            UnifiedCommunication.objects.create(
+            new_message = UnifiedCommunication.objects.create(
                 content=communication_form.cleaned_data['message'],
                 note_type=communication_form.cleaned_data['message_type'],
                 created_by=request.user,
                 content_type=content_type,
                 object_id=contract.contract_id
             )
+
+            # Check if the sender is a coordinator and send an email to the client
+            if request.user.is_coordinator:
+                send_email_to_client(request, new_message, contract)
+
             return redirect('contracts:contract_detail', id=contract.contract_id)
     else:
         communication_form = CommunicationForm()
@@ -593,15 +648,32 @@ def edit_contract(request, id):
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
         if 'contract_info' in request.POST:
+            contract_info_edit_form = ContractInfoEditForm(request.POST,
+                                                           instance=contract)  # Ensure this form is defined
             if contract_info_edit_form.is_valid():
+                original_status = contract.status  # Capture original status before saving
                 contract = contract_info_edit_form.save()
+
+                # Check for status change and log it
+                if original_status != contract.status:
+                    ChangeLog.objects.create(
+                        user=request.user,
+                        description=f"Updated contract status from {original_status} to {contract.status} for contract ID {contract.id}"
+                    )
+
                 if contract.status == 'dead':  # Check if the contract status is 'dead'
                     # Delete all bookings associated with this contract
                     EventStaffBooking.objects.filter(contract=contract).delete()
+                    # Optional: Log the deletion of bookings
+                    ChangeLog.objects.create(
+                        user=request.user,
+                        description=f"Deleted all bookings due to contract status 'dead' for contract ID {contract.id}"
+                    )
+
                 if is_ajax:
                     return JsonResponse({'status': 'success', 'message': 'Contract info updated successfully.'})
                 else:
-                    return redirect('contracts:contract_detail', id=id)
+                    return redirect('contracts:contract_detail', id=contract.id)
             else:
                 if is_ajax:
                     return JsonResponse({'status': 'error', 'errors': contract_info_edit_form.errors}, status=400)
@@ -645,8 +717,6 @@ def edit_contract(request, id):
         'event_edit_form': event_edit_form,
         'contract': contract
     })
-
-
 
 def edit_services(request, id):
     contract = get_object_or_404(Contract, pk=id)
@@ -918,12 +988,17 @@ def generate_contract_pdf(request, contract_id):
         'contract': contract,
         'client_info': client_info,
         'package_texts': package_texts,
+        'logo_path': '/home/egret/django_projects/weddingbook_project/media/logo/Final_Logo.png',  # Direct path
         # ... other context variables
     }
 
+    # Render HTML string with context
     html_string = render_to_string('contracts/contract_template.html', context)
+
+    # Generate PDF from HTML
     pdf = HTML(string=html_string).write_pdf()
 
+    # Send response
     response = HttpResponse(pdf, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="contract_{contract_id}.pdf"'
     return response
@@ -1299,14 +1374,23 @@ def update_payment_status(schedule):
         payment.save()
 
 
+@login_required
 def edit_payment(request, payment_id):
     payment = get_object_or_404(Payment, id=payment_id)
     schedule = payment.contract.payment_schedule  # Get the associated payment schedule
+    original_amount = payment.amount  # Capture the original amount for logging
 
     if request.method == 'POST':
         form = PaymentForm(request.POST, instance=payment)
         if form.is_valid():
             form.save()
+
+            # Log changes if amount is updated
+            if original_amount != form.cleaned_data['amount']:
+                ChangeLog.objects.create(
+                    user=request.user,
+                    description=f"Payment updated from {original_amount} to {form.cleaned_data['amount']} for payment ID {payment.id}",
+                )
 
             # Update payment status after editing the payment
             update_payment_status(schedule)
@@ -1317,11 +1401,17 @@ def edit_payment(request, payment_id):
     else:
         return JsonResponse({'success': False, 'message': 'GET request not allowed'}, status=405)
 
-
+@login_required
 def delete_payment(request, payment_id):
     payment = get_object_or_404(Payment, id=payment_id)
     contract_id = payment.contract.contract_id
     schedule = payment.contract.payment_schedule
+
+    # Log the payment deletion
+    ChangeLog.objects.create(
+        user=request.user,
+        description=f"Deleted payment of {payment.amount} for payment ID {payment.id}"
+    )
 
     payment.delete()
 
@@ -1329,7 +1419,6 @@ def delete_payment(request, payment_id):
     update_payment_status(schedule)
 
     return redirect('contracts:contract_detail', id=contract_id)
-
 def booking_detail(request, booking_id):
     # Retrieves the booking instance with the given id or raises a 404 error if it doesn't exist
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
@@ -1340,8 +1429,14 @@ def booking_detail(request, booking_id):
     # Fetch all bookings related to the contract
     bookings = EventStaffBooking.objects.filter(contract=contract)
 
-    return render(request, 'contracts/event_staff_contract_detail.html', {'contract': contract, 'bookings': bookings})
+    # Fetch all contract notes related to the contract
+    contract_notes = UnifiedCommunication.objects.filter(note_type=UnifiedCommunication.CONTRACT, object_id=contract.contract_id)
 
+    return render(request, 'contracts/event_staff_contract_detail.html', {
+        'contract': contract,
+        'bookings': bookings,
+        'contract_notes': contract_notes
+    })
 
 def booking_notes(request, booking_id):
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
@@ -1422,47 +1517,77 @@ def open_task_form(request, contract_id, note_id):
 @login_required
 @require_POST
 def create_task(request):
+    print("Handling POST request to create a task.")  # Confirm this gets printed
     form = TaskForm(request.POST)
     if form.is_valid():
+        print("Form is valid, processing task.")  # Confirm form validity
         task = form.save(commit=False)
         task.sender = request.user
 
-        contract_id = request.session.get('current_contract_id')
-        if contract_id:
-            task.contract = get_object_or_404(Contract, id=contract_id)
-
-        note_id = request.POST.get('note_id')
-        if note_id:
-            task.note = get_object_or_404(UnifiedCommunication, id=note_id)
+        print("Task created, not yet saved to DB. Assigned to: ", task.assigned_to)  # Check assigned_to
 
         task.save()
 
-        tasks = Task.objects.all()
-        task_list_html = render_to_string('contracts/task_list_snippet.html', {'tasks': tasks})
+        if hasattr(task.assigned_to, 'email'):
+            print("Assigned to email:", task.assigned_to.email)  # Debug print
+        else:
+            print("No email attribute found for assigned user.")
 
+
+
+        # Send task assignment email
+        send_task_assignment_email(request, task)
+
+        tasks = Task.objects.filter(assigned_to=request.user, is_completed=False)
+        task_list_html = render_to_string('contracts/task_list_snippet.html', {'tasks': tasks}, request=request)
         return JsonResponse({'success': True, 'task_id': task.id, 'task_list_html': task_list_html})
     else:
         return JsonResponse({'success': False, 'errors': form.errors.as_json()})
 
+def send_task_assignment_email(request, task):
+    context = {
+        'user': task.assigned_to,
+        'task': task,
+        'domain': get_current_site(request).domain,
+    }
+    subject = 'New Task Assigned'
+    message = render_to_string('communication/task_assignment_email.html', context, request=request)
+    send_mail(
+        subject,
+        message,
+        'testmydjango420@gmail.com',  # Your sending email
+        [task.assigned_to.email],
+        fail_silently=False,
+    )
 
 
-@require_http_methods(["DELETE"])
+@require_http_methods(["POST"])  # Use POST for operations that change data
 def clear_booking(request, booking_id):
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
 
-    # Update the staff availability for the date
-    availability, created = Availability.objects.get_or_create(
-        staff=booking.staff,
-        date=booking.contract.event_date
-    )
-    availability.available = True
-    availability.save()
+    # Update the staff availability for the date if necessary
+    if booking.staff:
+        availability, created = Availability.objects.get_or_create(
+            staff=booking.staff,
+            date=booking.contract.event_date
+        )
+        availability.available = True
+        availability.save()
+
+    # Clear the associated role in the contract before deleting the booking
+    role_field = SERVICE_ROLE_MAPPING.get(booking.role, None)
+    if role_field and hasattr(booking.contract, role_field):
+        setattr(booking.contract, role_field, None)
+        booking.contract.save()
+
+    # Record the username before deleting for the success message
+    staff_name = booking.staff.username if booking.staff else "Unknown Staff"
 
     # Delete the booking
     booking.delete()
 
-    messages.success(request, f'Booking for {booking.staff.username} has been cleared!')
-    return JsonResponse({'status': 'success', 'message': 'Booking cleared successfully'})
+    messages.success(request, f'Booking for {staff_name} has been cleared!')
+    return redirect(f'{reverse("contracts:search")}?tab=bookings')
 
 
 def booking_list(request):
@@ -1511,37 +1636,6 @@ def booking_list(request):
     return render(request, 'contracts/booking_list.html', {'bookings': bookings})
 
 
-def get_available_prospect_staff(request):
-    event_date_str = request.GET.get('event_date')
-    try:
-        event_date = datetime.strptime(event_date_str, '%Y-%m-%d').date() if event_date_str else None
-    except ValueError:
-        return JsonResponse({'error': 'Invalid date format'}, status=400)
-
-    if event_date:
-        available_staff = Availability.get_available_staff_for_date(event_date)
-    else:
-        return JsonResponse({'error': 'Event date is required'}, status=400)
-
-    combined_name = Concat(F('first_name'), Value(' '), F('last_name'), output_field=CharField())
-
-    data = {
-        'photographers': list(available_staff.filter(
-            Q(role__name='PHOTOGRAPHER') | Q(additional_roles__name='PHOTOGRAPHER')
-        ).annotate(name=combined_name).values('id', 'name')),
-        'videographers': list(available_staff.filter(
-            Q(role__name='VIDEOGRAPHER') | Q(additional_roles__name='VIDEOGRAPHER')
-        ).annotate(name=combined_name).values('id', 'name')),
-        'djs': list(available_staff.filter(
-            Q(role__name='DJ') | Q(additional_roles__name='DJ')
-        ).annotate(name=combined_name).values('id', 'name')),
-        'photobooth_operators': list(available_staff.filter(
-            Q(role__name='PHOTOBOOTH_OPERATOR') | Q(additional_roles__name='PHOTOBOOTH_OPERATOR')
-        ).annotate(name=combined_name).values('id', 'name')),
-        # Add any other event staff roles as needed...
-    }
-
-    return JsonResponse(data)
 def get_available_staff(request):
     event_date_str = request.GET.get('event_date')
     service_type = request.GET.get('service_type')
@@ -1583,43 +1677,57 @@ def get_available_staff(request):
 
     return JsonResponse(data)
 
+
 def manage_staff_assignments(request, id):
     contract = get_object_or_404(Contract, contract_id=id)
+    form = EventStaffBookingForm(request.POST or None)
 
     if request.method == "POST":
-        form = EventStaffBookingForm(request.POST)
         if form.is_valid():
             booking_id = form.cleaned_data.get('booking_id')
-            booking = None
+            role = form.cleaned_data.get('role')
+            staff = form.cleaned_data.get('staff')
+            status = form.cleaned_data.get('status', 'APPROVED')  # Default to 'APPROVED' if not specified
+            confirmed = form.cleaned_data.get('confirmed', True)  # Default to True if not specified
+            hours_booked = form.cleaned_data.get('hours_booked', 0)  # Default to 0 if not specified
+
             if booking_id:
-                try:
-                    # Attempt to retrieve existing booking
-                    booking = EventStaffBooking.objects.get(id=booking_id)
-                except ObjectDoesNotExist:
-                    # Booking does not exist, create a new one
-                    booking = EventStaffBooking(contract=contract)
-
-            if not booking:
-                # Create new booking if it doesn't exist
-                booking = EventStaffBooking(contract=contract)
-
-            form = EventStaffBookingForm(request.POST, instance=booking)  # Initialize form with existing or new booking instance
-            if form.is_valid():
-                booking = form.save()  # Save form with updates
-                return JsonResponse({
-                    'success': True,
-                    'message': 'Staff booking saved successfully',
-                    'role': booking.role,
-                    'staff_name': booking.staff.username if booking.staff else ''  # Adjust as needed to get the staff name
-                })
+                # Update an existing booking
+                booking = EventStaffBooking.objects.get(id=booking_id)
             else:
-                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+                # Prevent duplicate roles in the same contract
+                if EventStaffBooking.objects.filter(contract=contract, role=role).exclude(id=booking_id).exists():
+                    return JsonResponse(
+                        {'success': False, 'message': 'A booking for this role already exists in this contract.'},
+                        status=400)
+                booking = EventStaffBooking(contract=contract)  # Ensure the contract is assigned here
+
+            booking.role = role
+            booking.staff = staff
+            booking.status = status
+            booking.confirmed = confirmed
+            booking.hours_booked = hours_booked  # Set hours booked
+            booking.save()
+
+            # If booking is a prospect role, update the corresponding prospect field in the contract
+            if 'PROSPECT' in role:
+                prospect_field = f'prospect_photographer{role[-1]}'
+                setattr(contract, prospect_field, booking.staff)
+                contract.save()
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Staff booking saved successfully',
+                'role': booking.role,
+                'staff_name': booking.staff.get_full_name() if booking.staff else 'None',
+                'hours_booked': booking.hours_booked
+            })
+
         else:
             return JsonResponse({'success': False, 'errors': form.errors}, status=400)
-    else:
-        form = EventStaffBookingForm()
-    return render(request, 'contracts/manage_staff.html', {'contract': contract, 'form': form})
 
+    # GET request handling for initial form display
+    return render(request, 'contracts/manage_staff.html', {'contract': contract, 'form': form})
 
 def get_current_booking(request):
     contract_id = request.GET.get('contract_id')
@@ -1657,19 +1765,4 @@ def get_current_booking(request):
     })
 
 
-def contract_transactions(request, contract_id):
-    contract = get_object_or_404(Contract, pk=contract_id)
 
-    # Payments
-    payments = []
-    for payment in contract.payments.all():
-        payments.append({
-            'amount': payment.amount,
-            'date': payment.date,
-        })
-
-    data = {
-        'payments': payments,
-    }
-
-    return JsonResponse(data)

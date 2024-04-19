@@ -53,6 +53,11 @@ body {
 }
 
 .logout-button {
+    width: 95px; /* Make button wider */
+    height: 30px; /* Align button height with field */
+    text-align: center; /* Center the text inside the input */
+    font-weight: normal !important; /* Make text not bold */
+    line-height: 0px; /* Align text vertically, should match the height */
     padding: 5px 10px;
     background-color: #c67c85;
     color: white;
@@ -94,7 +99,6 @@ body {
     color: white;
 }
 
-
 /* Search form styling */
 .search-form {
     margin: 20px;
@@ -117,31 +121,47 @@ body {
 
 /* Adjusting Search Button */
 .quick-search-group .form-group input[type="submit"] {
-    width: 125px; /* Make button wider */
-    height: 40px; /* Align button height with field */
+    width: 95px; /* Make button wider */
+    height: 30px; /* Align button height with field */
+    text-align: center; /* Center the text inside the input */
+    font-weight: normal; /* Make text not bold */
+    line-height: 0px; /* Align text vertically, should match the height */
 }
 
 /* Form rows and groups */
 .form-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Three columns of equal width */
-    grid-gap: 10px;
+    display: flex; /* Use flexbox for the form row */
+    justify-content: space-between; /* Space out the columns */
     margin-bottom: 10px;
 }
 
 .form-group {
+    flex: 1; /* Allow form groups to grow and fill the available space */
     display: flex;
     flex-direction: column; /* Keep elements in a column */
+    margin-right: 10px; /* Add some space between form groups */
 }
 
-/* Styling for date range fields within the same form group */
+.form-group:last-child {
+    margin-right: 0; /* Remove margin for the last form group in a row */
+}
+
+/* Input and select field styling */
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group select {
+    width: 100%; /* Make fields take full width of their parent */
+}
+
+/* Date range group styling */
 .date-range-group {
     display: flex; /* Align date fields in a row */
     justify-content: space-between; /* Space out the start and end date fields */
+    width: 100%; /* Ensure date range group takes full width */
 }
 
 .date-range-group input[type="date"] {
-    width: 48%; /* Adjust the width to fit two inputs side by side */
+    width: calc(50% - 4px); /* Adjust the width to fit two inputs side by side, accounting for any margins or borders */
 }
 
 /* Label styling */
@@ -231,6 +251,20 @@ body {
     background-color: #f9f9f9; /* Lighter gray for even rows */
 }
 
+.button-group {
+    display: flex;
+    justify-content: flex-start; /* Align buttons to the start of the row */
+}
+
+.btn {
+    margin-right: 10px; /* Add some space between the buttons */
+    width: auto; /* Prevent buttons from stretching to full width */
+    padding: 10px 15px; /* Adjust padding as needed */
+}
+
+.btn:last-child {
+    margin-right: 0; /* Remove margin for the last button */
+}
 
 /* Adjust other elements as needed to fit the color scheme */
 
@@ -357,37 +391,51 @@ body {
     font-weight: bold;
 }
 
-/* Add more styles as needed */
-.task-list-container {
-    max-width: 600px;
-    margin: auto;
-    background: #f8f8f8;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.nav-tabs .nav-item .nav-link {
+    color: #3C1414 !important;
 }
 
-.task-list {
-    list-style-type: none;
-    padding: 0;
+.nav-tabs .nav-item .nav-link.active {
+    color: #000 !important;
 }
 
-.task-item {
-    background: #ffffff;
-    margin-bottom: 10px;
-    padding: 15px;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.task-container {
+    margin: 40px;
+    background-color: #ffffff; /* Background color for the box */
+    padding: 20px; /* Padding inside the box */
+    border: 1px solid #ddd; /* Border for the box */
+    border-radius: 5px; /* Optional: Rounded corners */
 }
 
-.task-details {
-    line-height: 1.6;
+#daysOffList {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-.task-item:last-child {
-    margin-bottom: 0;
+#daysOffList th, #daysOffList td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
 }
 
-.task-completed {
-    display: none;
+#daysOffList tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+#daysOffList tr:hover {
+    background-color: #ddd;
+}
+
+.remove-day-off {
+    padding: 4px 8px;
+    font-size: 14px;
+    color: white;
+    background-color: #f44336; /* Red color for emphasis */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.remove-day-off:hover {
+    background-color: #d32f2f;
 }

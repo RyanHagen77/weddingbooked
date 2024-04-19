@@ -22,11 +22,17 @@ urlpatterns = [
     path('bookings/<int:pk>/approve/', views.approve_booking, name='approve_booking'),
     path('bookings/<int:pk>/decline/', views.decline_booking, name='decline_booking'),
     path('tasks/', views.task_list, name='tasks'),
+    path('tasks/list/', views.get_tasks, name='task_list'),
     path('tasks/create/', views.create_task, name='create_task'),
     path('tasks/create/contract/<int:contract_id>/', views.create_task, name='create_task_for_contract'),
     path('tasks/create/note/<int:note_id>/', views.create_task, name='create_task_for_note'),
     path('tasks/update/<int:task_id>/', views.update_task, name='update_task'),
     path('tasks/mark-complete/<int:task_id>/', views.mark_complete, name='mark_complete'),
+    path('event_staff/', views.event_staff, name='event_staff'),
+    path('update_event_staff_ranking/', views.update_event_staff_ranking, name='update_event_staff_ranking'),
+    path('event_staff_schedule/<int:user_id>/', views.event_staff_schedule, name='event_staff_schedule'),
+    path('get_event_staff_schedule/<int:user_id>/', views.get_event_staff_schedule, name='get_event_staff_schedule'),
+    path('update_event_staff_schedule/<int:user_id>/', views.update_event_staff_schedule, name='update_event_staff_schedule'),
     path('financial_reports/', views.financial_reports, name='financial_reports'),
 
 

@@ -686,9 +686,6 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('photography_package', document.getElementById('id_photography_package').value);
         formData.append('photography_additional', document.getElementById('id_photography_additional').value);
         formData.append('engagement_session', document.getElementById('id_engagement_session').value);
-        formData.append('prospect_photographer1', document.getElementById('id_prospect_photographer1').value);
-        formData.append('prospect_photographer2', document.getElementById('id_prospect_photographer2').value);
-        formData.append('prospect_photographer3', document.getElementById('id_prospect_photographer3').value);
         // Videography fields
         formData.append('videography_package', document.getElementById('id_videography_package').value);
         formData.append('videography_additional', document.getElementById('id_videography_additional').value);
@@ -747,9 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('photography_package', document.getElementById('id_photography_package').value);
         formData.append('photography_additional', document.getElementById('id_photography_additional').value);
         formData.append('engagement_session', document.getElementById('id_engagement_session').value);
-        formData.append('prospect_photographer1', document.getElementById('id_prospect_photographer1').value);
-        formData.append('prospect_photographer2', document.getElementById('id_prospect_photographer2').value);
-        formData.append('prospect_photographer3', document.getElementById('id_prospect_photographer3').value);
+
         // Videography fields
         formData.append('videography_package', document.getElementById('id_videography_package').value);
         formData.append('videography_additional', document.getElementById('id_videography_additional').value);
@@ -807,9 +802,6 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('photography_package', document.getElementById('id_photography_package').value);
         formData.append('photography_additional', document.getElementById('id_photography_additional').value);
         formData.append('engagement_session', document.getElementById('id_engagement_session').value);
-        formData.append('prospect_photographer1', document.getElementById('id_prospect_photographer1').value);
-        formData.append('prospect_photographer2', document.getElementById('id_prospect_photographer2').value);
-        formData.append('prospect_photographer3', document.getElementById('id_prospect_photographer3').value);
         // Videography fields
         formData.append('videography_package', document.getElementById('id_videography_package').value);
         formData.append('videography_additional', document.getElementById('id_videography_additional').value);
@@ -867,9 +859,6 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('photography_package', document.getElementById('id_photography_package').value);
         formData.append('photography_additional', document.getElementById('id_photography_additional').value);
         formData.append('engagement_session', document.getElementById('id_engagement_session').value);
-        formData.append('prospect_photographer1', document.getElementById('id_prospect_photographer1').value);
-        formData.append('prospect_photographer2', document.getElementById('id_prospect_photographer2').value);
-        formData.append('prospect_photographer3', document.getElementById('id_prospect_photographer3').value);
         // Videography fields
         formData.append('videography_package', document.getElementById('id_videography_package').value);
         formData.append('videography_additional', document.getElementById('id_videography_additional').value);

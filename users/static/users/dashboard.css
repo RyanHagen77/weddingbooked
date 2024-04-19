@@ -60,7 +60,13 @@
     background-color: #b55f66; /* Darker dusty pink for hover */
 }
 
+.nav-tabs .nav-item .nav-link {
+    color: #3C1414 !important;
+}
 
+.nav-tabs .nav-item .nav-link.active {
+    color: #000 !important;
+}
 .main-content {
     flex-grow: 1;
     padding: 20px;
@@ -102,8 +108,8 @@
 
 /* Adjusting Search Button */
 .quick-search-group .form-group input[type="submit"] {
-    width: 125px; /* Make button wider */
-    height: 40px; /* Align button height with field */
+    width: 95px; /* Make button wider */
+    height: 30px; /* Align button height with field */
 }
 
 /* Form rows and groups */
@@ -243,3 +249,12 @@ body {
 .btn:last-child {
     margin-right: 0; /* Remove margin for the last button */
 }
+
+.task-container {
+    margin: 40px !important;
+    background-color: #ffffff; /* Background color for the box */
+    padding: 15px; /* Padding inside the box */
+    border: 1px solid #ddd; /* Border for the box */
+    border-radius: 5px; /* Optional: Rounded corners */
+}
+

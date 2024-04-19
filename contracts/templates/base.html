@@ -1,53 +1,65 @@
+
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
-    <!-- Add links to your CSS files here -->
+    {% load static %}
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- jQuery and Bootstrap JS -->
+    <link rel="stylesheet" href="{% static 'contracts/styles.css' %}">
+
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" defer></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" defer></script>
 </head>
 <body>
     <header>
         <!-- Navigation, site title, etc. -->
+        <div class="header">
+            <div class="logo">
+                <!-- Add your logo here -->
+                <img src="{{ MEDIA_URL }}logo/Final_Logo.png" alt="Logo">
+            </div>
+            <ul class="menu">
+                <li class="menu-item"><a href="{% url 'users:tasks' %}">Tasks</a></li>
+                <li class="menu-item"><a href="{% url 'contracts:contract_new' %}">New Contract</a></li>
+                <li class="menu-item"><a href="{% url 'users:financial_reports' %}">Reports</a></li>
+                <li class="menu-item"><a href="{% url 'admin:index' %}">Admin</a></li>
+                <li class="menu-item"><a href="{% url 'contracts:search' %}">Search</a></li>
+            </ul>
+            <div class="user-info">
+                <span>Hello, {{ request.user.first_name }}</span>
+                <form action="{% url 'users:logout' %}" method="post" style="margin-left: 10px;">
+                    {% csrf_token %}
+                    <input type="submit" value="Logout" class="logout-button">
+                </form>
+            </div>
+        </div>
     </header>
 
     <main>
-        {% block content %}{% endblock %}
+        <div class="main-content">
+            {% block content %}{% endblock %}
+        </div>
     </main>
 
     <footer>
         <!-- Copyright statement, etc. -->
     </footer>
-<div class="header">
-    <div class="logo">
-        <!-- Add your logo here -->
-        <img src="{% static 'path/to/your/logo.png' %}" alt="Logo">
-    </div>
-    <ul class="menu">
-        <li class="menu-item"><a href="{% url 'users:tasks' %}">Tasks</a></li>
-        <li class="menu-item"><a href="{% url 'contracts:contract_new' %}">New Contract</a></li>
-        <li class="menu-item"><a href="{% url 'users:financial_reports' %}">Reports</a></li>
-        <li class="menu-item"><a href="{% url 'admin:index' %}">Admin</a></li>
-        <li class="menu-item"><a href="{% url 'contracts:search' %}">Search</a></li>
-    </ul>
-    <div class="user-info">
-        <span>Hello, {{ request.user.first_name }}</span>
-        <form action="{% url 'users:logout' %}" method="post" style="margin-left: 10px;">
-            {% csrf_token %}
-            <input type="submit" value="Logout" class="logout-button">
-        </form>
-    </div>
-</div>
-    <div class="main-content">
-        {% block content %}{% endblock %}
-    </div>
 
-    <! <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-        <!-- Your custom JavaScript code -->
-    <script src="{% static 'communication/js/tasks.js' %}"></script>
-    <!-- Add links to your JavaScript files here -->
-
+    <script>
+        $(function () {
+            $('#myTab a').on('click', function (e) {
+                e.preventDefault();
+                $(this).tab('show');
+            });
+        });
+    </script>
+    <script type="module" src="{% static 'contracts/js/eventStaffManagement.js' %}"></script>
 </body>
 </html>

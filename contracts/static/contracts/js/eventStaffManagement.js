@@ -1,8 +1,8 @@
 const eventStaffManagement = {
     // Function to fetch available staff based on the event date
-    fetchAvailableStaff(date, serviceType) {
-        console.log(`Fetching available staff for date: ${date} and service type: ${serviceType}`);
-        return fetch(`/contracts/get_available_staff/?event_date=${date}&service_type=${serviceType}`)
+    fetchAvailableStaff(date) {
+        console.log(`Fetching available staff for date: ${date}`);
+        return fetch(`/contracts/get_available_staff/?event_date=${date}`)
             .then(response => response.json())
             .then(data => {
                 console.log('Available staff data:', data);
@@ -10,7 +10,6 @@ const eventStaffManagement = {
             })
             .catch(error => console.error("Error fetching available staff:", error));
     },
-
 
 // Function to update dropdowns with available staff
 updateDropdowns(fieldNames, data) {
@@ -48,28 +47,6 @@ updateDropdowns(fieldNames, data) {
 },
 
 
-
-
-    // Function to update prospect photographer dropdowns
-    updateProspectDropdowns(savedData) {
-        const prospectFields = ['prospect_photographer1', 'prospect_photographer2', 'prospect_photographer3'];
-        prospectFields.forEach(field => {
-            const dropdown = document.getElementById(`id_${field}`);
-            if (dropdown && savedData[field]) {
-                dropdown.innerHTML = '';  // Clear existing options
-
-                // Add the saved prospect as the first option
-                const savedOption = document.createElement('option');
-                savedOption.value = savedData[field].id;
-                savedOption.textContent = savedData[field].name;
-                dropdown.appendChild(savedOption);
-
-                // Set the selected index to the saved option
-                dropdown.selectedIndex = 0;
-            }
-        });
-    },
-
     // Function to fetch and update dropdowns with available photographers based on the event date
     updateAvailablePhotographers(eventDate) {
         const contractIdElement = document.getElementById('contractId');
@@ -97,47 +74,29 @@ updateDropdowns(fieldNames, data) {
 
         // Fetch available staff data based on the event date
         fetch(`/contracts/get_available_staff/?event_date=${formattedDate}`)
-            .then(response => response.json())
-            .then(data => {
-                const photographers = data.photographers; // Assuming the backend returns a list of photographers
-                this.updateDropdowns(['id_prospect_photographer1', 'id_prospect_photographer2', 'id_prospect_photographer3'], photographers);
-
-                // Fetch and populate saved prospect photographers
-                return fetch(`/contracts/get_prospect_photographers/?contract_id=${contractId}`);
-            })
-            .then(response => response.json())
-            .then(data => {
-                this.updateProspectDropdowns(data);
-            })
-            .catch(error => {
-                console.error('Error updating prospect photographers:', error);
-            });
     },
 
-updateEventStaff(serviceType) {
-    const eventDateInput = document.getElementById('id_event_date');
-    if (!eventDateInput) {
-        console.error("Event date input not found!");
-        return;
-    }
-
-    const eventDate = eventDateInput.value;
-
-    this.fetchAvailableStaff(eventDate, serviceType).then(data => {
-        // Determine the staff key based on the service type
-        const staffKey = `${serviceType.toLowerCase()}_staff`;
-
-        // Ensure that data is not undefined before calling updateDropdowns
-        if (data[staffKey] && data[staffKey].length > 0) {
-            this.updateDropdowns(['id_staff'], data[staffKey]);
-        } else {
-            console.error('Error updating event staff: data is undefined');
+    // Function to update the staff dropdown in the modal based on the selected event date
+    updateEventStaff() {
+        const eventDateInput = document.getElementById('id_event_date');
+        if (!eventDateInput) {
+            console.error("Event date input not found!");
+            return;
         }
-    }).catch(error => {
-        console.error("Error updating event staff:", error);
-    });
-},
 
+        const eventDate = eventDateInput.value;
+
+        this.fetchAvailableStaff(eventDate).then(data => {
+            // Ensure that data is not undefined before calling updateDropdowns
+            if (data) {
+                this.updateDropdowns(['id_staff'], data.photographers);  // Assuming 'photographers' is the correct key
+            } else {
+                console.error('Error updating event staff: data is undefined');
+            }
+        }).catch(error => {
+            console.error("Error updating event staff:", error);
+        });
+    },
 
 
     handleBookingFormSubmission: function() {
@@ -215,7 +174,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Update assigned staff for all roles on page load
     const contractId = $('#contractId').val();
-    const roles = ['PHOTOGRAPHER1', 'PHOTOGRAPHER2', 'VIDEOGRAPHER1', 'VIDEOGRAPHER2', 'DJ1', 'DJ2', 'PHOTOBOOTH_OP'];
+    const roles = ['PHOTOGRAPHER1', 'PHOTOGRAPHER2', 'VIDEOGRAPHER1', 'VIDEOGRAPHER2', 'DJ1', 'DJ2', 'PHOTOBOOTH1',
+        'PHOTOBOOTH2', 'PROSPECT1', 'PROSPECT2', 'PROSPECT3'];
     roles.forEach(role => {
         fetch(`/contracts/get_current_booking/?contract_id=${contractId}&role=${role}`)
             .then(response => response.json())
@@ -234,107 +194,115 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     });
 
-    // Event listener for the delete button
-    document.getElementById('deleteBooking').addEventListener('click', function() {
-        const bookingId = $('#id_booking_id').val();
-        const role = $('#id_role').val(); // Get the role from the form
-        if (bookingId && role) {
-            fetch(`/contracts/booking/${bookingId}/clear/`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                }
-            })
-            .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        console.log(data.message);
-                        // Close the modal
-                        $('#bookingModal').modal('hide');
-                        // Clear the assigned staff name for the corresponding role
-                        const assignedStaffField = document.getElementById(`assigned-${role.toLowerCase()}`);
-                        if (assignedStaffField) {
-                            assignedStaffField.textContent = "None assigned";
-                        }
-                    } else {
-                        throw new Error(data.message || 'Failed to delete booking');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error deleting booking:', error);
-                });
-        }
-    });
 
-    $('#bookingModal').on('show.bs.modal', function (event) {
-        // Reset the form fields to their default values
-        const staffSelect = document.getElementById('id_staff');
-        staffSelect.innerHTML = ''; // Clear existing options
+$('#bookingModal').on('show.bs.modal', function (event) {
+    const button = $(event.relatedTarget); // Button that triggered the modal
+    const role = button.data('role');
+    const serviceType = button.data('serviceType'); // Extract service type from data-* attributes
+    const contractId = $('#contractId').val();
+    const eventDate = $('#id_event_date').val(); // Get the event date from the input field
 
-        // Retrieve the button that triggered the modal
-        const button = $(event.relatedTarget); // Button that triggered the modal
-        const role = button.data('role'); // Extract role from data-* attributes
-        const serviceType = button.data('serviceType'); // Extract service type from data-* attributes
-        const contractId = $('#contractId').val();
-        const eventDate = $('#id_event_date').val(); // Get the event date from the input field
+    // Pre-populate the role field based on the button clicked
+    $('#id_role').val(role);
 
-        // Pre-populate the role field based on the button clicked
-        $('#id_role').val(role);
+    // Reset the form fields to their default values
+    const staffSelect = document.getElementById('id_staff');
+    staffSelect.innerHTML = ''; // Clear existing options
 
-        // Variable to track if a current booking exists
-        let currentBookingExists = false;
+    // Always add a placeholder initially
+    const placeholderOption = new Option('Select Staff', '');
+    staffSelect.appendChild(placeholderOption);
+    staffSelect.value = ''; // Set the placeholder as the default selected option
 
-        // Fetch current booking data
-        fetch(`/contracts/get_current_booking/?contract_id=${contractId}&role=${role}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.current_booking && data.current_booking.staff_id) {
-                    currentBookingExists = true;
+    // Fetch current booking data
+    fetch(`/contracts/get_current_booking/?contract_id=${contractId}&role=${role}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.current_booking && data.current_booking.staff_id) {
+                // Set the booking ID for deletion
+                $('#id_booking_id').val(data.current_booking.id);
+                // Create and append the option for the current staff
+                const option = new Option(data.current_booking.staff_name, data.current_booking.staff_id, true, true);
+                staffSelect.appendChild(option);
+                staffSelect.value = data.current_booking.staff_id; // Set this staff as the selected option
 
-                    // Add the currently booked staff member as an option
-                    const staffOption = new Option(data.current_booking.staff_name, data.current_booking.staff_id, true, true);
-                    staffSelect.appendChild(staffOption);
+                // Set status and confirmation
+                $('#id_status').val('APPROVED');
+                $('#id_confirmed').prop('checked', true);
+                $('#assignedStaffName').text(data.current_booking.staff_name);
 
-                    // Populate other form fields...
-                    $('#id_booking_id').val(data.current_booking.id);
-                    $('#id_status').val(data.current_booking.status);
-                    $('#id_hours_booked').val(data.current_booking.hours_booked);
-                    $('#id_confirmed').prop('checked', data.current_booking.confirmed);
+                // Remove the placeholder if a staff is assigned
+                staffSelect.removeChild(placeholderOption);
+            } else {
+                $('#id_booking_id').val('');
+                $('#assignedStaffName').text('No staff assigned');
+            }
+        })
+        .catch(error => console.error('Error fetching current booking:', error));
 
-                    // Update the assigned staff name in the modal
-                    $('#assignedStaffName').text(data.current_booking.staff_name);
-
-                }
-            });
-
-            // Fetch available staff data based on the service type
-        eventStaffManagement.fetchAvailableStaff(eventDate, serviceType).then(data => {
-            // Determine the staff key based on the service type
+    // Fetch available staff data based on the event date and service type
+    fetch(`/contracts/get_available_staff/?event_date=${eventDate}&service_type=${serviceType}`)
+        .then(response => response.json())
+        .then(data => {
             const staffKey = `${serviceType.toLowerCase()}_staff`;
+            let foundStaff = false;
 
-            // Check if the data for the specified staff key exists and has length
-            if (data[staffKey] && data[staffKey].length > 0) {
-                // Add each staff member as an option in the dropdown
+            if (data[staffKey]) {
                 data[staffKey].forEach(staff => {
-                    if (staff.name.trim()) {
+                    if (!staffSelect.options[0] || staffSelect.options[0].value !== staff.id.toString()) {
                         const option = new Option(staff.name.trim(), staff.id);
                         staffSelect.appendChild(option);
+                        foundStaff = true;
                     }
                 });
             }
 
-            // Add a "Select Staff" placeholder option only if there is no saved booking and no available staff
-            if (!currentBookingExists && staffSelect.options.length === 0) {
-                const placeholderOption = new Option('Select Staff', '');
-                staffSelect.appendChild(placeholderOption);
+            if (!foundStaff && !data.current_booking) {
+                // Only show the placeholder if no staff are found and there's no current booking
                 staffSelect.value = '';
             }
-        });
-    });
+        })
+        .catch(error => console.error('Error fetching available staff:', error));
 });
 
 
+    document.getElementById('deleteBooking').addEventListener('click', function() {
+        const bookingId = $('#id_booking_id').val(); // Fetch the booking ID
+        const contractId = $('#contractId').val(); // Fetch the contract ID from a hidden input or relevant element in your page
+        const role = $('#id_role').val().toLowerCase(); // Get the role from the modal, assuming it's stored in an input
 
+        console.log('Attempting to delete booking with ID:', bookingId); // Log the fetched booking ID
 
+        if (!bookingId) {
+            console.error("No booking ID found for deletion.");
+            alert("No booking ID found for deletion.");
+            return;
+        }
 
-
+        if (confirm('Are you sure you want to delete this booking?')) {
+            fetch(`/contracts/booking/${bookingId}/clear/`, {
+                method: 'POST', // Make sure your server is set to accept POST for this operation
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();  // We don't expect a JSON response
+            })
+            .then(() => {
+                console.log('Booking deleted successfully');
+                $('#bookingModal').modal('hide'); // Hide the modal
+                $(`#assigned-${role}`).text("None assigned"); // Update the page to remove the staff name from the assigned area
+                // Optionally, you can trigger an event to refresh other parts of the page if necessary
+            })
+            .catch(error => {
+                console.error('Error deleting booking:', error);
+                alert('Error clearing booking: ' + error.message);
+            });
+        }
+    });
+});

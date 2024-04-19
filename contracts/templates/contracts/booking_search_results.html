@@ -26,8 +26,22 @@
                 <td>{{ booking.confirmed|yesno:"Yes,No" }}</td>
                 <td>{{ booking.booking_notes }}</td>
                 <td>
-                    <!-- Add any action buttons or links here -->
-                    <a href="{% url 'contracts:booking_detail' booking.id %}" class="btn btn-primary">Details</a>
+                    <!-- Clear Booking Form -->
+                    <form method="post" action="{% url 'contracts:clear_booking' booking.id %}" onsubmit="return confirmBookingDeletion();">
+                        {% csrf_token %}
+                        <style>
+                            .smaller-button {
+                                padding: 5px 10px; /* Adjust padding to make the button smaller */
+                                font-size: 12px; /* Smaller text size */
+                            }
+                        </style>
+                        <button type="submit" class="btn btn-danger smaller-button">Clear Booking</button>
+                    </form>
+                    <script>
+                        function confirmBookingDeletion() {
+                            return confirm('Are you sure you want to clear this booking? This action cannot be undone.');
+                        }
+                    </script>
                 </td>
             </tr>
             {% endfor %}
@@ -35,5 +49,5 @@
     </table>
 </div>
 {% else %}
-<p>No bookings found</p>
+<p>No bookings found.</p>
 {% endif %}

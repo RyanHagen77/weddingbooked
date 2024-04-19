@@ -74,17 +74,25 @@
             </div>
         </div>
     </div>
-    <div class="form-row">
+        <div class="form-row">
         <div class="button-group">
             <input type="submit" value="Search" class="btn">
             <input type="reset" value="Clear" class="btn" onclick="clearForm(this.form)">
+            <!-- Sorting Buttons -->
+            <a href="{% url 'contracts:search' %}?order=asc" class="btn btn-dusty-pink">Sort Ascending</a>
+            <a href="{% url 'contracts:search' %}?order=desc" class="btn btn-dusty-pink">Sort Descending</a>
         </div>
     </div>
 </form>
 
 
-    <!-- Include jQuery -->
+    <!-- First, include jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Then, include jQuery UI -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
 
     <!-- Include Bootstrap Datepicker JS -->
     <script>

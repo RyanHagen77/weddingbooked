@@ -1,0 +1,13 @@
+{% autoescape off %}
+Hello {{ user.first_name }},
+
+You have been assigned a new task, titled "{{ task.description }}". Here are the details:
+
+- **Due Date:** {{ task.due_date|date:"F d, Y" }}
+- **Description:** {{ task.description }}
+
+Please log in to view and manage the task.
+
+Best regards,
+Your Team
+{% endautoescape %}

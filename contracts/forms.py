@@ -209,8 +209,7 @@ class ContractServicesForm(forms.ModelForm):
         fields = [
             'photography_package', 'photography_additional', 'engagement_session',
             'videography_package', 'videography_additional',
-            'dj_package', 'dj_additional', 'photobooth_package', 'photobooth_additional',
-            'prospect_photographer1', 'prospect_photographer2', 'prospect_photographer3'
+            'dj_package', 'dj_additional', 'photobooth_package', 'photobooth_additional'
         ]
 
     def __init__(self, *args, **kwargs):
@@ -228,24 +227,16 @@ class ContractServicesForm(forms.ModelForm):
         self.fields['videography_additional'].queryset = AdditionalEventStaffOption.objects.filter(service_type__name='Videography', is_active=True)
 
         # Initialize DJ fields
-        self.fields['dj_package'].queryset = Package.objects.filter(service_type__name='Dj', is_active=True)
-        self.fields['dj_additional'].queryset = AdditionalEventStaffOption.objects.filter(service_type__name='Dj', is_active=True)
+        self.fields['dj_package'].queryset = Package.objects.filter(service_type__name='DJ', is_active=True)
+        self.fields['dj_additional'].queryset = AdditionalEventStaffOption.objects.filter(service_type__name='DJ', is_active=True)
 
-        # Initialize photobooth field
+        # Initialize photobooth fields
         self.fields['photobooth_package'].queryset = Package.objects.filter(service_type__name='Photobooth', is_active=True)
         self.fields['photobooth_additional'].queryset = AdditionalEventStaffOption.objects.filter(service_type__name='Photobooth', is_active=True)
 
-
-        # Initialize prospect photographer fields
-        # Note: Make sure you have imported settings and User model for the below lines to work
-        self.fields['prospect_photographer1'].required = False
-        self.fields['prospect_photographer2'].required = False
-        self.fields['prospect_photographer3'].required = False
-
-        # Optionally, add empty label for each field to show a default choice like "Select an option"
+        # Optionally, add an empty label for each field to show a default choice like "Select an option"
         for field_name in self.fields:
             self.fields[field_name].empty_label = "Select an option"
-
 class ContractProductForm(forms.ModelForm):
     class Meta:
         model = ContractProduct
@@ -676,19 +667,19 @@ class ContractDocumentForm(forms.ModelForm):
         fields = ['document']
 
 class EventStaffBookingForm(forms.ModelForm):
-    booking_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
-
     class Meta:
         model = EventStaffBooking
-        fields = ['booking_id', 'staff', 'role', 'status', 'confirmed', 'hours_booked']
+        fields = ['staff', 'role', 'status', 'hours_booked', 'confirmed', 'booking_notes']
+        # Ensure all fields here are correct and exist in the model
 
     def __init__(self, *args, **kwargs):
         event_date = kwargs.pop('event_date', None)
         super(EventStaffBookingForm, self).__init__(*args, **kwargs)
+
         if event_date:
+            # Assuming get_available_staff_for_date is properly defined and works as expected
             available_staff = Availability.get_available_staff_for_date(event_date)
-            self.fields['staff'].queryset = available_staff.filter(role__name__in=[Role.PHOTOGRAPHER, Role.VIDEOGRAPHER, Role.DJ, Role.PHOTOBOOTH_OPERATOR])
+            self.fields['staff'].queryset = available_staff
 
-        # Update the 'role' field choices to include the numbered roles
-        self.fields['role'].choices = [('', 'Select Role')] + list(EventStaffBooking.ROLE_CHOICES)
-
+        # Ensure 'role' choices are properly set up
+        self.fields['role'].choices = EventStaffBooking.ROLE_CHOICES

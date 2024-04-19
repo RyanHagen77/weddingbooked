@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+{% load static %}
 <head>
     <title>Contract</title>
     <style>
@@ -21,39 +22,96 @@
             margin-bottom: 20px;
             padding: 10px;
         }
+        .logo {
+            width: 33%; /* approx 1/3 of the left side */
+            padding-right: 20px;
+        }
+        .logo img {
+            width: 300px;
+            height: 100px;
+        }
+        .contract-date {
+            font-size: 9pt; /* smaller font size */
+            margin-top: 5px;
+        }
+        .payment-info, .essence-rep {
+            flex: 1;
+            font-size: 9pt;
+            text-align: center; /* right-aligned text */
+        }
+        .payment-info strong, .essence-rep strong {
+            font-weight: bold;
+        }
+        .company-info {
+            font-weight: bold; /* bold for all text */
+            margin-bottom: 20px; /* space above Essence Rep */
+            font-size: 9pt;
+            text-align: right;
+        }
+        .horizontal-line {
+            border-top: 1px solid #000;
+            margin-top: 5px;
+        }
+        .rep-details {
+            text-align: right; /* right-aligned text for rep details */
+        }
+        .rep-details strong {
+            font-weight: bold; /* bold labels */
+        }
     </style>
 </head>
 <body>
     <div class="contract-header">
-        <div>
-            <strong>Event Date:</strong> {{ contract.event_date }}<br>
-            <strong>Primary Contact:</strong> {{ client_info.primary_contact }}<br>
-            <strong>Partner Contact:</strong> {{ client_info.partner_contact }}
+        <div class="logo">
+            <img src="/home/egret/django_projects/weddingbook_project/media/logo/Final_Logo.png" alt="Logo">
+            <div class="contract-date"> <strong>Contract Date:</strong> {{ contract.contract_date }}</div>
         </div>
-        <div>
-            <strong># of Guests:</strong> {{ contract.guests_qty }}<br>
-            <strong># in Bridal Party:</strong> {{ contract.bridal_party_qty }}
+        <div class="payment-info">
+            All Payments Made To:<br>
+            <strong>Essence Photo & Video</strong><br>
+            1224 Remington Rd<br>
+            Schaumburg, IL, 60173<br>
+
+        </div>
+        <div class="essence-rep">
+            <div class="company-info">
+            Office: (888) 777-7011<br>
+            Fax: (847) 923-9801<br>
+            info@essenceweddings.com<br>
+            essenceweddings.com<br>
+            </div>
+            <div class="rep-details">
+                <strong>Essence Rep:</strong> {{ contract.csr.get_full_name }}<br>
+                <strong>Contract No.:</strong> {{ contract.custom_contract_number }}
+            </div>
         </div>
     </div>
 
     <div class="contact-info">
-        <div class="column">
-            <strong>Primary Contact Info</strong><br>
-            Name: {{ client_info.primary_contact }}<br>
-            Phone: {{ client_info.primary_phone }}<br>
-            Email: {{ client_info.primary_email }}<br>
-            Address: {{ client_info.primary_address1 }}<br>
-            City: {{ client_info.city }}<br>
-            State: {{ client_info.state }}
-        </div>
-        <div class="column">
-            <strong>Event Locations</strong><br>
-            Ceremony: {{ contract.ceremony_site }}<br>
-            Reception: {{ contract.reception_site }}
-        </div>
+        <!-- Existing contact info content -->
     </div>
 
     <div class="divider"></div>
+
+    <div class="text-box" contenteditable="true">
+        {{ contract.package.default_text }}
+    </div>
+
+    <!-- Additional contract content goes here -->
+
+</body>
+</html>
+
+
+    <div class="contact-info">
+        <!-- Existing contact info content -->
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="text-box" contenteditable="true">
+        {{ contract.package.default_text }}
+    </div>
 
     <!-- Loop through package texts if there are multiple -->
     {% for package_type, text in package_texts.items %}

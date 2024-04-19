@@ -1,0 +1,12 @@
+{% autoescape off %}
+Hello,
+
+A new message has been posted for Contract {{ contract.custom_contract_number }} by {{ user.get_full_name|default:user.username }}.
+
+Message: {{ message.content }}
+
+Please log in to view and respond to the message.
+
+Best regards,
+eNet 2.0 Essence Admin
+{% endautoescape %}

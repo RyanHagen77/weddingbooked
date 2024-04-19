@@ -1,11 +1,12 @@
 {% load static %}
             <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'contracts/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'users/dashboard.css' %}">
 <!-- Checkbox to toggle completed tasks -->
-<label>
-    <input type="checkbox" id="showCompletedTasks"> Show Completed Tasks
-</label>
+<div class="tasks-container">
+    <label>
+        <input type="checkbox" id="showCompletedTasks"> Show Completed Tasks
+    </label>
 <!-- users/templates/users/task_list_snippet.html -->
 <table class="table table-striped">
     <thead>
@@ -67,3 +68,4 @@
         {% endfor %}
     </tbody>
 </table>
+</div>
