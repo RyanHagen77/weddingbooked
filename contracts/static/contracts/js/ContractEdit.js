@@ -1,76 +1,95 @@
-
-
-
-// Contract Edit Form Handling
 document.addEventListener('DOMContentLoaded', function() {
-    // Handling for the contract info edit form
-    let contractEditButton = document.getElementById('edit-contract-info-button');
-    let contractEditForm = document.getElementById('edit-contract-info-form');
-    let contractDisplayDetails = document.getElementById('contract-info');
+    // Initialize buttons and forms
+    const contractEditButton = document.getElementById('edit-contract-info-button');
+    const contractEditForm = document.getElementById('edit-contract-info-form');
+    const clientEditForm = document.getElementById('edit-client-form');
+    const eventEditForm = document.getElementById('edit-event-form');
+    const saveCustomTextButton = document.getElementById('saveCustomText');
+    const modalCustomText = document.getElementById('modalCustomText');
 
-    if (contractEditButton && contractEditForm && contractDisplayDetails) {
+
+    // Event listener for contract info edit button
+    if (contractEditButton && contractEditForm) {
         contractEditButton.addEventListener('click', function() {
-            toggleEditForm(true, 'contract');
+            toggleEditForm(true);
         });
+    }
 
+    // Event listeners for form submissions
+    if (contractEditForm) {
         contractEditForm.addEventListener('submit', function(event) {
             event.preventDefault();
             submitEditForm('edit-contract-info-form', 'contract_info', updateContractDisplay);
         });
-    } else {
-        console.error('One or more contract elements not found', {contractEditButton, contractEditForm, contractDisplayDetails});
     }
 
-    // Handling for the client info edit form
-    let clientEditForm = document.getElementById('edit-client-form');
     if (clientEditForm) {
         clientEditForm.addEventListener('submit', function(event) {
             event.preventDefault();
             submitEditForm('edit-client-form', 'client_info', updateContractDisplay);
         });
-    } else {
-        console.error('Client form element not found', {clientEditForm});
     }
 
-    // Handling for the event details edit form
-    let eventEditForm = document.getElementById('edit-event-form');
     if (eventEditForm) {
         eventEditForm.addEventListener('submit', function(event) {
             event.preventDefault();
             submitEditForm('edit-event-form', 'event_details', updateContractDisplay);
         });
-    } else {
-        console.error('Event form element not found', {eventEditForm});
     }
 
-    // Toggle functionality for additional client and event details
-    let toggleClientButton = document.getElementById('toggleClientInfo');
-    let additionalClientInfo = document.getElementById('additionalClientInfo');
-    let toggleEventButton = document.getElementById('toggleEventDetails');
-    let additionalEventInfo = document.getElementById('additionalEventDetails');
+    // Event listener for the custom text modal
+    $('#customTextModal').on('show.bs.modal', function () {
+        const contractId = document.body.getAttribute('data-contract-id');
+        fetch(`/contracts/${contractId}/data/`)
+            .then(response => response.json())
+            .then(data => {
+                modalCustomText.value = data.custom_text || '';
+            })
+            .catch(error => {
+                console.error('Error fetching custom text:', error);
+            });
+    });
+
+    if (saveCustomTextButton) {
+        saveCustomTextButton.addEventListener('click', function() {
+            const customText = modalCustomText.value;
+            const customTextField = document.querySelector('[name="contract_info-custom_text"]');
+            if (customTextField) {
+                customTextField.value = customText;
+                $('#customTextModal').modal('hide');
+                document.getElementById('edit-contract-info-form').submit();
+            } else {
+                console.error('Custom text field not found');
+            }
+        });
+    }
+
+    // Toggle client and event info sections
+    const toggleClientButton = document.getElementById('toggleClientInfo');
+    const additionalClientInfo = document.getElementById('additionalClientInfo');
+    const toggleEventButton = document.getElementById('toggleEventDetails');
+    const additionalEventInfo = document.getElementById('additionalEventDetails');
 
     if (toggleClientButton && additionalClientInfo) {
         toggleClientButton.addEventListener('click', function() {
-            additionalClientInfo.style.display = additionalClientInfo.style.display === 'none' ? 'block' : 'none';
-            toggleClientButton.textContent = additionalClientInfo.style.display === 'none' ? 'Show More Client Info' : 'Show Less Client Info';
+            const isHidden = additionalClientInfo.style.display === 'none';
+            additionalClientInfo.style.display = isHidden ? 'block' : 'none';
+            toggleClientButton.textContent = isHidden ? 'Show Less Client Info' : 'Show More Client Info';
         });
-    } else {
-        console.error('Toggle button or additional client info section not found');
     }
 
     if (toggleEventButton && additionalEventInfo) {
         toggleEventButton.addEventListener('click', function() {
-            additionalEventInfo.style.display = additionalEventInfo.style.display === 'none' ? 'block' : 'none';
-            toggleEventButton.textContent = additionalEventInfo.style.display === 'none' ? 'Show More Event Details' : 'Show Less Event Details';
+            const isHidden = additionalEventInfo.style.display === 'none';
+            additionalEventInfo.style.display = isHidden ? 'block' : 'none';
+            toggleEventButton.textContent = isHidden ? 'Show Less Event Details' : 'Show More Event Details';
         });
-    } else {
-        console.error('Toggle button or additional event info section not found');
     }
 });
 
 function toggleEditForm(editMode) {
-    let infoDisplay = document.getElementById('contract-info');
-    let editForm = document.getElementById('edit-contract-info');
+    const infoDisplay = document.getElementById('contract-info');
+    const editForm = document.getElementById('edit-contract-info');
 
     if (editMode) {
         infoDisplay.style.display = 'none';
@@ -81,32 +100,31 @@ function toggleEditForm(editMode) {
     }
 }
 
-
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
             }
         }
-        return cookieValue;
     }
+    return cookieValue;
+}
 
 function submitEditForm(formId, formDataIdentifier, updateDisplayCallback) {
-    console.log("Form ID:", formId); // Log the form ID for debugging purposes
-    let contractId = document.body.getAttribute('data-contract-id'); // Get the contract ID from the body element
-    let form = document.getElementById(formId); // Get the form element by ID
-    console.log("Form element:", form); // Log the form element for debugging purposes
-    const csrftoken = getCookie('csrftoken'); // Get CSRF token
+    const contractId = document.body.getAttribute('data-contract-id');
+    const form = document.getElementById(formId);
+    const csrftoken = getCookie('csrftoken');
+
+    console.log("Submitting form", formId, "with contract ID", contractId);
 
     if (contractId && form) {
-        let formData = new FormData(form); // Create FormData object from the form
-        formData.append(formDataIdentifier, 'true'); // Append an identifier to distinguish between different forms
+        const formData = new FormData(form);
+        formData.append(formDataIdentifier, 'true');
 
         fetch(`/contracts/${contractId}/edit/`, {
             method: 'POST',
@@ -117,55 +135,74 @@ function submitEditForm(formId, formDataIdentifier, updateDisplayCallback) {
             body: formData
         })
         .then(response => {
+            console.log("Response status:", response.status);
             if (!response.ok) {
                 throw new Error('Network response was not OK');
             }
-            return response.json(); // Parse the JSON response
+            return response.json();
         })
         .then(data => {
+            console.log("Response data:", data);
             if (data.status === 'success') {
                 console.log(`${formDataIdentifier} updated successfully.`);
                 if (updateDisplayCallback) {
-                    updateDisplayCallback(contractId); // Call the callback function to update the UI
+                    updateDisplayCallback(contractId);
                 }
-                toggleEditForm(false); // Toggle the edit form to hide it
+                toggleEditForm(false);
+            } else if (data.status === 'unauthorized') {
+                showUnauthorizedModal(data.message);
             } else {
-                console.error(`Error updating ${formDataIdentifier}:`, data.errors); // Log any errors
-                // Display validation errors on the form
+                console.error(`Error updating ${formDataIdentifier}:`, data.message);
+                displayFormErrors(formId, data.message);
             }
         })
         .catch(error => {
-            console.error('Error:', error); // Log any network or unexpected errors
-            // Handle network or other unexpected errors
+            console.error('Error:', error);
         });
     } else {
         console.error(`Failed to submit ${formDataIdentifier} form - missing data`, {contractId, form});
     }
+}
 
-    document.getElementById('edit-contract-info-form').addEventListener('submit', function(event) {
-        event.preventDefault();
-        submitEditForm('edit-contract-info-form', 'contract_info', updateContractDisplay);
-    });
+function showUnauthorizedModal(message) {
+    const modal = document.getElementById('unauthorizedModal');
+    const modalMessage = document.getElementById('unauthorizedMessage');
 
-    document.getElementById('edit-client-form').addEventListener('submit', function(event) {
-        event.preventDefault();
-        submitEditForm('edit-client-form', 'client_info', updateContractDisplay);
-    });
+    // Debugging logs
+    console.log("modal:", modal);
+    console.log("modalMessage:", modalMessage);
 
-    document.getElementById('edit-event-form').addEventListener('submit', function(event) {
-        event.preventDefault();
-        submitEditForm('edit-event-form', 'event_details', updateContractDisplay);
-    });
+    if (modal && modalMessage) {
+        modalMessage.textContent = message;
+        modal.style.display = 'block';
+    } else {
+        console.error('Modal or modal message element not found');
+    }
+}
 
+function displayFormErrors(formId, errors) {
+    const form = document.getElementById(formId);
+    if (form) {
+        for (const [field, messages] of Object.entries(errors)) {
+            const fieldElement = form.querySelector(`[name="${field}"]`);
+            if (fieldElement) {
+                const errorContainer = document.createElement('div');
+                errorContainer.className = 'error-messages';
+                messages.forEach(message => {
+                    const errorMessage = document.createElement('p');
+                    errorMessage.textContent = message;
+                    errorContainer.appendChild(errorMessage);
+                });
+                fieldElement.parentElement.appendChild(errorContainer);
+            }
+        }
+    }
 }
 
 function updateContractDisplay(contractId) {
     fetch(`/contracts/${contractId}/data/`)
     .then(response => response.json())
     .then(data => {
-         console.log('Received data:', data); // Log the entire data object
-
-        // Update the main contract info section
         updateField('contract-location', 'Location: ' + data.location);
         updateField('contract-coordinator', 'Coordinator: ' + data.coordinator);
         updateField('contract-event-date', 'Event Date: ' + data.event_date);
@@ -173,8 +210,6 @@ function updateContractDisplay(contractId) {
         updateField('contract-csr', 'Sales Person: ' + data.csr);
         updateField('contract-lead-source', 'Lead Source: ' + data.lead_source);
 
-
-        // Check and update client information if available
         if (data.client) {
             updateField('client-primary-contact', 'Primary Contact: ' + data.client.primary_contact);
             updateField('client-primary-email', 'Primary Email: ' + data.client.primary_email);
@@ -194,16 +229,14 @@ function updateContractDisplay(contractId) {
             updateField('client-alt-email', 'Alternative Email: ' + data.client.alt_email);
             updateField('client-alt-phone', 'Alternative Phone: ' + data.client.alt_phone);
 
-            // Assuming 'data.client' is defined and contains the necessary fields
             if (data.client) {
                 updateField('header-primary-contact', 'Primary Contact: ' + data.client.primary_contact);
                 updateField('header-primary-email', 'Primary Email: ' + data.client.primary_email);
                 updateField('header-primary-phone', 'Primary Phone: ' + data.client.primary_phone1);
-                updateField('header-partner-contact', 'Partner Contact: ' + data.client.partner_contact);            }
-
+                updateField('header-partner-contact', 'Partner Contact: ' + data.client.partner_contact);
+            }
         }
 
-        // Check and update event details if available
         if (data.event) {
             updateField('event-bridal-party-qty', 'Bridal Party Quantity: ' + data.event.bridal_party_qty);
             updateField('event-ceremony-site', 'Ceremony Site: ' + data.event.ceremony_site);
@@ -221,16 +254,10 @@ function updateContractDisplay(contractId) {
             updateField('event-reception-email', 'Reception Email: ' + data.event.reception_email);
         }
 
-
-        // Update the header section
         updateField('header-location', 'Location: ' + data.location);
         updateField('header-lead-source', 'Lead Source: ' + data.lead_source);
         updateField('header-csr', 'Sales Person: ' + data.csr);
         updateField('header-status', 'Status: ' + data.status);
-
-
-
-        console.log('Contract display updated for contract ID:', contractId);
     })
     .catch(error => {
         console.error('Error updating contract display:', error);
@@ -239,12 +266,9 @@ function updateContractDisplay(contractId) {
 
 function updateField(elementId, text) {
     const element = document.getElementById(elementId);
-    console.log('Updating:', elementId, 'with', text);
     if (element) {
         element.textContent = text;
     } else {
         console.error('Element not found:', elementId);
     }
 }
-
-

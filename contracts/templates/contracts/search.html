@@ -2,23 +2,27 @@
 
 {% block title %}Search{% endblock %}
 
+
 {% block content %}
 <div class="container">
-    <!-- Nav tabs -->
-    <ul class="nav nav-tabs" id="myTab" role="tablist">
-        <li class="nav-item">
-            <a class="nav-link {% if active_tab == 'contracts' %}active{% endif %}"
-               href="?tab=contracts" role="tab">Contracts</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {% if active_tab == 'bookings' %}active{% endif %}"
-               href="?tab=bookings" role="tab">Bookings</a>
-        </li>
-    </ul>
+    <!-- Add padding above tabs -->
+    <div class="mt-4"> <!-- Add top margin for padding -->
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link {% if active_tab == 'contracts' %}active{% endif %}"
+                   href="?tab=contracts" role="tab">Contracts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if active_tab == 'bookings' %}active{% endif %}"
+                   href="?tab=bookings" role="tab">Bookings</a>
+            </li>
+        </ul>
+    </div> <!-- Close padding div -->
+
     <!-- Tab panes -->
     <div class="tab-content">
-        <!-- Contracts tab -->
-        <div class="tab-pane {% if active_tab == 'contracts' %}active{% endif %}" id="contracts" role="tabpanel" aria-labelledby="contracts-tab">
+        <div class="tab-pane {% if active_tab == 'contracts' %}active{% endif %}" id="contracts" role="tabpanel">
             {% include 'contracts/contract_search_form.html' %}
             {% if contracts %}
                 {% include 'contracts/contract_search_results.html' %}
@@ -27,11 +31,10 @@
             {% endif %}
         </div>
 
-        <!-- Bookings tab -->
-        <div class="tab-pane {% if active_tab == 'bookings' %}active{% endif %}" id="bookings" role="tabpanel" aria-labelledby="bookings-tab">
+        <div class="tab-pane {% if active_tab == 'bookings' %}active{% endif %}" id="bookings" role="tabpanel">
             {% include 'contracts/booking_search_form.html' %}
             {% if bookings %}
-                {% include 'contracts/booking_search_results.html' %}
+
             {% else %}
                 <p>No bookings found</p>
             {% endif %}

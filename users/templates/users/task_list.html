@@ -5,33 +5,22 @@
 
 <!-- Bootstrap CSS -->
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-<link rel="stylesheet" href="{% static 'users/dashboard.css' %}">
 
-<style>
-    /* Override Bootstrap styles here */
-    .header {
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        background-color: #f3f3f3 !important;
-        padding: 10px !important;
-        color: #333 !important;
-        font-size: 16px !important;
-    }
-</style>
+
+
 {% endblock %}
 
 {% block content %}
 <div class="task-container">
-    <h2>Tasks</h2>
+    <h3>Tasks</h3>
     <div class="task-actions">
         <!-- Add Task Button -->
-        <button type="button" class="btn btn-dusty-pink mb-2" data-toggle="modal" data-target="#addTaskModal"
+        <button type="button" class="btn-dusty-pink mb-2" data-toggle="modal" data-target="#addTaskModal"
                 data-sender-id="{{ request.user.id }}"
                 data-contract-id="{{ contract.contract_id }}"
                 data-note-id="{{ note.id }}">Add Task</button>
         <!-- Refresh Tasks Button -->
-        <button type="button" class="btn btn-info mb-2" onclick="window.location.reload();">Refresh Tasks</button>
+        <button type="button" class="btn-dusty-pink mb-2" onclick="window.location.reload();">Refresh Tasks</button>
     </div>
     <!-- Task List Container -->
     <div id="taskListContainer">
@@ -59,8 +48,8 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-dusty-pink" form="addTaskForm">Save Task</button>
+                    <button type="button" class="btn-close" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn-dusty-pink" form="addTaskForm">Save Task</button>
                 </div>
             </div>
         </div>
@@ -95,8 +84,8 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-dusty-pink" form="editTaskForm">Save Changes</button>
+                <button type="button" class="btn-close" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn-dusty-pink" form="editTaskForm">Save Changes</button>
             </div>
         </div>
     </div>

@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from .models import (Client, ServiceType, EventStaffBooking, Contract, AdditionalProduct, TaxRate, DiscountRule, Package,
                      AdditionalEventStaffOption, EngagementSessionOption, Location, OvertimeOption, ContractOvertime,
-                     ContractProduct, PaymentPurpose, PaymentSchedule, ChangeLog)
+                     ContractProduct, Payment, ServiceFeeType, PaymentPurpose, PaymentSchedule, ServiceFee, ChangeLog, ContractAgreement, RiderAgreement)
 
 
 admin.site.register(TaxRate)
@@ -20,14 +20,14 @@ class ServiceTypeAdmin(admin.ModelAdmin):
 
 @admin.register(Package)
 class PackageAdmin(admin.ModelAdmin):
-    list_display = ('name', 'is_active', 'price', 'service_type', 'default_text', 'package_notes')
+    list_display = ('name', 'is_active', 'price', 'service_type', 'default_text', 'rider_text', 'package_notes')
     search_fields = ('name', 'default_text', 'package_notes')
     list_filter = ('service_type',)
     list_editable = ('is_active',)
 
 @admin.register(AdditionalEventStaffOption)
 class AdditionalEventStaffOptionAdmin(admin.ModelAdmin):
-    list_display = ('name', 'is_active', 'price', 'service_type', 'default_text', 'package_notes')
+    list_display = ('name', 'is_active', 'price', 'service_type', 'default_text', 'rider_text', 'package_notes')
     search_fields = ('name', 'default_text', 'package_notes')
     list_filter = ('service_type',)
     list_editable = ('is_active',)
@@ -35,7 +35,7 @@ class AdditionalEventStaffOptionAdmin(admin.ModelAdmin):
 
 @admin.register(EngagementSessionOption)
 class EngagementSessionOptionAdmin(admin.ModelAdmin):
-    list_display = ('name', 'is_active', 'price', 'deposit')
+    list_display = ('name', 'is_active', 'price', 'default_text', 'rider_text', 'deposit')
     search_fields = ('name',)
 
 
@@ -93,7 +93,6 @@ class ContractAdmin(admin.ModelAdmin):
                        'display_product_subtotal', 'display_discounts', 'display_total_cost',
                        'amount_paid', 'balance_due', 'calculated_package_discount', 'calculated_sunday_discount')
 
-
     def calculated_package_discount(self, obj):
         return obj.calculate_package_discount()  # Assuming this method exists in your Contract model
     calculated_package_discount.short_description = 'Calculated Package Discount'
@@ -106,7 +105,7 @@ class ContractAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {
-            'fields': ('client', 'location', 'event_date', 'status')
+            'fields': ('client', 'location', 'event_date', 'status', 'custom_contract_number')  # Added custom_contract_number here
         }),
         ('Event Details', {
             'fields': ('bridal_party_qty', 'guests_qty', 'ceremony_site', 'ceremony_city', 'ceremony_state',
@@ -122,26 +121,30 @@ class ContractAdmin(admin.ModelAdmin):
         }),
         ('Staff Assignments', {
             'fields': ('photographer1', 'photographer2', 'videographer1', 'videographer2', 'dj1', 'dj2',
-                       'photobooth_op', 'prospect_photographer1', 'prospect_photographer2', 'prospect_photographer3')
+                       'photobooth_op1', 'photobooth_op2', 'prospect_photographer1', 'prospect_photographer2', 'prospect_photographer3')
         }),
-
         ('Calculated Discount Fields', {
             'fields': ('calculated_package_discount', 'calculated_sunday_discount')
         }),
-
         ('Other Discounts', {
             'fields': ('other_discounts',)
         }),
-
         # Include other fieldsets as needed
     )
 
+    def get_readonly_fields(self, request, obj=None):
+        # Make sure the custom contract number is editable
+        readonly_fields = super().get_readonly_fields(request, obj)
+        readonly_fields = list(readonly_fields)
+        if 'custom_contract_number' in readonly_fields:
+            readonly_fields.remove('custom_contract_number')
+        return readonly_fields
 
 @admin.register(OvertimeOption)
 class OvertimeOptionAdmin(admin.ModelAdmin):
-    list_display = ('role', 'rate_per_hour', 'description')
-    list_filter = ('role',)
-    search_fields = ('role',)
+    list_display = ('name', 'role', 'rate_per_hour', 'is_active', 'service_type')
+    search_fields = ('name', 'role')
+    list_filter = ('is_active', 'service_type')
 
 
 @admin.register(ContractOvertime)
@@ -153,7 +156,19 @@ class ContractOvertimeAdmin(admin.ModelAdmin):
     # Add any additional configurations you need
 
 
-admin.site.register(PaymentPurpose)
+@admin.register(PaymentPurpose)
+class PaymentPurposeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'description')
+
+    def __str__(self):
+        return self.name
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ('contract', 'amount', 'payment_method', 'date', 'payment_reference', 'memo', 'modified_by_user', 'payment_purpose')
+    search_fields = ('contract__id', 'payment_reference', 'memo')
+    list_filter = ('payment_method', 'date', 'modified_by_user', 'payment_purpose')
+    ordering = ('-date',)
+
 
 @admin.register(PaymentSchedule)
 class PaymentScheduleAdmin(admin.ModelAdmin):
@@ -162,7 +177,26 @@ class PaymentScheduleAdmin(admin.ModelAdmin):
 
     readonly_fields = ('contract', 'created_at', 'payment_summary')
 
-    @admin.register(ChangeLog)
-    class ChangeLogAdmin(admin.ModelAdmin):
-        list_display = ['timestamp', 'user', 'description']
-        readonly_fields = list_display
+@admin.register(ServiceFeeType)
+class FeeTypeAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+@admin.register(ServiceFee)
+class ServiceFeeAdmin(admin.ModelAdmin):
+    list_display = ('contract', 'amount', 'fee_type', 'description', 'applied_date')
+    search_fields = ('fee_type__name',)  # Assuming 'fee_type' is a related model
+    list_filter = ('fee_type',)
+    ordering = ('contract', 'applied_date')
+
+@admin.register(ChangeLog)
+class ChangeLogAdmin(admin.ModelAdmin):
+    list_display = ['timestamp', 'user', 'description']
+    readonly_fields = list_display
+
+    @admin.register(ContractAgreement)
+    class ContractAgreementAdmin(admin.ModelAdmin):
+        list_display = ('contract', 'signature', 'created_at', 'updated_at')
+
+    @admin.register(RiderAgreement)
+    class RiderAgreementAdmin(admin.ModelAdmin):
+        list_display = ('contract', 'rider_type', 'client_name', 'agreement_date', 'notes', 'created_at', 'updated_at')

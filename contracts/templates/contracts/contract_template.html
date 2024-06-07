@@ -18,7 +18,7 @@
         }
         .text-box {
             border: 1px solid #000;
-            min-height: 100px;
+            min-height: 40px;
             margin-bottom: 20px;
             padding: 10px;
         }
@@ -37,7 +37,7 @@
         .payment-info, .essence-rep {
             flex: 1;
             font-size: 9pt;
-            text-align: center; /* right-aligned text */
+            text-align: center; /* center-aligned text */
         }
         .payment-info strong, .essence-rep strong {
             font-weight: bold;
@@ -58,70 +58,362 @@
         .rep-details strong {
             font-weight: bold; /* bold labels */
         }
+        .agreement-details {
+            font-size: 9pt;
+            display: flex;
+            justify-content: space-between;
+        }
+
+                /* Small text for agreement description */
+        .agreement-description {
+            font-size: 8pt; /* Set to small font size */
+            text-align: center; /* Center-aligned text */
+            margin-top: 5px; /* Adds a bit of spacing after "Contractual Agreement" */
+        }
+
+        .left-column, .right-column {
+            width: 48%; /* Keeps them side by side, with a little gap */
+        }
+
+        /* New Styling for Ceremony & Reception Sections */
+        .ceremony-reception-box {
+            border: 1px solid #000;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .ceremony-reception-box strong {
+            font-weight: bold;
+        }
+
+        /* Client Info Box */
+        .client-info-box {
+            border: 1px solid #000;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="contract-header">
         <div class="logo">
-            <img src="/home/egret/django_projects/weddingbook_project/media/logo/Final_Logo.png" alt="Logo">
-            <div class="contract-date"> <strong>Contract Date:</strong> {{ contract.contract_date }}</div>
-        </div>
-        <div class="payment-info">
-            All Payments Made To:<br>
-            <strong>Essence Photo & Video</strong><br>
-            1224 Remington Rd<br>
-            Schaumburg, IL, 60173<br>
-
-        </div>
-        <div class="essence-rep">
-            <div class="company-info">
-            Office: (888) 777-7011<br>
-            Fax: (847) 923-9801<br>
-            info@essenceweddings.com<br>
-            essenceweddings.com<br>
-            </div>
-            <div class="rep-details">
-                <strong>Essence Rep:</strong> {{ contract.csr.get_full_name }}<br>
+            <img src="{{ logo_url }}" alt="Logo" style="width: 150px; height: auto;">
+            <div class="contract-date">
+                <strong>Wedding Date:</strong> {{ contract.event_date }}<br>
                 <strong>Contract No.:</strong> {{ contract.custom_contract_number }}
             </div>
         </div>
-    </div>
-
-    <div class="contact-info">
-        <!-- Existing contact info content -->
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="text-box" contenteditable="true">
-        {{ contract.package.default_text }}
-    </div>
-
-    <!-- Additional contract content goes here -->
-
-</body>
-</html>
-
-
-    <div class="contact-info">
-        <!-- Existing contact info content -->
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="text-box" contenteditable="true">
-        {{ contract.package.default_text }}
-    </div>
-
-    <!-- Loop through package texts if there are multiple -->
-    {% for package_type, text in package_texts.items %}
-        <div class="text-box" contenteditable="true">
-            <strong>{{ package_type|capfirst }} Package Details:</strong><br>
-            {{ text }}
+        <div class="payment-info">
+            Please Send Payments To:<br>
+            <strong>Essence Photo</strong><br>
+            1300 Remington Rd<br>
+            Suite B, Schaumburg<br>
+            IL, 60173
         </div>
-    {% endfor %}
+        <div class="essence-rep">
+            <div class="company-info">
+                Office: (847) 923-9800<br>
+                info@essenceweddings.com<br>
+                EssenceWeddings.com<br>
+            </div>
+        </div>
+    </div>
 
-    <!-- Additional contract content goes here -->
+    <div class="divider"></div>
 
+    <div class="contract-agreement" style="text-align: center;">
+        <strong>Contractual Agreement</strong>
+    </div>
+
+    <div class="agreement-description">
+        I (we) hereby engage Essence Weddings to render services as follows:
+    </div>
+
+
+    <div class="agreement-details">
+    <div class="left-column">
+        <p>
+            <strong>Bridal Party:</strong> {{ contract.bridal_party_qty }}<br>
+            <strong>No. of Guests:</strong> {{ contract.guests_qty }}<br>
+        </p>
+        <!-- Add a text box for the client to type in a name -->
+        <p>
+            <label for="photographer_name">Photographer Name:</label><br>
+            <input type="text" id="photographer_name" name="photographer_name">
+        </p>
+    </div>
+
+    <div class="right-column">
+        <p>
+            <strong>Services:</strong><br>
+            {% if contract.photography_package %}
+                {{ contract.photography_package.service_type }}<br>
+            {% endif %}
+            {% if contract.photography_additional %}
+                {{ contract.photography_additional.name }}<br>
+            {% endif %}
+            {% if contract.engagement_session %}
+                {{ contract.engagement_session.service_type }}<br>
+            {% endif %}
+            {% if contract.videography_package %}
+                {{ contract.videography_package.service_type }}<br>
+            {% endif %}
+            {% if contract.videography_additional %}
+                {{ contract.videography_additional.name }}<br>
+            {% endif %}
+            {% if contract.dj_package %}
+                {{ contract.dj_package.service_type }}<br>
+            {% endif %}
+            {% if contract.dj_additional %}
+                {{ contract.dj_additional.name }}<br>
+            {% endif %}
+            {% if contract.photobooth_package %}
+                {{ contract.photobooth_package.service_type }}<br>
+            {% endif %}
+            {% if photobooth_additional %}
+                {{ photobooth_additional.name }}<br>
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<!-- Divider -->
+<div class="divider"></div>
+
+<!-- Boxes below the divider -->
+<div class="agreement-details">
+    <div class="left-column">
+        <!-- Box 1 content -->
+        <div class="client-info-box">
+            <strong>Primary Contact:</strong> {{ contract.client.primary_contact }}<br>
+            <strong>Email:</strong> {{ contract.client.primary_email }}<br>
+            <strong>Phone:</strong> {{ contract.client.primary_phone1 }}<br>
+            {% if contract.client.partner_contact %}
+                <strong>Partner Contact:</strong> {{ contract.client.partner_contact }}<br>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="right-column">
+        <!-- Box 2 content -->
+        <div class="ceremony-reception-box">
+            <strong>Ceremony Site:</strong> {{ contract.ceremony_site }}<br>
+            {{ contract.ceremony_city }}, {{ contract.ceremony_state }}<br>
+            <strong>Reception Site:</strong> {{ contract.reception_site }}<br>
+            {{ contract.reception_city }}, {{ contract.reception_state }}
+        </div>
+    </div>
+</div>
+<!-- Service details section -->
+<div class="service-details">
+    <style>
+        /* Style for the service details table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top; /* Align content to the top of the cell */
+        }
+        th {
+            background-color: #f2f2f2;
+            font-size: 13px; /* Increase font size for column headers */
+        }
+        td {
+            font-size: 12px; /* Set font size for service type names, hours, and price */
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+        .default-text {
+            font-size: 9pt;
+            font-style: italic;
+        }
+    </style>
+    <table>
+        <tr>
+            <th>Service</th>
+            <th></th>
+            <th>Hours</th>
+            <th>Price</th>
+        </tr>
+        <!-- Photography Package -->
+        {% if contract.photography_package %}
+        <tr>
+            <td>Photography Package</td>
+            <td style="padding-top: 0; padding-bottom: 0;">{{ photography_package_text|safe }}</td>
+            <td>{{ contract.photography_package.hours }}</td>
+            <td>{{ contract.photography_package.price }}</td>
+        </tr>
+        {% endif %}
+
+        <!-- Photography Additional -->
+        {% if contract.photography_additional %}
+        <tr>
+            <td>Additional Photographer</td>
+            <td style="padding-top: 0; padding-bottom: 0;">{{ photography_additional_text|safe }}</td>
+            <td>{{ contract.photography_additional.hours }}</td>
+            <td>{{ contract.photography_additional.price }}</td>
+        </tr>
+        {% endif %}
+
+
+        <!-- Iterate over engagement session options for Photography -->
+        {% if contract.engagement_session %}
+        <tr>
+            <td>Engagement Session (Photography)</td>
+            <td class="default-text">{{ contract.engagement_session.name }}</td>
+            <td>{{ contract.engagement_session.hours }}</td>
+            <td>{{ contract.engagement_session.price }}</td>
+        </tr>
+        {% endif %}
+
+        {% for overtime_option in overtime_options_by_service_type.Photography %}
+        <tr>
+            <td>Overtime (Photography)</td>
+            <td class="default-text">{{ overtime_option.role. }}</td>
+            <td>{{ overtime_option.hours }}</td>
+            <td>{{ overtime_option.total_cost|floatformat:"2" }}</td>  <!-- Display total cost with 2 decimal places -->
+        </tr>
+        {% endfor %}
+
+        <!-- Videography Package -->
+        {% if contract.videography_package %}
+        <tr>
+            <td>Videography Package</td>
+            <td style="padding-top: 0; padding-bottom: 0;">{{ videography_package_text|safe }}</td>
+            <td>{{ contract.videography_package.hours }}</td>
+            <td>{{ contract.videography_package.price }}</td>
+        </tr>
+        {% endif %}
+
+        <!-- Videography Additional -->
+        {% if contract.videography_additional %}
+        <tr>
+            <td>Additional Videographer</td>
+            <td style="padding-top: 0; padding-bottom: 0;">{{ videography_additional_text|safe }}</td>
+            <td>{{ contract.videography_additional.hours }}</td>
+            <td>{{ contract.videography_additional.price }}</td>
+        </tr>
+        {% endif %}
+
+        <!-- Iterate over overtime options for Videography -->
+        {% for overtime_option in overtime_options_by_service_type.Videography %}
+        <tr>
+            <td>Overtime (Videography)</td>
+            <td class="default-text">{{ overtime_option.role }}</td>
+            <td>{{ overtime_option.hours }}</td>
+            <td>{{ overtime_option.rate_per_hour }}</td>
+        </tr>
+        {% endfor %}
+
+        <!-- DJ Package -->
+        {% if contract.dj_package %}
+        <tr>
+            <td>DJ Package</td>
+            <td style="padding-top: 0; padding-bottom: 0;">{{ dj_package_text|safe }}</td>
+            <td>{{ contract.dj_package.hours }}</td>
+            <td>{{ contract.dj_package.price }}</td>
+        </tr>
+        {% endif %}
+
+        <!-- DJ Additional -->
+        {% if contract.dj_additional %}
+        <tr>
+            <td>Additional DJ</td>
+            <td style="padding-top: 0; padding-bottom: 0;">{{ dj_additional_text|safe }}</td>
+            <td>{{ contract.dj_additional.hours }}</td>
+            <td>{{ contract.dj_additional.price }}</td>
+        </tr>
+        {% endif %}
+
+        <!-- Iterate over overtime options for DJ -->
+        {% for overtime_option in overtime_options_by_service_type.DJ %}
+        <tr>
+            <td>Overtime (DJ)</td>
+            <td class="default-text">{{ overtime_option.role }}</td>
+            <td>{{ overtime_option.hours }}</td>
+            <td>{{ overtime_option.rate_per_hour }}</td>
+        </tr>
+        {% endfor %}
+
+        <!-- Photobooth Package -->
+        {% if contract.photobooth_package %}
+        <tr>
+            <td>Photo Booth Package</td>
+            <td style="padding-top: 0; padding-bottom: 0;">{{ photobooth_package_text|safe }}</td>
+            <td>{{ contract.photobooth_package.hours }}</td>
+            <td>{{ contract.photobooth_package.price }}</td>
+        </tr>
+        {% endif %}
+
+        <!-- Photobooth Additional -->
+        {% if contract.photobooth_additional %}
+        <tr>
+            <td>Additional Photo Booth</td>
+            <td style="padding-top: 0; padding-bottom: 0;">{{ photobooth_additional_text|safe }}</td>
+            <td>{{ contract.photobooth_additional.hours }}</td>
+            <td>{{ contract.photobooth_additional.price }}</td>
+        </tr>
+        {% endif %}
+
+        <!-- Iterate over overtime options for Photobooth -->
+        {% for overtime_option in overtime_options_by_service_type.Photobooth %}
+        <tr>
+            <td>Overtime (Photobooth)</td>
+            <td class="default-text">{{ overtime_option.role }}</td>
+            <td>{{ overtime_option.hours }}</td>
+            <td>{{ overtime_option.rate_per_hour }}</td>
+        </tr>
+        {% endfor %}
+
+    <!-- Service cost section -->
+    <tr>
+        <td colspan="3" style="text-align: right;"><strong>Service Cost:</strong></td>
+        <td>${{ total_service_cost }}</td>
+    </tr>
+
+    <!-- Discounts section -->
+    <tr>
+        <td colspan="3" style="text-align: right;"><strong>Total Discounts:</strong></td>
+        <td>${{ total_discount }}</td>
+    </tr>
+
+    <!-- Total cost after discounts section -->
+    <tr>
+        <td colspan="3" style="text-align: right;"><strong>Total Cost after Discounts:</strong></td>
+        <td>${{ total_cost_after_discounts }}</td>
+    </tr>
+    </table>
+
+
+
+    <!-- Custom text area -->
+    <tr>
+        <td colspan="4">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="4">
+            <div class="text-box">
+                {{ contract.custom_text }}
+            </div>
+        </td>
+    </tr>
+
+    <!-- Line for initials -->
+    <tr>
+        <td colspan="4">
+            <div class="initials-line">
+                Initials: ____________________________
+            </div>
+        </td>
+    </tr>
+</div>
 </body>
 </html>

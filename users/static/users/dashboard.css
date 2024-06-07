@@ -159,24 +159,7 @@ label {
     margin: 20px;
 }
 
-.btn-dusty-pink, button, input[type="submit"], input[type="reset"] {
-    background-color: #c67c85; /* Dusty Pink */
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 5px; /* Adjust for rounded corners */
-    font-size: 16px; /* Standard font size */
-    font-weight: bold; /* Bold text */
-}
 
-.btn-dusty-pink:hover, button:hover, input[type="submit"]:hover, input[type="reset"]:hover {
-    background-color: #b55f66; /* Darker dusty pink for hover */
-}
 
 
 /* Search results table styling */
@@ -248,13 +231,5 @@ body {
 
 .btn:last-child {
     margin-right: 0; /* Remove margin for the last button */
-}
-
-.task-container {
-    margin: 40px !important;
-    background-color: #ffffff; /* Background color for the box */
-    padding: 15px; /* Padding inside the box */
-    border: 1px solid #ddd; /* Border for the box */
-    border-radius: 5px; /* Optional: Rounded corners */
 }
 

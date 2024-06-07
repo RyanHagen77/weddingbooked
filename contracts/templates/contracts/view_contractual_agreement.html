@@ -1,0 +1,88 @@
+@login_required
+def client_rider_agreement(request, contract_id, rider_type):
+    contract = get_object_or_404(Contract, pk=contract_id)
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
+    if request.method == 'POST':
+        form = ContractAgreementForm(request.POST)
+        if form.is_valid():
+            agreement = form.save(commit=False)
+            agreement.contract = contract
+            agreement.signature = form.cleaned_data.get('main_signature')
+
+            latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
+            agreement.version_number = latest_agreement.version_number + 1 if latest_agreement else 1
+            agreement.save()
+
+            rider_signature = request.POST.get('signature')
+            if rider_signature:
+                rider_agreement = RiderAgreement(
+                    contract=contract,
+                    rider_type=rider_type,
+                    signature=rider_signature,
+                )
+                rider_agreement.save()
+
+            portal_url = reverse('contracts:client_portal', args=[contract_id])
+
+            return render(request, 'contracts/status_page.html', {
+                'message': 'You\'re all set, thank you!',
+                'portal_url': portal_url
+            })
+        else:
+            portal_url = reverse('contracts:client_portal', args=[contract_id])
+
+            return render(request, 'contracts/status_page.html', {
+                'message': 'There was an error submitting the agreements.',
+                'portal_url': portal_url
+            })
+    else:
+        form = ContractAgreementForm()
+
+    package_texts = {
+        'photography': linebreaks(contract.photography_package.default_text) if contract.photography_package else None,
+        'videography': linebreaks(contract.videography_package.default_text) if contract.videography_package else None,
+        'dj': linebreaks(contract.dj_package.default_text) if contract.dj_package else None,
+        'photobooth': linebreaks(contract.photobooth_package.default_text) if contract.photobooth_package else None,
+    }
+
+    additional_services_texts = {
+        'photography_additional': linebreaks(contract.photography_additional.default_text) if contract.photography_additional else None,
+        'videography_additional': linebreaks(contract.videography_additional.default_text) if contract.videography_additional else None,
+        'dj_additional': linebreaks(contract.dj_additional.default_text) if contract.dj_additional else None,
+        'photobooth_additional': linebreaks(contract.photobooth_additional.default_text) if contract.photobooth_additional else None,
+    }
+
+    rider_texts = {
+        'photography': linebreaks(contract.photography_package.rider_text) if contract.photography_package else '',
+        'videography': linebreaks(contract.videography_package.rider_text) if contract.videography_package else '',
+        'dj': linebreaks(contract.dj_package.rider_text) if contract.dj_package else '',
+        'photobooth': linebreaks(contract.photobooth_package.rider_text) if contract.photobooth_package else '',
+    }
+
+    total_service_cost = contract.calculate_total_service_cost()
+    total_discount = contract.calculate_discount()
+    total_cost_after_discounts = contract.calculate_total_service_cost_after_discounts()
+
+    photographer_choices = [
+        contract.prospect_photographer1,
+        contract.prospect_photographer2,
+        contract.prospect_photographer3
+    ]
+
+    context = {
+        'contract': contract,
+        'logo_url': logo_url,
+        'package_texts': package_texts,
+        'additional_services_texts': additional_services_texts,
+        'rider_texts': rider_texts,
+        'total_service_cost': total_service_cost,
+        'total_discount': total_discount,
+        'total_cost_after_discounts': total_cost_after_discounts,
+        'photographer_choices': photographer_choices,
+        'form': form,
+        'rider_text': rider_texts.get(rider_type, ""),
+        'rider_type': rider_type,
+    }
+
+    return render(request, 'contracts/client_rider_agreement.html', context)

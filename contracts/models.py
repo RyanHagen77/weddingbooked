@@ -1,12 +1,18 @@
 
+from django.contrib.contenttypes.models import ContentType
 from decimal import Decimal, ROUND_HALF_UP
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, EmailValidator
 from django.db import models
 from django.core.validators import RegexValidator
 from django.utils import timezone
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
+import json
+from django.http import HttpResponse, JsonResponse
 from .constants import SERVICE_ROLE_MAPPING  # Adjust the import path as needed
 
 
@@ -16,6 +22,8 @@ phone_validator = RegexValidator(
 )
 
 CustomUser = get_user_model()
+
+ROLE_CHOICES = [(key, value) for key, value in SERVICE_ROLE_MAPPING.items()]
 
 class Location(models.Model):
     name = models.CharField(max_length=255)
@@ -87,6 +95,8 @@ class Client(models.Model):
         blank=True,
         null=True
     )
+    def get_primary_contact_last_name(self):
+        return self.primary_contact.split()[-1][:3].upper()
 
     def __str__(self):
         return self.primary_contact
@@ -100,6 +110,7 @@ class Package(models.Model):
     service_type = models.ForeignKey('ServiceType', on_delete=models.CASCADE, null=True, blank=True, related_name='packages')
     hours = models.IntegerField(verbose_name="Hours", default=0)
     default_text = models.TextField(blank=True, help_text="Default text for the package")
+    rider_text = models.TextField(blank=True, help_text="Rider for the package")
     package_notes = models.TextField(blank=True, help_text="Additional notes for the package")
 
     def __str__(self):
@@ -115,6 +126,7 @@ class AdditionalEventStaffOption(models.Model):
     service_type = models.ForeignKey('ServiceType', on_delete=models.CASCADE, null=True, blank=True, related_name='event_staff_options')
     hours = models.IntegerField(verbose_name="Hours", default=0)
     default_text = models.TextField(blank=True, help_text="Default text for the staff option")
+    rider_text = models.TextField(blank=True, help_text="Rider for the package")
     package_notes = models.TextField(blank=True, help_text="Additional notes for the staff option")
 
     def __str__(self):
@@ -127,7 +139,11 @@ class EngagementSessionOption(models.Model):
     price = models.DecimalField(max_digits=8, decimal_places=2)
     deposit = models.DecimalField(max_digits=8, decimal_places=2, verbose_name="Deposit Amount")
     default_text = models.TextField(blank=True, help_text="Default text for the package")
+    rider_text = models.TextField(blank=True, help_text="Rider for the package")
     package_notes = models.TextField(blank=True, help_text="Additional notes for the package")
+    service_type = models.ForeignKey('ServiceType', on_delete=models.CASCADE, null=True, blank=True, related_name='engagement_session_options')
+
+
 
     def __str__(self):
         return self.name
@@ -147,24 +163,26 @@ class AdditionalProduct(models.Model):
 
 
 class OvertimeOption(models.Model):
-    role = models.CharField(max_length=100)  # e.g., "Photographer 1"
+    role = models.CharField(max_length=50, choices=ROLE_CHOICES)
+    name = models.CharField(max_length=100)  # For dropdown display
     is_active = models.BooleanField(default=True, verbose_name="Active")
     rate_per_hour = models.DecimalField(max_digits=6, decimal_places=2)
     description = models.TextField(blank=True, null=True)
     service_type = models.ForeignKey(ServiceType, on_delete=models.CASCADE, related_name='overtime_options')
 
     def __str__(self):
-        return f"{self.role} - ${self.rate_per_hour}/hr"
-
+        return f"{self.name} - ${self.rate_per_hour}/hr"
 
 class StaffOvertime(models.Model):
-    staff_member = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    contract = models.ForeignKey('Contract', on_delete=models.CASCADE)  # Corrected reference
+    staff_member = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    contract = models.ForeignKey('Contract', on_delete=models.CASCADE)
     overtime_option = models.ForeignKey(OvertimeOption, on_delete=models.SET_NULL, null=True)
+    role = models.CharField(max_length=50, choices=ROLE_CHOICES)
     overtime_hours = models.DecimalField(max_digits=4, decimal_places=2)
 
     def __str__(self):
         return f"{self.staff_member.username} - {self.overtime_hours} hours for {self.contract}"
+
 
 class Discount(models.Model):
     memo = models.TextField(blank=True, null=True)
@@ -227,6 +245,7 @@ class Contract(models.Model):
     )
 
     contract_id = models.AutoField(primary_key=True)
+    old_contract_number = models.CharField(max_length=50, unique=False, blank=True, null=True)
     custom_contract_number = models.CharField(max_length=50, unique=True, blank=True, null=True)
     contract_date = models.DateField(auto_now_add=True)
     event_date = models.DateField()
@@ -289,8 +308,13 @@ class Contract(models.Model):
                             related_name='dj1_contracts')
     dj2 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
                             related_name='dj2_contracts')
-    photobooth_op = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
-                                      related_name='photobooth_contracts')
+    photobooth_op1 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                       related_name='photobooth_op1_contracts')
+    photobooth_op2 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                       related_name='photobooth_op2_contracts')
+
+    # Other fields...
+
 
     # Prospect photographer fields
     prospect_photographer1 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
@@ -372,6 +396,10 @@ class Contract(models.Model):
         through='ContractOvertime',
         related_name='contracts'
     )
+
+    # For special terms and conditions.
+    custom_text = models.TextField(blank=True, null=True)
+
 
     package_discount_version = models.IntegerField(default=1)
     sunday_discount_version = models.IntegerField(default=1)
@@ -532,6 +560,11 @@ class Contract(models.Model):
         # Calculate tax based on the contract's tax rate
         return taxable_amount * self.tax_rate / 100
 
+    def calculate_total_service_fees(self):
+        """Calculate the total of all service fees."""
+        return sum(fee.amount for fee in self.servicefees.all())
+
+
     def calculate_total_product_cost(self):
         """Calculate the total cost of products, including tax."""
         product_subtotal = self.calculate_product_subtotal()
@@ -556,6 +589,7 @@ class Contract(models.Model):
         return self.calculate_discount()
     display_discounts.short_description = "Total Discounts"
 
+
     def display_total_cost(self):
         """Method to display the total cost in the admin interface or other views."""
         return self.calculate_total_cost()
@@ -578,24 +612,17 @@ class Contract(models.Model):
                    self.contract_products.all())
 
     def calculate_total_cost(self):
-        """Calculate the total cost including packages, additional staff, additional products, overtime, tax, and discounts."""
-        # Calculate total service cost, which includes packages, additional staff, and overtime
+        """Calculate the total cost including services, products, tax, discounts, and service fees."""
         total_service_cost = self.calculate_total_service_cost()
-
-        # Calculate additional products cost
+        total_service_fees = self.calculate_total_service_fees()  # Calculate total service fees
         additional_products_cost = self.calculate_product_subtotal()
 
-        # Sum of all costs before tax and discount
-        subtotal = total_service_cost + additional_products_cost
+        subtotal = total_service_cost + additional_products_cost + total_service_fees  # Include service fees
 
-        # Calculate tax and discounts
         tax = self.calculate_tax()
         discounts = self.calculate_discount()
 
-        # Final total cost after adding tax and subtracting discounts
         total_cost = subtotal + tax - discounts
-
-        # Ensure the total is rounded to two decimal places
         return total_cost.quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
 
     @property
@@ -632,8 +659,29 @@ class Contract(models.Model):
             year, month = timezone.now().strftime("%y"), timezone.now().strftime("%m")
             last_contract = Contract.objects.filter(custom_contract_number__startswith=f"{year}-{month}").order_by(
                 '-custom_contract_number').first()
+
+            print(f"Last contract: {last_contract}")
+
             new_number = int(last_contract.custom_contract_number.split('-')[-1]) + 1 if last_contract else 1
-            self.custom_contract_number = f"{year}-{month}-{str(new_number).zfill(2)}"
+
+            # Extract first 3 letters of the primary contact's last name
+            if self.client.primary_contact:
+                name_parts = self.client.primary_contact.split()
+                if len(name_parts) > 1:
+                    primary_contact_last_name = name_parts[-1][:3].upper()
+                else:
+                    primary_contact_last_name = name_parts[0][:3].upper()  # In case only one name is provided
+                print(f"Primary contact last name (first 3 letters): {primary_contact_last_name}")
+            else:
+                primary_contact_last_name = "UNK"  # Fallback in case primary_contact is not set
+                print("Primary contact last name is not set. Using 'UNK' as fallback.")
+
+            # Format the custom contract number as COU24-05-06
+            self.custom_contract_number = f"{primary_contact_last_name}{year}-{month}-{str(new_number).zfill(2)}"
+            print(f"Generated custom contract number: {self.custom_contract_number}")
+        else:
+            print("Custom contract number already set.")
+
 
         # Set tax rate based on location before saving
         tax_rate_obj = TaxRate.objects.filter(location=self.location, is_active=True).first()
@@ -643,7 +691,7 @@ class Contract(models.Model):
             self.tax_rate = Decimal('0.00')  # Default tax rate if none is found
 
         # Save the instance to ensure it has a primary key for further calculations
-        super().save(*args, **kwargs)
+        super(Contract, self).save(*args, **kwargs)
 
         # Recalculate and store the tax amount
         taxable_amount = Decimal('0.00')
@@ -652,9 +700,6 @@ class Contract(models.Model):
                 taxable_amount += contract_product.product.price * contract_product.quantity
         self.tax_amount = taxable_amount * self.tax_rate / 100
 
-        # Recalculate the total cost and apply discounts
-        self.total_cost = self.calculate_total_cost()
-
         # Recalculate and store the package discount
         package_based_discount = self.calculate_package_discount()
         self.calculated_discount = Decimal(package_based_discount)  # Update this field with the calculated discount
@@ -662,8 +707,9 @@ class Contract(models.Model):
         # Recalculate the total discount considering other discounts and package discount
         self.total_discount = self.calculate_discount()
 
-        # Save the instance again to update the calculated_discount and total_discount
-        super().save(*args, **kwargs)
+        # Recalculate the total cost and apply discounts
+        self.total_cost = self.calculate_total_cost()  # Update total cost before saving
+        super(Contract, self).save(*args, **kwargs)  # Save the contract with updated total
 
 
 class ContractOvertime(models.Model):
@@ -689,14 +735,20 @@ class ContractProduct(models.Model):
 
 
 class ContractDocument(models.Model):
-    contract = models.ForeignKey(Contract, related_name='documents', on_delete=models.CASCADE)
+    contract = models.ForeignKey('Contract', related_name='documents', on_delete=models.CASCADE)
     document = models.FileField(upload_to='contract_documents/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    is_visible = models.BooleanField(default=True)  # New field
+    is_client_visible = models.BooleanField(default=True, help_text="Check if this document should be visible to clients.")
 
     def __str__(self):
         return f"Document for {self.contract}"
 
+class PaymentPurpose(models.Model):
+    name = models.CharField(max_length=50)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
 
 class Payment(models.Model):
     PAYMENT_CHOICES = [
@@ -713,6 +765,8 @@ class Payment(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     payment_reference = models.TextField(blank=True, null=True)
     memo = models.CharField(max_length=255, blank=True, null=True)
+    modified_by_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, verbose_name="Modified by")
+    payment_purpose = models.ForeignKey(PaymentPurpose, on_delete=models.SET_NULL, null=True, blank=True, related_name='payments')
 
     def save(self, *args, **kwargs):
         if self._state.adding:  # Check if the instance is being added (not updated)
@@ -720,39 +774,11 @@ class Payment(models.Model):
             amount_paid = self.contract.amount_paid
             if self.amount > (total_cost - amount_paid):
                 raise ValueError('Payment cannot exceed balance due.')
-            description = f"Added new payment of {self.amount} via {self.payment_method} for contract {self.contract.pk}"
-        else:
-            original = Payment.objects.get(pk=self.pk)
-            description = "Updated payment #{0}:".format(self.pk)
-            changes = []
-            if original.amount != self.amount:
-                changes.append(f"amount from {original.amount} to {self.amount}")
-            if original.payment_method != self.payment_method:
-                changes.append(f"method from {original.payment_method} to {self.payment_method}")
-            if original.memo != self.memo:
-                changes.append(f"memo from '{original.memo}' to '{self.memo}'")
-            description += ", ".join(changes)
-
-            if changes:
-                ChangeLog.objects.create(
-                    user=self.modified_by_user,  # Make sure this field is captured or passed
-                    description=description
-                )
 
         super().save(*args, **kwargs)
-        if self._state.adding:
-            ChangeLog.objects.create(
-                user=self.modified_by_user,  # This should be provided or derived from context
-                description=description
-            )
 
 
-class PaymentPurpose(models.Model):
-    name = models.CharField(max_length=50)
-    description = models.TextField(blank=True)
 
-    def __str__(self):
-        return self.name
 
 class PaymentSchedule(models.Model):
     contract = models.OneToOneField(Contract, on_delete=models.CASCADE, related_name='payment_schedule')
@@ -777,6 +803,22 @@ class SchedulePayment(models.Model):
     def __str__(self):
         return f'{self.purpose} - {self.amount} due on {self.due_date}'
 
+class ServiceFeeType(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+class ServiceFee(models.Model):
+    contract = models.ForeignKey(Contract, related_name='servicefees', on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    description = models.TextField(blank=True, default='')  # Allow blank and provide a default
+    fee_type = models.ForeignKey(ServiceFeeType, on_delete=models.SET_NULL, null=True, default=None)
+    applied_date = models.DateField()  # Date field for the date the fee was applied
+
+    def __str__(self):
+        return f"Service Fee - {self.amount}"
+
+
 class EventStaffBookingManager(models.Manager):
     pass
 
@@ -785,9 +827,8 @@ class EventStaffBooking(models.Model):
     STATUS_CHOICES = (
         ('PROSPECT', 'Prospect'),
         ('PENDING', 'Pending'),
-        ('DECLINED', 'Declined'),
         ('APPROVED', 'Approved'),
-        ('CLEARED', 'Cleared'),
+        ('CLEARED', 'Cleared'),  # Assuming 'Cleared' status is needed as referenced in the clear method
     )
 
     ROLE_CHOICES = (
@@ -798,7 +839,8 @@ class EventStaffBooking(models.Model):
         ('VIDEOGRAPHER2', 'Videographer 2'),
         ('DJ1', 'DJ 1'),
         ('DJ2', 'DJ 2'),
-        ('PHOTOBOOTH_OP', 'Photobooth Operator'),
+        ('PHOTOBOOTH_OP1', 'Photobooth Operator 1'),
+        ('PHOTOBOOTH_OP2', 'Photobooth Operator 2'),
         ('PROSPECT1', 'Prospect Photographer 1'),
         ('PROSPECT2', 'Prospect Photographer 2'),
         ('PROSPECT3', 'Prospect Photographer 3')
@@ -815,20 +857,79 @@ class EventStaffBooking(models.Model):
     staff = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-
     )
-    contract = models.ForeignKey('Contract', on_delete=models.CASCADE)  # Replace 'Contract' with your actual
-    # Contract model
-    hours_booked = models.PositiveIntegerField(choices=HOURS_CHOICES,
-                                               null=True, blank=True)
+    contract = models.ForeignKey('Contract', on_delete=models.CASCADE)
+    hours_booked = models.PositiveIntegerField(choices=HOURS_CHOICES, null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
     confirmed = models.BooleanField(default=False)
     booking_notes = models.TextField(blank=True, null=True)
 
     class Meta:
-        unique_together = ('contract', 'role')  # Prevents duplicate roles within the same contract
+        unique_together = ('contract', 'role')
 
-    objects = EventStaffBookingManager()
+    def save(self, *args, **kwargs):
+        # Check if the request is provided and set it as an attribute
+        request = kwargs.pop('request', None)
+        if request:
+            self._request = request
+
+        # Get the original booking if it exists
+        if not self._state.adding:
+            original = EventStaffBooking.objects.get(pk=self.pk)
+            # Check if the status has changed
+            if original.status != self.status:
+                self.handle_status_change(original.status, self.status)
+
+        super().save(*args, **kwargs)
+        self.update_contract_role()
+
+    def handle_status_change(self, old_status, new_status):
+        if old_status not in ['PENDING', 'APPROVED'] and new_status in ['PENDING', 'APPROVED']:
+            # Remove staff from availability when status is set to PENDING or APPROVED
+            Availability.objects.update_or_create(
+                staff=self.staff,
+                date=self.contract.event_date,
+                defaults={'available': False}
+            )
+        elif old_status in ['PENDING', 'APPROVED'] and new_status not in ['PENDING', 'APPROVED']:
+            # Add staff back to availability when status is changed from PENDING or APPROVED
+            Availability.objects.update_or_create(
+                staff=self.staff,
+                date=self.contract.event_date,
+                defaults={'available': True}
+            )
+        elif new_status == 'CLEARED':
+            # Ensure availability is updated when status is cleared
+            Availability.objects.update_or_create(
+                staff=self.staff,
+                date=self.contract.event_date,
+                defaults={'available': True}
+            )
+
+        if old_status != 'APPROVED' and new_status == 'APPROVED':
+            # Send email to the staff when booking is marked as 'Approved'
+            self.send_booking_email(self._request, self.staff, self.contract, self.get_role_display(), is_update=False)
+
+    def send_booking_email(self, request, staff, contract, role, is_update):
+        context = {
+            'user': staff,
+            'contract': contract,
+            'role': role,
+            'domain': get_current_site(request).domain,
+            'is_update': is_update,
+        }
+        subject = 'New Booking Assigned'
+        message = render_to_string('communication/booking_assignment_email.html', context, request=request)
+        from_email = 'testmydjango420@gmail.com'
+        to_email = [staff.email]
+
+        send_mail(
+            subject,
+            message,
+            from_email,
+            to_email,
+            fail_silently=False,
+        )
 
     def clear(self):
         """Clears the current booking by changing its status to 'CLEARED'."""
@@ -851,11 +952,31 @@ class EventStaffBooking(models.Model):
                 defaults={'status': 'PENDING', 'hours_booked': None})  # Update with appropriate defaults
             return new_booking
 
+    def add_communication(self, content, user):
+        """Adds a new communication for this booking."""
+        from communication.models import UnifiedCommunication  # Lazy import
+
+        UnifiedCommunication.objects.create(
+            content=content,
+            note_type='booking',
+            created_by=user,
+            content_type=ContentType.objects.get_for_model(self),
+            object_id=self.pk
+        )
+
+    def get_communications(self):
+        """Fetches all communications for this booking."""
+        from communication.models import UnifiedCommunication  # Lazy import
+
+        return UnifiedCommunication.objects.filter(content_type=ContentType.objects.get_for_model(self),
+                                                   object_id=self.pk)
+
     def total_cost(self):
         """Calculates the total cost for this booking."""
         service = Service.objects.get(role_identifier=self.role)
         return service.hourly_rate * self.hours_booked
 
+    @staticmethod
     def total_service_cost(contract_id):
         """Calculates the total service cost for a given contract."""
         bookings = EventStaffBooking.objects.filter(contract_id=contract_id)
@@ -883,42 +1004,47 @@ class EventStaffBooking(models.Model):
                 setattr(self.contract, role_field, self.staff)
             self.contract.save()
 
-    def save(self, *args, **kwargs):
-        if not self._state.adding and self.pk:
-            original = EventStaffBooking.objects.get(pk=self.pk)
-            if original.status != self.status:
-                ChangeLog.objects.create(
-                    user=self.modified_by_user,  # Ensure this is passed or captured
-                    description=f"Changed status from {original.status} to {self.status} for booking ID {self.pk}",
-                    previous_value=original.status,
-                    new_value=self.status
-                )
-        super().save(*args, **kwargs)
-
-
 class Availability(models.Model):
     staff = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-
     )
-    date = models.DateField()
+    date = models.DateField(blank=True, null=True)  # Nullable for recurrent unavailability
     available = models.BooleanField(default=True)
+    always_off_days = models.JSONField(default=list)  # Stores weekdays as integers, e.g., [0, 6]
 
     objects = models.Manager()  # Default manager
 
     def __str__(self):
-        return f"{self.staff.username} - {self.date}"
+        if self.date:
+            return f"{self.staff.username} - {self.date}"
+        else:
+            days_off = ', '.join(str(day) for day in self.always_off_days)
+            return f"{self.staff.username} - Always off on days: {days_off}"
 
     @classmethod
     def get_available_staff_for_date(cls, date):
-        # Your method implementation
-        # Use CustomUser instead of calling get_user_model() again
-        unavailable_staff_ids = cls.objects.filter(date=date, available=False).values_list('staff_id', flat=True)
-        booked_staff_ids = EventStaffBooking.objects.filter(contract__event_date=date, confirmed=True).values_list(
-            'staff_id', flat=True)
-        all_unavailable_ids = list(set(unavailable_staff_ids) | set(booked_staff_ids))
+        weekday = date.weekday()
+
+        # Find staff who are unavailable on the specific date
+        unavailable_staff_ids = cls.objects.filter(
+            Q(date=date, available=False) |
+            Q(always_off_days__contains=[weekday])
+        ).values_list('staff_id', flat=True)
+
+        # Find staff who are booked and confirmed or pending on the specific date
+        booked_staff_ids = EventStaffBooking.objects.filter(
+            contract__event_date=date,
+            status__in=['APPROVED', 'PENDING']
+        ).values_list('staff_id', flat=True)
+
+        # Combine both unavailable and booked staff IDs
+        all_unavailable_ids = set(unavailable_staff_ids) | set(booked_staff_ids)
+
+        # Use CustomUser to exclude staff who are unavailable or booked
+        CustomUser = get_user_model()
         return CustomUser.objects.exclude(id__in=all_unavailable_ids)
+
 class Service(models.Model):
     role_identifier = models.CharField(max_length=30)  # Match this with ROLE_CHOICES in EventStaffBooking
     name = models.CharField(max_length=100)
@@ -932,6 +1058,38 @@ class ChangeLog(models.Model):
     description = models.TextField()
     previous_value = models.TextField(blank=True, null=True)
     new_value = models.TextField(blank=True, null=True)
+    contract = models.ForeignKey('Contract', on_delete=models.CASCADE, related_name='changelogs')  # Assuming 'Contract' is the correct model name
 
     def __str__(self):
         return f"{self.timestamp} - {self.user}"
+
+class ContractAgreement(models.Model):
+    contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name='contract_agreements')
+    version_number = models.IntegerField()
+    photographer_choice = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    signature = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    # Fields to store service details at the time of saving
+    photography_service = models.CharField(max_length=255, blank=True, null=True)
+    videography_service = models.CharField(max_length=255, blank=True, null=True)
+    dj_service = models.CharField(max_length=255, blank=True, null=True)
+    photobooth_service = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return f"Agreement for {self.contract} - Version {self.version_number}"
+
+
+class RiderAgreement(models.Model):
+    contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name='rider_agreements')
+    rider_type = models.CharField(max_length=50)
+    signature = models.TextField()
+    client_name = models.CharField(max_length=255, blank=True, null=True)
+    agreement_date = models.DateField(blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    rider_text = models.TextField(blank=True, null=True)  # Add this field
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.contract} - {self.rider_type}"

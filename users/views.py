@@ -15,12 +15,9 @@ from communication.models import Task, UnifiedCommunication
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.db import transaction
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.views.decorators.http import require_http_methods
-from django.utils.dateparse import parse_date
-
-
-
+import json
 
 def user_login_view(request):
     if request.method == 'POST':
@@ -42,7 +39,6 @@ def user_logout_view(request):
     logout(request)
     return redirect('users:login')
 
-
 class OfficeStaffListView(ListView):
     model = CustomUser
     template_name = 'office_staff_list.html'
@@ -51,11 +47,11 @@ class OfficeStaffListView(ListView):
 
 @login_required
 def office_staff_dashboard(request, pk):
-    customuser = get_object_or_404(CustomUser, pk=pk)
+    staff_member = get_object_or_404(CustomUser, pk=pk)
     contract_form = ContractForm()  # Instantiate your contract form
     tasks = Task.objects.filter(assigned_to=request.user).order_by('due_date')
     context = {
-        'customuser': customuser,
+        'staff_member': staff_member,
         'contract_form': contract_form,  # Add the form to the context
         'tasks': tasks
     }
@@ -144,7 +140,7 @@ def update_task(request, task_id):
         # If the form is not valid, return the form errors
         return JsonResponse({'success': False, 'errors': form.errors.as_json()})
 
-
+@login_required
 @require_POST
 def mark_complete(request, task_id):
     task = get_object_or_404(Task, pk=task_id)
@@ -156,6 +152,7 @@ def mark_complete(request, task_id):
     task_list_html = render_to_string('users/task_list_snippet.html', {'tasks': tasks})
 
     return JsonResponse({'success': True, 'task_list_html': task_list_html})
+
 class OfficeStaffCreateView(CreateView):
     model = CustomUser
     form_class = OfficeStaffForm
@@ -168,56 +165,24 @@ class OfficeStaffUpdateView(UpdateView):
     template_name = 'office_staff_form.html'
 
 
+@login_required
 def event_staff_dashboard(request, pk):
-    customuser = get_object_or_404(CustomUser, pk=pk)
+    # Retrieve the staff member
+    staff_member = get_object_or_404(CustomUser, pk=pk)
 
-    if request.method == 'POST':
-        content = request.POST.get('content')
-        booking_id = request.POST.get('booking_id')
-
-        if booking_id:
-            booking = EventStaffBooking.objects.get(pk=booking_id)
-            new_note = Note.objects.create(content=content, booking=booking, created_by=request.user)
-
-            return JsonResponse({
-                'success': True,
-                'note_id': new_note.id,
-                'author': request.user.username,
-                'timestamp': new_note.created_at.strftime('%Y-%m-%d %H:%M:%S')
-            })
-        else:
-            return JsonResponse({'success': False, 'error': 'Invalid booking_id'})
-
-    bookings = EventStaffBooking.objects.filter(staff=customuser).exclude(status='DECLINED')
+    # Fetch bookings for the staff member that are either approved or confirmed
+    bookings = EventStaffBooking.objects.filter(
+        staff=staff_member
+    ).filter(
+        Q(status='APPROVED') | Q(confirmed=True)
+    )
 
     context = {
-        'CustomUser': CustomUser,
+        'staff_member': staff_member,
         'bookings': bookings,
     }
+
     return render(request, 'users/event_staff_dashboard.html', context)
-
-@login_required
-def profile_redirect(request):
-    return redirect('users:event_staff_dashboard', pk=request.user.pk)
-
-
-def approve_booking(request, pk):
-    booking = get_object_or_404(EventStaffBooking, pk=pk)
-    if request.method == 'POST':
-        booking.status = 'APPROVED'
-        booking.confirmed = True  # set confirmed to True when the booking is approved
-        booking.save()
-        return redirect('users:event_staff_profile', pk=request.user.pk)
-    return HttpResponseNotAllowed(['POST'])
-
-
-def decline_booking(request, pk):
-    booking = get_object_or_404(EventStaffBooking, pk=pk)
-    if request.method == 'POST':
-        booking.status = 'DECLINED'
-        booking.save()
-    return redirect('users:event_staff_profile', pk=booking.staff.pk)
-
 
 def event_staff(request):
     # Get role from request parameters or default to 'PHOTOGRAPHER'
@@ -246,7 +211,7 @@ def event_staff(request):
         'roles': roles,
         'current_role': role_name
     })
-
+@login_required
 @require_http_methods(["POST"])
 def update_event_staff_ranking(request):
     try:
@@ -264,23 +229,33 @@ def update_event_staff_ranking(request):
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 def event_staff_schedule(request, user_id):
-    photographer = CustomUser.objects.get(id=user_id)
+    staff_member = CustomUser.objects.get(id=user_id)
     # Assume we have a model or method to fetch scheduled days off or events
-    days_off = Availability.objects.filter(staff=photographer, available=False).values_list('date', flat=True)
+    days_off = Availability.objects.filter(staff=staff_member, available=False).values_list('date', flat=True)
     return render(request, 'users/event_staff_schedule.html', {
-        'photographer': photographer,
+        'staff_member': staff_member,
         'days_off': days_off,
     })
 
+
 @require_http_methods(["GET"])
 def get_event_staff_schedule(request, user_id):
-    # Fetch the role_id from the request if you decide to filter by role as well
     role_id = request.GET.get('role_id')
-    year = request.GET.get('year', datetime.now().year)
-    start_date = datetime(int(year), 1, 1)
-    end_date = datetime(int(year), 12, 31)
+    start_date_str = request.GET.get('start', None)
+    end_date_str = request.GET.get('end', None)
+
+    # Parse the start and end dates from the request or default to the current year
+    if start_date_str and end_date_str:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+    else:
+        year = request.GET.get('year', datetime.now().year)
+        start_date = datetime(int(year), 1, 1)
+        end_date = datetime(int(year), 12, 31)
 
     events = []
+    always_off_days_list = []
+
     query_filters = {
         'staff_id': user_id,
         'contract__event_date__gte': start_date,
@@ -292,11 +267,11 @@ def get_event_staff_schedule(request, user_id):
     bookings = EventStaffBooking.objects.filter(**query_filters)
     for booking in bookings:
         events.append({
-            "title": getattr(booking.contract, 'title', 'No Title'),
             "start": booking.contract.event_date.strftime('%Y-%m-%d'),
             "day": booking.contract.event_date.strftime('%A'),
             "allDay": True,
-            "color": "#378006"
+            "color": "#378006",  # Color for normal booking events
+            "type": "booking"
         })
 
     days_off = Availability.objects.filter(
@@ -307,53 +282,94 @@ def get_event_staff_schedule(request, user_id):
     )
     for day in days_off:
         events.append({
-            "title": "Day Off",
             "start": day.date.strftime('%Y-%m-%d'),
             "day": day.date.strftime('%A'),
             "allDay": True,
             "rendering": "background",
-            "color": "#ff9f89"
+            "color": "#ff9f89",  # Color for days off
+            "type": "day_off"
         })
 
+    # Fetch always off weekdays from the Availability record
+    try:
+        always_off_record = Availability.objects.get(staff_id=user_id, date__isnull=True)
+        always_off_days = always_off_record.always_off_days
+        current_date = start_date
+        while current_date <= end_date:
+            if current_date.weekday() in always_off_days:
+                always_off_days_list.append(current_date.strftime('%A'))
+                events.append({
+                    "start": current_date.strftime('%Y-%m-%d'),
+                    "day": current_date.strftime('%A'),
+                    "allDay": True,
+                    "rendering": "background",
+                    "color": "#ff0000",  # Red color for always off days
+                    "type": "always_off"
+                })
+            current_date += timedelta(days=1)
+    except Availability.DoesNotExist:
+        pass  # Handle the case where no always off record is found
+
     sorted_events = sorted(events, key=lambda x: x['start'])
-    return JsonResponse(sorted_events, safe=False)
+    return JsonResponse({"events": sorted_events, "alwaysOffDays": list(set(always_off_days_list))}, safe=False)
 
 @require_http_methods(["POST"])
-def update_event_staff_schedule(request, user_id):
-    date = request.POST.get('date')
-    available = request.POST.get('available') == 'true'
-    date_obj = parse_date(date)
-
-    if not date_obj:
-        return JsonResponse({'status': 'error', 'message': 'Invalid date format'}, status=400)
-
+def update_specific_date_availability(request, user_id):
     try:
-        with transaction.atomic():
-            # Update or create the availability record
-            availability, created = Availability.objects.update_or_create(
-                staff_id=user_id,
-                date=date_obj,
-                defaults={'available': available}
-            )
+        data = json.loads(request.body)
+        date = data.get('date')
+        available = data.get('available')
 
-            # Any additional logic from update_days_off could be integrated here
-            # For example, logging, additional checks, or further updates
+        if date and available is not None:
+            date_obj = datetime.strptime(date, '%Y-%m-%d').date()
+            available = json.loads(available.lower()) if isinstance(available, str) else available
 
+            with transaction.atomic():
+                availability, created = Availability.objects.update_or_create(
+                    staff_id=user_id,
+                    date=date_obj,
+                    defaults={'available': available}
+                )
             return JsonResponse({'status': 'success', 'message': 'Day updated successfully'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Invalid or missing data'}, status=400)
+
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
-def financial_reports(request):
-    # Dummy data for demonstration purposes
-    financial_reports = [
-        {'title': 'Catering Expenses', 'date': '2024-03-20', 'amount': 1500, 'description': 'Payment for catering services'},
-        {'title': 'Venue Rental', 'date': '2024-03-15', 'amount': 3000, 'description': 'Rental fee for wedding venue'},
-        # Add more reports as needed
-    ]
 
-    context = {
-        'financial_reports': financial_reports,
-    }
 
-    return render(request, 'users/financial_reports.html', context)
+@require_http_methods(["POST"])
+def update_always_off_days(request, user_id):
+    try:
+        data = json.loads(request.body)
+        always_off_days = data.get('always_off_days')
+
+        if always_off_days is not None:
+            Availability.objects.update_or_create(
+                staff_id=user_id,
+                date__isnull=True,
+                defaults={'always_off_days': always_off_days}
+            )
+            return JsonResponse({'status': 'success', 'message': 'Always off days updated successfully'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'No always off days provided'}, status=400)
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+
+
+@login_required
+def event_staff_schedule_read_only(request, user_id):
+    staff_member = CustomUser.objects.get(id=user_id)
+    # Fetch scheduled days off
+    days_off = Availability.objects.filter(staff=staff_member, available=False).values_list('date', flat=True)
+    return render(request, 'users/event_staff_schedule_read_only.html', {
+        'staff_member': staff_member,  # Pass the staff_member object with the name staff_member
+        'days_off': days_off,
+        'user_id': user_id  # Pass the user_id to the template context
+    })
+

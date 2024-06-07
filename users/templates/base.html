@@ -24,8 +24,9 @@
     <ul class="menu">
         <li class="menu-item"><a href="{% url 'users:tasks' %}">Tasks</a></li>
         <li class="menu-item"><a href="{% url 'contracts:contract_new' %}">New Contract</a></li>
-        <li class="menu-item"><a href="{% url 'users:financial_reports' %}">Reports</a></li>
+        <li class="menu-item"><a href="{% url 'contracts:reports' %}">Reports</a></li>
         <li class="menu-item"><a href="{% url 'admin:index' %}" target="_blank">Admin</a></li>
+        <li class="menu-item"><a href="{% url 'users:event_staff' %}">Event Staff</a></li>
         <li class="menu-item"><a href="{% url 'contracts:search' %}">Search</a></li>
     </ul>
     <div class="user-info">
@@ -46,5 +47,7 @@
 
 <!-- Custom JavaScript can be included here or in extra_head, depending on dependencies -->
 <script src="{% static 'communication/js/tasks.js' %}"></script>
+<script src="{% static 'contracts/js/booking_notes.js' %}" defer></script>
 </body>
 </html>
+

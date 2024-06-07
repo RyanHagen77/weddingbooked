@@ -6,12 +6,14 @@ from django.conf import settings
 
 
 class UnifiedCommunication(models.Model):
-
-    OFFICE = 'office'
+    INTERNAL = 'internal'
     CONTRACT = 'contract'
+    BOOKING = 'booking'
+
     NOTE_TYPES = [
-        (OFFICE, 'Office Note'),
+        (INTERNAL, 'Internal Note'),
         (CONTRACT, 'Contract Note'),
+        (BOOKING, 'Booking Note'),
     ]
 
     content = models.TextField(verbose_name="Content")
@@ -25,9 +27,11 @@ class UnifiedCommunication(models.Model):
 
     def __str__(self):
         return f"Note {self.id} - {self.get_note_type_display()} - {self.created_at.strftime('%Y-%m-%d')} by {self.created_by}"
+
     class Meta:
         verbose_name = "Unified Communication"
         verbose_name_plural = "Unified Communications"
+
 
 
 class Task(models.Model):
@@ -41,7 +45,7 @@ class Task(models.Model):
     is_completed = models.BooleanField(default=False, verbose_name="Is Completed")
 
     def __str__(self):
-        return f"Task for Contract {self.contract.id} - Due {self.due_date.strftime('%Y-%m-%d %H:%M')} - Assigned to {self.assigned_to}"
+        return f"Task for Contract {self.contract.contract_id} - Due {self.due_date.strftime('%Y-%m-%d %H:%M')} - Assigned to {self.assigned_to}"
 
     class Meta:
         verbose_name = "Task"

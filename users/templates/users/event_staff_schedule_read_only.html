@@ -1,0 +1,89 @@
+{% extends "event_staff_base.html" %}
+{% block content %}
+<div class="container" style="display: flex;">
+    <div style="flex: 1; display: flex; flex-direction: column; padding: 20px;">
+        <div>
+            <h4>Days Off</h4>
+            <table id="daysOffList" class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Day</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Days off will be dynamically listed here -->
+                </tbody>
+            </table>
+        </div>
+        <div class="bulk-select-controls" style="margin-top: 20px;">
+            <h5>Select Days Always Off</h5>
+            <select id="alwaysOffDay" class="styled-select" multiple>
+                <option value="0">Monday</option>
+                <option value="1">Tuesday</option>
+                <option value="2">Wednesday</option>
+                <option value="3">Thursday</option>
+                <option value="4">Friday</option>
+                <option value="5">Saturday</option>
+                <option value="6">Sunday</option>
+            </select>
+            <button id="updateAvailabilityBtn" class="btn-dusty-pink">Update</button>
+        </div>
+        <div style="margin-top: 20px;">
+            <h4>Always Off</h4>
+            <ul id="alwaysOffDays" class="styled-list">
+                <!-- Recurring days off will be dynamically listed here -->
+            </ul>
+        </div>
+    </div>
+    <!-- Calendar -->
+    <div style="flex: 2; padding: 20px;">
+        <h4>Schedule for {{ staff_member.get_full_name }}</h4>
+        <div id='calendar'></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+{% load static %}
+<link href='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css' rel='stylesheet' />
+<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js'></script>
+
+<!-- JavaScript variables embedded in HTML -->
+<script>
+    var staffScheduleUrl = '{% url "users:get_event_staff_schedule" user_id=staff_member.id %}';
+</script>
+
+<script src="{% static 'users/js/schedule.js' %}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fetch and display the always off days and days off
+    fetch(staffScheduleUrl)
+        .then(response => response.json())
+        .then(data => {
+            var alwaysOffDaysList = document.getElementById('alwaysOffDays');
+            alwaysOffDaysList.innerHTML = ''; // Clear any existing content
+            data.alwaysOffDays.forEach(function(day) {
+                var li = document.createElement('li');
+                li.textContent = day;
+                alwaysOffDaysList.appendChild(li);
+            });
+
+            var daysOffList = document.getElementById('daysOffList').getElementsByTagName('tbody')[0];
+            daysOffList.innerHTML = ''; // Clear any existing content
+            data.daysOff.forEach(function(day) {
+                var row = daysOffList.insertRow();
+                var cellDate = row.insertCell(0);
+                var cellDay = row.insertCell(1);
+                var cellAction = row.insertCell(2);
+                cellDate.textContent = day.date;
+                cellDay.textContent = day.day;
+                cellAction.textContent = "N/A"; // No action available
+            });
+        });
+});
+</script>
+{% endblock %}

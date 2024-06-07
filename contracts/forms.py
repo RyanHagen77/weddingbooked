@@ -1,7 +1,8 @@
 from django import forms
 from contracts.models import (Contract, ServiceType, Client, Payment, EventStaffBooking, Package, Discount, Location,
                               ContractDocument, Availability, PaymentSchedule, SchedulePayment,
-                              AdditionalEventStaffOption, EngagementSessionOption, AdditionalProduct, ContractProduct)
+                              AdditionalEventStaffOption, EngagementSessionOption, AdditionalProduct, ContractProduct,
+                              ServiceFee, ContractAgreement, RiderAgreement)
 from django.core.validators import RegexValidator
 from users.models import Role, CustomUser
 from django.forms.widgets import DateInput
@@ -40,6 +41,7 @@ class ContractSearchForm(forms.Form):
     contract_date_start = forms.DateField(required=False, widget=DateInput(attrs={'type': 'date'}))
     contract_date_end = forms.DateField(required=False, widget=DateInput(attrs={'type': 'date'}))
     contract_number = forms.CharField(max_length=255, required=False, label="Custom Contract Number")
+    old_contract_number = forms.CharField(max_length=255, required=False, label="Old Contract Number")
     primary_contact = forms.CharField(max_length=100, required=False)
     status = forms.ChoiceField(choices=STATUS_CHOICES, required=False)
     csr = UserModelChoiceField(
@@ -82,38 +84,46 @@ class ContractSearchForm(forms.Form):
 
         # Set the queryset for photobooth operators
         photobooth_operator_ids = EventStaffBooking.objects.filter(
-            role='PHOTOBOOTH_OP'
+            role__in=['PHOTOBOOTH_OP1', 'PHOTOBOOTH_OP2']
         ).values_list('staff', flat=True)
         self.fields['photobooth_operator'].queryset = CustomUser.objects.filter(
             id__in=photobooth_operator_ids).distinct()
 
 
+
 class ContractInfoEditForm(forms.ModelForm):
-    # Customizing specific fields
+    is_code_92 = forms.BooleanField(required=False)
     event_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     location = forms.ModelChoiceField(queryset=Location.objects.all(), required=False)
-    coordinator = UserModelChoiceField(
+    coordinator = forms.ModelChoiceField(
         queryset=CustomUser.objects.filter(role__name='COORDINATOR', groups__name='Office Staff', is_active=True),
         required=False,
         label="Coordinator"
     )
-    csr = UserModelChoiceField(
+    csr = forms.ModelChoiceField(
         queryset=CustomUser.objects.filter(groups__name='Sales', is_active=True),
         required=False,
         label="Sales Person"
     )
     status = forms.ChoiceField(choices=Contract.STATUS_CHOICES, required=False)
     lead_source = forms.ChoiceField(choices=Contract.LEAD_SOURCE_CHOICES, required=False)
-
-    # Add any other fields you want to customize
+    old_contract_number = forms.CharField(max_length=255, required=False, label="Old Contract Number")
 
     class Meta:
         model = Contract
-        fields = ['event_date', 'location', 'coordinator', 'status', 'csr', 'lead_source']  # Include only the fields you want to edit
+        fields = ['is_code_92', 'event_date', 'location', 'coordinator', 'status', 'csr', 'lead_source',
+                  'old_contract_number', 'custom_text']
+        widgets = {
+            'custom_text': forms.Textarea(attrs={'rows': 4}),
 
-    def __init__(self, *args, **kwargs):
-        super(ContractInfoEditForm, self).__init__(*args, **kwargs)
-        # Custom initialization, if needed
+        }
+        labels = {
+            'custom_text': 'Contract Custom Terms and Conditions',
+        }
+
+    def clean_old_contract_number(self):
+        old_contract_number = self.cleaned_data.get('old_contract_number')
+        return old_contract_number
 
 
 class ContractClientEditForm(forms.ModelForm):
@@ -227,8 +237,8 @@ class ContractServicesForm(forms.ModelForm):
         self.fields['videography_additional'].queryset = AdditionalEventStaffOption.objects.filter(service_type__name='Videography', is_active=True)
 
         # Initialize DJ fields
-        self.fields['dj_package'].queryset = Package.objects.filter(service_type__name='DJ', is_active=True)
-        self.fields['dj_additional'].queryset = AdditionalEventStaffOption.objects.filter(service_type__name='DJ', is_active=True)
+        self.fields['dj_package'].queryset = Package.objects.filter(service_type__name='Dj', is_active=True)
+        self.fields['dj_additional'].queryset = AdditionalEventStaffOption.objects.filter(service_type__name='Dj', is_active=True)
 
         # Initialize photobooth fields
         self.fields['photobooth_package'].queryset = Package.objects.filter(service_type__name='Photobooth', is_active=True)
@@ -255,6 +265,24 @@ ContractProductFormset = inlineformset_factory(
     can_delete=True
 )
 
+
+class ServiceFeeForm(forms.ModelForm):
+    applied_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))  # Date input widget
+
+    class Meta:
+        model = ServiceFee
+        fields = ['contract', 'amount', 'description', 'fee_type', 'applied_date']
+
+
+
+ServiceFeeFormSet = inlineformset_factory(
+    parent_model=Contract,
+    model=ServiceFee,
+    form=ServiceFeeForm,
+    extra=1,
+    can_delete=True  # Allows deletion of service fees directly from the formset
+)
+
 class DiscountForm(forms.ModelForm):
     class Meta:
         model = Discount
@@ -263,7 +291,7 @@ class DiscountForm(forms.ModelForm):
 class PaymentForm(forms.ModelForm):
     class Meta:
         model = Payment
-        fields = ['amount', 'payment_method', 'payment_reference', 'memo']  # Adjust as per your actual model fields
+        fields = ['amount', 'payment_method', 'payment_purpose', 'payment_reference', 'memo']  # Adjust as per your actual model fields
 
         # Set required=False for fields that are not mandatory
         widgets = {
@@ -277,11 +305,17 @@ class PaymentScheduleForm(forms.ModelForm):
         fields = ['schedule_type']
 
 class SchedulePaymentForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(SchedulePaymentForm, self).__init__(*args, **kwargs)
+        # Add 'payment-form' class to each field's widget
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'payment-form'
+
     class Meta:
         model = SchedulePayment
         fields = ('purpose', 'due_date', 'amount')
         widgets = {
-            'due_date': forms.DateInput(attrs={'type': 'date'}),
+            'due_date': forms.DateInput(attrs={'type': 'date', 'class': 'payment-form'}),
         }
 
 SchedulePaymentFormSet = inlineformset_factory(
@@ -306,6 +340,8 @@ class ClientForm(forms.ModelForm):
 
 class NewContractForm(forms.ModelForm):
 
+    is_code_92 = forms.BooleanField(required=False)
+    old_contract_number = forms.CharField(max_length=255, required=False)
     location = forms.ModelChoiceField(queryset=Location.objects.all())
     primary_contact = forms.CharField(max_length=255, required=True)
     partner_contact = forms.CharField(max_length=255)
@@ -361,7 +397,7 @@ class NewContractForm(forms.ModelForm):
     class Meta:
         model = Contract
         fields = [
-            'event_date', 'csr', 'coordinator',
+            'event_date', 'csr', 'coordinator', 'old_contract_number',
             'bridal_party_qty', 'guests_qty', 'lead_source',
             'ceremony_site', 'ceremony_city', 'ceremony_state', 'ceremony_contact', 'ceremony_phone', 'ceremony_email',
             'reception_site', 'reception_city', 'reception_state', 'reception_contact', 'reception_phone', 'reception_email',
@@ -390,14 +426,16 @@ class NewContractForm(forms.ModelForm):
 
 class ContractForm(forms.ModelForm):
     # Required fields
+    is_code_92 = forms.BooleanField(required=False)
+    old_contract_number = forms.CharField(max_length=255, required=False)
     location = forms.ModelChoiceField(queryset=Location.objects.all())
     primary_contact = forms.CharField(max_length=255, required=True)
     primary_email = forms.EmailField(required=True)
     primary_phone1 = forms.CharField(
-    max_length=12,  # Adjusted to accommodate dashes
-    validators=[phone_validator],
-    required=False  # Instead of blank=True, null=True
-)
+        max_length=12,  # Adjusted to accommodate dashes
+        validators=[phone_validator],
+        required=False  # Instead of blank=True, null=True
+    )
     event_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
     csr = forms.ModelChoiceField(
         queryset=CustomUser.objects.none(),
@@ -419,20 +457,20 @@ class ContractForm(forms.ModelForm):
     ceremony_state = forms.CharField(max_length=255, required=False)
     ceremony_contact = forms.CharField(max_length=255, required=False)
     ceremony_phone = forms.CharField(
-    max_length=12,  # Adjusted to accommodate dashes
-    validators=[phone_validator],
-    required=False  # Instead of blank=True, null=True
-)
+        max_length=12,  # Adjusted to accommodate dashes
+        validators=[phone_validator],
+        required=False  # Instead of blank=True, null=True
+    )
     ceremony_email = forms.EmailField(required=False)
     reception_site = forms.CharField(max_length=255, required=False)
     reception_city = forms.CharField(max_length=255, required=False)
     reception_state = forms.CharField(max_length=255, required=False)
     reception_contact = forms.CharField(max_length=255, required=False)
     reception_phone = forms.CharField(
-    max_length=12,  # Adjusted to accommodate dashes
-    validators=[phone_validator],
-    required=False  # Instead of blank=True, null=True
-)
+        max_length=12,  # Adjusted to accommodate dashes
+        validators=[phone_validator],
+        required=False  # Instead of blank=True, null=True
+    )
     reception_email = forms.EmailField(required=False)
 
     photography_package = forms.ModelChoiceField(queryset=Package.objects.none(), required=False)
@@ -447,7 +485,7 @@ class ContractForm(forms.ModelForm):
     dj_package = forms.ModelChoiceField(queryset=Package.objects.none(), required=False)
     dj_additional = forms.ModelChoiceField(queryset=AdditionalEventStaffOption.objects.none(), required=False)
     photobooth_package = forms.ModelChoiceField(queryset=Package.objects.none(), required=False)
-    photobooth_additional = forms.ModelChoiceField(queryset=AdditionalEventStaffOption.objects.none(), required=False)
+    photobooth_additional = forms.ModelChoiceField(queryset=Package.objects.none(), required=False)
 
     prospect_photographer1 = forms.ModelChoiceField(
         queryset=CustomUser.objects.filter(role__name='PHOTOGRAPHER'),
@@ -472,7 +510,7 @@ class ContractForm(forms.ModelForm):
     class Meta:
         model = Contract
         fields = [
-            'event_date', 'csr', 'coordinator', # These fields are now at the top
+            'event_date', 'csr', 'coordinator', 'custom_text', 'old_contract_number',# These fields are now at the top
             # Client fields
             'is_code_92', 'primary_contact', 'primary_email', 'primary_phone1', 'primary_phone2',
             'primary_address1', 'primary_address2', 'city', 'state', 'postal_code',
@@ -488,19 +526,25 @@ class ContractForm(forms.ModelForm):
             # Service package fields
             'photography_package', 'photography_additional', 'engagement_session',
             'videography_package', 'videography_additional',
-            'dj_package', 'dj_additional', 'photobooth_package', 'photobooth_additional', 'total_cost',
+            'dj_package', 'dj_additional', 'photobooth_package', 'photobooth_additional', 'custom_text',
+            'total_cost',
 
             # Discount Fields
 
             # Prospect photographer fields
             'prospect_photographer1', 'prospect_photographer2', 'prospect_photographer3'
         ]
-    # Optional fields
+
+        widgets = {
+            'custom_text': forms.Textarea(attrs={'rows': 4}),
+
+        }
+
     primary_phone2 = forms.CharField(
-    max_length=12,  # Adjusted to accommodate dashes
-    validators=[phone_validator],
-    required=False  # Instead of blank=True, null=True
-)
+        max_length=12,  # Adjusted to accommodate dashes
+        validators=[phone_validator],
+        required=False  # Instead of blank=True, null=True
+    )
     primary_address1 = forms.CharField(max_length=255, required=False)
     primary_address2 = forms.CharField(max_length=255, required=False)
     city = forms.CharField(max_length=255, required=False)
@@ -509,22 +553,22 @@ class ContractForm(forms.ModelForm):
     partner_contact = forms.CharField(max_length=255, required=False)
     partner_email = forms.EmailField(required=False)
     partner_phone1 = forms.CharField(
-    max_length=12,  # Adjusted to accommodate dashes
-    validators=[phone_validator],
-    required=False  # Instead of blank=True, null=True
-)
+        max_length=12,  # Adjusted to accommodate dashes
+        validators=[phone_validator],
+        required=False  # Instead of blank=True, null=True
+    )
     partner_phone2 = forms.CharField(
-    max_length=12,  # Adjusted to accommodate dashes
-    validators=[phone_validator],
-    required=False  # Instead of blank=True, null=True
-)
+        max_length=12,  # Adjusted to accommodate dashes
+        validators=[phone_validator],
+        required=False  # Instead of blank=True, null=True
+    )
     alt_contact = forms.CharField(max_length=255, required=False)
     alt_email = forms.EmailField(required=False)
     alt_phone = forms.CharField(
-    max_length=12,  # Adjusted to accommodate dashes
-    validators=[phone_validator],
-    required=False  # Instead of blank=True, null=True
-)
+        max_length=12,  # Adjusted to accommodate dashes
+        validators=[phone_validator],
+        required=False  # Instead of blank=True, null=True
+    )
 
     additional_products = forms.ModelMultipleChoiceField(
         queryset=AdditionalProduct.objects.all(),
@@ -541,54 +585,34 @@ class ContractForm(forms.ModelForm):
         label='Current Tax Rate (%)'
     )
 
-
     def __init__(self, *args, **kwargs):
         super(ContractForm, self).__init__(*args, **kwargs)
-
-        # Fetch ServiceType instances for each category and update querysets
-        service_types = ServiceType.objects.filter(name__in=['Photography', 'Videography', 'Dj', 'Photobooth'])
-        for service_type in service_types:
-            if service_type.name == 'Photography':
-                self.fields['photography_package'].queryset = Package.objects.filter(service_type=service_type, is_active=True).order_by('name')
-                self.fields['photography_additional'].queryset = AdditionalEventStaffOption.objects.filter(service_type=service_type, is_active=True).order_by('name')
-            elif service_type.name == 'Videography':
-                self.fields['videography_package'].queryset = Package.objects.filter(service_type=service_type, is_active=True).order_by('name')
-                self.fields['videography_additional'].queryset = AdditionalEventStaffOption.objects.filter(service_type=service_type, is_active=True).order_by('name')
-            elif service_type.name == 'Dj':
-                self.fields['dj_package'].queryset = Package.objects.filter(service_type=service_type, is_active=True).order_by('name')
-                self.fields['dj_additional'].queryset = AdditionalEventStaffOption.objects.filter(service_type=service_type, is_active=True).order_by('name')
-            elif service_type.name == 'Photobooth':
-                self.fields['photobooth_package'].queryset = Package.objects.filter(service_type=service_type, is_active=True).order_by('name')
-                self.fields['photobooth_additional'].queryset = AdditionalEventStaffOption.objects.filter(service_type=service_type, is_active=True).order_by('name')
-
+        contract = kwargs.get('instance')
 
         # Initialize the formset
-        if self.instance:
+        self.product_formset = ContractProductFormset(instance=self.instance if self.instance else None)
 
-            # Initialize the product formset
-            self.product_formset = ContractProductFormset(instance=self.instance if self.instance else None)
-
-
-
-        # Set the queryset for the CSR field
+        # Set the queryset for the CSR and coordinator fields
         self.fields['csr'].queryset = CustomUser.objects.filter(role__name='SALES PERSON')
         self.fields['coordinator'].queryset = CustomUser.objects.filter(groups__name='Office Staff')
-        # Fetch the photographer role object
+
+        # Fetch the photographer role object and initialize photographer dropdowns
         photographer_role = Role.objects.filter(name='PHOTOGRAPHER').first()
-
-        # Set initial value for the current tax rate
-        self.fields['current_tax_rate'].initial = 0.00  # You can set it based on your logic
-
-        # Correct initialization for photographer dropdowns
         photographer_queryset = CustomUser.objects.filter(
             role=photographer_role) if photographer_role else CustomUser.objects.none()
         photographer_fields = ['prospect_photographer1', 'prospect_photographer2', 'prospect_photographer3']
         for field_name in photographer_fields:
             self.fields[field_name].queryset = photographer_queryset
 
+        # Set initial value for the current tax rate
+        self.fields['current_tax_rate'].initial = 0.00  # You can set it based on your logic
+
+    def clean_old_contract_number(self):
+        old_contract_number = self.cleaned_data.get('old_contract_number')
+        return old_contract_number
+
     def clean(self):
         cleaned_data = super().clean()  # Call the base class's clean method
-        # Debug print statement to inspect cleaned_data
         print("Cleaned data:", cleaned_data)
 
         print("Prospect Photographer 1:", cleaned_data.get('prospect_photographer1'))
@@ -661,25 +685,34 @@ class ContractForm(forms.ModelForm):
             self.save_m2m()  # Save many-to-many data for the form
 
 
+
+
 class ContractDocumentForm(forms.ModelForm):
+    is_client_visible = forms.BooleanField(initial=False, required=False)
+
     class Meta:
         model = ContractDocument
-        fields = ['document']
+        fields = ['document', 'is_client_visible']
+
 
 class EventStaffBookingForm(forms.ModelForm):
+    booking_id = forms.CharField(widget=forms.HiddenInput(), required=False)
+
     class Meta:
         model = EventStaffBooking
-        fields = ['staff', 'role', 'status', 'hours_booked', 'confirmed', 'booking_notes']
-        # Ensure all fields here are correct and exist in the model
+        fields = ['role', 'staff', 'status', 'confirmed', 'hours_booked', 'booking_id']
 
-    def __init__(self, *args, **kwargs):
-        event_date = kwargs.pop('event_date', None)
-        super(EventStaffBookingForm, self).__init__(*args, **kwargs)
+class ContractAgreementForm(forms.ModelForm):
+    main_signature = forms.CharField(widget=forms.HiddenInput(), required=True)
 
-        if event_date:
-            # Assuming get_available_staff_for_date is properly defined and works as expected
-            available_staff = Availability.get_available_staff_for_date(event_date)
-            self.fields['staff'].queryset = available_staff
+    class Meta:
+        model = ContractAgreement
+        fields = ['main_signature', 'photographer_choice']
 
-        # Ensure 'role' choices are properly set up
-        self.fields['role'].choices = EventStaffBooking.ROLE_CHOICES
+
+class RiderAgreementForm(forms.ModelForm):
+    signature = forms.CharField(widget=forms.HiddenInput(), required=True)
+
+    class Meta:
+        model = RiderAgreement
+        fields = ['signature', 'client_name', 'agreement_date', 'notes']

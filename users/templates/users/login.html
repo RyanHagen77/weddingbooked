@@ -1,15 +1,78 @@
-
-{% block content %}
-<form method="post">
-    {% csrf_token %}
-    <label for="username">Username:</label>
-    <input type="text" name="username" id="username" required>
-    <br>
-    <label for="password">Password:</label>
-    <input type="password" name="password" id="password" required>
-    <br>
-    <button type="submit">Login</button>
-</form>
-  <a href="{% url 'password_reset' %}">Forgot password?</a>
-{% endblock %}
-
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Essence Staff Login</title>
+    <style>
+        body {
+            background-color: #a1c9a5; /* Pistachio background */
+            color: #3C1414; /* Dark dusty pink text */
+            font-family: Arial, sans-serif;
+        }
+        h2 {
+            color: #3C1414; /* Dark dusty pink text */
+        }
+        form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 300px;
+            margin: auto;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: calc(100% - 20px); /* Adjusted width to account for padding */
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding-right: 15px; /* Added padding to the right */
+        }
+        button {
+            background-color: #c67c85; /* Dusty pink button */
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #b55f66; /* Darker shade of dusty pink */
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background-color: white;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h2>Staff Login</h2>
+    <form method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+        <label for="username">Username:</label>
+        <input type="text" name="username" id="username" required>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <button type="submit">Login</button>
+    </form>
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>

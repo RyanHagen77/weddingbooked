@@ -1,21 +1,24 @@
 # contracts/views.py
 from django.shortcuts import render, get_object_or_404, redirect
+from users.models import CustomUser  # Import CustomUser
 from django.db.models import Q, F, Value, CharField, Sum
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.urls import reverse
-from users.models import Role, CustomUser, Group
+from users.models import Role
+from django.conf import settings
 from communication.models import UnifiedCommunication, Task
-from communication.views import send_task_assignment_email
-from .forms import (ContractSearchForm, ClientForm, NewContractForm, ContractForm, ContractInfoEditForm, ContractClientEditForm,
+from communication.views import send_task_assignment_email, send_contract_and_rider_email_to_client, send_contract_message_email
+from .forms import (ContractSearchForm, ClientForm, NewContractForm, ContractForm, ContractInfoEditForm,
+                    ContractClientEditForm, ContractAgreementForm, RiderAgreementForm,
                     ContractEventEditForm, ContractServicesForm, ContractDocumentForm,
                     EventStaffBookingForm, ContractProductFormset, PaymentForm, PaymentScheduleForm,
-                    SchedulePaymentFormSet)
-from communication.forms import CommunicationForm, TaskForm  # Importing from the communication app
+                    SchedulePaymentFormSet, ServiceFeeFormSet, ServiceFeeForm)
+from communication.forms import CommunicationForm, BookingCommunicationForm, TaskForm  # Importing from the communication app
 from .models import (Contract, ServiceType, Availability, Payment, Package,
                      AdditionalEventStaffOption, EngagementSessionOption, Discount, EventStaffBooking, ContractOvertime, AdditionalProduct,
                      OvertimeOption, PaymentPurpose, PaymentSchedule, SchedulePayment,
-                     TaxRate, ContractDocument, ChangeLog)
+                     TaxRate, ContractDocument, ChangeLog, ServiceFee, ContractAgreement, RiderAgreement)
 from django.db import transaction
 from django.core.mail import send_mail
 from django.db.models.functions import Concat
@@ -30,6 +33,7 @@ from .serializers import ContractSerializer
 from rest_framework import viewsets
 from datetime import datetime, timedelta
 import math
+from math import ceil
 import json
 from django.utils.timezone import now
 from django.http import HttpResponse, JsonResponse
@@ -41,14 +45,24 @@ from django.http import HttpRequest, HttpResponseRedirect
 from collections import defaultdict
 from django.contrib.auth import logout
 from .constants import SERVICE_ROLE_MAPPING  # Adjust the import path as needed
+from django.template.defaultfilters import linebreaks
 
 logger = logging.getLogger(__name__)
 
+ROLE_DISPLAY_NAMES = {
+    'PHOTOGRAPHER1': 'Photographer 1',
+    'PHOTOGRAPHER2': 'Photographer 2',
+    'VIDEOGRAPHER1': 'Videographer 1',
+    'VIDEOGRAPHER2': 'Videographer 2',
+    'DJ1': 'DJ 1',
+    'DJ2': 'DJ 2',
+    'PHOTOBOOTH_OP1': 'Photobooth Operator 1',
+    'PHOTOBOOTH_OP2': 'Photobooth Operator 2'
+}
 
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Contract.objects.all().order_by('-contract_date', '-contract_id')
     serializer_class = ContractSerializer
-
 
 def get_decimal(value):
     try:
@@ -56,10 +70,9 @@ def get_decimal(value):
     except (InvalidOperation, ValueError, TypeError):
         return Decimal('0.00')
 
-
 def success_view(request):
     return render(request, 'success.html')  # Replace 'success.html' with the actual template name for your success page
-
+@login_required
 def search(request):
     form = ContractSearchForm(request.GET)
     contracts = Contract.objects.all().order_by('-event_date')  # Descending order by default
@@ -102,6 +115,19 @@ def search(request):
         if form.cleaned_data.get('csr'):
             contracts = contracts.filter(csr=form.cleaned_data['csr'])
 
+        # Service Type Filter
+        service_type = form.cleaned_data.get('service_type')
+        if service_type:
+            staff_roles = {
+                "PHOTOGRAPHER": ['PHOTOGRAPHER1', 'PHOTOGRAPHER2'],
+                "VIDEOGRAPHER": ['VIDEOGRAPHER1', 'VIDEOGRAPHER2'],
+                "DJ": ['DJ1', 'DJ2'],
+                "PHOTOBOOTH": ['PHOTOBOOTH_OP1', 'PHOTOBOOTH_OP2']
+            }
+            roles = staff_roles.get(service_type, [])
+            service_contracts = EventStaffBooking.objects.filter(role__in=roles).values_list('contract_id', flat=True)
+            contracts = contracts.filter(contract_id__in=service_contracts)
+
         # Filtering by staff roles
         if form.cleaned_data.get('photographer'):
             photographer_contracts = EventStaffBooking.objects.filter(
@@ -120,7 +146,7 @@ def search(request):
         if form.cleaned_data.get('photobooth_operator'):
             photobooth_operator_contracts = EventStaffBooking.objects.filter(
                 staff=form.cleaned_data['photobooth_operator'],
-                role='PHOTOBOOTH_OP'
+                role__in=['PHOTOBOOTH_OP1', 'PHOTOBOOTH_OP2']
             ).values_list('contract_id', flat=True)
             contracts = contracts.filter(contract_id__in=photobooth_operator_contracts)
 
@@ -130,7 +156,8 @@ def search(request):
         contracts = contracts.filter(
             Q(custom_contract_number__icontains=query) |
             Q(client__primary_contact__icontains=query) |
-            Q(client__partner_contact__icontains=query)
+            Q(client__partner_contact__icontains=query) |
+            Q(old_contract_number__icontains=query)  # Added search functionality for old contract number
         )
     # Booking search
     booking_search_query = request.GET.get('booking_q')
@@ -147,138 +174,63 @@ def search(request):
 
     return render(request, 'contracts/search.html',
                   {'form': form, "contracts": contracts, "bookings": bookings, 'active_tab': tab})
-def search_contracts(request):
-    form = ContractSearchForm(request.GET)
-    contracts = Contract.objects.all()
 
-    if form.is_valid():
-        # Existing fields filtering
-        if form.cleaned_data.get('location'):
-            contracts = contracts.filter(location=form.cleaned_data['location'])
-        if form.cleaned_data.get('ceremony_site'):
-            contracts = contracts.filter(ceremony_site__icontains=form.cleaned_data['ceremony_site'])
-        if form.cleaned_data.get('reception_site'):
-            contracts = contracts.filter(reception_site__icontains=form.cleaned_data['reception_site'])
-
-        # Event date range filter
-        event_date_start = form.cleaned_data.get('event_date_start')
-        event_date_end = form.cleaned_data.get('event_date_end')
-        if event_date_start and event_date_end:
-            contracts = contracts.filter(event_date__range=[event_date_start, event_date_end])
-
-        # Contract date range filter
-        contract_date_start = form.cleaned_data.get('contract_date_start')
-        contract_date_end = form.cleaned_data.get('contract_date_end')
-        if contract_date_start and contract_date_end:
-            contracts = contracts.filter(contract_date__range=[contract_date_start, contract_date_end])
-
-        # Custom contract number filter
-        if form.cleaned_data.get('contract_number'):
-            contracts = contracts.filter(custom_contract_number__icontains=form.cleaned_data['contract_number'])
-        if form.cleaned_data.get('primary_contact'):
-            contracts = contracts.filter(client__primary_contact__icontains=form.cleaned_data['primary_contact'])
-        if form.cleaned_data.get('status'):
-            contracts = contracts.filter(status=form.cleaned_data['status'])
-        if form.cleaned_data.get('csr'):
-            contracts = contracts.filter(csr=form.cleaned_data['csr'])
-
-        # Filtering by staff roles
-        if form.cleaned_data.get('photographer'):
-            photographer_contracts = EventStaffBooking.objects.filter(
-                staff=form.cleaned_data['photographer'],
-                role__in=['PHOTOGRAPHER1', 'PHOTOGRAPHER2']
-            ).values_list('contract_id', flat=True)
-            contracts = contracts.filter(contract_id__in=photographer_contracts)
-
-        if form.cleaned_data.get('videographer'):
-            videographer_contracts = EventStaffBooking.objects.filter(
-                staff=form.cleaned_data['videographer'],
-                role__in=['VIDEOGRAPHER1', 'VIDEOGRAPHER2']
-            ).values_list('contract_id', flat=True)
-            contracts = contracts.filter(contract_id__in=videographer_contracts)
-
-        if form.cleaned_data.get('photobooth_operator'):
-            photobooth_operator_contracts = EventStaffBooking.objects.filter(
-                staff=form.cleaned_data['photobooth_operator'],
-                role='PHOTOBOOTH_OP'
-            ).values_list('contract_id', flat=True)
-            contracts = contracts.filter(contract_id__in=photobooth_operator_contracts)
-
-    # Quick search logic
-    query = request.GET.get('q')
-    if query:
-        contracts = contracts.filter(
-            Q(custom_contract_number__icontains=query) |
-            Q(client__primary_contact__icontains=query) |
-            Q(client__partner_contact__icontains=query)
-        )
-
-    return render(request, 'contracts/contract_search.html', {'form': form, 'contracts': contracts})
-
-
-User = get_user_model()
+@login_required
 def new_contract(request):
     contract_form = NewContractForm(request.POST or None)
     client_form = ClientForm(request.POST or None)
 
-    if request.method == 'POST':
-        if client_form.is_valid() and contract_form.is_valid():
-            with transaction.atomic():
-                client = client_form.save(commit=False)
-                primary_email = client_form.cleaned_data['primary_email']
-                user, created = User.objects.get_or_create(username=primary_email, defaults={'email': primary_email})
+    if request.method == 'POST' and client_form.is_valid() and contract_form.is_valid():
+        with transaction.atomic():
+            primary_email = client_form.cleaned_data['primary_email']
+            User = get_user_model()  # Get the user model dynamically
+            user, created = User.objects.get_or_create(
+                username=primary_email,
+                defaults={'email': primary_email, 'user_type': 'client'}
+            )
 
-                if created:
-                    group = Group.objects.get(name='Client')
-                    user.groups.add(group)
-                    send_password_reset_email(primary_email)
+            client = client_form.save(commit=False)
+            client.user = user  # Assign the user to the client
+            client.save()
 
-                client.user = user
-                client.save()
+            contract = contract_form.save(commit=False)
+            contract.client = client
+            contract.save()
 
-                contract = contract_form.save(commit=False)
-                contract.client = client
-                contract.save()
+            # Assuming there's a function to create payment schedules
+            create_schedule_a_payments(contract.contract_id)
+            contract.status = 'pipeline'  # Set initial contract status
+            contract.save()
 
-                # Create a schedule_a payment schedule for the contract by default
-                create_schedule_a_payments(contract.contract_id)
-                contract.status = 'pending'  # Optionally update contract status
-                contract.save()
+            # Redirect to the contract_detail page for the newly created contract
+            return redirect(reverse('contracts:contract_detail', kwargs={'id': contract.contract_id}))
 
-                # Redirect to the contract_detail page for the newly created contract
-                return redirect('contracts/contract_detail', contract_id=contract.contract_id)
-
-    context = {
+    return render(request, 'contracts/contract_new.html', {
         'contract_form': contract_form,
         'client_form': client_form,
-    }
-    return render(request, 'contracts/contract_new.html', context)
+    })
 
 def send_password_reset_email(user_email):
-    # Create a PasswordResetForm instance with the user's email
+    print(f"Starting to send password reset email to: {user_email}")
     form = PasswordResetForm({'email': user_email})
-
     if form.is_valid():
-        # Create a dummy HttpRequest object
         request = HttpRequest()
+        request.META['SERVER_NAME'] = '127.0.0.1'
+        request.META['SERVER_PORT'] = '8000'
 
-        # Since you're using Gmail SMTP, the domain should match your email domain
-        # If your Django app is hosted elsewhere, replace with your app's domain
-        request.META['SERVER_NAME'] = '10.44.1.8'  # Use 'localhost' for local testing
-        request.META['SERVER_PORT'] = '8000'  # Default port for Django development server
 
-        # Save the form, which sends the password reset email
-        form.save(
-            request=request,
-            use_https=True,  # Use HTTPS for security
-            from_email='testmydjango420@gmail.com',  # Your Gmail address
-            email_template_name='registration/password_reset_email.html'
-        )
+        try:
+            form.save(
+                request=request,
+                use_https=True,
+                from_email='testmydjango420@gmail.com',
+                email_template_name='registration/password_reset_email.html'
+            )
+            print("Password reset email sent successfully.")
+        except Exception as e:
+            print(f"Failed to send password reset email due to: {e}")
     else:
-        # Handle the case where the form is not valid
-        # You can add logging or other error handling here
-        pass
-
+        print("PasswordResetForm is invalid. Errors:", form.errors)
 
 def custom_login(request):
     User = get_user_model()  # Use the custom user model
@@ -288,21 +240,34 @@ def custom_login(request):
         password = request.POST.get('password')
 
         try:
-            username = User.objects.get(email=email).username
+            user = User.objects.get(email=email)
         except User.DoesNotExist:
             messages.error(request, "Invalid email or password.")
             return render(request, 'contracts/client_portal_login.html')
-
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            # Fetch the contract associated with the user
-            contract = Contract.objects.filter(client=user.client).first()
-            if contract:
-                return redirect('contracts:client_portal', contract_id=contract.contract_id)
-            else:
-                messages.error(request, "No associated contract found.")
+        except User.MultipleObjectsReturned:
+            users = User.objects.filter(email=email)
+            user = None
+            for u in users:
+                if u.check_password(password):
+                    user = u
+                    break
+            if user is None:
+                messages.error(request, "Invalid email or password.")
                 return render(request, 'contracts/client_portal_login.html')
+
+        if user is not None and user.check_password(password):
+            login(request, user)
+            next_url = request.GET.get('next')
+            print(f"Next URL: {next_url}")  # Debugging
+            if next_url:
+                return redirect(next_url)
+            else:
+                contract = Contract.objects.filter(client=user.client).first()
+                if contract:
+                    return redirect('contracts:client_portal', contract_id=contract.contract_id)
+                else:
+                    messages.error(request, "No associated contract found.")
+                    return render(request, 'contracts/client_portal_login.html')
         else:
             messages.error(request, "Invalid email or password.")
 
@@ -314,15 +279,22 @@ def custom_logout(request):
 
 @login_required
 def client_portal(request, contract_id):
-    contract = get_object_or_404(Contract, contract_id=contract_id)
+    contract = get_object_or_404(Contract, pk=contract_id)
     content_type = ContentType.objects.get_for_model(Contract)
 
-    # Fetch only 'contract' type notes related to this contract
+    # Fetch 'contract' type notes related to this contract
     contract_notes = UnifiedCommunication.objects.filter(
         content_type=content_type,
         object_id=contract.contract_id,
         note_type=UnifiedCommunication.CONTRACT
     ).order_by('-created_at')
+
+    # Fetch documents visible to the client
+    client_documents = contract.documents.filter(is_client_visible=True)
+
+    # Fetch contract agreements and rider agreements
+    contract_agreements = ContractAgreement.objects.filter(contract=contract).order_by('-version_number')
+    rider_agreements = RiderAgreement.objects.filter(contract=contract)
 
     if request.method == 'POST':
         form = CommunicationForm(request.POST)
@@ -334,43 +306,26 @@ def client_portal(request, contract_id):
                 content_type=content_type,
                 object_id=contract.contract_id
             )
-            print("Message created:", message.content)  # Debugging line
 
             # Send an email notification to the coordinator
             if contract.coordinator:
-                send_contract_message_email(request, message, contract)
+                communication:send_contract_message_email(request, message, contract)
 
             return redirect('contracts:client_portal', contract_id=contract.contract_id)
-        else:
-            print("Form errors:", form.errors)  # Debugging line
 
     form = CommunicationForm()
+
     context = {
         'contract': contract,
         'contract_notes': contract_notes,
+        'client_documents': client_documents,
+        'contract_agreements': contract_agreements,
+        'rider_agreements': rider_agreements,
         'form': form,
     }
+
     return render(request, 'contracts/client_portal.html', context)
 
-def send_contract_message_email(request, message, contract):
-    if contract.coordinator and contract.coordinator.email:
-        subject = f'New Message Posted for Contract {contract.custom_contract_number}'
-        message_body = render_to_string('communication/contract_message_email.html', {
-            'user': request.user,
-            'message': message,
-            'contract': contract,
-            'domain': get_current_site(request).domain,
-        })
-        send_mail(
-            subject,
-            message_body,
-            'testmydjango420@gmail.com',  # Use a valid sender email address
-            [contract.coordinator.email],
-            fail_silently=False,
-        )
-        print("Email sent to coordinator:", contract.coordinator.email)
-    else:
-        print("No coordinator assigned, or missing email.")
 
 def send_email_to_client(request, message, contract):
     client_user = contract.client.user
@@ -394,6 +349,8 @@ def send_email_to_client(request, message, contract):
         print("Client does not have a valid email.")
 
 
+
+@login_required
 def contract_detail(request, id):
     contract = get_object_or_404(Contract, pk=id)
     form = ContractForm(request.POST or None, instance=contract)
@@ -403,19 +360,14 @@ def contract_detail(request, id):
     schedule, created = PaymentSchedule.objects.get_or_create(contract=contract)
     schedule_form = PaymentScheduleForm(instance=schedule)
     schedule_payment_formset = SchedulePaymentFormSet(instance=schedule)
+    service_fee_formset = ServiceFeeForm(instance=contract)
+    payment_purposes = PaymentPurpose.objects.all()
     discounts = contract.other_discounts.all()
     print("Other discounts total:", contract.other_discounts_total)  # Debugging statement
     service_types = ServiceType.objects.all()
+    changelogs = ChangeLog.objects.filter(contract=contract).order_by('-timestamp')
 
-    if request.method == 'POST':
-        if form.is_valid():
-            form.save(request.user)
-            # Save prospect photographers separately if needed
-            contract.prospect_photographer1 = form.cleaned_data.get('prospect_photographer1')
-            contract.prospect_photographer2 = form.cleaned_data.get('prospect_photographer2')
-            contract.prospect_photographer3 = form.cleaned_data.get('prospect_photographer3')
-            contract.save()
-            return redirect('contracts:contract_detail', id=id)
+
 
     if request.method == 'POST':
         contract_info_edit_form = ContractInfoEditForm(request.POST, instance=contract, prefix='contract_info')
@@ -426,30 +378,36 @@ def contract_detail(request, id):
         client_edit_form = ContractClientEditForm(instance=client, prefix='client_info')
         event_edit_form = ContractEventEditForm(instance=contract, prefix='event_details')
 
-    document_form = ContractDocumentForm(request.POST or None, request.FILES or None)
-    communication_form = CommunicationForm()
-    task_form = TaskForm()
-    tasks = Task.objects.filter(contract=contract)
-
-    # Handle document upload
-    if request.method == 'POST' and 'upload_document' in request.POST:
-        if document_form.is_valid():
-            contract_document = document_form.save(commit=False)
-            contract_document.contract = contract
-            contract_document.save()
-            return redirect('contracts:contract_detail', id=id)
-
     if request.method == 'POST':
         if client_edit_form.is_valid():
             client_edit_form.save()
             return redirect('contracts:contract_detail', id=id)
 
-    # Prepare context data
-    content_type = ContentType.objects.get_for_model(contract)
-    all_messages = UnifiedCommunication.objects.filter(
-        content_type=content_type, object_id=contract.contract_id)
 
-    # Categorize messages by type
+    communication_form = CommunicationForm()
+    task_form = TaskForm()
+    tasks = Task.objects.filter(contract=contract)
+
+    # Fetch all documents for this contract
+    documents = contract.documents.all()
+
+    # Annotate each document with its visibility status
+    for document in documents:
+        document.badge_class = 'badge-success' if document.is_client_visible else 'badge-secondary'
+        document.badge_label = 'Visible to Client' if document.is_client_visible else 'Internal Use'
+
+    document_form = ContractDocumentForm(request.POST or None, request.FILES or None)
+
+    if request.method == 'POST' and document_form.is_valid():
+        contract_document = document_form.save(commit=False)
+        contract_document.contract = contract
+        contract_document.save()
+
+        return redirect('contracts:contract_detail', id=id)
+
+    content_type = ContentType.objects.get_for_model(contract)
+    all_messages = UnifiedCommunication.objects.filter(content_type=content_type, object_id=contract.contract_id)
+
     messages_by_type = defaultdict(list)
     for message in all_messages:
         messages_by_type[message.note_type].append(message)
@@ -462,7 +420,7 @@ def contract_detail(request, id):
                 note_type=communication_form.cleaned_data['message_type'],
                 created_by=request.user,
                 content_type=content_type,
-                object_id=contract.contract_id
+                object_id=contract.contract_id,
             )
 
             # Check if the sender is a coordinator and send an email to the client
@@ -545,6 +503,14 @@ def contract_detail(request, id):
     initial_payment = math.ceil((contract.final_total * Decimal('0.40')) / 100) * 100
     total_payments_received = sum(payment.amount for payment in contract.payments.all())
 
+    if request.method == 'POST':
+        service_fee_formset = ServiceFeeFormSet(request.POST, instance=contract)
+        if service_fee_formset.is_valid():
+            service_fee_formset.save()
+            return redirect('contracts:contract_detail', id=contract.contract_id)  # Redirect back to the contract detail view or elsewhere
+    else:
+        service_fee_formset = ServiceFeeFormSet(instance=contract)
+
     payment_form = PaymentForm()  # For GET request
 
     if request.method == 'POST':
@@ -574,6 +540,7 @@ def contract_detail(request, id):
         'videography_packages': videography_packages,
         'dj_packages': photography_packages,
         'booking_form' : booking_form,
+        'documents': documents,
         'document_form': document_form,
         'communication_form': communication_form,
         'task_form': task_form,
@@ -588,6 +555,7 @@ def contract_detail(request, id):
         'tax_amount': tax_amount,
         'final_total': final_total,
         'payment_form': payment_form,
+        'payment_purposes': payment_purposes,
         'initial_payment': initial_payment,
         'total_payments_received': total_payments_received,
         'balance_due_date': balance_due_date,
@@ -612,16 +580,16 @@ def contract_detail(request, id):
         'schedule_id': schedule_id,
         'schedule_form': schedule_form,
         'schedule_payment_formset': schedule_payment_formset,
+        'service_fee_formset': service_fee_formset,
         'discounts': discounts,
-        'service_types': service_types
+        'service_types': service_types,
+        'changelogs': changelogs,
+
     }
 
     return render(request, 'contracts/contract_detail.html',  context)
 
-
-# @login_required  # Optional, ensures only logged-in users can delete documents
-
-
+@login_required
 def delete_document(request, document_id):
     document = get_object_or_404(ContractDocument, pk=document_id)
 
@@ -636,88 +604,80 @@ def delete_document(request, document_id):
     return redirect('contracts:contract_detail', id=document.contract.contract_id)
 
 
+@login_required
 def edit_contract(request, id):
     contract = get_object_or_404(Contract, pk=id)
+    original_status = contract.status
     client = contract.client
 
     contract_info_edit_form = ContractInfoEditForm(request.POST or None, instance=contract, prefix='contract_info')
     client_edit_form = ContractClientEditForm(request.POST or None, instance=client, prefix='client_info')
     event_edit_form = ContractEventEditForm(request.POST or None, instance=contract, prefix='event_details')
 
-    if request.method == 'POST':
-        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    response_message = {'status': 'error', 'message': 'Invalid form submission.'}
 
+    if request.method == 'POST':
         if 'contract_info' in request.POST:
-            contract_info_edit_form = ContractInfoEditForm(request.POST,
-                                                           instance=contract)  # Ensure this form is defined
             if contract_info_edit_form.is_valid():
-                original_status = contract.status  # Capture original status before saving
                 contract = contract_info_edit_form.save()
 
-                # Check for status change and log it
                 if original_status != contract.status:
                     ChangeLog.objects.create(
                         user=request.user,
-                        description=f"Updated contract status from {original_status} to {contract.status} for contract ID {contract.id}"
+                        description=f"Contract status changed from {original_status} to {contract.status}",
+                        contract=contract
                     )
+                    if contract.status == 'forecast' and hasattr(client,
+                                                                 'user') and not client.user.has_usable_password():
+                        send_password_reset_email(client.user.email)
 
-                if contract.status == 'dead':  # Check if the contract status is 'dead'
-                    # Delete all bookings associated with this contract
-                    EventStaffBooking.objects.filter(contract=contract).delete()
-                    # Optional: Log the deletion of bookings
-                    ChangeLog.objects.create(
-                        user=request.user,
-                        description=f"Deleted all bookings due to contract status 'dead' for contract ID {contract.id}"
-                    )
+                # Check if the user is allowed to mark the contract as "dead"
+                if contract.status == 'dead':
+                    allowed_user = CustomUser.objects.get(username='MikeG')
+                    if request.user == allowed_user:
+                        EventStaffBooking.objects.filter(contract=contract).delete()
+                    else:
+                        contract.status = original_status  # Revert status change
+                        contract.save()
+                        response_message = {'status': 'unauthorized',
+                                            'message': 'You do not have permission to mark this contract as dead.'}
+                        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                            return JsonResponse(response_message)
+                        else:
+                            return redirect(
+                                f'{request.path}?unauthorized=true&message=You do not have permission to mark this contract as dead.')
 
-                if is_ajax:
-                    return JsonResponse({'status': 'success', 'message': 'Contract info updated successfully.'})
-                else:
-                    return redirect('contracts:contract_detail', id=contract.id)
+                response_message = {'status': 'success', 'message': 'Contract info updated successfully.'}
             else:
-                if is_ajax:
-                    return JsonResponse({'status': 'error', 'errors': contract_info_edit_form.errors}, status=400)
+                response_message = {'status': 'error', 'message': contract_info_edit_form.errors}
 
         elif 'client_info' in request.POST:
             if client_edit_form.is_valid():
                 client_edit_form.save()
-                if is_ajax:
-                    return JsonResponse({'status': 'success', 'message': 'Client info updated successfully.'})
-                else:
-                    return redirect('contracts/contract_detail', id=id)
+                response_message = {'status': 'success', 'message': 'Client info updated successfully.'}
             else:
-                if is_ajax:
-                    return JsonResponse({'status': 'error', 'errors': client_edit_form.errors}, status=400)
+                response_message = {'status': 'error', 'message': client_edit_form.errors}
 
         elif 'event_details' in request.POST:
             if event_edit_form.is_valid():
                 event_edit_form.save()
-                if is_ajax:
-                    return JsonResponse({'status': 'success', 'message': 'Event info updated successfully.'})
-                else:
-                    return redirect('contracts/contract_detail', id=id)
+                response_message = {'status': 'success', 'message': 'Event info updated successfully.'}
             else:
-                if is_ajax:
-                    return JsonResponse({'status': 'error', 'errors': event_edit_form.errors}, status=400)
+                response_message = {'status': 'error', 'message': event_edit_form.errors}
 
-        elif 'service_details' in request.POST:  # Check for service tab form submission
-            # Handle form submission for the service tab
-            # Add your logic here for processing the service tab form
-            if is_ajax:
-                return JsonResponse({'status': 'success', 'message': 'Service details updated successfully.'})
-            else:
-                return redirect('contracts/contract_detail', id=id)
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse(response_message)
+        else:
+            return redirect('contracts:contract_detail', id=id)
 
-        if not is_ajax:  # Only redirect if not an AJAX request
-            return redirect('contracts/contract_detail', id=id)
-
-    return render(request, 'contracts/contract_detail.html', {
+    return render(request, 'contracts/manage_staff.html', {
         'contract_info_edit_form': contract_info_edit_form,
         'client_edit_form': client_edit_form,
         'event_edit_form': event_edit_form,
         'contract': contract
     })
 
+@login_required
 def edit_services(request, id):
     contract = get_object_or_404(Contract, pk=id)
 
@@ -757,7 +717,6 @@ def edit_services(request, id):
 
     return render(request, 'contracts/contract_detail.html', context)
 
-
 def update_prospect_photographers(request, id):
     if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         contract = get_object_or_404(Contract, pk=id)
@@ -778,7 +737,7 @@ def update_prospect_photographers(request, id):
         return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
 
-
+@login_required
 @csrf_exempt
 @require_http_methods(["POST"])
 def save_overtime_entry(request, id):
@@ -787,54 +746,44 @@ def save_overtime_entry(request, id):
     except Contract.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Contract not found'}, status=404)
 
-    # Parse JSON data from the request body
     try:
         data = json.loads(request.body.decode('utf-8'))
         option_id = data.get('optionId')
         hours = data.get('hours')
-        entry_id = data.get('entryId')  # This would be used for editing an existing entry
+        entry_id = data.get('entryId')
     except (ValueError, KeyError):
         return JsonResponse({'status': 'error', 'message': 'Invalid data'}, status=400)
 
-    # Validate and save the overtime entry
     try:
         overtime_option = OvertimeOption.objects.get(pk=option_id)
         if entry_id:
-            # Update existing entry
             overtime_entry = ContractOvertime.objects.get(pk=entry_id, contract=contract)
             overtime_entry.overtime_option = overtime_option
             overtime_entry.hours = hours
         else:
-            # Create new entry
             overtime_entry = ContractOvertime(contract=contract, overtime_option=overtime_option, hours=hours)
         overtime_entry.save()
         return JsonResponse({'status': 'success', 'message': 'Overtime entry saved successfully'})
-    except (OvertimeOption.DoesNotExist, ContractOvertime.DoesNotExist, ValueError):
-        return JsonResponse({'status': 'error', 'message': 'Invalid overtime option or entry'}, status=400)
-
+    except (OvertimeOption.DoesNotExist, ContractOvertime.DoesNotExist, ValueError) as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
 def get_overtime_entry(request, entry_id):
     try:
         overtime_entry = ContractOvertime.objects.get(id=entry_id)
-        # Serialize your overtime entry details here
         response_data = {
             'id': overtime_entry.id,
-            'overtime_option_id': overtime_entry.overtime_option.id,  # Assuming a ForeignKey to an OvertimeOption model
+            'overtime_option_id': overtime_entry.overtime_option.id,
             'hours': float(overtime_entry.hours),
-            # Add other fields as necessary
         }
         return JsonResponse(response_data)
     except ContractOvertime.DoesNotExist:
         return JsonResponse({'error': 'Entry not found'}, status=404)
 
-
 @require_POST
 def edit_overtime_entry(request, entry_id):
-    # Assume JSON data is sent with 'overtime_option', 'hours', and CSRF token
     data = json.loads(request.body)
     try:
         entry = ContractOvertime.objects.get(pk=entry_id)
-        # Update the entry with new values
         entry.overtime_option_id = data['overtime_option']
         entry.hours = data['hours']
         entry.save()
@@ -843,9 +792,7 @@ def edit_overtime_entry(request, entry_id):
     except ContractOvertime.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Entry not found'}, status=404)
     except Exception as e:
-        # Generic error handling, ideally log this exception
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-
 
 @require_POST
 def delete_overtime_entry(request, entry_id):
@@ -858,15 +805,8 @@ def delete_overtime_entry(request, entry_id):
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
-
-def is_ajax_request(request):
-    return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-
-
 def get_overtime_entries(request, contract_id):
     service_type = request.GET.get('service_type')
-    print(f"Service type received: {service_type}")
-
     try:
         entries = ContractOvertime.objects.filter(
             contract_id=contract_id,
@@ -880,11 +820,25 @@ def get_overtime_entries(request, contract_id):
             'cost': entry.overtime_option.rate_per_hour * entry.hours
         } for entry in entries]
 
-        print(f"Entries data: {entries_data}")
         return JsonResponse({'status': 'success', 'entries': entries_data})
     except Exception as e:
-        print(f"Error: {e}")
         return JsonResponse({'status': 'error', 'message': 'Error retrieving overtime entries'}, status=500)
+
+def get_overtime_options(request):
+    service_type_name = request.GET.get('service_type', None)
+    options_list = []
+
+    if service_type_name:
+        try:
+            service_type = ServiceType.objects.get(name=service_type_name)
+            options = OvertimeOption.objects.filter(is_active=True, service_type=service_type)
+        except ServiceType.DoesNotExist:
+            return JsonResponse({'error': 'ServiceType not found'}, status=404)
+    else:
+        options = OvertimeOption.objects.filter(is_active=True)
+
+    options_list = options.values('id', 'role', 'rate_per_hour', 'service_type__name', 'description')
+    return JsonResponse(list(options_list), safe=False)
 
 def get_contract_data(request, id):
     contract = get_object_or_404(Contract, pk=id)
@@ -935,6 +889,9 @@ def get_contract_data(request, id):
         'reception_phone': str(contract.reception_phone) if contract.reception_phone else '',
         'reception_email': contract.reception_email,
         # Add any other event fields you have in your model...
+
+        # Include custom_text
+        'custom_text': contract.custom_text,
     }
     return JsonResponse(data)
 
@@ -962,37 +919,135 @@ def contract_view(request):
 
     return render(request, 'contracts/contract_template.html', context)
 
+ROLE_DISPLAY_NAMES = {
+    'PHOTOGRAPHER1': 'Photographer 1',
+    'PHOTOGRAPHER2': 'Photographer 2',
+    'VIDEOGRAPHER1': 'Videographer 1',
+    'VIDEOGRAPHER2': 'Videographer 2',
+    'DJ1': 'DJ 1',
+    'DJ2': 'DJ 2',
+    'PHOTOBOOTH_OP1': 'Photobooth Operator 1',
+    'PHOTOBOOTH_OP2': 'Photobooth Operator 2'
+}
 
+@login_required
 def generate_contract_pdf(request, contract_id):
     contract = get_object_or_404(Contract, pk=contract_id)
 
-    # Client information
-    client_info = {
-        'primary_contact': contract.client.primary_contact if contract.client else 'N/A',
-        'primary_email': contract.client.primary_email if contract.client else 'N/A',
-        'primary_phone': contract.client.primary_phone1 if contract.client else 'N/A',
-        'partner_contact': contract.client.partner_contact if contract.client else 'N/A',
-        # ... add more fields as needed
+    # Constructing full URL for the logo
+    domain = '127.0.0.1:8000'
+    logo_url = f'http://{domain}{settings.MEDIA_URL}logo/Final_Logo.png'
+
+    # Package texts
+    package_texts = {
+        'photography': linebreaks(contract.photography_package.default_text) if contract.photography_package else None,
+        'videography': linebreaks(contract.videography_package.default_text) if contract.videography_package else None,
+        'dj': linebreaks(contract.dj_package.default_text) if contract.dj_package else None,
+        'photobooth': linebreaks(contract.photobooth_package.default_text) if contract.photobooth_package else None,
+        # Add more package types as needed
     }
 
-    # Package default text
-    package_texts = {
-        'photography': contract.photography_package.default_text if contract.photography_package else 'N/A',
-        'videography': contract.videography_package.default_text if contract.videography_package else 'N/A',
-        'dj': contract.dj_package.default_text if contract.dj_package else 'N/A',
-        'photobooth': contract.photobooth_package.default_text if contract.photobooth_package else 'N/A',
-        # ... add more package types as needed
+    # Additional services text processing
+    additional_services_texts = {
+        'photography_additional': linebreaks(
+            contract.photography_additional.default_text) if contract.photography_additional else None,
+        'videography_additional': linebreaks(
+            contract.videography_additional.default_text) if contract.videography_additional else None,
+        'dj_additional': linebreaks(contract.dj_additional.default_text) if contract.dj_additional else None,
+        'photobooth_additional': linebreaks(
+            contract.photobooth_additional.default_text) if contract.photobooth_additional else None,
+        # Add more additional services as needed
     }
+
+    # Additional staff
+    additional_staff = defaultdict(list)
+    for staff_option in [contract.photography_additional, contract.videography_additional, contract.dj_additional,
+                         contract.photobooth_additional]:
+        if staff_option:
+            additional_staff[staff_option.service_type.name].append({
+                'name': staff_option.name,
+                'service_type': staff_option.service_type.name,
+                'price': staff_option.price,
+                'hours': staff_option.hours,
+                'default_text': staff_option.default_text,
+            })
+
+
+    # Initialize an empty dictionary to store overtime options grouped by service type
+    overtime_options_by_service_type = {}
+
+    # Initialize total overtime cost
+    total_overtime_cost = 0
+
+    # Iterate over each overtime option
+    for contract_overtime in contract.overtimes.all():
+        # Get the service type of the overtime option
+        service_type = contract_overtime.overtime_option.service_type.name
+
+        # Check if the service type already exists in the dictionary
+        if service_type in overtime_options_by_service_type:
+            # If the service type exists, append the overtime option to its list
+            overtime_options_by_service_type[service_type].append({
+                'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role,
+                                               contract_overtime.overtime_option.role),
+                'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
+                'hours': contract_overtime.hours,
+            })
+        else:
+            # If the service type does not exist, create a new list with the overtime option
+            overtime_options_by_service_type[service_type] = [{
+                'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role,
+                                               contract_overtime.overtime_option.role),
+                'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
+                'hours': contract_overtime.hours,
+            }]
+
+            # Calculate total cost for each overtime option
+            for service_type, options in overtime_options_by_service_type.items():
+                for option in options:
+                    option['total_cost'] = option['hours'] * option['rate_per_hour']
+
+    total_service_cost = contract.calculate_total_service_cost()
+    total_discount = contract.calculate_discount()
+    total_cost_after_discounts = contract.calculate_total_service_cost_after_discounts()
 
     context = {
         'contract': contract,
-        'client_info': client_info,
+        'client_info': {
+            'primary_contact': contract.client.primary_contact if contract.client else 'N/A',
+            'primary_email': contract.client.primary_email if contract.client else 'N/A',
+            'primary_phone': contract.client.primary_phone1 if contract.client else 'N/A',
+            'partner_contact': contract.client.partner_contact if contract.client else 'N/A',
+
+            # ... add more fields as needed
+        },
+        'logo_url': logo_url,  # Include the full logo URL in the context
         'package_texts': package_texts,
-        'logo_path': '/home/egret/django_projects/weddingbook_project/media/logo/Final_Logo.png',  # Direct path
+        'additional_staff': additional_staff,
+        'photography_package_text': linebreaks(
+            contract.photography_package.default_text) if contract.photography_package else None,
+        'videography_package_text': linebreaks(
+            contract.videography_package.default_text) if contract.videography_package else None,
+        'dj_package_text': linebreaks(contract.dj_package.default_text) if contract.dj_package else None,
+        'photobooth_package_text': linebreaks(
+            contract.photobooth_package.default_text) if contract.photobooth_package else None,
+        'photography_additional_text': linebreaks(
+            contract.photography_additional.default_text) if contract.photography_additional else None,
+        'videography_additional_text': linebreaks(
+            contract.videography_additional.default_text) if contract.videography_additional else None,
+        'dj_additional_text': linebreaks(contract.dj_additional.default_text) if contract.dj_additional else None,
+        'photobooth_additional_text': linebreaks(
+            contract.photobooth_additional.default_text) if contract.photobooth_additional else None,
+        'total_overtime_cost': total_overtime_cost,  # Add total overtime cost to context
+        'overtime_options_by_service_type': overtime_options_by_service_type,
+        'ROLE_DISPLAY_NAMES': ROLE_DISPLAY_NAMES,  # Add role display names to context
+        'total_service_cost': total_service_cost,
+        'total_discount': total_discount,
+        'total_cost_after_discounts': total_cost_after_discounts
         # ... other context variables
     }
 
-    # Render HTML string with context
+    # Render HTML to string
     html_string = render_to_string('contracts/contract_template.html', context)
 
     # Generate PDF from HTML
@@ -1003,7 +1058,606 @@ def generate_contract_pdf(request, contract_id):
     response['Content-Disposition'] = f'attachment; filename="contract_{contract_id}.pdf"'
     return response
 
+@login_required
+def contract_agreement(request, contract_id):
+    contract = get_object_or_404(Contract, pk=contract_id)
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
+    if request.method == 'POST':
+        rider_type = request.POST.get('rider_type')
+        if rider_type:
+            # Handle sending a specific rider email
+            send_contract_and_rider_email_to_client(request, contract, rider_type=rider_type)
+            return JsonResponse({'status': 'success', 'message': f'{rider_type.replace("_", " ").capitalize()} agreement email sent successfully.'})
+        elif 'contract_agreement' in request.POST:
+            # Handle sending just the contract agreement email
+            send_contract_and_rider_email_to_client(request, contract, only_contract=True)
+            return JsonResponse({'status': 'success', 'message': 'Contract agreement email sent successfully.'})
+        else:
+            # Handle sending the combined contract and rider agreements email
+            send_contract_and_rider_email_to_client(request, contract)
+            return JsonResponse({'status': 'success', 'message': 'Contract and rider agreements email sent successfully.'})
+
+    form = ContractAgreementForm()
+
+    # Initialize an empty dictionary to store overtime options grouped by service type
+    overtime_options_by_service_type = {}
+
+    # Initialize total overtime cost
+    total_overtime_cost = 0
+
+    # Iterate over each overtime option
+    for contract_overtime in contract.overtimes.all():
+        # Get the service type of the overtime option
+        service_type = contract_overtime.overtime_option.service_type.name
+
+        # Check if the service type already exists in the dictionary
+        if service_type in overtime_options_by_service_type:
+            # If the service type exists, append the overtime option to its list
+            overtime_options_by_service_type[service_type].append({
+                'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role, contract_overtime.overtime_option.role),
+                'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
+                'hours': contract_overtime.hours,
+            })
+        else:
+            # If the service type does not exist, create a new list with the overtime option
+            overtime_options_by_service_type[service_type] = [{
+                'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role, contract_overtime.overtime_option.role),
+                'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
+                'hours': contract_overtime.hours,
+            }]
+
+    # Calculate total cost for each overtime option
+    for service_type, options in overtime_options_by_service_type.items():
+        for option in options:
+            option['total_cost'] = option['hours'] * option['rate_per_hour']
+            total_overtime_cost += option['total_cost']
+
+    context = {
+        'contract': contract,
+        'logo_url': logo_url,
+        'form': form,
+        'package_texts': {
+            'photography': linebreaks(contract.photography_package.default_text) if contract.photography_package else '',
+            'videography': linebreaks(contract.videography_package.default_text) if contract.videography_package else '',
+            'dj': linebreaks(contract.dj_package.default_text) if contract.dj_package else '',
+            'photobooth': linebreaks(contract.photobooth_package.default_text) if contract.photobooth_package else '',
+        },
+        'additional_services_texts': {
+            'photography_additional': linebreaks(contract.photography_additional.default_text) if contract.photography_additional else '',
+            'videography_additional': linebreaks(contract.videography_additional.default_text) if contract.videography_additional else '',
+            'dj_additional': linebreaks(contract.dj_additional.default_text) if contract.dj_additional else '',
+            'photobooth_additional': linebreaks(contract.photobooth_additional.default_text) if contract.photobooth_additional else '',
+        },
+        'rider_texts': {
+            'photography': linebreaks(contract.photography_package.rider_text) if contract.photography_package else '',
+            'videography': linebreaks(contract.videography_package.rider_text) if contract.videography_package else '',
+            'dj': linebreaks(contract.dj_package.rider_text) if contract.dj_package else '',
+            'photobooth': linebreaks(contract.photobooth_package.rider_text) if contract.photobooth_package else '',
+        },
+        'total_service_cost': contract.calculate_total_service_cost(),
+        'total_discount': contract.calculate_discount(),
+        'total_cost_after_discounts': contract.calculate_total_service_cost_after_discounts(),
+        'photographer_choices': [
+            contract.prospect_photographer1,
+            contract.prospect_photographer2,
+            contract.prospect_photographer3
+        ],
+        'overtime_options_by_service_type': overtime_options_by_service_type,
+        'total_overtime_cost': total_overtime_cost,
+        'ROLE_DISPLAY_NAMES': ROLE_DISPLAY_NAMES,  # Add role display names to context
+    }
+
+    return render(request, 'contracts/contract_agreement_form.html', context)
+
+
+
+
+@login_required
+def client_contract_agreement(request, contract_id):
+    contract = get_object_or_404(Contract, pk=contract_id)
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
+    if request.method == 'POST':
+        form = ContractAgreementForm(request.POST)
+        if form.is_valid():
+            agreement = form.save(commit=False)
+            agreement.contract = contract
+            agreement.signature = form.cleaned_data['main_signature']
+
+            latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
+            agreement.version_number = latest_agreement.version_number + 1 if latest_agreement else 1
+
+            # Save the state of services
+            agreement.photography_service = contract.photography_package.service_type if contract.photography_package else None
+            agreement.videography_service = contract.videography_package.service_type if contract.videography_package else None
+            agreement.dj_service = contract.dj_package.service_type if contract.dj_package else None
+            agreement.photobooth_service = contract.photobooth_package.service_type if contract.photobooth_package else None
+
+            agreement.save()
+
+            portal_url = reverse('contracts:client_portal', args=[contract_id])
+
+            # Render the status page upon successful form submission
+            return render(request, 'contracts/status_page.html', {
+                'message': 'You\'re all set, thank you!',
+                'portal_url': portal_url
+            })
+        else:
+            portal_url = reverse('contracts:client_portal', args=[contract_id])
+
+            return render(request, 'contracts/status_page.html', {
+                'message': 'There was an error submitting the contract agreement.',
+                'portal_url': portal_url
+            })
+
+    else:
+        form = ContractAgreementForm()
+
+    # Initialize an empty dictionary to store overtime options grouped by service type
+    overtime_options_by_service_type = {}
+
+    # Initialize total overtime cost
+    total_overtime_cost = 0
+
+    # Iterate over each overtime option
+    for contract_overtime in contract.overtimes.all():
+        # Get the service type of the overtime option
+        service_type = contract_overtime.overtime_option.service_type.name
+
+        # Check if the service type already exists in the dictionary
+        if service_type in overtime_options_by_service_type:
+            # If the service type exists, append the overtime option to its list
+            overtime_options_by_service_type[service_type].append({
+                'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role, contract_overtime.overtime_option.role),
+                'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
+                'hours': contract_overtime.hours,
+            })
+        else:
+            # If the service type does not exist, create a new list with the overtime option
+            overtime_options_by_service_type[service_type] = [{
+                'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role, contract_overtime.overtime_option.role),
+                'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
+                'hours': contract_overtime.hours,
+            }]
+
+    # Calculate total cost for each overtime option
+    for service_type, options in overtime_options_by_service_type.items():
+        for option in options:
+            option['total_cost'] = option['hours'] * option['rate_per_hour']
+            total_overtime_cost += option['total_cost']
+
+    package_texts = {
+        'photography': linebreaks(contract.photography_package.default_text) if contract.photography_package else None,
+        'videography': linebreaks(contract.videography_package.default_text) if contract.videography_package else None,
+        'dj': linebreaks(contract.dj_package.default_text) if contract.dj_package else None,
+        'photobooth': linebreaks(contract.photobooth_package.default_text) if contract.photobooth_package else None,
+    }
+
+    context = {
+        'contract': contract,
+        'logo_url': logo_url,
+        'package_texts': package_texts,
+        'total_service_cost': contract.calculate_total_service_cost(),
+        'total_discount': contract.calculate_discount(),
+        'total_cost_after_discounts': contract.calculate_total_service_cost_after_discounts(),
+        'photographer_choices': [
+            contract.prospect_photographer1,
+            contract.prospect_photographer2,
+            contract.prospect_photographer3
+        ],
+        'overtime_options_by_service_type': overtime_options_by_service_type,
+        'total_overtime_cost': total_overtime_cost,
+        'ROLE_DISPLAY_NAMES': ROLE_DISPLAY_NAMES,  # Add role display names to context
+        'form': form,
+    }
+
+    return render(request, 'contracts/client_contract_agreement.html', context)
+
+@login_required
+def view_submitted_contract(request, contract_id, version_number):
+    contract = get_object_or_404(Contract, pk=contract_id)
+    contract_agreement = get_object_or_404(ContractAgreement, contract=contract, version_number=version_number)
+    rider_agreements = RiderAgreement.objects.filter(contract=contract)
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
+    # Initialize an empty dictionary to store overtime options grouped by service type
+    overtime_options_by_service_type = {}
+
+    # Initialize total overtime cost
+    total_overtime_cost = 0
+
+    # Iterate over each overtime option
+    for contract_overtime in contract.overtimes.all():
+        # Get the service type of the overtime option
+        service_type = contract_overtime.overtime_option.service_type.name
+
+        # Check if the service type already exists in the dictionary
+        if service_type in overtime_options_by_service_type:
+            # If the service type exists, append the overtime option to its list
+            overtime_options_by_service_type[service_type].append({
+                'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role, contract_overtime.overtime_option.role),
+                'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
+                'hours': contract_overtime.hours,
+            })
+        else:
+            # If the service type does not exist, create a new list with the overtime option
+            overtime_options_by_service_type[service_type] = [{
+                'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role, contract_overtime.overtime_option.role),
+                'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
+                'hours': contract_overtime.hours,
+            }]
+
+    # Calculate total cost for each overtime option
+    for service_type, options in overtime_options_by_service_type.items():
+        for option in options:
+            option['total_cost'] = option['hours'] * option['rate_per_hour']
+            total_overtime_cost += option['total_cost']
+
+    package_texts = {
+        'photography': linebreaks(contract.photography_package.default_text) if contract.photography_package else None,
+        'videography': linebreaks(contract.videography_package.default_text) if contract.videography_package else None,
+        'dj': linebreaks(contract.dj_package.default_text) if contract.dj_package else None,
+        'photobooth': linebreaks(contract.photobooth_package.default_text) if contract.photobooth_package else None,
+    }
+
+    additional_services_texts = {
+        'photography_additional': linebreaks(contract.photography_additional.default_text) if contract.photography_additional else None,
+        'videography_additional': linebreaks(contract.videography_additional.default_text) if contract.videography_additional else None,
+        'dj_additional': linebreaks(contract.dj_additional.default_text) if contract.dj_additional else None,
+        'photobooth_additional': linebreaks(contract.photobooth_additional.default_text) if contract.photobooth_additional else None,
+    }
+
+    total_service_cost = contract.calculate_total_service_cost()
+    total_discount = contract.calculate_discount()
+    total_cost_after_discounts = contract.calculate_total_service_cost_after_discounts()
+
+    context = {
+        'contract': contract,
+        'contract_agreement': contract_agreement,
+        'rider_agreements': rider_agreements,
+        'logo_url': logo_url,
+        'package_texts': package_texts,
+        'additional_services_texts': additional_services_texts,
+        'total_service_cost': total_service_cost,
+        'total_discount': total_discount,
+        'total_cost_after_discounts': total_cost_after_discounts,
+        'overtime_options_by_service_type': overtime_options_by_service_type,
+        'total_overtime_cost': total_overtime_cost,
+        'ROLE_DISPLAY_NAMES': ROLE_DISPLAY_NAMES,  # Add role display names to context
+    }
+
+    return render(request, 'contracts/view_submitted_contract.html', context)
+
+@login_required
+def client_contract_and_rider_agreement(request, contract_id):
+    contract = get_object_or_404(Contract, pk=contract_id)
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
+    if request.method == 'POST':
+        form = ContractAgreementForm(request.POST)
+        if form.is_valid():
+            agreement = form.save(commit=False)
+            agreement.contract = contract
+            agreement.signature = form.cleaned_data['main_signature']
+
+            latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
+            agreement.version_number = latest_agreement.version_number + 1 if latest_agreement else 1
+
+            agreement.save()
+
+            for rider in ['photography', 'photography_additional', 'videography', 'videography_additional', 'dj',
+                          'dj_additional', 'photobooth', 'photobooth_additional']:
+                signature = request.POST.get(f'signature_{rider}')
+                client_name = request.POST.get(f'client_name_{rider}')
+                agreement_date = request.POST.get(f'agreement_date_{rider}')
+                notes = request.POST.get(f'notes_{rider}')
+                rider_text = request.POST.get(f'rider_text_{rider}')
+
+                if signature:
+                    try:
+                        RiderAgreement.objects.create(
+                            contract=contract,
+                            rider_type=rider,
+                            signature=signature,
+                            client_name=client_name,
+                            agreement_date=agreement_date,
+                            notes=notes,
+                            rider_text=rider_text
+                        )
+                    except Exception as e:
+                        print(f"Error saving RiderAgreement for {rider}: {e}")
+                else:
+                    print(f"Missing signature for {rider}")
+
+            portal_url = reverse('contracts:client_portal', args=[contract_id])
+
+            # Render the status page upon successful form submission
+            return render(request, 'contracts/status_page.html', {
+                'message': 'You\'re all set, thank you!',
+                'portal_url': portal_url
+            })
+        else:
+            portal_url = reverse('client_portal', args=[contract_id])
+
+            return render(request, 'contracts/status_page.html', {
+                'message': 'There was an error submitting the agreements.',
+                'portal_url': portal_url
+            })
+
+    else:
+        form = ContractAgreementForm()
+
+    # Initialize an empty dictionary to store overtime options grouped by service type
+    overtime_options_by_service_type = {}
+
+    # Initialize total overtime cost
+    total_overtime_cost = 0
+
+    # Iterate over each overtime option
+    for contract_overtime in contract.overtimes.all():
+        # Get the service type of the overtime option
+        service_type = contract_overtime.overtime_option.service_type.name
+
+        # Check if the service type already exists in the dictionary
+        if service_type in overtime_options_by_service_type:
+            # If the service type exists, append the overtime option to its list
+            overtime_options_by_service_type[service_type].append({
+                'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role, contract_overtime.overtime_option.role),
+                'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
+                'hours': contract_overtime.hours,
+            })
+        else:
+            # If the service type does not exist, create a new list with the overtime option
+            overtime_options_by_service_type[service_type] = [{
+                'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role, contract_overtime.overtime_option.role),
+                'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
+                'hours': contract_overtime.hours,
+            }]
+
+    # Calculate total cost for each overtime option
+    for service_type, options in overtime_options_by_service_type.items():
+        for option in options:
+            option['total_cost'] = option['hours'] * option['rate_per_hour']
+            total_overtime_cost += option['total_cost']
+
+    package_texts = {
+        'photography': linebreaks(contract.photography_package.default_text) if contract.photography_package else None,
+        'videography': linebreaks(contract.videography_package.default_text) if contract.videography_package else None,
+        'dj': linebreaks(contract.dj_package.default_text) if contract.dj_package else None,
+        'photobooth': linebreaks(contract.photobooth_package.default_text) if contract.photobooth_package else None,
+    }
+
+    additional_services_texts = {
+        'photography_additional': linebreaks(contract.photography_additional.default_text) if contract.photography_additional else None,
+        'videography_additional': linebreaks(contract.videography_additional.default_text) if contract.videography_additional else None,
+        'dj_additional': linebreaks(contract.dj_additional.default_text) if contract.dj_additional else None,
+        'photobooth_additional': linebreaks(contract.photobooth_additional.default_text) if contract.photobooth_additional else None,
+    }
+
+    rider_texts = {
+        'photography': linebreaks(contract.photography_package.rider_text) if contract.photography_package else None,
+        'photography_additional': linebreaks(contract.photography_additional.rider_text) if contract.photography_additional else None,
+        'engagement_session': linebreaks(contract.engagement_session.rider_text) if contract.engagement_session else None,
+        'videography': linebreaks(contract.videography_package.rider_text) if contract.videography_package else None,
+        'videography_additional': linebreaks(contract.videography_additional.rider_text) if contract.videography_additional else None,
+        'dj': linebreaks(contract.dj_package.rider_text) if contract.dj_package else None,
+        'dj_additional': linebreaks(contract.dj_additional.rider_text) if contract.dj_additional else None,
+        'photobooth': linebreaks(contract.photobooth_package.rider_text) if contract.photobooth_package else None,
+        'photobooth_additional': linebreaks(contract.photobooth_additional.rider_text) if contract.photobooth_additional else None,
+    }
+
+    total_service_cost = contract.calculate_total_service_cost()
+    total_discount = contract.calculate_discount()
+    total_cost_after_discounts = contract.calculate_total_service_cost_after_discounts()
+
+    photographer_choices = [
+        contract.prospect_photographer1,
+        contract.prospect_photographer2,
+        contract.prospect_photographer3
+    ]
+
+    context = {
+        'contract': contract,
+        'logo_url': logo_url,
+        'package_texts': package_texts,
+        'additional_services_texts': additional_services_texts,
+        'rider_texts': rider_texts,
+        'total_service_cost': total_service_cost,
+        'total_discount': total_discount,
+        'total_cost_after_discounts': total_cost_after_discounts,
+        'photographer_choices': photographer_choices,
+        'overtime_options_by_service_type': overtime_options_by_service_type,
+        'total_overtime_cost': total_overtime_cost,
+        'ROLE_DISPLAY_NAMES': ROLE_DISPLAY_NAMES,
+        'form': form,
+    }
+
+    return render(request, 'contracts/client_contract_and_rider_agreement.html', context)
+
+
+@login_required
+def client_rider_agreement(request, contract_id, rider_type):
+    contract = get_object_or_404(Contract, pk=contract_id)
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
+    if request.method == 'POST':
+        form = ContractAgreementForm(request.POST)
+        if form.is_valid():
+            agreement = form.save(commit=False)
+            agreement.contract = contract
+            agreement.signature = form.cleaned_data['main_signature']
+
+            latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
+            agreement.version_number = latest_agreement.version_number + 1 if latest_agreement else 1
+
+            agreement.save()
+
+            signature = request.POST.get(f'signature_{rider_type}')
+            client_name = request.POST.get(f'client_name_{rider_type}')
+            agreement_date = request.POST.get(f'agreement_date_{rider_type}')
+            notes = request.POST.get(f'notes_{rider_type}')
+            rider_text = request.POST.get(f'rider_text_{rider_type}')
+
+            if signature:
+                try:
+                    RiderAgreement.objects.create(
+                        contract=contract,
+                        rider_type=rider_type,
+                        signature=signature,
+                        client_name=client_name,
+                        agreement_date=agreement_date,
+                        notes=notes,
+                        rider_text=rider_text
+                    )
+                except Exception as e:
+                    pass
+
+            portal_url = reverse('contracts:client_portal', args=[contract_id])
+
+            return render(request, 'contracts/status_page.html', {
+                'message': 'You\'re all set, thank you!',
+                'portal_url': portal_url
+            })
+        else:
+            portal_url = reverse('contracts:client_portal', args=[contract_id])
+
+            return render(request, 'contracts/status_page.html', {
+                'message': 'There was an error submitting the agreements.',
+                'portal_url': portal_url
+            })
+    else:
+        form = ContractAgreementForm()
+
+    # Initialize an empty dictionary to store overtime options grouped by service type
+    overtime_options_by_service_type = {}
+
+    # Initialize total overtime cost
+    total_overtime_cost = 0
+
+    # Iterate over each overtime option
+    for contract_overtime in contract.overtimes.all():
+        # Get the service type of the overtime option
+        service_type = contract_overtime.overtime_option.service_type.name
+
+        # Check if the service type already exists in the dictionary
+        if service_type in overtime_options_by_service_type:
+            # If the service type exists, append the overtime option to its list
+            overtime_options_by_service_type[service_type].append({
+                'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role, contract_overtime.overtime_option.role),
+                'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
+                'hours': contract_overtime.hours,
+            })
+        else:
+            # If the service type does not exist, create a new list with the overtime option
+            overtime_options_by_service_type[service_type] = [{
+                'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role, contract_overtime.overtime_option.role),
+                'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
+                'hours': contract_overtime.hours,
+            }]
+
+    # Calculate total cost for each overtime option
+    for service_type, options in overtime_options_by_service_type.items():
+        for option in options:
+            option['total_cost'] = option['hours'] * option['rate_per_hour']
+            total_overtime_cost += option['total_cost']
+
+    package_texts = {
+        'photography': linebreaks(contract.photography_package.default_text) if contract.photography_package else None,
+        'videography': linebreaks(contract.videography_package.default_text) if contract.videography_package else None,
+        'dj': linebreaks(contract.dj_package.default_text) if contract.dj_package else None,
+        'photobooth': linebreaks(contract.photobooth_package.default_text) if contract.photobooth_package else None,
+    }
+
+    additional_services_texts = {
+        'photography_additional': linebreaks(contract.photography_additional.default_text) if contract.photography_additional else None,
+        'videography_additional': linebreaks(contract.videography_additional.default_text) if contract.videography_additional else None,
+        'dj_additional': linebreaks(contract.dj_additional.default_text) if contract.dj_additional else None,
+        'photobooth_additional': linebreaks(contract.photobooth_additional.default_text) if contract.photobooth_additional else None,
+    }
+
+    rider_texts = {
+        'photography': linebreaks(contract.photography_package.rider_text) if contract.photography_package else None,
+        'photography_additional': linebreaks(contract.photography_additional.rider_text) if contract.photography_additional else None,
+        'engagement_session': linebreaks(contract.engagement_session.rider_text) if contract.engagement_session else None,
+        'videography': linebreaks(contract.videography_package.rider_text) if contract.videography_package else None,
+        'videography_additional': linebreaks(contract.videography_additional.rider_text) if contract.videography_additional else None,
+        'dj': linebreaks(contract.dj_package.rider_text) if contract.dj_package else None,
+        'dj_additional': linebreaks(contract.dj_additional.rider_text) if contract.dj_additional else None,
+        'photobooth': linebreaks(contract.photobooth_package.rider_text) if contract.photobooth_package else None,
+        'photobooth_additional': linebreaks(contract.photobooth_additional.rider_text) if contract.photobooth_additional else None,
+    }
+
+    total_service_cost = contract.calculate_total_service_cost()
+    total_discount = contract.calculate_discount()
+    total_cost_after_discounts = contract.calculate_total_service_cost_after_discounts()
+
+    photographer_choices = [
+        contract.prospect_photographer1,
+        contract.prospect_photographer2,
+        contract.prospect_photographer3
+    ]
+
+    context = {
+        'contract': contract,
+        'logo_url': logo_url,
+        'package_texts': package_texts,
+        'additional_services_texts': additional_services_texts,
+        'rider_texts': rider_texts,
+        'total_service_cost': total_service_cost,
+        'total_discount': total_discount,
+        'total_cost_after_discounts': total_cost_after_discounts,
+        'photographer_choices': photographer_choices,
+        'overtime_options_by_service_type': overtime_options_by_service_type,
+        'total_overtime_cost': total_overtime_cost,
+        'ROLE_DISPLAY_NAMES': ROLE_DISPLAY_NAMES,
+        'form': form,
+        'rider_text': rider_texts.get(rider_type, ""),
+        'rider_type': rider_type,
+    }
+
+    return render(request, 'contracts/client_rider_agreement.html', context)
+
+
+def view_rider_agreements(request, contract_id):
+    contract = get_object_or_404(Contract, pk=contract_id)
+    rider_agreements = RiderAgreement.objects.filter(contract=contract)
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
+    package_texts = {
+        'photography': linebreaks(contract.photography_package.default_text) if contract.photography_package else None,
+        'videography': linebreaks(contract.videography_package.default_text) if contract.videography_package else None,
+        'dj': linebreaks(contract.dj_package.default_text) if contract.dj_package else None,
+        'photobooth': linebreaks(contract.photobooth_package.default_text) if contract.photobooth_package else None,
+    }
+
+    additional_services_texts = {
+        'photography_additional': linebreaks(contract.photography_additional.default_text) if contract.photography_additional else None,
+        'videography_additional': linebreaks(contract.videography_additional.default_text) if contract.videography_additional else None,
+        'dj_additional': linebreaks(contract.dj_additional.default_text) if contract.dj_additional else None,
+        'photobooth_additional': linebreaks(contract.photobooth_additional.default_text) if contract.photobooth_additional else None,
+    }
+
+    total_service_cost = contract.calculate_total_service_cost()
+    total_discount = contract.calculate_discount()
+    total_cost_after_discounts = contract.calculate_total_service_cost_after_discounts()
+
+    context = {
+        'contract': contract,
+        'rider_agreements': rider_agreements,
+        'logo_url': logo_url,
+        'package_texts': package_texts,
+        'additional_services_texts': additional_services_texts,
+        'total_service_cost': total_service_cost,
+        'total_discount': total_discount,
+        'total_cost_after_discounts': total_cost_after_discounts,
+    }
+
+    return render(request, 'contracts/view_rider_agreement.html', context)
+
+
+
+@login_required
 def upload_contract_documents(request, contract_id):
     contract = get_object_or_404(Contract, pk=contract_id)
     if request.method == 'POST':
@@ -1012,10 +1666,11 @@ def upload_contract_documents(request, contract_id):
             contract_document = form.save(commit=False)
             contract_document.contract = contract
             contract_document.save()
-            return redirect('contracts/contract_detail.html')
+            return redirect('contracts:contract_detail', pk=contract_id)
     else:
         form = ContractDocumentForm()
 
+    return render(request, 'contracts/upload_contract_documents.html', {'form': form})
 
 def get_package_options(request):
     # Get the service type name from request query parameters
@@ -1036,7 +1691,8 @@ def get_package_options(request):
                     'id': package.id,
                     'name': package.name,
                     'price': str(package.price),
-                    'hours': package.hours
+                    'hours': package.hours,
+                    'default_text': package.default_text  # Make sure this attribute exists in your model
                 }
                 for package in packages
             ]
@@ -1045,8 +1701,6 @@ def get_package_options(request):
             response_data['error'] = 'Service type not found'
 
     return JsonResponse(response_data)
-
-
 
 def get_additional_staff_options(request):
     # Get the service type name from request query parameters
@@ -1098,28 +1752,6 @@ def get_prospect_photographers(request):
             return JsonResponse({'error': 'Contract not found'}, status=404)
     return JsonResponse({'error': 'Contract ID is required'}, status=400)
 
-
-# Django view for the overtime rates API
-
-def get_overtime_options(request):
-    service_type_name = request.GET.get('service_type', None)
-    options_list = []
-
-    if service_type_name:
-        try:
-            # Fetch the ServiceType instance based on the name
-            service_type = ServiceType.objects.get(name=service_type_name)
-            # Filter OvertimeOption instances by the service_type ForeignKey
-            options = OvertimeOption.objects.filter(is_active=True, service_type=service_type)
-        except ServiceType.DoesNotExist:
-            # Handle the case where the ServiceType does not exist
-            return JsonResponse({'error': 'ServiceType not found'}, status=404)
-    else:
-        # Fetch all active OvertimeOption instances if service_type is not specified
-        options = OvertimeOption.objects.filter(is_active=True)
-
-    options_list = options.values('id', 'role', 'rate_per_hour', 'service_type__name', 'description')
-    return JsonResponse(list(options_list), safe=False)
 
 def remove_discount(request, contract_id, discount_id):
     contract = get_object_or_404(Contract, contract_id=contract_id)
@@ -1174,28 +1806,92 @@ def get_additional_products(request):
     return JsonResponse(list(products), safe=False)
 
 
+@login_required
 def save_products(request, id):
     contract = get_object_or_404(Contract, pk=id)
-    product_formset = ContractProductFormset(request.POST or None, instance=contract, prefix='contract_products')
 
     if request.method == 'POST':
-        if product_formset.is_valid():
-            product_formset.save()
-            return redirect('contracts:contract_detail', id=contract.contract_id)
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+                products = data.get('products', [])
+
+                # Clear existing products
+                contract.contract_products.all().delete()
+
+                # Add updated products
+                for product_data in products:
+                    product_id = product_data['product_id']
+                    quantity = product_data['quantity']
+                    product = Product.objects.get(id=product_id)
+                    contract.contract_products.create(product=product, quantity=quantity)
+
+                # Recalculate the tax
+                tax_amount = contract.calculate_tax()
+                contract.tax_amount = tax_amount
+                contract.save()
+
+                return JsonResponse({'status': 'success', 'tax_amount': tax_amount})
+            except json.JSONDecodeError as e:
+                return JsonResponse({'status': 'fail', 'error': 'Invalid JSON data', 'details': str(e)}, status=400)
         else:
-            # If the formset is not valid, re-render the page with the formset errors
-            context = {
-                'contract': contract,
-                'product_formset': product_formset,
-            }
-            return render(request, 'contracts/contract_detail.html', context)
+            product_formset = ContractProductFormset(request.POST, instance=contract, prefix='contract_products')
+            if product_formset.is_valid():
+                product_formset.save()
+                return redirect('contracts:contract_detail', id=contract.contract_id)
+            else:
+                # If the formset is not valid, re-render the page with the formset errors
+                context = {
+                    'contract': contract,
+                    'product_formset': product_formset,
+                }
+                return render(request, 'contracts/contract_detail.html', context)
     else:
         # For a GET request, render the page with the formset
+        product_formset = ContractProductFormset(instance=contract, prefix='contract_products')
         context = {
             'contract': contract,
             'product_formset': product_formset,
         }
         return render(request, 'contracts/contract_detail.html', context)
+
+def add_service_fees(request, contract_id):
+    contract = get_object_or_404(Contract, pk=contract_id)
+    if request.method == 'POST':
+        service_fee_formset = ServiceFeeFormSet(request.POST, instance=contract)
+        if service_fee_formset.is_valid():
+            service_fee_formset.save()
+            # Optional: Update contract totals if necessary
+            contract.total_cost = sum([fee.amount for fee in contract.servicefees.all()])
+            contract.save()
+            return redirect('contracts:contract_detail', id=contract.contract_id)
+    else:
+        service_fee_formset = ServiceFeeFormSet(instance=contract)
+
+    return render(request, 'contracts/contract_detail.html', {'service_fee_formset': service_fee_formset, 'contract': contract})
+
+@login_required
+def delete_service_fee(request, fee_id):
+    if request.method == 'POST':
+        fee = get_object_or_404(ServiceFee, id=fee_id)
+        contract_id = fee.contract.contract_id
+        fee.delete()
+        return redirect(f'/contracts/{contract_id}/#payments')  # Redirect back to the payments tab
+    else:
+        return redirect('contracts:contract_detail')
+
+def get_service_fees(request, contract_id):
+    service_fees = ServiceFee.objects.filter(contract_id=contract_id)
+    fees_data = [
+        {
+            'description': fee.description,
+            'fee_type': fee.fee_type.name if fee.fee_type else '',
+            'amount': str(fee.amount),
+            'applied_date': fee.applied_date.strftime('%Y-%m-%d')  # Format the date for JSON response
+        }
+        for fee in service_fees
+    ]
+    return JsonResponse(fees_data, safe=False)
 
 def get_package_discounts(request, contract_id):
     # Assuming you have access to the contract ID or other identifiers
@@ -1253,28 +1949,27 @@ def create_schedule_a_payments(contract_id, service_fees=None):
     contract = get_object_or_404(Contract, contract_id=contract_id)
     schedule = PaymentSchedule.objects.create(contract=contract, schedule_type='schedule_a')
 
-    # Get or create the PaymentPurpose instances for down payment and balance
-    down_payment_purpose, _ = PaymentPurpose.objects.get_or_create(name='Down Payment')
+    # Change the purpose name from 'Down Payment' to 'Deposit'
+    deposit_purpose, _ = PaymentPurpose.objects.get_or_create(name='Deposit')
     balance_payment_purpose, _ = PaymentPurpose.objects.get_or_create(name='Balance Payment')
 
-    # Calculate the down payment (40% of the total contract cost)
-    down_payment_amount = contract.calculate_total_cost() * Decimal('0.40')
+    # Calculate the deposit amount (50% of the total contract cost, rounded up to the nearest 100)
+    raw_deposit_amount = contract.calculate_total_cost() * Decimal('0.50')
+    deposit_amount = ceil(raw_deposit_amount / 100) * 100  # rounding up to the nearest 100
 
     # Calculate the balance due date (60 days before the event date)
     balance_due_date = contract.event_date - timedelta(days=60)
 
-    # Create the down payment with a note indicating it's due upon booking
-
-    # For the down payment
+    # Create the deposit payment with a note indicating it's due upon booking
     SchedulePayment.objects.create(
         schedule=schedule,
-        purpose=down_payment_purpose,
+        purpose=deposit_purpose,
         due_date=now(),  # Use the current date
-        amount=down_payment_amount
+        amount=deposit_amount
     )
 
     # Create the balance payment
-    balance_amount = contract.calculate_total_cost() - down_payment_amount
+    balance_amount = contract.calculate_total_cost() - deposit_amount
     SchedulePayment.objects.create(
         schedule=schedule,
         purpose=balance_payment_purpose,
@@ -1282,7 +1977,7 @@ def create_schedule_a_payments(contract_id, service_fees=None):
         amount=balance_amount
     )
 
-    # Create payments for each service fee
+    # Create payments for each service fee, if provided
     if service_fees:
         for fee in service_fees:
             fee_purpose, _ = PaymentPurpose.objects.get_or_create(name=fee['purpose'])
@@ -1295,7 +1990,6 @@ def create_schedule_a_payments(contract_id, service_fees=None):
 
     return schedule
 
-
 def check_payment_schedule_for_contract(contract_id):
     contract = get_object_or_404(Contract, id=contract_id)
     try:
@@ -1304,6 +1998,7 @@ def check_payment_schedule_for_contract(contract_id):
     except PaymentSchedule.DoesNotExist:
         print(f'No payment schedule exists for contract {contract_id}')
 
+@login_required
 def create_or_update_schedule(request, contract_id):
     contract = get_object_or_404(Contract, contract_id=contract_id)
     schedule, created = PaymentSchedule.objects.get_or_create(contract=contract)
@@ -1317,11 +2012,25 @@ def create_or_update_schedule(request, contract_id):
             saved_schedule.schedule_type = request.POST.get('schedule_type', 'schedule_a')
             saved_schedule.save()
             schedule_payment_formset.save()
-            return HttpResponseRedirect(reverse('contracts:contract_detail', kwargs={'id': contract_id}) + '#payments')
 
+            # Create or update service fees in the custom schedule
+            service_fees = request.POST.getlist('service_fees')  # Assuming service fees are sent in the POST data
+            if service_fees:
+                for fee in service_fees:
+                    fee_data = fee.split(',')
+                    fee_purpose, _ = PaymentPurpose.objects.get_or_create(name=fee_data[0])
+                    SchedulePayment.objects.create(
+                        schedule=schedule,
+                        purpose=fee_purpose,
+                        due_date=contract.event_date,  # or another appropriate date
+                        amount=Decimal(fee_data[1])
+                    )
+
+            return HttpResponseRedirect(reverse('contracts:contract_detail', kwargs={'id': contract_id}) + '#payments')
 
     # If it's not a POST request or if the form is not valid, redirect back to the contract detail page
     return redirect(reverse('contracts:contract_detail', kwargs={'id': contract_id}))
+
 
 def get_custom_schedule(request, contract_id):
     contract = get_object_or_404(Contract, contract_id=contract_id)
@@ -1341,7 +2050,7 @@ def get_custom_schedule(request, contract_id):
     return JsonResponse([], safe=False)
 
 
-
+@login_required
 def add_payment(request, schedule_id):
     schedule = get_object_or_404(PaymentSchedule, id=schedule_id)
     contract = schedule.contract  # Get the associated contract
@@ -1373,27 +2082,28 @@ def update_payment_status(schedule):
             payment.paid = False
         payment.save()
 
-
 @login_required
 def edit_payment(request, payment_id):
     payment = get_object_or_404(Payment, id=payment_id)
-    schedule = payment.contract.payment_schedule  # Get the associated payment schedule
     original_amount = payment.amount  # Capture the original amount for logging
 
     if request.method == 'POST':
         form = PaymentForm(request.POST, instance=payment)
         if form.is_valid():
-            form.save()
+            payment = form.save(commit=False)
+            payment.modified_by_user = request.user
+            payment.save()  # Save the payment
 
-            # Log changes if amount is updated
-            if original_amount != form.cleaned_data['amount']:
+            # Log changes if the amount is updated
+            if original_amount != payment.amount:
                 ChangeLog.objects.create(
                     user=request.user,
-                    description=f"Payment updated from {original_amount} to {form.cleaned_data['amount']} for payment ID {payment.id}",
+                    description=f"Payment updated from {original_amount} to {payment.amount} for payment ID {payment.id}",
+                    contract=payment.contract  # Pass the associated contract
                 )
 
             # Update payment status after editing the payment
-            update_payment_status(schedule)
+            update_payment_status(payment.contract.payment_schedule)
 
             return JsonResponse({'success': True, 'payment_id': payment.id})
         else:
@@ -1401,86 +2111,172 @@ def edit_payment(request, payment_id):
     else:
         return JsonResponse({'success': False, 'message': 'GET request not allowed'}, status=405)
 
+
 @login_required
 def delete_payment(request, payment_id):
     payment = get_object_or_404(Payment, id=payment_id)
-    contract_id = payment.contract.contract_id
-    schedule = payment.contract.payment_schedule
+    contract = payment.contract  # Get the contract directly
 
     # Log the payment deletion
     ChangeLog.objects.create(
         user=request.user,
-        description=f"Deleted payment of {payment.amount} for payment ID {payment.id}"
+        description=f"Deleted payment of {payment.amount} for payment ID {payment.id}",
+        contract=contract  # Ensure the contract is associated with the log
     )
 
     payment.delete()
 
     # Update payment status after deletion
-    update_payment_status(schedule)
+    if contract.payment_schedule:
+        update_payment_status(contract.payment_schedule)
 
-    return redirect('contracts:contract_detail', id=contract_id)
+    return redirect('contracts:contract_detail', id=contract.contract_id)  # Make sure to use `id` or `pk`
+
+@login_required
+def get_existing_payments(request, contract_id):
+    contract = get_object_or_404(Contract, contract_id=contract_id)
+    payments = contract.payments.all()  # Related name 'payments'
+    data = [
+        {
+            'id': payment.id,
+            'date': payment.date.isoformat(),  # Ensure the date is in ISO format
+            'amount': float(payment.amount),  # Convert amount to float
+            'method': payment.payment_method,  # Correct field name
+            'purpose': payment.payment_purpose.name if payment.payment_purpose else '',  # Get purpose name
+            'reference': payment.payment_reference if payment.payment_reference else '',
+            'memo': payment.memo if payment.memo else '',
+        }
+        for payment in payments
+    ]
+    return JsonResponse(data, safe=False)
+
+
+@login_required
 def booking_detail(request, booking_id):
-    # Retrieves the booking instance with the given id or raises a 404 error if it doesn't exist
+    # Retrieve the booking instance
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
-
-    # Retrieve the associated contract
     contract = booking.contract
 
-    # Fetch all bookings related to the contract
-    bookings = EventStaffBooking.objects.filter(contract=contract)
+    # Fetch all booking notes related to this booking
+    booking_notes = UnifiedCommunication.objects.filter(note_type=UnifiedCommunication.BOOKING, object_id=booking_id)
 
-    # Fetch all contract notes related to the contract
-    contract_notes = UnifiedCommunication.objects.filter(note_type=UnifiedCommunication.CONTRACT, object_id=contract.contract_id)
+    # Fetch contract messages related to this contract
+    contract_messages = UnifiedCommunication.objects.filter(note_type=UnifiedCommunication.CONTRACT, object_id=contract.contract_id)
 
-    return render(request, 'contracts/event_staff_contract_detail.html', {
+    # Categorize notes by type
+    notes_by_type = defaultdict(list)
+    for note in booking_notes:
+        notes_by_type[note.note_type].append(note)
+    for message in contract_messages:
+        notes_by_type[message.note_type].append(message)
+
+    # Handle form submission for new notes
+    if request.method == 'POST':
+        communication_form = BookingCommunicationForm(request.POST)
+        if communication_form.is_valid():
+            new_note = UnifiedCommunication.objects.create(
+                content=communication_form.cleaned_data['message'],
+                note_type='booking',  # Explicitly set note type to booking
+                created_by=request.user,
+                content_type=ContentType.objects.get_for_model(booking),
+                object_id=booking_id,
+            )
+
+            return redirect('contracts:booking_detail', booking_id=booking_id)
+    else:
+        communication_form = BookingCommunicationForm()
+
+    return render(request, 'contracts/booking_detail_office.html', {
         'contract': contract,
-        'bookings': bookings,
-        'contract_notes': contract_notes
+        'booking': booking,
+        'bookings': EventStaffBooking.objects.filter(contract=contract),
+        'booking_notes': notes_by_type['booking'],  # Render only booking notes
+        'contract_notes': notes_by_type[UnifiedCommunication.CONTRACT],  # Render contract notes
+        'communication_form': communication_form,
+    })
+
+@login_required
+def booking_detail_staff(request, booking_id):
+    # Retrieve the booking instance
+    booking = get_object_or_404(EventStaffBooking, id=booking_id)
+    contract = booking.contract
+
+    # Fetch all booking notes related to this booking
+    booking_notes = UnifiedCommunication.objects.filter(note_type=UnifiedCommunication.BOOKING, object_id=booking_id)
+
+    # Fetch contract messages related to this contract
+    contract_messages = UnifiedCommunication.objects.filter(note_type=UnifiedCommunication.CONTRACT, object_id=contract.contract_id)
+
+    # Categorize notes by type
+    notes_by_type = defaultdict(list)
+    for note in booking_notes:
+        notes_by_type[note.note_type].append(note)
+    for message in contract_messages:
+        notes_by_type[message.note_type].append(message)
+
+    # Handle form submission for new notes
+    if request.method == 'POST':
+        communication_form = BookingCommunicationForm(request.POST)
+        if communication_form.is_valid():
+            new_note = UnifiedCommunication.objects.create(
+                content=communication_form.cleaned_data['message'],
+                note_type='booking',  # Explicitly set note type to booking
+                created_by=request.user,
+                content_type=ContentType.objects.get_for_model(booking),
+                object_id=booking_id,
+            )
+
+            return redirect('contracts:booking_detail_staff', booking_id=booking_id)
+    else:
+        communication_form = BookingCommunicationForm()
+
+    return render(request, 'contracts/booking_detail_staff.html', {
+        'contract': contract,
+        'booking': booking,
+        'bookings': EventStaffBooking.objects.filter(contract=contract),
+        'booking_notes': notes_by_type['booking'],  # Render only booking notes
+        'contract_notes': notes_by_type[UnifiedCommunication.CONTRACT],  # Render contract notes
+        'communication_form': communication_form,
+        'staff_member': request.user,
     })
 
 def booking_notes(request, booking_id):
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
     notes = Note.objects.filter(booking=booking)
+    print("Notes for booking:", booking_id, "->", notes)  # Debug output to check notes
     return render(request, 'contracts/booking_notes.html', {'object': booking, 'notes': notes})
 
 
 @login_required
 def add_note(request):
-    print("Add Note API reached")
-
-    # Check if the request method is POST
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
-    # Ensure user is authenticated
-    if not request.user.is_authenticated:
-        return JsonResponse({'success': False, 'error': 'User not authenticated'})
-
     content = request.POST.get('content')
-    booking_id = request.POST.get('booking_id')  # retrieve the booking ID from the request
+    booking_id = request.POST.get('booking_id')
+    note_type = request.POST.get('note_type')
 
-    # Ensure content and booking_id are present
-    if not content or not booking_id:
+    if not content or not booking_id or not note_type:
         return JsonResponse({'success': False, 'error': 'Missing required parameters'})
 
     try:
-        booking = EventStaffBooking.objects.get(pk=booking_id)  # get the booking instance
+        booking = EventStaffBooking.objects.get(pk=booking_id)
     except EventStaffBooking.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Booking not found'})
 
-    # Ensure the user is a CustomUser instance before creating the note
-    if not isinstance(request.user, CustomUser):
-        return JsonResponse({'success': False, 'error': 'Invalid user type'})
-
-    note = Note.objects.create(content=content, booking=booking, created_by=request.user)
+    # Create a new communication directly
+    UnifiedCommunication.objects.create(
+        content=content,
+        note_type=note_type,
+        created_by=request.user,
+        content_type=ContentType.objects.get_for_model(booking),
+        object_id=booking_id
+    )
 
     return JsonResponse({
         'success': True,
-        'note_id': note.id,
-        'author': note.created_by.username,  # Assuming created_by is a ForeignKey to User model
-        'timestamp': note.created_at.strftime('%Y-%m-%d %H:%M:%S')  # Format the timestamp as needed
+        'content': content
     })
-
 
 def edit_note(request, note_id):
     note = get_object_or_404(Note, id=note_id)
@@ -1561,9 +2357,14 @@ def send_task_assignment_email(request, task):
     )
 
 
-@require_http_methods(["POST"])  # Use POST for operations that change data
+@require_http_methods(["POST"])
 def clear_booking(request, booking_id):
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
+    contract = booking.contract
+    role = booking.role
+    staff_name = booking.staff.get_full_name() if booking.staff else "Unknown Staff"
+    status = booking.status
+    hours_booked = booking.hours_booked
 
     # Update the staff availability for the date if necessary
     if booking.staff:
@@ -1575,21 +2376,24 @@ def clear_booking(request, booking_id):
         availability.save()
 
     # Clear the associated role in the contract before deleting the booking
-    role_field = SERVICE_ROLE_MAPPING.get(booking.role, None)
-    if role_field and hasattr(booking.contract, role_field):
-        setattr(booking.contract, role_field, None)
-        booking.contract.save()
+    role_field = SERVICE_ROLE_MAPPING.get(role, None)
+    if role_field and hasattr(contract, role_field):
+        setattr(contract, role_field, None)
+        contract.save()
 
-    # Record the username before deleting for the success message
-    staff_name = booking.staff.username if booking.staff else "Unknown Staff"
+    # Log the deletion with detailed information
+    ChangeLog.objects.create(
+        user=request.user,
+        description=f"Deleted booking for {role} ({staff_name}). Status was {status}, with {hours_booked} hours booked.",
+        contract=contract
+    )
 
-    # Delete the booking
+    # Delete the booking and inform the user
     booking.delete()
-
     messages.success(request, f'Booking for {staff_name} has been cleared!')
-    return redirect(f'{reverse("contracts:search")}?tab=bookings')
+    return redirect(reverse("contracts:search") + "?tab=bookings")
 
-
+@login_required
 def booking_list(request):
     bookings = EventStaffBooking.objects.all()
 
@@ -1649,22 +2453,22 @@ def get_available_staff(request):
     if not event_date:
         return JsonResponse({'error': 'Event date is required'}, status=400)
 
-    available_staff = Availability.get_available_staff_for_date(event_date).distinct()
+    available_staff = Availability.get_available_staff_for_date(event_date).distinct().order_by('rank')
     combined_name = Concat(F('first_name'), Value(' '), F('last_name'), output_field=CharField())
 
     data = {
         'photographers': list(available_staff.filter(
             Q(role__name='PHOTOGRAPHER') | Q(additional_roles__name='PHOTOGRAPHER')
-        ).annotate(name=combined_name).values('id', 'name')),
+        ).annotate(name=combined_name).values('id', 'name', 'rank').order_by('rank')),
         'videographers': list(available_staff.filter(
             Q(role__name='VIDEOGRAPHER') | Q(additional_roles__name='VIDEOGRAPHER')
-        ).annotate(name=combined_name).values('id', 'name')),
+        ).annotate(name=combined_name).values('id', 'name', 'rank').order_by('rank')),
         'djs': list(available_staff.filter(
             Q(role__name='DJ') | Q(additional_roles__name='DJ')
-        ).annotate(name=combined_name).values('id', 'name')),
+        ).annotate(name=combined_name).values('id', 'name', 'rank').order_by('rank')),
         'photobooth_operators': list(available_staff.filter(
             Q(role__name='PHOTOBOOTH_OPERATOR') | Q(additional_roles__name='PHOTOBOOTH_OPERATOR')
-        ).annotate(name=combined_name).values('id', 'name')),
+        ).annotate(name=combined_name).values('id', 'name', 'rank').order_by('rank')),
         # Add any other event staff roles as needed...
     }
 
@@ -1672,11 +2476,10 @@ def get_available_staff(request):
         roles = Role.objects.filter(service_type__name=service_type).values_list('name', flat=True)
         staff_data = list(available_staff.filter(
             Q(role__name__in=roles) | Q(additional_roles__name__in=roles)
-        ).annotate(name=combined_name).values('id', 'name'))
+        ).annotate(name=combined_name).values('id', 'name', 'rank').order_by('rank'))
         data[f'{service_type.lower()}_staff'] = staff_data
 
     return JsonResponse(data)
-
 
 def manage_staff_assignments(request, id):
     contract = get_object_or_404(Contract, contract_id=id)
@@ -1688,28 +2491,72 @@ def manage_staff_assignments(request, id):
             role = form.cleaned_data.get('role')
             staff = form.cleaned_data.get('staff')
             status = form.cleaned_data.get('status', 'APPROVED')  # Default to 'APPROVED' if not specified
-            confirmed = form.cleaned_data.get('confirmed', True)  # Default to True if not specified
-            hours_booked = form.cleaned_data.get('hours_booked', 0)  # Default to 0 if not specified
+            confirmed = form.cleaned_data.get('confirmed', False)
+            hours_booked = form.cleaned_data.get('hours_booked', 0)
+
+            print(f"Form valid. Booking ID: {booking_id}, Role: {role}, Staff: {staff}, Status: {status}, Confirmed: {confirmed}, Hours Booked: {hours_booked}")
 
             if booking_id:
-                # Update an existing booking
-                booking = EventStaffBooking.objects.get(id=booking_id)
-            else:
-                # Prevent duplicate roles in the same contract
+                # Update existing booking
+                booking = get_object_or_404(EventStaffBooking, id=booking_id)
+                original_role = booking.role
+                original_staff_name = booking.staff.get_full_name() if booking.staff else 'None'
+                print(f"Updating existing booking. Original Role: {original_role}, Original Staff: {original_staff_name}")
+                # Check for other bookings with the same role
                 if EventStaffBooking.objects.filter(contract=contract, role=role).exclude(id=booking_id).exists():
-                    return JsonResponse(
-                        {'success': False, 'message': 'A booking for this role already exists in this contract.'},
-                        status=400)
-                booking = EventStaffBooking(contract=contract)  # Ensure the contract is assigned here
+                    print("Booking for this role already exists in this contract (update case).")
+                    return JsonResponse({'success': False, 'message': 'A booking for this role already exists in this contract.'}, status=400)
+            else:
+                # Create new booking
+                print("Creating new booking.")
+                if EventStaffBooking.objects.filter(contract=contract, role=role).exists():
+                    print("Booking for this role already exists in this contract (create case).")
+                    return JsonResponse({'success': False, 'message': 'A booking for this role already exists in this contract.'}, status=400)
+                booking = EventStaffBooking(contract=contract)
 
             booking.role = role
             booking.staff = staff
             booking.status = status
             booking.confirmed = confirmed
-            booking.hours_booked = hours_booked  # Set hours booked
+            booking.hours_booked = hours_booked
+            booking._request = request  # Set the request as an instance attribute
             booking.save()
 
-            # If booking is a prospect role, update the corresponding prospect field in the contract
+            print("Booking saved successfully.")
+
+            # Update the corresponding field in the Contract model with the staff name
+            booking.update_contract_role()
+
+            # Update availability based on the booking status
+            if status in ['APPROVED', 'PENDING']:
+                Availability.objects.update_or_create(
+                    staff=staff,
+                    date=contract.event_date,
+                    defaults={'available': False}
+                )
+            else:
+                Availability.objects.update_or_create(
+                    staff=staff,
+                    date=contract.event_date,
+                    defaults={'available': True}
+                )
+
+            # Determine change type and log accordingly
+            if booking_id:
+                print(f"Booking updated: {original_role} role from {original_staff_name} to {booking.staff.get_full_name()}")
+                ChangeLog.objects.create(
+                    user=request.user,
+                    description=f"Updated booking: {original_role} role from {original_staff_name} to {booking.staff.get_full_name()}",
+                    contract=contract
+                )
+            else:
+                print(f"New booking created for {role} with {booking.staff.get_full_name()}")
+                ChangeLog.objects.create(
+                    user=request.user,
+                    description=f"Created new booking for {role} with {booking.staff.get_full_name()}",
+                    contract=contract
+                )
+
             if 'PROSPECT' in role:
                 prospect_field = f'prospect_photographer{role[-1]}'
                 setattr(contract, prospect_field, booking.staff)
@@ -1722,12 +2569,43 @@ def manage_staff_assignments(request, id):
                 'staff_name': booking.staff.get_full_name() if booking.staff else 'None',
                 'hours_booked': booking.hours_booked
             })
-
         else:
+            print("Form invalid.")
+            print(form.errors)
             return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 
-    # GET request handling for initial form display
     return render(request, 'contracts/manage_staff.html', {'contract': contract, 'form': form})
+
+def send_booking_email(request, staff, contract, role, is_update):
+    context = {
+        'user': staff,
+        'contract': contract,
+        'role': role,
+        'domain': get_current_site(request).domain,
+        'is_update': is_update,
+    }
+    subject = 'Booking Updated' if is_update else 'New Booking Assigned'
+    message = render_to_string('communication/booking_assignment_email.html', context, request=request)
+    from_email = 'testmydjango420@gmail.com'
+    to_email = [staff.email]
+
+    send_mail(
+        subject,
+        message,
+        from_email,
+        to_email,
+        fail_silently=False,
+    )
+
+@login_required
+def confirm_booking(request, booking_id):
+    booking = get_object_or_404(EventStaffBooking, id=booking_id)
+    if request.method == 'POST':
+        booking.confirmed = True
+        booking.save()
+        messages.success(request, 'Your attendance has been confirmed.')
+    return redirect('contracts:booking_detail_staff', booking_id=booking_id)
+
 
 def get_current_booking(request):
     contract_id = request.GET.get('contract_id')
@@ -1763,6 +2641,4 @@ def get_current_booking(request):
         'current_booking': current_booking_data,
         'available_staff': available_staff_data,
     })
-
-
 

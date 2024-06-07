@@ -1,4 +1,5 @@
 /* Basic styles */
+
 body {
     font-family: Arial, sans-serif;
 }
@@ -9,10 +10,13 @@ body {
     align-items: center;
     background-color: #f3f3f3;
     padding: 10px;
+    border-bottom: 1px solid #e0e0e0; /* Light grey border */
+    padding-bottom: 15px; /* Add some padding below the menu items */
 }
 
 .logo img {
     height: 50px; /* Adjust the height as needed */
+    padding-left: 60px; /* Adds padding to the left, pushing the content to the right */
 }
 
 .menu {
@@ -23,33 +27,170 @@ body {
 }
 
 .menu-item {
-    padding: 10px;
-    background-color: #e3e3e3;
-    margin-left: 5px;
+    padding: 3px; /* Reduced padding for closer spacing */
+    margin-left: 3px; /* Smaller left margin to bring items closer */
+    background-color: transparent;
     transition: background-color 0.3s;
 }
 
 .menu-item:first-child {
-    margin-left: 0;
-}
-
-.menu-item:hover {
-    background-color: #d3d3d3;
+    margin-left: 0; /* No left margin for the first item */
 }
 
 .menu-item a {
-    text-decoration: none;
-    color: black;
-    display: block;
+    text-decoration: none; /* Removes underline from links */
+    color: white; /* Sets all text to white */
+    display: block; /* Ensures the link fills the `.menu-item` for better clickability */
+    background-color: #a1c9a5; /* Lighter pastel pistachio color */
+    padding: 8px 16px; /* Smaller padding to reduce overall size */
+    border-radius: 5px; /* Slightly smaller border-radius for a less pronounced curve */
+    transition: background-color 0.3s; /* Smooth transition for background color change */
+    font-size: 13px; /* Smaller text size */
+}
+
+.menu-item a:hover {
+    background-color: #9cac9a; /* Slightly darker shade on hover for a subtle effect */
+}
+
+@media (max-width: 600px) {
+    .menu-item a {
+        padding: 6px 12px; /* Even smaller padding on mobile */
+        font-size: 11px; /* Ensure text size remains consistent */
+    }
+    .menu-item {
+        padding: 2px; /* Even less padding around menu items to save more space */
+    }
+}
+
+.field-box .row .col-12 textarea {
+    width: 100%;
+}
+
+/* New Contract */
+
+.form-section .form-title {
+    text-align: center;
+    width: 100%;
+    color: #333; /* Optional: color styling */
+    margin-bottom: 20px;
+}
+
+/* Enhance the overall form appearance */
+.form-section {
+    display: flex;
+    font-size: 10pt; /* Set font size to 10pt */
+    flex-wrap: wrap; /* Allows form sections to wrap in smaller screens */
+    margin: 40px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9; /* Light gray background */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Adds subtle shadow for depth */
+}
+
+/* Column styling */
+.left-column, .right-column {
+    flex: 1;
+    padding: 20px;
+    min-width: 280px; /* Minimum width for smaller screens */
+}
+
+/* Button styling for aesthetic consistency */
+.toggle-button, .btn-dusty-pink {
+    background-color: #c67c85; /* Dusty Pink */
+    color: white;
+    border: none;
+    margin: 10px 0;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.toggle-button:hover, .btn-dusty-pink:hover {
+    background-color: #b55f66; /* Darker shade for hover */
+}
+
+/* Specific styles for hidden fields container */
+.fields-container {
+    display: none; /* Hidden by default */
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
 .user-info {
     display: flex;
     align-items: center;
+    padding-right: 60px; /* Adds padding to the right, pushing the content to the left */
 }
 
 .user-info span {
     margin-right: 10px; /* Space between the text and the logout button */
+}
+
+
+.btn-dusty-pink,
+button,
+input[type="submit"],
+input[type="reset"],
+.button-group a {
+    width: auto; /* Allow width to adjust based on content */
+    height: 30px; /* Align button height with field */
+    font-size: 10pt; /* Set font size to 10pt */
+    text-align: center; /* Center the text horizontally */
+    font-weight: normal !important; /* Make text not bold */
+    line-height: 20px; /* Center text vertically within the button */
+    padding: 5px 15px; /* Adjust padding as needed */
+    background-color: #c67c85;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px; /* Add margin between buttons */
+}
+
+.btn-dusty-pink:hover,
+button:hover,
+input[type="submit"]:hover,
+input[type="reset"]:hover,
+.button-group a:hover {
+    background-color: #b55f66; /* Darker dusty pink for hover */
+    color: white; /* Change text color on hover */
+}
+
+.close {
+    background-color: transparent !important; /* Ensures background is always transparent */
+    border: none; /* Removes any border if present */
+    color: #000; /* Set the color of the 'X' to black, or change as needed */
+    opacity: 1; /* Ensures the button is fully visible */
+}
+
+.close:hover, .close:focus {
+    background-color: transparent !important; /* Keeps background transparent on hover/focus */
+    color: #000; /* You can change this color to indicate hover state */
+    opacity: 0.8; /* Optional: changes opacity on hover for a subtle effect */
+}
+
+
+.btn-close {
+    width: auto; /* Allow width to adjust based on content */
+    height: 30px; /* Align button height with field */
+    font-size: 10pt; /* Set font size to 10pt */
+    text-align: center; /* Center the text horizontally */
+    font-weight: normal !important; /* Make text not bold */
+    line-height: 20px; /* Center text vertically within the button */
+    padding: 5px 15px; /* Adjust padding as needed */
+    background-color: #999999; /* Grey background color */
+    color: white; /* Text color */
+    border: none; /* No border */
+    border-radius: 4px; /* Rounded corners */
+    cursor: pointer;
+    margin-right: 10px; /* Add margin between buttons */
+}
+
+.btn-close:hover {
+    background-color: #cccccc; /* Darker grey for hover */
+    color: white; /* Change text color on hover */
 }
 
 .logout-button {
@@ -70,11 +211,6 @@ body {
     background-color: #8A8A8F !important;
 }
 
-.bg-dusty-pink {
-    background-color: #c67c85 !important; /* Dusty Rose */
-    /* or use #E0B0FF for Mauve */
-}
-
 .bg-dark-sienna {
     background-color: #3C1414 !important;
 }
@@ -82,29 +218,37 @@ body {
 .text-dark-sienna {
     color: #3C1414 !important;
 }
-
-.btn-dusty-pink {
-    background-color: #c67c85 !important; /* Dusty Pink */
-    color: white; /* For contrast */
-    /* or use #8A3324 for Burnt Umber */
-}
-
-.your-parent-class .btn-dusty-pink {
-    background-color: #c67c85 !important;
-    color: white;
-}
-
-.table .btn.btn-dusty-pink{
-    background-color: #c67c85!important; /* Dust Pink */
-    color: white;
-}
-
 /* Search form styling */
 .search-form {
-    margin: 20px;
-    padding: 20px;
-    border: 1px solid #ddd;
-    background-color: #f9f9f9; /* Light gray background */
+    margin: 20px auto; /* Center the form */
+    max-width: 1200px; /* Set maximum width */
+    background-color: #ffffff; /* Background color for the form */
+    padding: 20px; /* Padding inside the form */
+    border: 1px solid #ddd; /* Border for the form */
+    border-radius: 5px; /* Optional: Rounded corners */
+    font-size: 10pt; /* Set font size to 10pt */
+
+}
+
+/* Adjusting Search Button */
+.search-form input[type="submit"] {
+    width: auto; /* Remove width to allow button to take its natural size */
+    height: 30px; /* Keep button height consistent with other buttons */
+    margin-top: 0; /* Remove margin top to align with other buttons */
+    margin-right: 10px; /* Add margin right to separate from other buttons */
+}
+
+
+/* Search results styling */
+.search-results {
+    margin: 20px auto; /* Center the table */
+    width: 100%; /* Set table width */
+    max-width: 1200px; /* Set maximum width */
+    background-color: #ffffff; /* Background color for the table */
+    padding: 5px; /* Padding inside the table */
+    border: 1px solid #ddd; /* Border for the table */
+    border-radius: 5px; /* Optional: Rounded corners */
+    overflow-x: auto; /* Enable horizontal scrolling for small screens */
 }
 
 /* Adjusting Quick Search Group */
@@ -167,33 +311,19 @@ body {
 /* Label styling */
 label {
     margin-bottom: 5px;
-    font-weight: bold;
+    font-weight: normal;
 }
 
-/* Search results styling */
+/* Search results container styling */
 .search-results {
-    margin: 20px;
+    margin: 20px auto; /* Center the table */
+    width: 100%; /* Set table width */
+    max-width: 1200px; /* Set maximum width */
+    background-color: #ffffff; /* Background color for the container */
+    padding: 5px; /* Padding inside the container */
+    border: 1px solid #ddd; /* Border for the container */
+    border-radius: 5px; /* Optional: Rounded corners */
 }
-
-.btn-dusty-pink, button, input[type="submit"], input[type="reset"] {
-    background-color: #c67c85; /* Dusty Pink */
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 5px; /* Adjust for rounded corners */
-    font-size: 16px; /* Standard font size */
-    font-weight: bold; /* Bold text */
-}
-
-.btn-dusty-pink:hover, button:hover, input[type="submit"]:hover, input[type="reset"]:hover {
-    background-color: #b55f66; /* Darker dusty pink for hover */
-}
-
 
 /* Search results table styling */
 .search-results table {
@@ -205,6 +335,7 @@ label {
     border: 1px solid #ddd; /* Adds border to table cells */
     padding: 8px; /* Padding inside cells */
     text-align: left; /* Aligns text to the left */
+    font-size: 10pt; /* Set font size to 10pt */
 }
 
 /* Alternating row colors */
@@ -224,7 +355,7 @@ label {
 
 /* Table header styling */
 .search-results th {
-    background-color: #5a5a5a; /* Dark gray for table headers */
+    background-color: #c67c85; /* Dusty pink for table headers */
     color: white;
     padding: 10px; /* Padding for headers */
 }
@@ -234,36 +365,6 @@ body {
     background-color: #f2f2f2; /* Light gray background for the overall page */
     color: #333; /* Dark gray for the text */
     font-family: Arial, sans-serif;
-}
-
-/* Table header styling */
-.search-results th {
-    background-color: #c67c85; /* Copper rose for table headers */
-    color: white;
-}
-
-/* Alternating row colors in search results */
-.search-results tr:nth-child(odd) {
-    background-color: #e2e2e2; /* Slightly darker gray for odd rows */
-}
-
-.search-results tr:nth-child(even) {
-    background-color: #f9f9f9; /* Lighter gray for even rows */
-}
-
-.button-group {
-    display: flex;
-    justify-content: flex-start; /* Align buttons to the start of the row */
-}
-
-.btn {
-    margin-right: 10px; /* Add some space between the buttons */
-    width: auto; /* Prevent buttons from stretching to full width */
-    padding: 10px 15px; /* Adjust padding as needed */
-}
-
-.btn:last-child {
-    margin-right: 0; /* Remove margin for the last button */
 }
 
 /* Adjust other elements as needed to fit the color scheme */
@@ -276,11 +377,13 @@ body {
     margin-top: 10px; /* Additional space above the box */
 }
 
+
 #edit-client-form button {
     margin-top: 10px; /* Space above the button */
     padding: 5px 10px; /* Padding inside the button */
     /* Other styling as needed */
 }
+
 
 #products-section {
     margin-top: 20px;
@@ -331,15 +434,22 @@ body {
 }
 
 .quantity-input {
-    width: 60px; /* Adjust as needed */
+    width: 5%; /* Adjust as needed */
 }
 
 /* Style the special notes input to fit in the cell */
 .special-notes-column textarea {
-    width: 100%;
+    width: 15%;
     height: 100%;
     resize: none; /* Prevent resizing */
 }
+
+/* Adjusting the width of form fields */
+#products-table input[type="number"],
+#products-table textarea {
+    width: 100%; /* Set the width to 50% of the cell */
+}
+
 .payments-header {
     display: flex;
     justify-content: space-between;
@@ -399,13 +509,46 @@ body {
     color: #000 !important;
 }
 
+/* Task container styling */
 .task-container {
-    margin: 40px;
-    background-color: #ffffff; /* Background color for the box */
-    padding: 20px; /* Padding inside the box */
-    border: 1px solid #ddd; /* Border for the box */
+    margin: 20px auto; /* Center the task container */
+    max-width: 1200px; /* Set maximum width */
+    background-color: #ffffff; /* Background color for the container */
+    padding: 10px; /* Padding inside the container */
+    border: 1px solid #ddd; /* Border for the container */
     border-radius: 5px; /* Optional: Rounded corners */
 }
+
+/* Task list styling */
+.task-container ul {
+    list-style-type: none; /* Remove bullet points */
+    padding: 0; /* Remove default padding */
+}
+
+/* Task item styling */
+.task-container li {
+    border-bottom: 1px solid #ddd !important; /* Add bottom border to separate items */
+    padding: 8px 0 !important; /* Adjust padding for top and bottom */
+    font-size: 10pt !important; /* Set font size to 10pt */
+    height: 30px !important; /* Set height of each row */
+    line-height: 1.5 !important; /* Set line height for better readability */
+}
+
+/* General styles for task tables */
+.table.table-striped {
+    font-size: 10pt;
+}
+
+.table.table-striped th,
+.table.table-striped td {
+    height: 30px; /* Ensures all cells have a consistent height */
+}
+
+/* Styling for completed tasks */
+.task-completed {
+    background-color: #e0e0e0; /* Light gray background for completed tasks */
+}
+
 
 #daysOffList {
     width: 100%;
@@ -439,3 +582,131 @@ body {
 .remove-day-off:hover {
     background-color: #d32f2f;
 }
+
+.divider {
+    height: 2px; /* Adjust thickness here */
+    background-color: #ccc; /* Divider color */
+    margin: 20px 0; /* Space above and below the divider */
+}
+
+.dashboard-header {
+    margin-bottom: 20px;
+}
+
+.dashboard-header h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.dashboard-info {
+    font-size: 16px;
+}
+
+.user-details {
+    margin-top: 10px;
+}
+
+.user-details p {
+    margin-bottom: 5px;
+}
+
+/* Custom Styles */
+
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 0.9em;
+    font-family: 'Arial', sans-serif;
+    min-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.styled-table thead tr {
+    background-color: #c67c85;
+    color: #ffffff;
+    text-align: left;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+}
+
+.styled-table tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid #c67c85;
+}
+
+.styled-table tbody tr.active-row {
+    font-weight: bold;
+    color: #a1c9a5;
+}
+
+.styled-select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.styled-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.styled-list li {
+    background: #f9f9f9;
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+
+    <!-- Modal styles -->
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        padding-top: 100px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0,0,0);
+        background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }

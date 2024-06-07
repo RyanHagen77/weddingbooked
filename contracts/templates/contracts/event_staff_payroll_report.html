@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load app_filters %}
+
+{% block content %}
+<div class="search-results">
+    <h3>Staff Hours by Contract</h3>
+    <button onclick="history.back()" class="btn btn-dusty-pink">Go Back</button>
+
+    <form method="get" class="report-form">
+        <label for="start_date">Start Date:</label>
+        <input type="date" id="start_date" name="start_date" value="{{ start_date }}" required>
+        <label for="end_date">End Date:</label>
+        <input type="date" id="end_date" name="end_date" value="{{ end_date }}" required>
+        <label for="location">Location:</label>
+        <select id="location" name="location">
+            <option value="all" {% if selected_location == 'all' %}selected{% endif %}>All Locations</option>
+            {% for location in locations %}
+            <option value="{{ location.id }}" {% if selected_location == location.id|stringformat:"s" %}selected{% endif %}>{{ location.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Filter Report</button>
+    </form>
+
+    <div class="search-results">
+        <h6>Contracts between {{ start_date }} and {{ end_date }}</h6>
+        {% if grouped_report_data %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Contract</th>
+                    <th>Event Date</th>
+                    <th>Travel Fee Exists</th>
+                    <th>Travel Fee Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contract_number, data in grouped_report_data.items %}
+                <tr>
+                    <td>{{ contract_number }}</td>
+                    <td>{{ data.event_date|date:"F j, Y" }}</td>
+                    <td>{% if data.travel_fee_exists %}Yes{% else %}No{% endif %}</td>
+                    <td>${{ data.travel_fee_amount }}</td>
+                </tr>
+                <tr>
+                    <th>Role</th>
+                    <th>Staff Name</th>
+                    <th>Regular Hours</th>
+                    <th>Overtime Hours</th>
+                </tr>
+                {% for role in data.roles %}
+                <tr>
+                    <td>{{ role.role }}</td>
+                    <td>{{ role.staff_name }}</td>
+                    <td>{{ role.regular_hours }}</td>
+                    <td>{{ role.overtime_hours }}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <th>Contract</th>
+                    <th>Event Date</th>
+                    <th>Travel Fee Exists</th>
+                    <th>Travel Fee Amount</th>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No data available for the selected date range and location.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

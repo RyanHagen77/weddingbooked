@@ -40,7 +40,6 @@ class Role(models.Model):
         (PROSPECT3, 'Prospect Photographer 3')
     )
 
-
     name = models.CharField(max_length=50, choices=ROLE_CHOICES, unique=True)
     service_type = models.ForeignKey('contracts.ServiceType', on_delete=models.CASCADE, related_name='roles')
     objects = models.Manager()  # Explicitly added default manager
@@ -51,7 +50,8 @@ class Role(models.Model):
 
 class EventStaffManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(role__name__in=[Role.PHOTOGRAPHER, Role.VIDEOGRAPHER, Role.DJ, Role.PHOTOBOOTH_OPERATOR])
+        return super().get_queryset().filter(role__name__in=[Role.PHOTOGRAPHER, Role.VIDEOGRAPHER, Role.DJ,
+                                                             Role.PHOTOBOOTH_OPERATOR])
 
 
 class CustomUser(AbstractUser):
@@ -61,7 +61,7 @@ class CustomUser(AbstractUser):
     )
 
     objects = UserManager()  # Default manager
-    user_type = models.CharField(max_length=10, choices=USER_TYPES, default='employee')
+    user_type = models.CharField(max_length=10, choices=USER_TYPES, default='client')
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
     primary_phone1 = models.CharField(

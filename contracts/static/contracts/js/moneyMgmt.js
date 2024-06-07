@@ -13,99 +13,155 @@ function getCookie(name) {
     return cookieValue;
 }
 
-function addFormsetEntry() {
-    let totalForms = document.querySelector("#id_form-TOTAL_FORMS");
-    let currentTotal = parseInt(totalForms.value);
-    totalForms.value = currentTotal + 1;
+function addFormsetEntry(containerId, totalFormsId, formClass) {
+    let container = document.getElementById(containerId);
+    let totalForms = document.getElementById(totalFormsId);
+    if (!totalForms) {
+        console.error('Total forms input not found:', totalFormsId);
+        return;
+    }
+    let currentTotal = parseInt(totalForms.value, 10);
 
-    // Submit the form to re-render it with the new entry
-    document.getElementById("scheduleForm").submit();
+    // Clone the first form to use as a template
+    let newForm = container.querySelector(`${formClass}:first-child`).cloneNode(true);
+    if (!newForm) {
+        console.error('Form to clone not found:', formClass);
+        return;
+    }
+
+    // Update the indices in the cloned form
+    let regex = new RegExp(`(${currentTotal - 1})`, 'g');
+    newForm.innerHTML = newForm.innerHTML.replace(regex, currentTotal);
+
+    // Reset form fields in the cloned form
+    newForm.querySelectorAll('input, select, textarea').forEach(input => {
+        if (input.type !== 'hidden') {
+            input.value = '';
+        }
+        if (input.type === 'checkbox' || input.type === 'radio') {
+            input.checked = false;
+        }
+    });
+
+    container.appendChild(newForm);
+    totalForms.value = currentTotal + 1;
 }
+
+
 
 function populateScheduleTable(scheduleType) {
     let container = document.getElementById('payment-schedule-table');
     container.innerHTML = ''; // Clear existing table content
 
-    // Create a new table element
     let table = document.createElement('table');
-    table.className = 'table'; // Add any necessary classes
+    table.className = 'table';
 
-    // Create table header
     let thead = table.createTHead();
     let headerRow = thead.insertRow();
-    let descriptionCell = headerRow.insertCell();
-    descriptionCell.textContent = 'Description';
-    descriptionCell.style.fontWeight = 'bold';  // Make the text bold
-
-    let dueDateCell = headerRow.insertCell(); // Added due date header cell
-    dueDateCell.textContent = 'Due Date';
-    dueDateCell.style.fontWeight = 'bold';  // Make the text bold
-
-    let amountCell = headerRow.insertCell();
-    amountCell.textContent = 'Amount';
-    amountCell.style.fontWeight = 'bold';  // Make the text bold
-
-    let statusCell = headerRow.insertCell();
-    statusCell.textContent = 'Status';
-    statusCell.style.fontWeight = 'bold';  // Make the text bold
+    createHeaderCell(headerRow, 'Description');
+    createHeaderCell(headerRow, 'Due Date');
+    createHeaderCell(headerRow, 'Amount');
+    createHeaderCell(headerRow, 'Status');
 
     let tbody = table.createTBody();
 
     if (scheduleType === 'schedule_a') {
-        // Calculate Schedule A details
-        let depositAmount = contractData.servicesTotalAfterDiscounts * 0.40;
-        let totalContractAmount = parseFloat(document.querySelector('.contract-total').getAttribute('data-contract-total'));
-        let balanceAmount = totalContractAmount - depositAmount;
-        let balanceDueDate = new Date(contractData.eventDate);
-        balanceDueDate.setDate(balanceDueDate.getDate() - 60);
-
-        let totalPayments = getTotalPayments(); // Get the total payments made
-        let depositStatus = (totalPayments >= depositAmount - 0.01) ? 'Paid' : 'Unpaid';
-        let balanceStatus = (totalPayments >= totalContractAmount) ? 'Paid' : 'Unpaid';
-
-        // Populate the table with Schedule A details
-        let depositRow = tbody.insertRow();
-        depositRow.insertCell().textContent = 'Deposit';
-        depositRow.insertCell().textContent = 'Upon Booking'; // Added due date for deposit
-        depositRow.insertCell().textContent = `$${depositAmount.toFixed(2)}`;
-        depositRow.insertCell().textContent = depositStatus;
-
-        let balanceRow = tbody.insertRow();
-        balanceRow.insertCell().textContent = `Balance Due`;
-        balanceRow.insertCell().textContent = balanceDueDate.toISOString().slice(0, 10); // Added due date for balance
-        balanceRow.insertCell().textContent = `$${balanceAmount.toFixed(2)}`;
-        balanceRow.insertCell().textContent = balanceStatus;
-
-        // Add rows for service fees or additional entries
-        let serviceFeeRow = tbody.insertRow();
-        serviceFeeRow.insertCell().textContent = 'Service Fee'; // Example fee description
-        serviceFeeRow.insertCell().textContent = '2024-06-01'; // Example due date
-        serviceFeeRow.insertCell().textContent = '$100.00'; // Example fee amount
-        serviceFeeRow.insertCell().textContent = 'Unpaid'; // Default status
-
-        // Repeat the above for additional fees or entries as needed
+        populateScheduleA(tbody);
     } else if (scheduleType === 'custom') {
-        // Fetch and populate the table with custom schedule data
-        let contractId = document.body.getAttribute('data-contract-id');
-        fetch(`/contracts/${contractId}/get_custom_schedule/`)
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(payment => {
-                    let row = tbody.insertRow();
-                    row.insertCell().textContent = payment.purpose;
-                    row.insertCell().textContent = payment.due_date; // Added due date for custom payment
-                    row.insertCell().textContent = `$${payment.amount}`;
-                    row.insertCell().textContent = payment.paid ? 'Paid' : 'Unpaid';
-                });
-            })
-            .catch(error => console.error('Error fetching custom schedule:', error));
+        populateCustomSchedule(tbody);
     }
 
-    // Append the table to the container
     container.appendChild(table);
-
-    // Call updateDepositStatus after the table is populated
     updateDepositStatus();
+}
+
+function populateScheduleA(tbody) {
+    let depositAmount = Math.ceil((contractData.servicesTotalAfterDiscounts * 0.50) / 100) * 100;
+    let totalContractAmount = parseFloat(document.querySelector('.contract-total').getAttribute('data-contract-total'));
+    let balanceAmount = totalContractAmount - depositAmount;
+    let balanceDueDate = new Date(contractData.eventDate);
+    balanceDueDate.setDate(balanceDueDate.getDate() - 60);
+
+    let totalPayments = getTotalPayments();
+    let depositStatus = (totalPayments >= depositAmount - 0.01) ? 'Paid' : 'Unpaid';
+    let balanceStatus = (totalPayments >= totalContractAmount) ? 'Paid' : 'Unpaid';
+
+    addScheduleRow(tbody, 'Deposit', 'Upon Booking', depositAmount, depositStatus);
+    addScheduleRow(tbody, 'Balance Due', balanceDueDate.toISOString().slice(0, 10), balanceAmount, balanceStatus);
+
+    fetchServiceFees();
+}
+
+function populateCustomSchedule(tbody) {
+    let contractId = document.body.getAttribute('data-contract-id');
+    fetch(`/contracts/${contractId}/get_custom_schedule/`)
+        .then(response => response.json())
+        .then(data => {
+            let totalPayments = getTotalPayments();
+            data.forEach(payment => {
+                let status = totalPayments >= parseFloat(payment.amount) ? 'Paid' : 'Unpaid';
+                addScheduleRow(tbody, payment.purpose, payment.due_date, parseFloat(payment.amount), status);
+                totalPayments -= parseFloat(payment.amount);
+            });
+            fetchServiceFees();
+        })
+        .catch(error => console.error('Error fetching custom schedule:', error));
+}
+
+function addScheduleRow(tbody, description, dueDate, amount, status) {
+    let row = tbody.insertRow();
+    row.insertCell().textContent = description;
+    row.insertCell().textContent = dueDate;
+    row.insertCell().textContent = `$${amount.toFixed(2)}`;
+    row.insertCell().textContent = status;
+}
+
+function fetchServiceFees() {
+    let contractId = document.body.getAttribute('data-contract-id');
+    let serviceFeeContainers = document.getElementsByClassName('service-fees-table');
+
+    if (serviceFeeContainers.length === 0) {
+        console.error('Service fee container element not found.');
+        return;
+    }
+
+    let serviceFeeContainer = serviceFeeContainers[0];
+
+    fetch(`/contracts/${contractId}/get_service_fees/`)
+        .then(response => response.json())
+        .then(data => {
+            serviceFeeContainer.innerHTML = '';
+
+            let table = document.createElement('table');
+            table.className = 'table';
+
+            let thead = table.createTHead();
+            let headerRow = thead.insertRow();
+            createHeaderCell(headerRow, 'Description');
+            createHeaderCell(headerRow, 'Fee Type');
+            createHeaderCell(headerRow, 'Amount');
+            createHeaderCell(headerRow, 'Applied Date');  // Added Applied Date header
+
+            let tbody = table.createTBody();
+
+            data.forEach(fee => {
+                let row = tbody.insertRow();
+                row.insertCell().textContent = fee.description;
+                row.insertCell().textContent = fee.fee_type;
+                row.insertCell().textContent = `$${parseFloat(fee.amount).toFixed(2)}`;
+                row.insertCell().textContent = fee.applied_date;  // Added Applied Date data
+            });
+
+            serviceFeeContainer.appendChild(table);
+        })
+        .catch(error => console.error('Error fetching service fees:', error));
+}
+
+
+function createHeaderCell(row, text) {
+    let cell = row.insertCell();
+    cell.textContent = text;
+    cell.style.fontWeight = 'bold';
 }
 
 function handleScheduleChange(scheduleType) {
@@ -113,42 +169,35 @@ function handleScheduleChange(scheduleType) {
     let scheduleModalButton = document.querySelector('[data-target="#scheduleModal"]');
 
     if (scheduleType === 'custom') {
-        scheduleModalButton.style.display = 'inline-block'; // Show the "Add or Update Schedule" button
+        scheduleModalButton.style.display = 'inline-block';
     } else {
-        scheduleModalButton.style.display = 'none'; // Hide the button
+        scheduleModalButton.style.display = 'none';
     }
 }
-
-
 
 function receivePayment() {
     let scheduleType = document.getElementById('payment-schedule').value;
 
     if (scheduleType === 'schedule_a') {
-        // For Schedule A, set the amount to an empty string
         document.getElementById('amount').value = '';
     } else if (scheduleType === 'custom') {
-        // For custom schedule, set the amount to the next unpaid payment
         let payments = document.querySelectorAll('.payments-content .table tbody tr');
         let nextPaymentAmount = '';
         for (let row of payments) {
             let statusCell = row.cells[row.cells.length - 1];
             if (statusCell.textContent.trim() === 'Unpaid') {
-                nextPaymentAmount = row.cells[1].textContent.replace('$', '').trim();
+                nextPaymentAmount = row.cells[2].textContent.replace('$', '').trim();
                 break;
             }
         }
         document.getElementById('amount').value = nextPaymentAmount;
     } else {
-        // For other schedule types, set the amount to an empty string
         document.getElementById('amount').value = '';
     }
 
     $('#paymentModal').modal('show');
 }
 
-
-// Function to calculate the total payments made
 function getTotalPayments() {
     let paymentsTableBody = document.querySelector('.existing-payments-table tbody');
     let totalPayments = 0;
@@ -160,14 +209,12 @@ function getTotalPayments() {
     return totalPayments;
 }
 
-
-
-
 function confirmPayment() {
     let paymentAmount = parseFloat(document.getElementById('amount').value);
     let balanceDueElement = document.getElementById('balance-due-amount');
     let balanceDue = parseFloat(balanceDueElement.textContent.replace('$', ''));
     let paymentMethod = document.getElementById('payment_method').value;
+    let paymentPurpose = document.getElementById('payment_purpose').value; // Added this line
     let paymentMemo = document.getElementById('memo').value;
     let paymentReference = document.getElementById('payment_reference').value;
     let paymentId = document.getElementById('payment-id').value;
@@ -183,6 +230,7 @@ function confirmPayment() {
     let formData = new FormData();
     formData.append('amount', paymentAmount);
     formData.append('payment_method', paymentMethod);
+    formData.append('payment_purpose', paymentPurpose); // Added this line
     formData.append('memo', paymentMemo);
     formData.append('payment_reference', paymentReference);
 
@@ -202,7 +250,7 @@ function confirmPayment() {
     })
     .then(data => {
         // Update the UI based on the payment
-        updatePaymentsTable(paymentAmount, paymentMethod, paymentReference, paymentMemo, data.payment_id, paymentAction);
+        updatePaymentsTable(paymentAmount, paymentMethod, paymentPurpose, paymentReference, paymentMemo, data.payment_id, paymentAction);
 
         // Recalculate the balance due
         let newBalanceDue = balanceDue - paymentAmount;
@@ -221,19 +269,30 @@ function confirmPayment() {
     $('#paymentModal').modal('hide');
 }
 
+
 function clearPaymentForm() {
     document.getElementById('payment-form').reset();
     document.getElementById('payment-id').value = '';
     document.getElementById('payment-action').value = 'add';
 }
 
-
-function editPayment(paymentId, amount, paymentMethod, paymentReference, memo) {
+function editPayment(paymentId, amount, paymentMethod, paymentReference, memo, paymentPurpose) {
     document.getElementById('payment-id').value = paymentId;
     document.getElementById('amount').value = amount;
     document.getElementById('payment_method').value = paymentMethod;
-    document.getElementById('payment_reference').value = paymentReference;
-    document.getElementById('memo').value = memo;
+    document.getElementById('payment_reference').value = paymentReference || ''; // Use empty string instead of null
+    document.getElementById('memo').value = memo || ''; // Use empty string instead of null
+
+    // Set the payment purpose dropdown value
+    const paymentPurposeElement = document.getElementById('payment_purpose');
+    const options = paymentPurposeElement.options;
+    for (let i = 0; i < options.length; i++) {
+        if (options[i].text === paymentPurpose) {
+            paymentPurposeElement.selectedIndex = i;
+            break;
+        }
+    }
+
     document.getElementById('payment-action').value = 'edit';
     $('#paymentModal').modal('show');
 }
@@ -243,16 +302,15 @@ function updatePaymentsTable(paymentAmount, paymentMethod, paymentReference, pay
     let paymentsTableBody = document.querySelector('.existing-payments-table tbody');
 
     if (paymentAction === 'edit') {
-        // Update the existing payment row
         let rowToUpdate = paymentsTableBody.querySelector(`tr[data-payment-id="${paymentId}"]`);
         if (rowToUpdate) {
             rowToUpdate.cells[1].textContent = `$${paymentAmount.toFixed(2)}`;
-            rowToUpdate.cells[2].textContent = paymentMethod;
+            rowToUpdate.cells[2].textContent = formatPaymentMethod(paymentMethod);
+            rowToUpdate.cells[3].textContent = paymentPurpose;
             rowToUpdate.cells[3].textContent = paymentReference;
             rowToUpdate.cells[4].textContent = paymentMemo;
         }
     } else {
-        // Add a new row for the payment
         let newRow = paymentsTableBody.insertRow();
         newRow.setAttribute('data-payment-id', paymentId);
 
@@ -261,56 +319,91 @@ function updatePaymentsTable(paymentAmount, paymentMethod, paymentReference, pay
 
         newRow.insertCell().textContent = formattedDate;
         newRow.insertCell().textContent = `$${paymentAmount.toFixed(2)}`;
-        newRow.insertCell().textContent = paymentMethod;
+        newRow.insertCell().textContent = formatPaymentMethod(paymentMethod);
+        newRow.insertCell().textContent = paymentPurpose(paymentPurpose);
         newRow.insertCell().textContent = paymentReference;
         newRow.insertCell().textContent = paymentMemo;
+
+        let actionCell = newRow.insertCell();
+        actionCell.innerHTML = `
+            <button type="button" class="btn btn-info btn-sm" onclick="editPayment('${paymentId}', '${paymentAmount}', '${paymentMethod}', '${paymentReference}', '${paymentMemo}', '${paymentPurpose}')">Edit</button>
+            <button type="button" class="btn btn-danger btn-sm" onclick="if(confirm('Are you sure?')){ window.location.href='/contracts/delete_payment/${paymentId}/'; }">Delete</button>
+        `;
     }
 
-    // Update the balance due if necessary
     updateBalanceDue(paymentAmount);
 }
 
-
+function formatPaymentMethod(method) {
+    const methodMapping = {
+        'CASH': 'Cash',
+        'CHECK': 'Check',
+        'CREDIT_CARD': 'Credit Card',
+        'ZELLE': 'Zelle',
+        'VENMO': 'Venmo'
+    };
+    return methodMapping[method] || method;
+}
 
 function updateDepositStatus() {
     let scheduleType = document.getElementById('payment-schedule').value;
-    let depositRow = document.querySelector('.payments-content .table tbody tr:first-child');
-    let balanceRow = document.querySelector('.payments-content .table tbody tr:last-child');
     let totalContractAmount = parseFloat(document.querySelector('.contract-total').getAttribute('data-contract-total'));
     let totalPayments = getTotalPayments();
 
     if (scheduleType === 'schedule_a') {
+        let depositRow = document.querySelector('.payments-content .table tbody tr:first-child');
+        let balanceRow = document.querySelector('.payments-content .table tbody tr:last-child');
+
         let depositAmount = parseFloat(depositRow.cells[2].textContent.replace('$', ''));
         depositRow.cells[3].textContent = totalPayments >= depositAmount ? 'Paid' : 'Unpaid';
-        totalPayments -= depositAmount;  // Subtract the deposit amount from total payments
+        totalPayments -= depositAmount;
+
         balanceRow.cells[3].textContent = totalPayments >= totalContractAmount - depositAmount ? 'Paid' : 'Unpaid';
     } else if (scheduleType === 'custom') {
         let paymentRows = document.querySelectorAll('.payments-content .table tbody tr');
-        for (let row of paymentRows) {
+        paymentRows.forEach(row => {
             let paymentAmount = parseFloat(row.cells[2].textContent.replace('$', ''));
             row.cells[3].textContent = totalPayments >= paymentAmount ? 'Paid' : 'Unpaid';
-            totalPayments -= paymentAmount;  // Subtract the payment amount from total payments
-        }
+            totalPayments -= paymentAmount;
+        });
     }
 }
 
+function loadExistingPayments() {
+    let contractId = document.body.getAttribute('data-contract-id');
+    fetch(`/contracts/${contractId}/get_existing_payments/`)
+        .then(response => response.json())
+        .then(data => {
+            let paymentsTableBody = document.querySelector('.existing-payments-table tbody');
+            paymentsTableBody.innerHTML = '';
 
+            data.forEach(payment => {
+                let newRow = paymentsTableBody.insertRow();
+                newRow.setAttribute('data-payment-id', payment.id);
 
-function updateBalanceDue(paymentAmount, paymentAction) {
-    let balanceDueElement = document.getElementById('balance-due-amount');
-    let initialBalance = parseFloat(document.querySelector('.balance-due').getAttribute('data-initial-balance'));
-    let totalPayments = getTotalPayments();
+                let formattedDate = new Date(payment.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-    // Calculate new balance
-    let newBalance = initialBalance - totalPayments;
+                newRow.insertCell().textContent = formattedDate;
+                newRow.insertCell().textContent = `$${parseFloat(payment.amount).toFixed(2)}`;
+                newRow.insertCell().textContent = formatPaymentMethod(payment.method);
+                newRow.insertCell().textContent = payment.purpose || ''; // Ensure purpose is correctly set
+                newRow.insertCell().textContent = payment.reference || '';
+                newRow.insertCell().textContent = payment.memo || '';
 
-    // Update the balance due element
-    balanceDueElement.textContent = '$' + newBalance.toFixed(2);
+                let actionCell = newRow.insertCell();
+                actionCell.innerHTML = `
+                    <button type="button" class="btn btn-info btn-sm" onclick="editPayment('${payment.id}', '${payment.amount}', '${payment.method}', '${payment.reference}', '${payment.memo}', '${payment.purpose}')">Edit</button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="if(confirm('Are you sure?')){ window.location.href='/contracts/delete_payment/${payment.id}/'; }">Delete</button>
+                `;
+            });
+        })
+        .catch(error => console.error('Error fetching existing payments:', error));
 }
 
 
 
 document.addEventListener('DOMContentLoaded', function() {
+    loadExistingPayments();
 
     let contractId = document.body.getAttribute('data-contract-id');
     let paymentScheduleId = document.body.getAttribute('data-payment-schedule-id');
@@ -325,25 +418,19 @@ document.addEventListener('DOMContentLoaded', function() {
     let initialScheduleType = scheduleDropdown.value;
     populateScheduleTable(initialScheduleType);
 
-
     scheduleDropdown.addEventListener('change', function() {
         let selectedValue = this.value;
         let scheduleModalButton = document.querySelector('[data-target="#scheduleModal"]');
 
         if (selectedValue === 'custom') {
-            scheduleModalButton.style.display = 'inline-block'; // Show the "Add or Update Schedule" button
+            scheduleModalButton.style.display = 'inline-block';
         } else {
-            scheduleModalButton.style.display = 'none'; // Hide the button
+            scheduleModalButton.style.display = 'none';
         }
-
 
         populateScheduleTable(selectedValue);
     });
 
-
-        let scheduleSelect = document.getElementById('payment-schedule');
+    let scheduleSelect = document.getElementById('payment-schedule');
     scheduleSelect.setAttribute('data-original-value', scheduleSelect.value);
-
-    // Other initialization code...
 });
-

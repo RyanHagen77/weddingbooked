@@ -1,6 +1,6 @@
 # appname/urls.py
 from django.urls import path
-from . import views
+from . import views, reports_views
 from django.contrib.auth import views as auth_views
 
 
@@ -17,9 +17,16 @@ urlpatterns = [
          name='get_package_discounts'),
     path('api/additional_staff_options/', views.get_additional_staff_options, name='additional_staff_options'),
     path('api/overtime_options/', views.get_overtime_options, name='overtime_options'),
+    path('<int:id>/save_overtime_entry/', views.save_overtime_entry, name='save_overtime_entry'),
+    path('<int:contract_id>/overtime_entries/', views.get_overtime_entries, name='overtime_entries'),
+    path('<int:entry_id>/get_overtime_entry/', views.get_overtime_entry, name='get_overtime_entry'),
+    path('<int:entry_id>/edit_overtime_entry/', views.edit_overtime_entry, name='edit_overtime_entry'),
+    path('<int:entry_id>/delete_overtime_entry/', views.delete_overtime_entry, name='delete_overtime_entry'),
     path('client_portal_login/', views.custom_login, name='client_portal_login'),
     path('client_portal_logout/', views.custom_logout, name='client_portal_logout'),
     path('client_portal/contract/<int:contract_id>/', views.client_portal, name='client_portal'),
+    path('client_contract_and_rider_agreement/<int:contract_id>/', views.client_contract_and_rider_agreement,
+         name='client_contract_and_rider_agreement'),
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
@@ -30,14 +37,19 @@ urlpatterns = [
     path('success/', views.success_view, name='success'),
     path('contract_view/', views.contract_view, name='contract_view'),
     path('contract/<int:contract_id>/pdf/', views.generate_contract_pdf, name='generate_contract_pdf'),
+    path('contract_agreement/<int:contract_id>/', views.contract_agreement, name='contract_agreement'),
+    path('client_contract_agreement/<int:contract_id>/', views.client_contract_agreement,
+         name='client_contract_agreement'),
+    path('view_submitted_contract/<int:contract_id>/', views.view_submitted_contract, name='view_submitted_contract'),
+    path('client_rider_agreement/<int:contract_id>/<str:rider_type>/', views.client_rider_agreement,
+         name='client_rider_agreement'),
+    path('contract/<int:contract_id>/view/', views.view_submitted_contract, name='view_submitted_contract'),
+    path('contract/<int:contract_id>/version/<int:version_number>/', views.view_submitted_contract,
+         name='view_submitted_contract'),
+    path('contract/<int:contract_id>/riders/', views.view_rider_agreements, name='view_rider_agreements'),
     path('<int:id>/', views.contract_detail, name='contract_detail'),
     path('<int:id>/edit/', views.edit_contract, name='edit_contract'),
     path('<int:id>/edit_services/', views.edit_services, name='edit_services'),
-    path('<int:id>/save_overtime_entry/', views.save_overtime_entry, name='save_overtime_entry'),
-    path('<int:contract_id>/overtime_entries/', views.get_overtime_entries, name='overtime_entries'),
-    path('<int:entry_id>/get_overtime_entry/', views.get_overtime_entry, name='get_overtime_entry'),
-    path('<int:entry_id>/edit_overtime_entry/', views.edit_overtime_entry, name='edit_overtime_entry'),
-    path('<int:entry_id>/delete_overtime_entry/', views.delete_overtime_entry, name='delete_overtime_entry'),
     path('<int:id>/data/', views.get_contract_data, name='get_contract_data'),
     path('document/delete/<int:document_id>/', views.delete_document, name='delete_document'),
     path('<int:id>/manage_staff/', views.manage_staff_assignments, name='manage_staff_assignments'),
@@ -45,12 +57,19 @@ urlpatterns = [
     path('search/', views.search, name='search'),
     path('bookings/', views.booking_list, name='booking_list'),
     path('booking/<int:booking_id>/', views.booking_detail, name='booking_detail'),
+    path('booking_staff/<int:booking_id>/', views.booking_detail_staff, name='booking_detail_staff'),
+    path('confirm_booking/<int:booking_id>/', views.confirm_booking, name='confirm_booking'),
     path('booking/<int:booking_id>/clear/', views.clear_booking, name='clear_booking'),  # Added this line
     path('<int:contract_id>/schedule/', views.create_or_update_schedule, name='create_or_update_schedule'),
     path('add_payment/<int:schedule_id>/', views.add_payment, name='add_payment'),
     path('<int:contract_id>/get_custom_schedule/', views.get_custom_schedule, name='get_custom_schedule'),
     path('edit_payment/<int:payment_id>/', views.edit_payment, name='edit_payment'),
     path('delete_payment/<int:payment_id>/', views.delete_payment, name='delete_payment'),
+    path('<int:contract_id>/get_existing_payments/', views.get_existing_payments,
+         name='get_existing_payments'),
+    path('add_service_fee/<int:contract_id>/', views.add_service_fees, name='add_service_fee'),
+    path('delete_service_fee/<int:fee_id>/', views.delete_service_fee, name='delete_service_fee'),
+    path('<int:contract_id>/get_service_fees/', views.get_service_fees, name='get_service_fees'),
     path('<int:contract_id>/discounts/remove/<int:discount_id>/', views.remove_discount, name='remove_discount'),
     path('<int:contract_id>/discounts/', views.discounts_view, name='discounts_view'),
     path('booking_notes/<int:booking_id>/', views.booking_notes, name='booking_notes'),
@@ -58,6 +77,14 @@ urlpatterns = [
     path('edit_note/<int:note_id>/', views.edit_note, name='edit_note'),
     path('delete_note/<int:note_id>/', views.delete_note, name='delete_note'),
     path('tasks/create/', views.create_task, name='create_task'),
-
+    path('reports/', reports_views.reports, name='reports'),
+    path('appointments/', reports_views.appointments_report, name='appointments_report'),
+    path('revenue_report/', reports_views.revenue_report, name='revenue_report'),
+    path('revenue_by_contract/', reports_views.revenue_by_contract, name='revenue_by_contract'),
+    path('deferred_revenue_report/', reports_views.deferred_revenue_report, name='deferred_revenue_report'),
+    path('sales_detail_report/', reports_views.sales_detail_report, name='sales_detail_report'),
+    path('sales_detail_by_contract/', reports_views.sales_detail_by_contract, name='sales_detail_by_contract'),
+    path('sales_taxes_report/', reports_views.sales_tax_report, name='sales_tax_report'),
+    path('event_staff_payroll/', reports_views.event_staff_payroll_report, name='event_staff_payroll_report')
     # Other URLs for this app...
 ]

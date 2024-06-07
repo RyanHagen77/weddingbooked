@@ -1,40 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 {% load static %}
-<head>
 
-    <title>New Contract</title>
-        <!-- Bootstrap CSS -->
+{% block head %}
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <!-- Include Bootstrap Datepicker CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
-    <!-- Include your custom CSS file -->
-    <link rel="stylesheet" href="{% static 'users/dashboard.css' %}">
 
     <link rel="stylesheet" href="{% static 'contracts/styles.css' %}">
-    <style>
-        .form-section {
-            display: flex;
-
-        margin: 40px;
-        padding: 15px;
-        border: 1px solid #ddd;
-        background-color: #f9f9f9; /* Light gray background */
-    }
-        .left-column, .right-column {
-            flex: 1;
-        }
-
-        .toggle-button {
-            display: block;
-            margin-bottom: 10px;
-        }
-
-        .fields-container {
-            display: none;
-            margin-bottom: 20px;
-        }
-    </style>
     <script>
     // Function to toggle visibility of fields
     function toggleFields(containerId) {
@@ -46,37 +19,17 @@
         }
     }
     </script>
-</head>
-<body>
-    <div class="header">
-        <div class="logo">
-            <!-- Add your logo here -->
-            <img src="{{ MEDIA_URL }}logo/Final_Logo.png" alt="Logo">
-        </div>
-        <ul class="menu">
-            <li class="menu-item"><a href="{% url 'users:tasks' %}">Tasks</a></li>
-            <li class="menu-item"><a href="{% url 'contracts:contract_new' %}">New Contract</a></li>
-            <li class="menu-item"><a href="{% url 'users:financial_reports' %}">Reports</a></li>
-            <li class="menu-item"><a href="{% url 'admin:index' %}">Admin</a></li>
-            <li class="menu-item"><a href="{% url 'contracts:search' %}">Search</a></li>
-        </ul>
-        <div class="user-info">
-            <span>Hello, {{ request.user.first_name }}</span>
-            <form action="{% url 'users:logout' %}" method="post" style="margin-left: 10px;">
-                {% csrf_token %}
-                <input type="submit" value="Logout" class="logout-button">
-            </form>
-        </div>
-    </div>
+{% endblock %}
+{% block content %}
 <form method="POST">
     {% csrf_token %}
     <div class="form-section">
+        <h4 class="form-title">New Contract</h4>
 
 
         <div class="left-column">
             <!-- Contract Fields -->
             <div>
-                <h3>New Contract</h3>
                 <p>{{ contract_form.is_code_92.label_tag }} {{ contract_form.is_code_92 }}</p>
                 <p>{{ contract_form.event_date.label_tag }} {{ contract_form.event_date }}</p>
                 <p>{{ contract_form.location.label_tag }} {{ contract_form.location }}</p>
@@ -119,6 +72,7 @@
                 <p>{{ contract_form.reception_site.label_tag }} {{ contract_form.reception_site }}</p>
                 <p>{{ contract_form.reception_city.label_tag }} {{ contract_form.reception_city }}</p>
                 <p>{{ contract_form.reception_state.label_tag }} {{ contract_form.reception_state }}</p>
+                <p>{{ contract_form.old_contract_number.label_tag }} {{ contract_form.old_contract_number }}</p>
             </div>
 
             <button type="button" class="toggle-button btn btn-dusty-pink" onclick="toggleFields('eventFieldsContainer')">Show/Hide Event Fields</button>
@@ -137,4 +91,4 @@
 
     </div>
 </form>
-
+{% endblock content %}

@@ -4,16 +4,33 @@
             <input type="text" name="q" placeholder="Quick Search" value="{{ request.GET.q }}">
         </div>
         <div class="form-group">
-            <input type="submit" value="Search">
+            <input type="submit" value="Search" class="btn">
         </div>
     </div>
 
     <div class="form-row">
+        <!-- Column 1: Date and Service Type Filters -->
         <div class="col-md-4">
             <div class="form-group">
                 <label>Event Date:</label>
                 <input type="date" name="event_date" value="{{ request.GET.event_date }}">
             </div>
+
+            <div class="form-group">
+                <label>Filter by Service Type:</label>
+                <select name="service_type">
+                    <option value="">All Service Types</option>
+                    <option value="PHOTOGRAPHER">Photographer</option>
+                    <option value="VIDEOGRAPHER">Videographer</option>
+                    <option value="DJ">DJ</option>
+                    <option value="PHOTOBOOTH">Photobooth</option>
+                    <!-- Add other service types as needed -->
+                </select>
+            </div>
+        </div>
+
+        <!-- Column 2: Role and Status Filters -->
+        <div class="col-md-4">
             <div class="form-group">
                 <label>Filter by Role:</label>
                 <select name="role_filter">
@@ -26,31 +43,32 @@
                     <option value="DJ1">DJ 1</option>
                     <option value="DJ2">DJ 2</option>
                     <option value="PHOTOBOOTH_OP">Photobooth Operator</option>
-                    <!-- Add other role options -->
+                    <!-- Add other roles as needed -->
                 </select>
             </div>
+
             <div class="form-group">
                 <label>Filter by Status:</label>
                 <select name="status_filter">
                     <option value="">All Statuses</option>
                     <option value="PROSPECT">Prospect</option>
-                    <option value="PENDING">Pending</option>
-                    <option value="DECLINED">Declined</option>
                     <option value="APPROVED">Approved</option>
-                    <option value="CLEARED">Cleared</option>
+                    <!-- Add other statuses as needed -->
                 </select>
             </div>
         </div>
 
+        <!-- Column 3: Sorting Options -->
         <div class="col-md-4">
             <div class="form-group">
                 <label>Sort by:</label>
                 <select name="sort_by">
                     <option value="event_date">Event Date</option>
                     <option value="role">Role</option>
-                    <!-- Add other sorting options -->
+                    <!-- Add other sorting options as needed -->
                 </select>
             </div>
+
             <div class="form-group">
                 <label>Order:</label>
                 <select name="order">

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+{% load static %}
+<head>
+    <title>View Submitted Contract</title>
+    <link rel="stylesheet" href="{% static 'contracts/style.css' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        .contract-header, .contact-info, .event-info {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .column {
+            flex: 1;
+            min-width: 100px;
+        }
+        .divider {
+            border-top: 1px solid #000;
+            margin: 20px 0;
+        }
+        .text-box {
+            border: 1px solid #000;
+            min-height: 40px;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+        .logo {
+            width: 33%;
+            text-align: center;
+            padding-right: 20px;
+        }
+        .logo img {
+            width: 150px;
+            height: auto;
+        }
+        .contract-date {
+            font-size: 9pt;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .payment-info {
+            flex: 1;
+            font-size: 9pt;
+            text-align: center;
+            order: 2;
+        }
+        .payment-info strong {
+            font-weight: bold;
+        }
+        .company-info {
+            flex: 1;
+            font-size: 9pt;
+            text-align: right;
+            margin-bottom: 20px;
+            font-weight: bold;
+            order: 1;
+        }
+        .essence-rep {
+            flex: 1;
+            font-size: 9pt;
+            text-align: center;
+            margin-bottom: 20px;
+            order: 3;
+        }
+        .essence-rep strong {
+            font-weight: bold;
+        }
+        .horizontal-line {
+            border-top: 1px solid #000;
+            margin-top: 5px;
+        }
+        .rep-details {
+            text-align: right;
+        }
+        .rep-details strong {
+            font-weight: bold;
+        }
+        .agreement-details {
+            font-size: 9pt;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .agreement-description {
+            font-size: 8pt;
+            text-align: center;
+            margin-top: 5px;
+        }
+        .left-column, .right-column {
+            width: 48%;
+            margin-bottom: 20px;
+        }
+        .ceremony-reception-box, .client-info-box {
+            border: 1px solid #000;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-size: 13px;
+        }
+        td {
+            font-size: 12px;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+        .default-text {
+            font-size: 9pt;
+            font-style: italic;
+        }
+        .signature-section {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .signature-section canvas {
+            border: 1px solid #000;
+        }
+        .submit-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 20px auto;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        .rider-text {
+            font-size: 7pt;
+        }
+        .page-break {
+            page-break-before: always;
+        }
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 16px;
+            color: #4CAF50;
+            text-decoration: none;
+            border: 1px solid #4CAF50;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+        .back-link:hover {
+            background-color: #4CAF50;
+            color: white;
+        }
+        @media (max-width: 600px) {
+            .contract-header {
+                flex-direction: column;
+                align-items: center;
+            }
+            .agreement-details {
+                flex-direction: column;
+                align-items: center;
+            }
+            .left-column, .right-column {
+                width: 100%;
+            }
+            .client-info-box, .ceremony-reception-box {
+                width: 100%;
+            }
+            .payment-info, .company-info, .essence-rep {
+                text-align: center;
+                margin-bottom: 20px;
+                order: initial;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="contract-header">
+        <div class="logo">
+            <img src="{{ logo_url }}" alt="Logo">
+            <div class="contract-date">
+                <strong style="font-size: 15px;">Wedding Date:</strong> <span style="font-size: 15px;">{{ contract.event_date }}</span><br>
+                <strong>Contract No.:</strong> {{ contract.custom_contract_number }}
+            </div>
+        </div>
+        <div class="payment-info">
+            Please Send Payments To:<br>
+            <strong>Essence Photo</strong><br>
+            1300 Remington Rd<br>
+            Suite B<br>
+            Schaumburg IL, 60173
+        </div>
+        <div class="essence-rep">
+            <div class="company-info">
+                Office: (847) 923-9800<br>
+                info@essenceweddings.com<br>
+                EssenceWeddings.com<br>
+            </div>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="contract-agreement" style="text-align: center;">
+        <strong>Rider Agreements</strong>
+    </div>
+
+    {% for rider in rider_agreements %}
+    <div class="contract-details">
+        <h2>{{ rider.rider_type|title }} Rider Agreement</h2>
+        <div class="rider-text">{{ rider.rider_text|safe }}</div>
+        <p><strong>Client Name:</strong> {{ rider.client_name }}</p>
+        <p><strong>Date:</strong> {{ rider.agreement_date }}</p>
+        <img src="{{ rider.signature }}" alt="{{ rider.rider_type|title }} Signature" class="signature-img">
+    </div>
+    <div class="divider"></div>
+    {% endfor %}
+
+    <a href="{% url 'contracts:contract_detail' contract.contract_id %}" class="back-link">Back to Contract Details</a>
+</body>
+</html>

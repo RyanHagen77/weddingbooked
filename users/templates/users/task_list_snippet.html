@@ -1,7 +1,8 @@
 {% load static %}
             <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'users/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'contracts/styles.css' %}">
+
 <!-- Checkbox to toggle completed tasks -->
 <div class="tasks-container">
     <label>
@@ -52,7 +53,7 @@
                     <input type="checkbox" name="is_completed" class="mark-complete-checkbox" {% if task.is_completed %}checked{% endif %}>
                 </form>
                 <!-- Edit Button -->
-                <button type="button" class="btn btn-dusty-pink mb-3 edit-task-btn" data-toggle="modal" data-target="#editTaskModal"
+                <button type="button" class="btn-dusty-pink mb edit-task-btn" data-toggle="modal" data-target="#editTaskModal"
                         data-task-id="{{ task.id }}"
                         data-sender-id="{{ task.sender.id }}"
                         data-assigned-to-id="{{ task.assigned_to.id }}"

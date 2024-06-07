@@ -1,7 +1,6 @@
-{% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
+{% load static %}
 <head>
   <meta charset="UTF-8">
   <title>Title</title>
@@ -70,21 +69,25 @@
     {% endif %}
 
 
-    <!-- Contract Documents Section -->
-    <div class="contract-documents">
-        <h3>Your Contract Documents</h3>
-        {% if contract.documents.all %}
-            {% for document in contract.documents.all %}
-                {% if document.is_visible %}
-                    <p>
-                        <a href="{{ document.document.url }}">{{ document.document.name }}</a>
-                    </p>
-                {% endif %}
-            {% endfor %}
-        {% else %}
-            <p>No contract documents available.</p>
-        {% endif %}
-    </div>
+<!-- Contract Documents Section -->
+<div class="contract-documents">
+    <h3>Your Contract Documents</h3>
+    {% if client_documents %}
+        {% for document in client_documents %}
+            <p>
+                <a href="{{ document.document.url }}">{{ document.document.name }}</a>
+            </p>
+        {% endfor %}
+    {% else %}
+        <p>No contract documents available.</p>
+    {% endif %}
+</div>
+    <!-- Other HTML content -->
+<div class="contract-section">
+    <h2>Contract Details</h2>
+</div>
+
+
 
 <!-- Template in contracts app -->
 

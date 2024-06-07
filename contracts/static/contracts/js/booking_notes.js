@@ -1,167 +1,55 @@
 $(document).ready(function() {
-    // CSRF token setup for AJAX requests
-    let csrftoken = $('#csrf-token').val();
+    let csrftoken = $('#csrf-token').val(); // Retrieve the token from the document
 
     $.ajaxSetup({
         headers: { "X-CSRFToken": csrftoken }
     });
 
-    // Add a note
-    $(document).ready(function() {
-    $('.add-note-btn').click(function() {
-    let bookingId = $(this).data('booking-id');
-    let noteContent = $('#new-note-content-' + bookingId).val();
-    let addNoteURL = $('body').data('add-note-url');
+    let addNoteURL = $('body').data('add-note-url'); // Retrieve the URL
 
-    if (noteContent) {
+    // Form submission for adding a note
+    $('#addNoteForm').on('submit', function(event) {
+        event.preventDefault(); // Prevents the form from submitting normally
+
+        let formData = $(this).serialize(); // Serialize the form data
         $.ajax({
-            url: addNoteURL,
-            method: 'POST',
-            data: {
-                content: noteContent,
-                booking_id: bookingId,
-                csrfmiddlewaretoken: csrftoken
-            },
+            type: 'POST',
+            url: addNoteURL, // Uses the URL directly
+            data: formData,
             success: function(response) {
                 if (response.success) {
-                    let newNoteHtml = `
-                        <li id="note-${response.note_id}">
-                            <p>${noteContent}</p>
-                            <p>Author: ${response.author}</p>
-                            <p>Timestamp: ${response.timestamp}</p>
-                            <button class="edit-note" data-note-id="${response.note_id}">Edit</button>
-                            <button class="delete-note" data-note-id="${response.note_id}">Delete</button>
-                        </li>
-                    `;
+                    // Append the new note to the contract notes list
+                    $('#notes-list-' + response.contract_id).append(`
+                        <div class="message">
+                            <p>${response.content}</p>
+                        </div>
+                    `); // Update contract notes
 
-                    let bookingNotesList = $('#notes-list-' + bookingId);
-                    bookingNotesList.append(newNoteHtml);
-
-                    // Clear the textarea content after successfully adding the note
-                    $('#new-note-content-' + bookingId).val('');
+                    // Clear the form fields and close the modal
+                    $('#addNoteForm textarea[name="content"}').val('');
+                    $('#addNoteModal').modal('hide');
                 } else {
-                    alert("Error adding note.");
+                    alert("Error adding note: " + response.error);
                 }
             },
             error: function(xhr, status, error) {
-                let errorMessage = 'An error occurred.';
-                if (xhr.responseJSON && xhr.responseJSON.error) {
-                    errorMessage = xhr.responseJSON.error;
-                }
-                alert(errorMessage);
+                console.error("An error occurred: " + error);
             }
         });
-    }
-});
-});
-
-    // Edit a note
-    $(document).on('click', '.edit-note', function() {
-    let noteId = $(this).data('note-id');
-    let noteContent = $(`#note-${noteId} p`).first().text();  // Get only the first <p> element's text
-
-    // Show the note content in the prompt
-    let newContent = prompt("Edit note:", noteContent);
-
-    if (newContent !== null) {  // Check if user didn't cancel
-        let editNoteURL = $(this).data('url-base').replace('0', noteId);  // Using Django URL template tag with dynamic replacement
-
-        $.ajax({
-            url: editNoteURL,
-            method: 'POST',
-            data: {
-                content: newContent,
-                csrfmiddlewaretoken: csrftoken
-            },
-            success: function(response) {
-                if (response.success) {
-                    // Update the note content
-                    $(`#note-${noteId} p`).first().text(newContent);
-                } else {
-                    alert("Error editing note.");
-                }
-            }
-        });
-    }
-});
-
-
-
-    $(document).on('click', '.save-note', function() {
-    let noteId = $(this).data('note-id');
-    let noteElement = $(this).closest('li');
-
-    // Get the edited content from the textarea
-    let newContent = noteElement.find('.note-edit-content').val();
-
-    let editNoteURL = $(this).data('url-base');
-
-    if (newContent) {
-        $.ajax({
-            url: editNoteURL,
-            method: 'POST',
-            data: {
-                content: newContent,
-                csrfmiddlewaretoken: csrftoken
-            },
-            success: function(response) {
-                if (response.success) {
-                    // Update the note content and toggle back to display mode
-                    noteElement.find('.note-content').text(newContent).show();
-                    noteElement.find('.note-edit-content').hide();
-                    noteElement.find('.edit-note').show();
-                    noteElement.find('.delete-note').show();
-                    noteElement.find('.save-note').hide();
-                    noteElement.find('.cancel-edit').hide();
-                } else {
-                    alert("Error editing note.");
-                }
-            }
-        });
-    }
-});
-
-
-
-    $(document).on('click', '.cancel-edit', function() {
-        let noteId = $(this).data('note-id');
-        let noteElement = $(this).closest('li');
-
-        // Toggle back to display mode without saving changes
-        noteElement.find('.note-content').show();
-        noteElement.find('.note-edit-content').hide();
-        noteElement.find('.edit-note').show();
-        noteElement.find('.delete-note').show();
-        noteElement.find('.save-note').hide();
-        noteElement.find('.cancel-edit').hide();
     });
 
+    // Modal showing for setting fields
+    $('#addNoteModal').on('show.bs.modal', function(event) {
+        let button = $(event.relatedTarget); // Button that triggered the modal
+        let contractId = button.data('contract-id'); // Retrieve contract ID from button data attribute
+        let noteType = button.data('note-type'); // Retrieve note type from button data attribute
 
-    // Delete a note
-    $(document).on('click', '.delete-note', function() {
-    let noteId = $(this).data('note-id');
-    let deleteNoteURL = $(this).data('url-base').replace('0', noteId);
+        let modal = $(this);
 
-    if (confirm("Are you sure you want to delete this note?")) {
-        $.ajax({
-            url: deleteNoteURL,
-            method: 'POST',
-            data: {
-                csrfmiddlewaretoken: csrftoken
-            },
-            success: function(response) {
-                if (response.success) {
-                    $(`#note-${noteId}`).remove();
-                } else {
-                    alert("Error deleting note.");
-                }
-            }
-        });
-    }
+        // Set the contract ID and note type in the form's hidden fields
+        modal.find('input[name="contract_id"]').val(contractId);
+        modal.find('input[name="note_type"]').val(noteType);
+
+        console.log('Modal opened for contract ID:', contractId, 'Note Type:', noteType); // Debugging
+    });
 });
-});
-
-
-
-
-

@@ -1,0 +1,532 @@
+{% extends "event_staff_base.html" %}
+{% load static %}
+
+{% block head %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <meta charset="UTF-8">
+    <title>Contract Detail</title>
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <!-- Include your custom CSS file -->
+    <link rel="stylesheet" href="{% static 'contracts/styles.css' %}">
+
+    <script src="{% static 'contracts/js/booking_notes.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<body data-contract-id="{{ contract.contract_id }}" data-payment-schedule-id="{{ contract.payment_schedule.id }}">
+
+    <!-- Top Grey Bar -->
+    <div class="bg-light text-dark py-2">
+        <div class="container">
+            <div class="row justify-content-between">
+                <div class="col-auto">
+                    <h4>Booking ID: {{ booking.id }}</h4>  <!-- Display the Booking ID directly -->
+                    <h4>Booked Staff: {{ booking.staff.get_full_name }}</h4>  <!-- Display the full name of the booked staff -->
+                </div>
+                <div class="col-auto">
+                    <h4>Contract ID: {{ contract.custom_contract_number }}</h4>
+                    {% if booking.confirmed %}
+                        <div class="confirmed">Confirmed</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Button -->
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col">
+                <form method="POST" action="{% url 'contracts:confirm_booking' booking.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-dusty-pink">Confirm Attendance</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header Section -->
+    <header class="{% if contract.is_code_92 %}bg-dark-sienna{% else %}bg-cool-grey{% endif %} text-white py-3">
+        <div class="container">
+            <div class="row">
+                <!-- Contract Date, Location, Lead Source, CSR, Status -->
+                <div class="col-lg-4">
+                    <p>Event Date: {{ contract.event_date }}</p>
+                    <p id="header-csr">Sales Person: {{ contract.csr.get_full_name }}</p>
+                    <p id="header-coordinator">Coordinator: {{ contract.coordinator.get_full_name }}</p>
+                </div>
+                <!-- Primary Contact Information -->
+                <div class="col-lg-4">
+                    <p id="header-primary-contact">Primary Contact: {{ contract.client.primary_contact }}</p>
+                    <p id="header-partner-contact">Partner Contact: {{ contract.client.partner_contact }}</p>
+                    <p id="header-primary-email">Primary Email: {{ contract.client.primary_email }}</p>
+                    <p id="header-primary-phone">Primary Phone 1: {{ contract.client.primary_phone1 }}</p>
+                </div>
+
+                <!-- Partner Contact Information -->
+                <div class="col-lg-4">
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="container mt-3">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link text-dark-sienna" href="#client" data-toggle="tab" id="clientTabLink">Client</a>
+            </li>
+            <li class="nav-item"><a class="nav-link text-dark-sienna" href="#event" data-toggle="tab">Event</a></li>
+            <li class="nav-item"><a class="nav-link text-dark-sienna" href="#services" data-toggle="tab">Services</a></li>
+            <li class="nav-item"><a class="nav-link text-dark-sienna" href="#docs" data-toggle="tab">Docs</a></li>
+            <li class="nav-item"><a class="nav-link text-dark-sienna" href="#communication" data-toggle="tab">Communication</a></li>
+        </ul>
+        <!-- Tab content -->
+        <div class="content-below-nav">
+            <div class="tab-content field-box">
+                <div class="tab-pane container fade" id="client">
+                    <div class="row">
+                        <!-- Left Column for Read-Only Client Fields -->
+                        <div class="col-md-6">
+                            <form id="edit-client-form" method="post" action="{% url 'contracts:edit_contract' id=contract.contract_id %}">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <!-- Column 1 -->
+                                    <div class="col-md-6">
+                                        <label for="{{ client_edit_form.primary_contact.id_for_label }}">Primary Contact:</label>
+                                        <input type="text" class="form-control" value="{{ contract.client.primary_contact }}" readonly>
+                                        <label for="{{ client_edit_form.primary_email.id_for_label }}">Primary Email:</label>
+                                        <input type="email" class="form-control" value="{{ contract.client.primary_email }}" readonly>
+                                        <label for="{{ client_edit_form.primary_phone1.id_for_label }}">Primary Phone 1:</label>
+                                        <input type="text" class="form-control" value="{{ contract.client.primary_phone1 }}" readonly>
+                                        <!-- ... more read-only fields for the first column ... -->
+                                    </div>
+                                    <!-- Column 2 -->
+                                    <div class="col-md-6">
+                                        <label for="{{ client_edit_form.partner_contact.id_for_label }}">Partner Contact:</label>
+                                        <input type="text" class="form-control" value="{{ contract.client.partner_contact }}" readonly>
+                                        <label for="{{ client_edit_form.partner_email.id_for_label }}">Partner Email:</label>
+                                        <input type="email" class="form-control" value="{{ contract.client.partner_email }}" readonly>
+                                        <label for="{{ client_edit_form.partner_phone1.id_for_label }}">Partner Phone 1:</label>
+                                        <input type="text" class="form-control" value="{{ contract.client.partner_phone1 }}" readonly>
+                                        <!-- ... more read-only fields for the second column ... -->
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane container fade" id="event">
+                    <div class="row">
+                        <!-- Read-Only Event Details -->
+                        <div class="col-md-6">
+                            <div class="row">
+                                <!-- Column 1 -->
+                                <div class="col-md-6">
+                                    <label for="{{ event_edit_form.bridal_party_qty.id_for_label }}">Bridal Party Quantity:</label>
+                                    <input type="text" class="form-control" value="{{ contract.bridal_party_qty }}" readonly>
+                                    <label for="{{ event_edit_form.ceremony_site.id_for_label }}">Ceremony Site:</label>
+                                    <input type="text" class="form-control" value="{{ contract.ceremony_site }}" readonly>
+                                    <label for="{{ event_edit_form.ceremony_city.id_for_label }}">Ceremony City:</label>
+                                    <input type="text" class="form-control" value="{{ contract.ceremony_city }}" readonly>
+                                    <label for="{{ event_edit_form.ceremony_state.id_for_label }}">Ceremony State:</label>
+                                    <input type="text" class="form-control" value="{{ contract.ceremony_state }}" readonly>
+                                    <!-- ... other read-only fields for the first column ... -->
+                                </div>
+                                <!-- Column 2 -->
+                                <div class="col-md-6">
+                                    <label for="{{ event_edit_form.guests_qty.id_for_label }}">Guests Quantity:</label>
+                                    <input type="text" class="form-control" value="{{ contract.guests_qty }}" readonly>
+                                    <label for="{{ event_edit_form.reception_site.id_for_label }}">Reception Site:</label>
+                                    <input type="text" class="form-control" value="{{ contract.reception_site }}" readonly>
+                                    <label for="{{ event_edit_form.reception_city.id_for_label }}">Reception City:</label>
+                                    <input type="text" class="form-control" value="{{ contract.reception_city }}" readonly>
+                                    <label for="{{ event_edit_form.reception_state.id_for_label }}">Reception State:</label>
+                                    <input type="text" class="form-control" value="{{ contract.reception_state }}" readonly>
+                                    <!-- ... other read-only fields for the second column ... -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Services Tab -->
+                <div class="tab-pane container fade" id="services" style="padding-bottom: 30px;">
+                    <!-- Tab Navigation for Services -->
+                    <ul class="nav nav-tabs" id="serviceTabs">
+                        <li class="nav-item"><a class="nav-link active text-dark-sienna" href="#photography" data-toggle="tab">Photography</a></li>
+                        <li class="nav-item"><a class="nav-link text-dark-sienna" href="#videography" data-toggle="tab">Videography</a></li>
+                        <li class="nav-item"><a class="nav-link text-dark-sienna" href="#dj" data-toggle="tab">DJ</a></li>
+                        <li class="nav-item"><a class="nav-link text-dark-sienna" href="#photobooth" data-toggle="tab">Photobooth</a></li>
+                    </ul>
+                    <!-- Tab Content -->
+                    <div class="tab-content">
+                        <!-- Photography Tab Content -->
+                        <div class="tab-pane active" id="photography">
+                            <form method="post" action="{% url 'contracts:edit_services' id=contract.contract_id %}">
+                                {% csrf_token %}
+                                                            <!-- Hidden Fields -->
+                                <input type="hidden" id="contractId" value="{{ contract.contract_id }}">
+                                <input type="hidden" id="id_event_date" value="{{ contract.event_date|date:'Y-m-d' }}">
+                                <input type="hidden" id="discount" value="{{ initial_discount_value }}">
+                                <input type="hidden" id="overtimeServiceType" value="">
+                                <input type="hidden" name="section" value="{{ current_tab }}">
+                                <input type="hidden" id="hiddenSavedPhotographyPackageId" value="{{ contract.photography_package_id }}">
+                                <input type="hidden" id="hiddenSavedPhotographyAdditionalStaffId" value="{{ contract.photography_additional_id }}">
+                                <input type="hidden" id="hiddenSavedEngagementSessionId" value="{{ contract.engagement_session_id }}">
+                            </form>
+                            <!-- Photography Services Section -->
+                        <div class="service-category">
+                            <h3>Photography</h3>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Service</th>
+                                        <th>Hours</th>
+                                        <th>Assigned Staff</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Photography Package -->
+                                    <tr>
+                                        <td>{{ contract.photography_package.name }}</td>
+                                        <td>{{ contract.photography_package.hours }}</td>
+                                        <td id="assigned-photographer1">{{ contract.photographer1.get_full_name }}</td>
+                                    </tr>
+                                    <!-- Additional Photographer -->
+                                    <tr>
+                                        <td>{{ contract.photography_additional.name }}</td>
+                                        <td>{{ contract.photography_additional.hours }}</td>
+                                        <td id="assigned-photographer2">{{ contract.photographer2.get_full_name }}</td>
+                                    </tr>
+                                    <!-- Engagement Session -->
+                                    <tr>
+                                        <td>{{ contract.engagement_session.name }}</td>
+                                        <td>{{ contract.engagement_session.hours }}</td>
+                                        <td id="engagement-session-staff">{{ contract.engagement_session.assigned_staff }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <!-- Overtime Details Section -->
+                            <h4>Overtime Details</h4>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Service</th>
+                                        <th>Hours</th>
+                                        <th>Assigned Staff</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="overtime-entries-display">
+                                    <!-- Dynamically added overtime entries will be inserted here -->
+                                    <!-- Example entry -->
+                                    <tr>
+                                        <td>Photography</td>
+                                        <td>2 hours</td>
+                                        <td>John Doe</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Videography Tab Content -->
+                    <div class="tab-pane" id="videography">
+                        <!-- Videography Services Section -->
+                        <div class="service-category">
+                            <h3>Videography</h3>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Service</th>
+                                        <th>Hours</th>
+                                        <th>Assigned Staff</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Videography Package -->
+                                    <tr>
+                                        <td>{{ contract.videography_package.name }}</td>
+                                        <td>{{ contract.videography_package.hours }}</td>
+                                        <td id="assigned-videographer1">{{ contract.videographer1.get_full_name }}</td>
+                                    </tr>
+                                    <!-- Additional Videographer -->
+                                    <tr>
+                                        <td>{{ contract.videography_additional.name }}</td>
+                                        <td>{{ contract.videography_additional.hours }}</td>
+                                        <td id="assigned-videographer2">{{ contract.videographer2.get_full_name }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Overtime Details Section for Videography -->
+                        <div>
+                            <h4>Videography Overtime Details</h4>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Service</th>
+                                        <th>Hours</th>
+                                        <th>Assigned Staff</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="videographyOvertimeEntriesDisplay" class="overtime-entries-display">
+                                    <!-- Dynamically added overtime entries for videography will be inserted here -->
+                                    <!-- Example entry -->
+                                    <tr>
+                                        <td>Videography</td>
+                                        <td>3 hours</td>
+                                        <td>Jane Smith</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- DJ Tab Content -->
+                    <div class="tab-pane" id="dj">
+                        <!-- DJ Services Section -->
+                        <div class="service-category">
+                            <h3>DJ</h3>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Service</th>
+                                        <th>Hours</th>
+                                        <th>Assigned Staff</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- DJ Package -->
+                                    <tr>
+                                        <td>{{ contract.dj_package.name }}</td>
+                                        <td>{{ contract.dj_package.hours }}</td>
+                                        <td id="assigned-dj1">{{ contract.dj1.get_full_name }}</td>
+                                    </tr>
+                                    <!-- Additional DJ -->
+                                    <tr>
+                                        <td>{{ contract.dj_additional.name }}</td>
+                                        <td>{{ contract.dj_additional.hours }}</td>
+                                        <td id="assigned-dj2">{{ contract.dj2.get_full_name }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Overtime Details Section for DJ -->
+                        <div>
+                            <h4>DJ Overtime Details</h4>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Service</th>
+                                        <th>Hours</th>
+                                        <th>Assigned Staff</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="djOvertimeEntriesDisplay" class="overtime-entries-display">
+                                    <!-- Dynamically added overtime entries for DJ will be inserted here -->
+                                    <!-- Example entry -->
+                                    <tr>
+                                        <td>DJ</td>
+                                        <td>2 hours</td>
+                                        <td>Jane Doe</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Photobooth Tab Content -->
+                    <div class="tab-pane" id="photobooth">
+                        <!-- Photobooth Services Section -->
+                        <div class="service-category">
+                            <h3>Photobooth</h3>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Service</th>
+                                        <th>Hours</th>
+                                        <th>Assigned Staff</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                   <!-- Photobooth Service -->
+                                    <tr>
+                                        <td>{{ contract.photobooth_package.name }}</td>
+                                        <td>{{ contract.photobooth_package.hours }}</td>
+                                        <td id="assigned-photobooth-staff">{{ contract.photobooth_op1.get_full_name }}</td>
+                                    </tr>
+
+                                    <!-- Additional Photobooth -->
+                                    <tr>
+                                        <td>{{ contract.photobooth_additional.name }}</td>
+                                        <td>{{ contract.photobooth_additional.hours }}</td>
+                                        <td id="assigned-photobooth">{{ contract.photobooth_additional.assigned_staff }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Overtime Details Section for Photobooth -->
+                        <div>
+                            <h4>Photobooth Overtime Details</h4>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Service</th>
+                                        <th>Hours</th>
+                                        <th>Assigned Staff</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="photoboothOvertimeEntriesDisplay" class="overtime-entries-display">
+                                    <!-- Dynamically added overtime entries for Photobooth will be inserted here -->
+                                    <!-- Example entry -->
+                                    <tr>
+                                        <td>Photobooth</td>
+                                        <td>1 hour</td>
+                                        <td>Jane Doe</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Documents Tab Content -->
+            <div class="tab-pane fade" id="docs">
+                <div class="row">
+                    <!-- Document List Section -->
+                    <div class="col-md-6">
+                        <h4>Event Documents</h4>
+                        {% if contract.event_documents.all %}
+                        <ul class="list-group">
+                            {% for document in contract.event_documents.all %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <a href="{{ document.document.url }}">{{ document.document.name }}</a>
+                                <!-- Form for deleting the document -->
+                                <form action="{% url 'contracts:delete_document' document.id %}" method="post" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-link text-danger p-0 ml-2">Remove</button>
+                                </form>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p>No event documents available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div> <!-- Closes the tab-pane fade for the Docs tab -->
+
+            <!-- Communication Tab for Booking -->
+            <div class="tab-pane fade" id="communication" role="tabpanel" aria-labelledby="communication-tab">
+                <h3>Booking Notes</h3>
+
+                <!-- Button to Trigger the Modal -->
+                <button type="button" class="btn-dusty-pink" data-toggle="modal" data-target="#addNoteModal">
+                    Add Note
+                </button>
+
+                {% if booking_notes %}
+                    {% for note in booking_notes %}
+                        <div class="message">
+                            <p><strong>ID:</strong> {{ note.id }}</p>
+                            <p><strong>From:</strong> {{ note.created_by.username }}</p>
+                            <p><strong>Date:</strong> {{ note.created_at }}</p>
+                            <p>{{ note.content }}</p>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No booking notes found.</p>
+                {% endif %}
+
+                <h3>Contract Messages</h3>
+                {% if contract_notes %}
+                    {% for message in contract_notes %}
+                        <div class="message">
+                            <p><strong>ID:</strong> {{ message.id }}</p>
+                            <p><strong>From:</strong> {{ message.created_by.username }}</p>
+                            <p><strong>Date:</strong> {{ message.created_at }}</p>
+                            <p>{{ message.content }}</p>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No contract messages found.</p>
+                {% endif %}
+            </div>
+
+            <!-- Modal for Adding Notes -->
+            <div class="modal fade" id="addNoteModal" tabindex="-1" role="dialog" aria-labelledby="addNoteModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addNoteModalLabel">Add Note</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                {{ communication_form.as_p }}
+                                <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                                <input type="hidden" name="note_type" value="booking">
+                                <button type="submit" class="btn btn-primary">Add Note</button>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <!-- Include Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <!-- Your custom script for handling tabs -->
+    <script>
+        $(document).ready(function() {
+            var hash = window.location.hash;
+            if (hash) {
+                $('.nav-tabs a[href="' + hash + '"]').tab('show');
+            }
+
+            $('.nav-tabs a').on('click', function(e) {
+                window.location.hash = this.hash;
+            });
+        });
+    </script>
+
+<script>
+    $(document).ready(function() {
+        // Simulate a click on the "Client" tab link to open the tab
+        $('#clientTabLink').click();
+    });
+</script>
+
+</body>
+
+<script>
+    // Initialize DjangoFilters as an empty object if it doesn't already exist
+    var DjangoFilters = DjangoFilters || {};
+
+    // JavaScript function to subtract days from a date
+    DjangoFilters['subtract_days'] = function(dateString, days) {
+        var date = new Date(dateString);
+        date.setDate(date.getDate() - days);
+        return date.toISOString().split('T')[0];
+    };
+</script>
+
+<!-- Include Moment.js from a CDN before your script -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+    <!-- Include your script here -->
+
+</html>
+{% endblock %}

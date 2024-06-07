@@ -1,4 +1,5 @@
 
+
 <form method="GET" action="{% url 'contracts:search' %}" class="search-form">
     {% csrf_token %}
     <div class="quick-search-group">
@@ -76,11 +77,11 @@
     </div>
         <div class="form-row">
         <div class="button-group">
-            <input type="submit" value="Search" class="btn">
+            <input type="submit" value="Search" class="btn-dusty-pink">
             <input type="reset" value="Clear" class="btn" onclick="clearForm(this.form)">
             <!-- Sorting Buttons -->
-            <a href="{% url 'contracts:search' %}?order=asc" class="btn btn-dusty-pink">Sort Ascending</a>
-            <a href="{% url 'contracts:search' %}?order=desc" class="btn btn-dusty-pink">Sort Descending</a>
+            <a href="{% url 'contracts:search' %}?order=asc" class="btn-dusty-pink">Sort Ascending</a>
+            <a href="{% url 'contracts:search' %}?order=desc" class="btn-dusty-pink">Sort Descending</a>
         </div>
     </div>
 </form>
@@ -96,12 +97,6 @@
 
     <!-- Include Bootstrap Datepicker JS -->
     <script>
-        $(function() {
-            $('input[type="date"]').datepicker({
-                format: 'yyyy-mm-dd'
-            });
-        });
-
         function clearForm(form) {
             form.reset();
             window.location.href = "{% url 'contracts:search' %}";
