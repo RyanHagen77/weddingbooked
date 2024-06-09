@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from .models import Contract, Location, Payment, ServiceFee, ContractOvertime
 from django.db.models import Sum
@@ -65,6 +66,10 @@ def appointments_report(request):
             photo_booked_count = month_contracts.filter(photography_package__isnull=False, status='booked').count()
             video_count = month_contracts.filter(videography_package__isnull=False).count()
             video_booked_count = month_contracts.filter(videography_package__isnull=False, status='booked').count()
+            dj_count = month_contracts.filter(dj_package__isnull=False).count()
+            dj_booked_count = month_contracts.filter(dj_package__isnull=False, status='booked').count()
+            photobooth_count = month_contracts.filter(photobooth_package__isnull=False).count()
+            photobooth_booked_count = month_contracts.filter(photobooth_package__isnull=False, status='booked').count()
             total_appointments = month_contracts.count()
 
             report_data.append({
@@ -73,6 +78,10 @@ def appointments_report(request):
                 'photo_booked_count': photo_booked_count,
                 'video_count': video_count,
                 'video_booked_count': video_booked_count,
+                'dj_count': dj_count,
+                'dj_booked_count': dj_booked_count,
+                'photobooth_count': photobooth_count,
+                'photobooth_booked_count': photobooth_booked_count,
                 'total_appointments': total_appointments,
             })
     elif period == 'weekly':
@@ -84,6 +93,10 @@ def appointments_report(request):
             photo_booked_count = week_contracts.filter(photography_package__isnull=False, status='booked').count()
             video_count = week_contracts.filter(videography_package__isnull=False).count()
             video_booked_count = week_contracts.filter(videography_package__isnull=False, status='booked').count()
+            dj_count = week_contracts.filter(dj_package__isnull=False).count()
+            dj_booked_count = week_contracts.filter(dj_package__isnull=False, status='booked').count()
+            photobooth_count = week_contracts.filter(photobooth_package__isnull=False).count()
+            photobooth_booked_count = week_contracts.filter(photobooth_package__isnull=False, status='booked').count()
             total_appointments = week_contracts.count()
 
             report_data.append({
@@ -92,6 +105,10 @@ def appointments_report(request):
                 'photo_booked_count': photo_booked_count,
                 'video_count': video_count,
                 'video_booked_count': video_booked_count,
+                'dj_count': dj_count,
+                'dj_booked_count': dj_booked_count,
+                'photobooth_count': photobooth_count,
+                'photobooth_booked_count': photobooth_booked_count,
                 'total_appointments': total_appointments,
             })
 
@@ -126,9 +143,14 @@ def appointments_report(request):
     }
 
     return render(request, 'contracts/appointments_report.html', context)
+
+
 @login_required
 def reports(request):
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
     context = {
+        'logo_url': logo_url,
         'reports': [
 
             # Add more reports as needed

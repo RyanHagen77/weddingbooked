@@ -1,94 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
 {% extends "base.html" %}
 {% load static %}
 
 {% block head %}
+<head>
+    <title>New Contract</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <!-- Include Bootstrap Datepicker CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
-
+    <!-- Include your custom CSS file -->
+    <link rel="stylesheet" href="{% static 'users/dashboard.css' %}">
     <link rel="stylesheet" href="{% static 'contracts/styles.css' %}">
+    <style>
+        .form-section {
+            display: flex;
+            margin: 40px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9; /* Light gray background */
+        }
+        .left-column, .right-column {
+            flex: 1;
+        }
+        .toggle-button {
+            display: block;
+            margin-bottom: 10px;
+        }
+        .fields-container {
+            display: none;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+{% endblock head %}
+
+{% block content %}
+<body>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-section">
+            <div class="left-column">
+                <!-- Contract Fields -->
+                <div>
+                    <h3>New Contract</h3>
+                    <p>{{ contract_form.is_code_92.label_tag }} {{ contract_form.is_code_92 }}</p>
+                    <p>{{ contract_form.event_date.label_tag }} {{ contract_form.event_date }}</p>
+                    <p>{{ contract_form.location.label_tag }} {{ contract_form.location }}</p>
+                    <p>{{ contract_form.coordinator.label_tag }} {{ contract_form.coordinator }}</p>
+                    <p>{{ client_form.primary_contact.label_tag }} {{ client_form.primary_contact }}</p>
+                    <p>{{ client_form.partner_contact.label_tag }} {{ client_form.partner_contact }}</p>
+                    <p>{{ client_form.primary_email.label_tag }} {{ client_form.primary_email }}</p>
+                    <p>{{ client_form.primary_phone1.label_tag }} {{ client_form.primary_phone1 }}</p>
+                    <p>{{ contract_form.bridal_party_qty.label_tag }} {{ contract_form.bridal_party_qty }}</p>
+                    <p>{{ contract_form.guests_qty.label_tag }} {{ contract_form.guests_qty }}</p>
+                </div>
+                <button type="button" class="toggle-button btn btn-dusty-pink" onclick="toggleFields('clientFieldsContainer')">Show/Hide Client Fields</button>
+                <div id="clientFieldsContainer" class="fields-container">
+                    <!-- Additional Client Fields -->
+                    <p>{{ client_form.primary_phone2.label_tag }} {{ client_form.primary_phone2 }}</p>
+                    <p>{{ client_form.primary_address1.label_tag }} {{ client_form.primary_address1 }}</p>
+                    <p>{{ client_form.primary_address2.label_tag }} {{ client_form.primary_address2 }}</p>
+                    <p>{{ client_form.city.label_tag }} {{ client_form.city }}</p>
+                    <p>{{ client_form.state.label_tag }} {{ client_form.state }}</p>
+                    <p>{{ client_form.postal_code.label_tag }} {{ client_form.postal_code }}</p>
+                    <p>{{ client_form.partner_email.label_tag }} {{ client_form.partner_email }}</p>
+                    <p>{{ client_form.partner_phone1.label_tag }} {{ client_form.partner_phone1 }}</p>
+                    <p>{{ client_form.partner_phone2.label_tag }} {{ client_form.partner_phone2 }}</p>
+                    <p>{{ client_form.alt_contact.label_tag }} {{ client_form.alt_contact }}</p>
+                    <p>{{ client_form.alt_email.label_tag }} {{ client_form.alt_email }}</p>
+                    <p>{{ client_form.alt_phone.label_tag }} {{ client_form.alt_phone }}</p>
+                </div>
+            </div>
+            <div class="right-column">
+                <!-- Contract Fields -->
+                <div>
+                    <p>{{ contract_form.status.label_tag }} {{ contract_form.status }}</p>
+                    <p>{{ contract_form.csr.label_tag }} {{ contract_form.csr }}</p>
+                    <p>{{ contract_form.lead_source.label_tag }} {{ contract_form.lead_source }}</p>
+                    <p>{{ contract_form.ceremony_site.label_tag }} {{ contract_form.ceremony_site }}</p>
+                    <p>{{ contract_form.ceremony_city.label_tag }} {{ contract_form.ceremony_city }}</p>
+                    <p>{{ contract_form.ceremony_state.label_tag }} {{ contract_form.ceremony_state }}</p>
+                    <p>{{ contract_form.reception_site.label_tag }} {{ contract_form.reception_site }}</p>
+                    <p>{{ contract_form.reception_city.label_tag }} {{ contract_form.reception_city }}</p>
+                    <p>{{ contract_form.reception_state.label_tag }} {{ contract_form.reception_state }}</p>
+                    <p>{{ contract_form.old_contract_number.label_tag }} {{ contract_form.old_contract_number }}</p>
+                </div>
+                <button type="button" class="toggle-button btn btn-dusty-pink" onclick="toggleFields('eventFieldsContainer')">Show/Hide Event Fields</button>
+                <div id="eventFieldsContainer" class="fields-container">
+                    <!-- Additional Event Fields -->
+                    <p>{{ contract_form.ceremony_contact.label_tag }} {{ contract_form.ceremony_contact }}</p>
+                    <p>{{ contract_form.ceremony_phone.label_tag }} {{ contract_form.ceremony_phone }}</p>
+                    <p>{{ contract_form.ceremony_email.label_tag }} {{ contract_form.ceremony_email }}</p>
+                    <p>{{ contract_form.reception_contact.label_tag }} {{ contract_form.reception_contact }}</p>
+                    <p>{{ contract_form.reception_phone.label_tag }} {{ contract_form.reception_phone }}</p>
+                    <p>{{ contract_form.reception_email.label_tag }} {{ contract_form.reception_email }}</p>
+                </div>
+                <input type="submit" value="Submit" class="toggle-button btn btn-primary">
+            </div>
+        </div>
+    </form>
     <script>
     // Function to toggle visibility of fields
     function toggleFields(containerId) {
         var container = document.getElementById(containerId);
-        if (container.style.display === "block") {
-            container.style.display = "none";
-        } else {
+        if (container.style.display === "none" || container.style.display === "") {
             container.style.display = "block";
+        } else {
+            container.style.display = "none";
         }
     }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        var toggleButtons = document.querySelectorAll('.toggle-button');
+        toggleButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                var containerId = this.getAttribute('data-target');
+                toggleFields(containerId);
+            });
+        });
+    });
     </script>
-{% endblock %}
-{% block content %}
-<form method="POST">
-    {% csrf_token %}
-    <div class="form-section">
-        <h4 class="form-title">New Contract</h4>
-
-
-        <div class="left-column">
-            <!-- Contract Fields -->
-            <div>
-                <p>{{ contract_form.is_code_92.label_tag }} {{ contract_form.is_code_92 }}</p>
-                <p>{{ contract_form.event_date.label_tag }} {{ contract_form.event_date }}</p>
-                <p>{{ contract_form.location.label_tag }} {{ contract_form.location }}</p>
-                <p>{{ contract_form.coordinator.label_tag }} {{ contract_form.coordinator }}</p>
-                <p>{{ client_form.primary_contact.label_tag }} {{ client_form.primary_contact }}</p>
-                <p>{{ client_form.partner_contact.label_tag }} {{ client_form.partner_contact }}</p>
-                <p>{{ client_form.primary_email.label_tag }} {{ client_form.primary_email }}</p>
-                <p>{{ client_form.primary_phone1.label_tag }} {{ client_form.primary_phone1 }}</p>
-                <p>{{ contract_form.bridal_party_qty.label_tag }} {{ contract_form.bridal_party_qty }}</p>
-                <p>{{ contract_form.guests_qty.label_tag }} {{ contract_form.guests_qty }}</p>
-            </div>
-
-            <button type="button" class="toggle-button btn btn-dusty-pink" onclick="toggleFields('clientFieldsContainer')">Show/Hide Client Fields</button>
-            <div id="clientFieldsContainer" class="fields-container">
-                <!-- Additional Client Fields -->
-                <p>{{ client_form.primary_phone2.label_tag }} {{ client_form.primary_phone2 }}</p>
-                <p>{{ client_form.primary_address1.label_tag }} {{ client_form.primary_address1 }}</p>
-                <p>{{ client_form.primary_address2.label_tag }} {{ client_form.primary_address2 }}</p>
-                <p>{{ client_form.city.label_tag }} {{ client_form.city }}</p>
-                <p>{{ client_form.state.label_tag }} {{ client_form.state }}</p>
-                <p>{{ client_form.postal_code.label_tag }} {{ client_form.postal_code }}</p>
-                <p>{{ client_form.partner_email.label_tag }} {{ client_form.partner_email }}</p>
-                <p>{{ client_form.partner_phone1.label_tag }} {{ client_form.partner_phone1 }}</p>
-                <p>{{ client_form.partner_phone2.label_tag }} {{ client_form.partner_phone2 }}</p>
-                <p>{{ client_form.alt_contact.label_tag }} {{ client_form.alt_contact }}</p>
-                <p>{{ client_form.alt_email.label_tag }} {{ client_form.alt_email }}</p>
-                <p>{{ client_form.alt_phone.label_tag }} {{ client_form.alt_phone }}</p>
-            </div>
-        </div>
-
-        <div class="right-column">
-            <!-- Contract Fields -->
-            <div>
-                <p>{{ contract_form.status.label_tag }} {{ contract_form.status }}</p>
-                <p>{{ contract_form.csr.label_tag }} {{ contract_form.csr }}</p>
-                <p>{{ contract_form.lead_source.label_tag }} {{ contract_form.lead_source }}</p>
-                <p>{{ contract_form.ceremony_site.label_tag }} {{ contract_form.ceremony_site }}</p>
-                <p>{{ contract_form.ceremony_city.label_tag }} {{ contract_form.ceremony_city }}</p>
-                <p>{{ contract_form.ceremony_state.label_tag }} {{ contract_form.ceremony_state }}</p>
-                <p>{{ contract_form.reception_site.label_tag }} {{ contract_form.reception_site }}</p>
-                <p>{{ contract_form.reception_city.label_tag }} {{ contract_form.reception_city }}</p>
-                <p>{{ contract_form.reception_state.label_tag }} {{ contract_form.reception_state }}</p>
-                <p>{{ contract_form.old_contract_number.label_tag }} {{ contract_form.old_contract_number }}</p>
-            </div>
-
-            <button type="button" class="toggle-button btn btn-dusty-pink" onclick="toggleFields('eventFieldsContainer')">Show/Hide Event Fields</button>
-            <div id="eventFieldsContainer" class="fields-container">
-                <!-- Additional Event Fields -->
-                <p>{{ contract_form.ceremony_contact.label_tag }} {{ contract_form.ceremony_contact }}</p>
-                <p>{{ contract_form.ceremony_phone.label_tag }} {{ contract_form.ceremony_phone }}</p>
-                <p>{{ contract_form.ceremony_email.label_tag }} {{ contract_form.ceremony_email }}</p>
-                <p>{{ contract_form.reception_contact.label_tag }} {{ contract_form.reception_contact }}</p>
-                <p>{{ contract_form.reception_phone.label_tag }} {{ contract_form.reception_phone }}</p>
-                <p>{{ contract_form.reception_email.label_tag }} {{ contract_form.reception_email }}</p>
-            </div>
-                    <input type="submit" value="Submit" class="toggle-button">
-
-        </div>
-
-    </div>
-</form>
+</body>
 {% endblock content %}
+</html>

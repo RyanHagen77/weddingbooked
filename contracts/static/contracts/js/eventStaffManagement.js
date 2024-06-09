@@ -242,6 +242,13 @@ $('#bookingModal').on('show.bs.modal', function (event) {
                 staffSelect.removeChild(placeholderOption);
             } else {
                 $('#assignedStaffName').text('No staff assigned');
+                // Default status to "PROSPECT" for prospect roles
+                if (role === 'PROSPECT1' || role === 'PROSPECT2' || role === 'PROSPECT3') {
+                    $('#id_status').val('PROSPECT');
+                } else {
+                    // Default status to "APPROVED" for all other roles
+                    $('#id_status').val('APPROVED');
+                }
             }
         })
         .catch(error => console.error('Error fetching current booking:', error));
@@ -268,6 +275,7 @@ $('#bookingModal').on('show.bs.modal', function (event) {
         })
         .catch(error => console.error('Error fetching available staff:', error));
 });
+
 
 
     document.getElementById('deleteBooking').addEventListener('click', function() {

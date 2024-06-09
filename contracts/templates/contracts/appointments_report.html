@@ -2,12 +2,10 @@
 {% load static %}
 {% load app_filters %}
 
-
 {% block content %}
 <div class="search-results">
-<h3>Appointments Report</h3>
+    <h3>Appointments Report</h3>
     <button onclick="history.back()" class="btn btn-dusty-pink">Go Back</button>
-
 
     <form method="get" class="report-form">
         <label for="start_date">Start Date:</label>
@@ -39,6 +37,10 @@
                     <th># Photo Booked</th>
                     <th># Video</th>
                     <th># Video Booked</th>
+                    <th># DJ</th>
+                    <th># DJ Booked</th>
+                    <th># Photobooth</th>
+                    <th># Photobooth Booked</th>
                     <th>Total Appointments</th>
                 </tr>
             </thead>
@@ -50,6 +52,10 @@
                     <td>{{ data.photo_booked_count }}</td>
                     <td>{{ data.video_count }}</td>
                     <td>{{ data.video_booked_count }}</td>
+                    <td>{{ data.dj_count }}</td>
+                    <td>{{ data.dj_booked_count }}</td>
+                    <td>{{ data.photobooth_count }}</td>
+                    <td>{{ data.photobooth_booked_count }}</td>
                     <td>{{ data.total_appointments }}</td>
                 </tr>
                 {% endfor %}

@@ -33,4 +33,5 @@ urlpatterns = [
     path('update_always_off_days/<int:user_id>/', views.update_always_off_days, name='update_always_off_days'),
     path('update_specific_date_availability/<int:user_id>/', views.update_specific_date_availability, name='update_specific_date_availability'),
 
+
 ]

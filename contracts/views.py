@@ -77,6 +77,9 @@ def search(request):
     form = ContractSearchForm(request.GET)
     contracts = Contract.objects.all().order_by('-event_date')  # Descending order by default
     tab = request.GET.get('tab', 'contracts')  # Default to 'contracts' if 'tab' is not specified
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
+
 
     order = request.GET.get('order', 'desc')
     if order == 'asc':
@@ -157,8 +160,11 @@ def search(request):
             Q(custom_contract_number__icontains=query) |
             Q(client__primary_contact__icontains=query) |
             Q(client__partner_contact__icontains=query) |
-            Q(old_contract_number__icontains=query)  # Added search functionality for old contract number
+            Q(old_contract_number__icontains=query) |  # Added search functionality for old contract number
+            Q(client__primary_email__icontains=query) |  # Added search functionality for primary email
+            Q(client__primary_phone1__icontains=query)  # Added search functionality for primary phone
         )
+
     # Booking search
     booking_search_query = request.GET.get('booking_q')
     bookings = EventStaffBooking.objects.all()
@@ -173,12 +179,14 @@ def search(request):
     # ...
 
     return render(request, 'contracts/search.html',
-                  {'form': form, "contracts": contracts, "bookings": bookings, 'active_tab': tab})
+                  {'form': form, "contracts": contracts, "bookings": bookings, 'active_tab': tab, 'logo_url': logo_url})
 
 @login_required
 def new_contract(request):
     contract_form = NewContractForm(request.POST or None)
     client_form = ClientForm(request.POST or None)
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
 
     if request.method == 'POST' and client_form.is_valid() and contract_form.is_valid():
         with transaction.atomic():
@@ -208,6 +216,7 @@ def new_contract(request):
     return render(request, 'contracts/contract_new.html', {
         'contract_form': contract_form,
         'client_form': client_form,
+        'logo_url': logo_url
     })
 
 def send_password_reset_email(user_email):
@@ -309,7 +318,20 @@ def client_portal(request, contract_id):
 
             # Send an email notification to the coordinator
             if contract.coordinator:
-                communication:send_contract_message_email(request, message, contract)
+                send_contract_message_email(request, message, contract)
+
+            # Create a task to review the message
+            task = Task.objects.create(
+                description=f'Please review the message: "{message.content}"',
+                assigned_to=contract.coordinator,
+                sender=request.user,
+                due_date=datetime.now() + timedelta(days=7),  # example due date
+                contract=contract,
+                note=message
+            )
+
+            # Send task assignment email
+            send_task_assignment_email(request, task)
 
             return redirect('contracts:client_portal', contract_id=contract.contract_id)
 
@@ -325,6 +347,7 @@ def client_portal(request, contract_id):
     }
 
     return render(request, 'contracts/client_portal.html', context)
+
 
 
 def send_email_to_client(request, message, contract):
@@ -2200,6 +2223,8 @@ def booking_detail_staff(request, booking_id):
     # Retrieve the booking instance
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
     contract = booking.contract
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
 
     # Fetch all booking notes related to this booking
     booking_notes = UnifiedCommunication.objects.filter(note_type=UnifiedCommunication.BOOKING, object_id=booking_id)
@@ -2238,6 +2263,7 @@ def booking_detail_staff(request, booking_id):
         'contract_notes': notes_by_type[UnifiedCommunication.CONTRACT],  # Render contract notes
         'communication_form': communication_form,
         'staff_member': request.user,
+        'logo_url': logo_url
     })
 
 def booking_notes(request, booking_id):
@@ -2313,32 +2339,19 @@ def open_task_form(request, contract_id, note_id):
 @login_required
 @require_POST
 def create_task(request):
-    print("Handling POST request to create a task.")  # Confirm this gets printed
     form = TaskForm(request.POST)
     if form.is_valid():
-        print("Form is valid, processing task.")  # Confirm form validity
         task = form.save(commit=False)
         task.sender = request.user
-
-        print("Task created, not yet saved to DB. Assigned to: ", task.assigned_to)  # Check assigned_to
-
         task.save()
-
         if hasattr(task.assigned_to, 'email'):
-            print("Assigned to email:", task.assigned_to.email)  # Debug print
-        else:
-            print("No email attribute found for assigned user.")
-
-
-
-        # Send task assignment email
-        send_task_assignment_email(request, task)
-
+            send_task_assignment_email(request, task)
         tasks = Task.objects.filter(assigned_to=request.user, is_completed=False)
         task_list_html = render_to_string('contracts/task_list_snippet.html', {'tasks': tasks}, request=request)
         return JsonResponse({'success': True, 'task_id': task.id, 'task_list_html': task_list_html})
     else:
         return JsonResponse({'success': False, 'errors': form.errors.as_json()})
+
 
 def send_task_assignment_email(request, task):
     context = {
@@ -2493,6 +2506,7 @@ def manage_staff_assignments(request, id):
             status = form.cleaned_data.get('status', 'APPROVED')  # Default to 'APPROVED' if not specified
             confirmed = form.cleaned_data.get('confirmed', False)
             hours_booked = form.cleaned_data.get('hours_booked', 0)
+            is_update = bool(booking_id)
 
             print(f"Form valid. Booking ID: {booking_id}, Role: {role}, Staff: {staff}, Status: {status}, Confirmed: {confirmed}, Hours Booked: {hours_booked}")
 
@@ -2561,6 +2575,10 @@ def manage_staff_assignments(request, id):
                 prospect_field = f'prospect_photographer{role[-1]}'
                 setattr(contract, prospect_field, booking.staff)
                 contract.save()
+
+            else:
+                # Send email notification to the booked staff
+                send_booking_email(request, booking.staff, contract, booking.get_role_display(), is_update)
 
             return JsonResponse({
                 'success': True,

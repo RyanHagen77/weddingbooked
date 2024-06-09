@@ -1,6 +1,7 @@
 
 from django.shortcuts import get_object_or_404, redirect, render
 from django.db.models import Q
+from django.conf import settings
 from django.template.loader import render_to_string
 from django.views.generic import ListView, CreateView, UpdateView
 from contracts.forms import ContractForm  # Import your contract form
@@ -50,17 +51,22 @@ def office_staff_dashboard(request, pk):
     staff_member = get_object_or_404(CustomUser, pk=pk)
     contract_form = ContractForm()  # Instantiate your contract form
     tasks = Task.objects.filter(assigned_to=request.user).order_by('due_date')
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
     context = {
         'staff_member': staff_member,
         'contract_form': contract_form,  # Add the form to the context
-        'tasks': tasks
+        'tasks': tasks,
+        'logo_url': logo_url
     }
     return render(request, 'users/office_staff_dashboard.html', context)
 
 def task_list(request):
     tasks = Task.objects.filter(assigned_to=request.user).order_by('due_date')
     task_form = TaskForm()
-    return render(request, 'users/task_list.html', {'tasks': tasks, 'task_form': task_form})
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
+    return render(request, 'users/task_list.html', {'tasks': tasks, 'task_form': task_form, 'logo_url': logo_url})
 
 @login_required
 def open_task_form(request, contract_id=None, note_id=None):
@@ -169,6 +175,8 @@ class OfficeStaffUpdateView(UpdateView):
 def event_staff_dashboard(request, pk):
     # Retrieve the staff member
     staff_member = get_object_or_404(CustomUser, pk=pk)
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
 
     # Fetch bookings for the staff member that are either approved or confirmed
     bookings = EventStaffBooking.objects.filter(
@@ -180,6 +188,7 @@ def event_staff_dashboard(request, pk):
     context = {
         'staff_member': staff_member,
         'bookings': bookings,
+        'logo_url': logo_url
     }
 
     return render(request, 'users/event_staff_dashboard.html', context)
@@ -187,6 +196,8 @@ def event_staff_dashboard(request, pk):
 def event_staff(request):
     # Get role from request parameters or default to 'PHOTOGRAPHER'
     role_name = request.GET.get('role', 'PHOTOGRAPHER')
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
 
     # Fetch staff members sorted by their 'rank' attribute for the selected role
     staff_members = CustomUser.objects.filter(
@@ -209,7 +220,8 @@ def event_staff(request):
     return render(request, 'users/event_staff.html', {
         'staff_list': staff_with_days_off,
         'roles': roles,
-        'current_role': role_name
+        'current_role': role_name,
+        'logo_url': logo_url
     })
 @login_required
 @require_http_methods(["POST"])
@@ -230,11 +242,14 @@ def update_event_staff_ranking(request):
 
 def event_staff_schedule(request, user_id):
     staff_member = CustomUser.objects.get(id=user_id)
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
     # Assume we have a model or method to fetch scheduled days off or events
     days_off = Availability.objects.filter(staff=staff_member, available=False).values_list('date', flat=True)
     return render(request, 'users/event_staff_schedule.html', {
         'staff_member': staff_member,
         'days_off': days_off,
+        'logo_url': logo_url
     })
 
 
@@ -365,11 +380,14 @@ def update_always_off_days(request, user_id):
 @login_required
 def event_staff_schedule_read_only(request, user_id):
     staff_member = CustomUser.objects.get(id=user_id)
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
     # Fetch scheduled days off
     days_off = Availability.objects.filter(staff=staff_member, available=False).values_list('date', flat=True)
     return render(request, 'users/event_staff_schedule_read_only.html', {
         'staff_member': staff_member,  # Pass the staff_member object with the name staff_member
         'days_off': days_off,
-        'user_id': user_id  # Pass the user_id to the template context
+        'user_id': user_id,  # Pass the user_id to the template context
+        'logo_url': logo_url
     })
 

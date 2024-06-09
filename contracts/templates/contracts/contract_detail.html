@@ -320,7 +320,7 @@
 
                                 <!-- Photography Services Section -->
                                 <div class="service-category">
-                                    <h3></h3>
+                                    <h3>Photography Services</h3>
                                     <table class="table table-bordered">
                                         <thead>
                                             <tr>
@@ -332,113 +332,108 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                        <!-- Photography Package -->
-                                        <tr>
-                                            <td>
-                                                <select id="id_photography_package" name="photography_package">
-                                                    <option value="">Select a Photography Package</option>
-                                                    {% for package in photography_packages %}
-                                                        <option value="{{ package.id }}"
-                                                                data-price="{{ package.price|floatformat:2 }}"
-                                                                data-hours="{{ package.hours }}"
-                                                                {% if contract.photography_package.id == package.id %}selected="selected"{% endif %}>
-                                                            {{ package.name }} - ${{ package.price|floatformat:2 }} - {{ package.hours }} hours
-                                                        </option>
-                                                    {% endfor %}
-                                                </select>
-                                            </td>
-
-                                            <td id="photography-package-hours"></td>
-                                            <td id="photography-package-price"><!-- Dynamically populated price --></td>
-                                            <td id="assigned-photographer1"><!-- Dynamically populated assigned staff --></td>
-                                            <td>
-                                                <button type="button" class="btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOGRAPHER1" data-service-type="Photography">Assign</button>
-                                                <button type="button" class="btn-dusty-pink edit-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOGRAPHER1" data-service-type="Photography" data-booking-id="1">Edit</button>
-
-                                            </td>
-                                        </tr>
-                                        <!-- Additional Photographer -->
-                                        <tr>
-                                            <td>
-                                                <select id="id_photography_additional" name="photography_additional">
-                                                    <option value="">Select Additional Photographer</option>
-                                                    {% for option in additional_photography_options %}
-                                                        <option value="{{ option.id }}" data-price="{{ option.price|floatformat:2 }}"
-                                                            {% if contract.photography_additional and contract.photography_additional.id == option.id %}selected="selected"{% endif %}>
-                                                            {{ option.name }} - ${{ option.price|floatformat:2 }}
-                                                        </option>
-                                                    {% endfor %}
-                                                </select>
-                                            </td>
-                                            <td id="additional-photography-hours"></td>
-                                            <td id="additional-photography-price"><!-- Dynamically populated price --></td>
-                                            <td id="assigned-photographer2"><!-- Dynamically populated assigned staff --></td>
-                                            <td>
-                                                <button type="button" class="btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOGRAPHER2" data-service-type="Photography">Assign</button>
-                                                <button type="button" class="btn-dusty-pink edit-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOGRAPHER2" data-service-type="Photography" data-booking-id="1">Edit</button>
-
-                                            </td>
-                                        </tr>
-                                        <!-- Engagement Session -->
-                                        <tr>
-                                            <td>
-                                                <select id="id_engagement_session" name="engagement_session">
-                                                    <option value="">Select an Engagement Session</option>
-                                                    {% for session in engagement_session_options %}
-                                                        <option value="{{ session.id }}" data-price="{{ session.price|floatformat:2 }}"
-                                                            {% if contract.engagement_session and contract.engagement_session.id == session.id %}selected="selected"{% endif %}>
-                                                            {{ session.name }} - ${{ session.price|floatformat:2 }}
-                                                        </option>
-                                                    {% endfor %}
-                                                </select>
-                                            </td>
-                                            <td id="engagement-session-hours"></td>
-                                            <td id="engagement-session-price"><!-- Dynamically populated price --></td>
-                                            <td id="engagement-session-staff"><!-- Dynamically populated staff --></td>
-                                            <td>
-                                                <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal">Assign</button>
-                                                <button type="button" class="btn-dusty-pink edit-button" data-toggle="modal" data-target="#bookingModal" data-role="ENGAGEMENT" data-service-type="Photography" data-booking-id="1">Edit</button>
-
-                                            </td>
-                                        </tr>
-
-                                    <tr>
-                                        <td colspan="5"><strong>Prospect Photographers</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Prospect Photographer 1</td>
-                                        <td colspan="3">{{ contract.prospect_photographer1.get_full_name|default:"None" }}</td>
-                                        <td>
-                                            <!-- Trigger Modal for booking/change -->
-                                            <button type="button" class="btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PROSPECT1" data-service-type="Photography" data-staff-id="{{ contract.prospect_photographer1.id }}">
-                                                Assign
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Prospect Photographer 2</td>
-                                        <td colspan="3">{{ contract.prospect_photographer2.get_full_name|default:"None" }}</td>
-                                        <td>
-                                            <!-- Trigger Modal for booking/change -->
-                                            <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PROSPECT2" data-service-type="Photography" data-staff-id="{{ contract.prospect_photographer2.id }}">
-                                                Assign
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Prospect Photographer 3</td>
-                                        <td colspan="3">{{ contract.prospect_photographer3.get_full_name|default:"None" }}</td>
-                                        <td>
-                                            <!-- Trigger Modal for booking/change -->
-                                            <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PROSPECT3" data-service-type="Photography" data-staff-id="{{ contract.prospect_photographer3.id }}">
-                                                Assign
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
+                                            <!-- Photography Package -->
+                                            <tr>
+                                                <td>
+                                                    <select id="id_photography_package" name="photography_package">
+                                                        <option value="">Select a Photography Package</option>
+                                                        {% for package in photography_packages %}
+                                                            <option value="{{ package.id }}"
+                                                                    data-price="{{ package.price|floatformat:2 }}"
+                                                                    data-hours="{{ package.hours }}"
+                                                                    {% if contract.photography_package.id == package.id %}selected="selected"{% endif %}>
+                                                                {{ package.name }} - ${{ package.price|floatformat:2 }} - {{ package.hours }} hours
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </td>
+                                                <td id="photography-package-hours"></td>
+                                                <td id="photography-package-price"><!-- Dynamically populated price --></td>
+                                                <td id="assigned-photographer1"><!-- Dynamically populated assigned staff --></td>
+                                                <td>
+                                                    <button type="button" class="btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOGRAPHER1" data-service-type="Photography">Assign</button>
+                                                    <button type="button" class="btn-dusty-pink edit-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOGRAPHER1" data-service-type="Photography" data-booking-id="1">Edit</button>
+                                                </td>
+                                            </tr>
+                                            <!-- Additional Photographer -->
+                                            <tr>
+                                                <td>
+                                                    <select id="id_photography_additional" name="photography_additional">
+                                                        <option value="">Select Additional Photographer</option>
+                                                        {% for option in additional_photography_options %}
+                                                            <option value="{{ option.id }}" data-price="{{ option.price|floatformat:2 }}"
+                                                                {% if contract.photography_additional and contract.photography_additional.id == option.id %}selected="selected"{% endif %}>
+                                                                {{ option.name }} - ${{ option.price|floatformat:2 }}
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </td>
+                                                <td id="additional-photography-hours"></td>
+                                                <td id="additional-photography-price"><!-- Dynamically populated price --></td>
+                                                <td id="assigned-photographer2"><!-- Dynamically populated assigned staff --></td>
+                                                <td>
+                                                    <button type="button" class="btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOGRAPHER2" data-service-type="Photography">Assign</button>
+                                                    <button type="button" class="btn-dusty-pink edit-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOGRAPHER2" data-service-type="Photography" data-booking-id="1">Edit</button>
+                                                </td>
+                                            </tr>
+                                            <!-- Engagement Session -->
+                                            <tr>
+                                                <td>
+                                                    <select id="id_engagement_session" name="engagement_session">
+                                                        <option value="">Select an Engagement Session</option>
+                                                        {% for session in engagement_session_options %}
+                                                            <option value="{{ session.id }}" data-price="{{ session.price|floatformat:2 }}"
+                                                                {% if contract.engagement_session and contract.engagement_session.id == session.id %}selected="selected"{% endif %}>
+                                                                {{ session.name }} - ${{ session.price|floatformat:2 }}
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </td>
+                                                <td id="engagement-session-hours"></td>
+                                                <td id="engagement-session-price"><!-- Dynamically populated price --></td>
+                                                <td id="engagement-session-staff"><!-- Dynamically populated staff --></td>
+                                                <td>
+                                                    <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="ENGAGEMENT" data-service-type="Photography">Assign</button>
+                                                    <button type="button" class="btn-dusty-pink edit-button" data-toggle="modal" data-target="#bookingModal" data-role="ENGAGEMENT" data-service-type="Photography" data-booking-id="1">Edit</button>
+                                                </td>
+                                            </tr>
+                                            <!-- Prospect Photographers -->
+                                            <tr>
+                                                <td colspan="5"><strong>Prospect Photographers</strong></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Prospect Photographer 1</td>
+                                                <td colspan="3">{{ contract.prospect_photographer1.get_full_name|default:"None" }}</td>
+                                                <td>
+                                                    <!-- Trigger Modal for booking/change -->
+                                                    <button type="button" class="btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PROSPECT1" data-service-type="Photography" data-staff-id="{{ contract.prospect_photographer1.id }}">
+                                                        Assign
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Prospect Photographer 2</td>
+                                                <td colspan="3">{{ contract.prospect_photographer2.get_full_name|default:"None" }}</td>
+                                                <td>
+                                                    <!-- Trigger Modal for booking/change -->
+                                                    <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PROSPECT2" data-service-type="Photography" data-staff-id="{{ contract.prospect_photographer2.id }}">
+                                                        Assign
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Prospect Photographer 3</td>
+                                                <td colspan="3">{{ contract.prospect_photographer3.get_full_name|default:"None" }}</td>
+                                                <td>
+                                                    <!-- Trigger Modal for booking/change -->
+                                                    <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PROSPECT3" data-service-type="Photography" data-staff-id="{{ contract.prospect_photographer3.id }}">
+                                                        Assign
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             <!-- Overtime Details Section -->
                             <div>
                                 <h6><strong>Overtime Details</strong></h6>
@@ -950,50 +945,90 @@
                 <div class="tab-pane fade" id="docs">
                     <div class="row">
                         <!-- Document List Section -->
-                        <div class="col-md-12">
-                            <h4>Documents</h4>
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Document Type</th>
-                                        <th>Version</th>
-                                        <th>Date Created</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Loop through contract agreements to display versions -->
-                                    {% for agreement in contract.contract_agreements.all %}
-                                    <tr>
-                                        <td>Main Contractual Agreement</td>
-                                        <td>{{ agreement.version_number }}</td>
-                                        <td>{{ agreement.created_at|date:"Y-m-d" }}</td>
-                                        <td>
-                                            <a href="{% url 'contracts:view_submitted_contract' contract.contract_id agreement.version_number %}">View Version {{ agreement.version_number }}</a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                    <tr>
-                                        <td>Rider Agreements</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                        <td>
-                                            <a href="{% url 'contracts:view_rider_agreements' contract.contract_id %}">View Riders</a>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5>Documents</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if documents %}
+                                        <ul class="list-group">
+                                            {% for document in documents %}
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <a href="{{ document.document.url }}">{{ document.document.name }}</a>
+                                                    <span class="badge {{ document.badge_class }}">{{ document.badge_label }}</span>
+                                                    <!-- Form for deleting the document -->
+                                                    <form action="{% url 'contracts:delete_document' document.id %}" method="post" style="display: inline;">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-danger p-1 ml-2" style="font-size: 12px;">Delete</button>
+                                                    </form>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <p>No contract documents available.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Document Upload Section -->
+                        <!-- Document Agreements Section -->
                         <div class="col-md-6">
-                            <div class="contract-upload mb-4">
-                                <h4>Upload Documents</h4>
-                                <form method="post" action="" enctype="multipart/form-data">
-                                    {% csrf_token %}
-                                    {{ document_form.as_p }}
-                                    <button type="submit" name="upload_document" class="btn btn-dusty-pink">Upload Document</button>
-                                </form>
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5>Signed Digital Agreements</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Document Type</th>
+                                                <th>Version</th>
+                                                <th>Date Created</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Loop through contract agreements to display versions -->
+                                            {% for agreement in contract.contract_agreements.all %}
+                                            <tr>
+                                                <td>Main Contractual Agreement</td>
+                                                <td>{{ agreement.version_number }}</td>
+                                                <td>{{ agreement.created_at|date:"Y-m-d" }}</td>
+                                                <td>
+                                                    <a href="{% url 'contracts:view_submitted_contract' contract.contract_id agreement.version_number %}">View Version {{ agreement.version_number }}</a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                            <tr>
+                                                <td>Rider Agreements</td>
+                                                <td>-</td>
+                                                <td>-</td>
+                                                <td>
+                                                    <a href="{% url 'contracts:view_rider_agreements' contract.contract_id %}">View Riders</a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Document Upload Section -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5>Upload Documents</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form method="post" action="" enctype="multipart/form-data">
+                                        {% csrf_token %}
+                                        {{ document_form.as_p }}
+                                        <button type="submit" name="upload_document" class="btn btn-dusty-pink">Upload Document</button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
