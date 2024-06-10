@@ -655,6 +655,13 @@
 
         return true;
     };
+
+
+    function clearSignaturePad(padName) {
+        if (signaturePads[padName]) {
+            signaturePads[padName].clear();
+        }
+    }
 </script>
 </body>
 </html>

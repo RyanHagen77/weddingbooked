@@ -9,7 +9,7 @@
             font-family: Arial, sans-serif;
         }
         h2 {
-            color: #3C1414; /* Dark dusty pink text */
+            color: #b55f66; /* Darker shade of dusty pink */
         }
         form {
             background-color: white;
@@ -54,10 +54,16 @@
             border-radius: 4px;
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         }
+        .forgot-password {
+            display: block;
+            margin-top: 10px;
+            text-align: center;
+            color: #b55f66; /* Darker shade of dusty pink */
+        }
     </style>
 </head>
 <body>
-    <h2>Staff Login</h2>
+    <h2>Essence Staff Login</h2>
     <form method="post" action="">
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ next }}">
@@ -66,6 +72,7 @@
         <label for="password">Password:</label>
         <input type="password" id="password" name="password" required>
         <button type="submit">Login</button>
+        <a href="{% url 'password_reset' %}" class="forgot-password">Forgot Password?</a>
     </form>
     {% if messages %}
         <ul>

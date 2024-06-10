@@ -224,7 +224,6 @@ class Contract(models.Model):
 
     PIPELINE = 'pipeline'
     FORECAST = 'forecast'
-    PENDING = 'pending'
     BOOKED = 'booked'
     COMPLETED = 'completed'
     DEAD = 'dead'
@@ -232,7 +231,6 @@ class Contract(models.Model):
     STATUS_CHOICES = [
         (PIPELINE, 'Pipeline'),
         (FORECAST, 'Forecast'),
-        (PENDING, 'Pending'),
         (BOOKED, 'Booked'),
         (COMPLETED, 'Completed'),
         (DEAD, 'Dead'),

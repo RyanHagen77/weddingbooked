@@ -54,11 +54,17 @@
             border-radius: 4px;
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         }
+        .forgot-password {
+            display: block;
+            margin-top: 10px;
+            text-align: center;
+            color: #3C1414; /* Dusty pink text */
+        }
     </style>
 </head>
 <body>
-    <h2></h2>
-    <form method="post" action="">
+    <h2>Client Portal Login</h2>
+    <form method="post" action="{% url 'contracts:client_portal_login' %}">
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ next }}">
         <label for="email">Email:</label>
@@ -66,6 +72,7 @@
         <label for="password">Password:</label>
         <input type="password" id="password" name="password" required>
         <button type="submit">Login</button>
+        <a href="{% url 'password_reset' %}" class="forgot-password">Forgot Password?</a>
     </form>
     {% if messages %}
         <ul>
