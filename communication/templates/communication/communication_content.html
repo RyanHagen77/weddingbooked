@@ -1,0 +1,16 @@
+<div id="taskListContainer">
+    {% include 'contracts/task_list_snippet.html' %}
+</div>
+
+<button type="button" class="btn btn-dusty-pink mb-3" data-toggle="modal" data-target="#createMessageModal">
+    Create Message
+</button>
+
+<button type="button" class="btn btn-dusty-pink mb-3" data-toggle="modal" data-target="#addTaskModal"
+        data-sender-id="{{ request.user.id }}"
+        data-contract-id="{{ contract.contract_id }}"
+        data-note-id=""
+        data-type="contract">Add Task</button>
+
+{% for type, messages in messages_by_type.items %}
+    <h3>{{ type|title }} Messages</

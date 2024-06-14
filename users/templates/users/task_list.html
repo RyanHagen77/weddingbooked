@@ -5,8 +5,7 @@
 
 <!-- Bootstrap CSS -->
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-
-
+<link rel="stylesheet" href="{% static 'contracts/styles.css' %}">
 
 {% endblock %}
 
@@ -18,15 +17,30 @@
         <button type="button" class="btn-dusty-pink mb-2" data-toggle="modal" data-target="#addTaskModal"
                 data-sender-id="{{ request.user.id }}"
                 data-contract-id="{{ contract.contract_id }}"
-                data-note-id="{{ note.id }}">Add Task</button>
+                data-note-id="{{ note.id }}"
+                data-type="internal">Add Task</button>
         <!-- Refresh Tasks Button -->
         <button type="button" class="btn-dusty-pink mb-2" onclick="window.location.reload();">Refresh Tasks</button>
     </div>
     <!-- Task List Container -->
     <div id="taskListContainer">
+        <label>
+            <input type="checkbox" id="showCompletedTasks"> Show Completed Tasks
+        </label>
         <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Sender</th>
+                    <th>Created</th>
+                    <th>Contract</th>
+                    <th>Note</th>
+                    <th>Due Date</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
             <tbody>
-                {% include 'users/task_list_snippet.html' %}
+                {% include 'users/internal_task_list_snippet.html' %}
             </tbody>
         </table>
     </div>
@@ -42,9 +56,11 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form method="post" id="addTaskForm" data-create-task-url="{% url 'users:create_task' %}">
+                    <form method="post" id="addTaskForm" data-create-task-url="{% url 'users:create_internal_task' %}">
                         {% csrf_token %}
                         {{ task_form.as_p }}
+                        <input type="hidden" id="id_sender" name="sender" value="{{ request.user.id }}">
+                        <input type="hidden" id="id_type" name="type" value="">
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -68,7 +84,6 @@
             <div class="modal-body">
                 <form method="post" id="editTaskForm">
                     {% csrf_token %}
-                    {{ task_form.sender }}  <!-- Include the sender field as a hidden input -->
                     <div class="form-group">
                         <label for="id_assigned_to">Assigned To:</label>
                         {{ task_form.assigned_to }}
@@ -81,6 +96,8 @@
                         <label for="id_description">Description:</label>
                         <textarea id="id_description" name="description" class="form-control"></textarea>
                     </div>
+                    <input type="hidden" id="id_sender" name="sender" value="{{ request.user.id }}">
+                    <input type="hidden" id="id_type" name="type" value="">
                 </form>
             </div>
             <div class="modal-footer">
@@ -91,11 +108,11 @@
     </div>
 </div>
 {% endblock %}
+
 {% block extra_scripts %}
  <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-        <!-- Your custom JavaScript code -->
+    <!-- Your custom JavaScript code -->
     <script src="{% static 'communication/js/tasks.js' %}"></script>
-
 {% endblock %}

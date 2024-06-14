@@ -1,31 +1,15 @@
-
-<!-- task_list_snippet.html -->
-<table class="table table-striped" style="font-size: 10pt;">
-    <thead>
-        <tr>
-            <th style="height: 30px;">Sender</th>
-            <th style="height: 30px;">Assigned</th>
-            <th style="height: 30px;">Note</th>
-            <th style="height: 30px;">Due Date</th>
-            <th style="height: 30px;">Description</th>
-            <th style="height: 30px;">Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for task in tasks %}
-        <tr style="height: 30px;">
-            <td>{{ task.sender.username }}</td>
-            <td>{{ task.assigned_to.username }}</td>
-            <td>{{ task.note }}</td>
-            <td>{{ task.due_date|date:"Y-m-d" }}</td>
-            <td>{{ task.description }}</td>
-            <td>{{ task.is_completed|yesno:"Completed,Incomplete" }}</td>
-        </tr>
-        {% empty %}
-        <tr style="height: 30px;">
-            <td colspan="6">No tasks.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
+<!-- contracts/internal_task_list_snippet.html -->
+{% for task in tasks %}
+<tr style="height: 30px;">
+    <td>{{ task.sender.username }}</td>
+    <td>{{ task.assigned_to.username }}</td>
+    <td>{{ task.note }}</td>
+    <td>{{ task.due_date|date:"Y-m-d" }}</td>
+    <td>{{ task.description }}</td>
+    <td>{{ task.is_completed|yesno:"Completed,Incomplete" }}</td>
+</tr>
+{% empty %}
+<tr style="height: 30px;">
+    <td colspan="6">No tasks.</td>
+</tr>
+{% endfor %}

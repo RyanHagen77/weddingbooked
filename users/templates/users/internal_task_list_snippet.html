@@ -1,0 +1,71 @@
+<!-- contracts/internal_task_list_snippet.html -->
+{% for task in incomplete_tasks %}
+<tr style="height: 30px;">
+    <td>{{ task.sender.username }}</td>
+    <td>{{ task.created_at|date:"Y-m-d H:i" }}</td>
+    <td>
+        {% if task.contract %}
+            <a href="{% url 'contracts:contract_detail' task.contract.contract_id %}">{{ task.contract.custom_contract_number }}</a>
+        {% else %}
+            No contract
+        {% endif %}
+    </td>
+    <td>
+        {% if task.note %}
+            {{ task.note }}
+        {% else %}
+            No note
+        {% endif %}
+    </td>
+    <td>{{ task.due_date|date:"Y-m-d" }}</td>
+    <td>{{ task.description }}</td>
+    <td>
+        <form action="{% url 'users:mark_complete' task.id %}" method="post" class="mark-complete-form" data-task-id="{{ task.id }}">
+            {% csrf_token %}
+            <input type="checkbox" name="is_completed" class="mark-complete-checkbox" data-mark-complete-url="{% url 'users:mark_complete' task.id %}" {% if task.is_completed %}checked{% endif %}>
+        </form>
+        <button type="button" class="btn btn-sm btn-primary edit-task-btn" data-toggle="modal" data-target="#editTaskModal"
+                data-task-id="{{ task.id }}"
+                data-sender-id="{{ task.sender.id }}"
+                data-assigned-to-id="{{ task.assigned_to.id }}"
+                data-due-date="{{ task.due_date|date:'Y-m-d' }}"
+                data-description="{{ task.description }}"
+                data-type="{{ task.type }}">Edit</button>
+    </td>
+</tr>
+{% endfor %}
+{% for task in completed_tasks %}
+<tr class="task-completed" style="height: 30px;">
+    <td>{{ task.sender.username }}</td>
+    <td>{{ task.created_at|date:"Y-m-d H:i" }}</td>
+    <td>
+        {% if task.contract %}
+            <a href="{% url 'contracts:contract_detail' task.contract.contract_id %}">{{ task.contract.custom_contract_number }}</a>
+        {% else %}
+            No contract
+        {% endif %}
+    </td>
+    <td>
+        {% if task.note %}
+            {{ task.note }}
+        {% else %}
+            No note
+        {% endif %}
+    </td>
+    <td>{{ task.due_date|date:"Y-m-d" }}</td>
+    <td>{{ task.description }}</td>
+    <td>
+        <form action="{% url 'users:mark_complete' task.id %}" method="post" class="mark-complete-form" data-task-id="{{ task.id }}">
+            {% csrf_token %}
+            <input type="checkbox" name="is_completed" class="mark-complete-checkbox" data-mark-complete-url="{% url 'users:mark_complete' task.id %}" {% if task.is_completed %}checked{% endif %}>
+        </form>
+        <button type="button" class="btn btn-sm btn-primary edit-task-btn" data-toggle="modal" data-target="#editTaskModal"
+                data-task-id="{{ task.id }}"
+                data-sender-id="{{ task.sender.id }}"
+                data-assigned-to-id="{{ task.assigned_to.id }}"
+                data-due-date="{{ task.due_date|date:'Y-m-d' }}"
+                data-description="{{ task.description }}"
+                data-type="{{ task.type }}">Edit</button>
+    </td>
+</tr>
+{% endfor %}

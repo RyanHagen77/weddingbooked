@@ -1,8 +1,8 @@
 from django.contrib import admin
 
-from .models import (Client, ServiceType, EventStaffBooking, Contract, AdditionalProduct, TaxRate, DiscountRule, Package,
+from .models import (Client, ServiceType, LeadSourceCategory, EventStaffBooking, Contract, AdditionalProduct, TaxRate, DiscountRule, Package,
                      AdditionalEventStaffOption, EngagementSessionOption, Location, OvertimeOption, ContractOvertime,
-                     ContractProduct, Payment, ServiceFeeType, PaymentPurpose, PaymentSchedule, ServiceFee, ChangeLog, ContractAgreement, RiderAgreement)
+                     ContractProduct, Payment, ServiceFeeType, PaymentPurpose, PaymentSchedule, SchedulePayment, ServiceFee, ChangeLog, ContractAgreement, RiderAgreement)
 
 
 admin.site.register(TaxRate)
@@ -77,6 +77,10 @@ class ContractProductInline(admin.TabularInline):
     model = ContractProduct
     extra = 1
 
+@admin.register(LeadSourceCategory)
+class LeadSourceCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
 
 @admin.register(Contract)
 class ContractAdmin(admin.ModelAdmin):
@@ -162,6 +166,7 @@ class PaymentPurposeAdmin(admin.ModelAdmin):
 
     def __str__(self):
         return self.name
+
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
     list_display = ('contract', 'amount', 'payment_method', 'date', 'payment_reference', 'memo', 'modified_by_user', 'payment_purpose')
@@ -176,6 +181,14 @@ class PaymentScheduleAdmin(admin.ModelAdmin):
     list_filter = ('schedule_type',)
 
     readonly_fields = ('contract', 'created_at', 'payment_summary')
+@admin.register(SchedulePayment)
+class SchedulePaymentAdmin(admin.ModelAdmin):
+    list_display = ('schedule', 'purpose', 'due_date', 'amount', 'paid')
+    list_filter = ('due_date', 'paid', 'purpose')
+    search_fields = ('schedule__contract__custom_contract_number', 'purpose__name')
+    ordering = ('due_date',)
+
+
 
 @admin.register(ServiceFeeType)
 class FeeTypeAdmin(admin.ModelAdmin):

@@ -1,33 +1,153 @@
 from django.shortcuts import render
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from .models import Contract, Location, Payment, ServiceFee, ContractOvertime
-from django.db.models import Sum
+from .models import Contract, LeadSourceCategory, Location, Payment, ServiceFee, ContractOvertime, SchedulePayment
+from django.db.models import Sum, F
 from decimal import Decimal
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from django.utils.dateparse import parse_date
 import calendar
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+@login_required
+def reports(request):
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
+    context = {
+        'logo_url': logo_url,
+        'reports': [
+
+            # Add more reports as needed
+        ],
+    }
+
+    return render(request, 'contracts/reports.html', context)
 
 @login_required
-def appointments_report(request):
+def lead_source_report(request):
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
     # Get date range, location, and period from request
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
     location_id = request.GET.get('location', 'all')
     period = request.GET.get('period', 'monthly')
 
-    # Default date range if not provided
-    if not start_date_str or not end_date_str:
-        start_date = datetime.strptime('2024-04-01', '%Y-%m-%d')
-        end_date = datetime.strptime('2024-04-30', '%Y-%m-%d')
+    # Default date range to current month if not provided
+    today = datetime.today()
+    first_day_of_month = today.replace(day=1)
+    last_day_of_month = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+
+    if not start_date_str:
+        start_date = first_day_of_month
         start_date_str = start_date.strftime('%Y-%m-%d')
+    else:
+        start_date = parse_date(start_date_str)
+
+    if not end_date_str:
+        end_date = last_day_of_month
         end_date_str = end_date.strftime('%Y-%m-%d')
     else:
+        end_date = parse_date(end_date_str)
+
+    # Filter contracts based on location
+    if location_id == 'all':
+        contracts = Contract.objects.filter(event_date__range=(start_date, end_date))
+    else:
+        contracts = Contract.objects.filter(event_date__range=(start_date, end_date), location_id=location_id)
+
+    # Function to generate a list of months in the date range
+    def month_range(start_date, end_date):
+        start_month = start_date.replace(day=1)
+        end_month = end_date.replace(day=1)
+        current_month = start_month
+        while current_month <= end_month:
+            yield current_month
+            next_month = current_month + timedelta(days=calendar.monthrange(current_month.year, current_month.month)[1])
+            current_month = next_month.replace(day=1)
+
+    # Function to generate a list of weeks in the date range
+    def week_range(start_date, end_date):
+        start_week = start_date - timedelta(days=start_date.weekday())
+        end_week = end_date - timedelta(days=end_date.weekday())
+        current_week = start_week
+        while current_week <= end_week:
+            yield current_week
+            current_week += timedelta(days=7)
+
+    # Gather statistics based on the selected period
+    report_data = []
+    if period == 'monthly':
+        for month_start in month_range(start_date, end_date):
+            month_end = month_start.replace(day=calendar.monthrange(month_start.year, month_start.month)[1])
+            month_contracts = contracts.filter(event_date__range=(month_start, month_end))
+
+            for category in LeadSourceCategory.objects.all():
+                total_count = month_contracts.filter(lead_source_category=category).count()
+                booked_count = month_contracts.filter(lead_source_category=category, status='booked').count()
+                report_data.append({
+                    'period': month_start.strftime('%b %Y'),
+                    'category': category.name,
+                    'total_count': total_count,
+                    'booked_count': booked_count,
+                })
+    elif period == 'weekly':
+        for week_start in week_range(start_date, end_date):
+            week_end = week_start + timedelta(days=6)
+            week_contracts = contracts.filter(event_date__range=(week_start, week_end))
+
+            for category in LeadSourceCategory.objects.all():
+                total_count = week_contracts.filter(lead_source_category=category).count()
+                booked_count = week_contracts.filter(lead_source_category=category, status='booked').count()
+                report_data.append({
+                    'period': f"{week_start.strftime('%b %d, %Y')} - {week_end.strftime('%b %d, %Y')}",
+                    'category': category.name,
+                    'total_count': total_count,
+                    'booked_count': booked_count,
+                })
+
+    # Get all locations for the dropdown
+    locations = Location.objects.all()
+
+    context = {
+        'logo_url': logo_url,
+        'report_data': report_data,
+        'start_date': start_date_str,
+        'end_date': end_date_str,
+        'locations': locations,
+        'selected_location': location_id,
+        'selected_period': period,
+    }
+
+    return render(request, 'contracts/lead_source_report.html', context)
+
+@login_required
+def appointments_report(request):
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
+    # Get date range, location, and period from request
+    start_date_str = request.GET.get('start_date')
+    end_date_str = request.GET.get('end_date')
+    location_id = request.GET.get('location', 'all')
+    period = request.GET.get('period', 'monthly')
+
+    # Default date range to current month if not provided
+    today = datetime.today()
+    first_day_of_month = today.replace(day=1)
+    last_day_of_month = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+
+    if not start_date_str:
+        start_date = first_day_of_month
+        start_date_str = start_date.strftime('%Y-%m-%d')
+    else:
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+
+    if not end_date_str:
+        end_date = last_day_of_month
+        end_date_str = end_date.strftime('%Y-%m-%d')
+    else:
         end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
 
     # Filter contracts based on location
@@ -73,6 +193,7 @@ def appointments_report(request):
             total_appointments = month_contracts.count()
 
             report_data.append({
+                'logo_url': logo_url,
                 'period': month_start.strftime('%b %Y'),
                 'photo_count': photo_count,
                 'photo_booked_count': photo_booked_count,
@@ -133,6 +254,7 @@ def appointments_report(request):
     locations = Location.objects.all()
 
     context = {
+        'logo_url': logo_url,
         'report_data': report_data,
         'sales_data': sales_data,
         'start_date': start_date_str,
@@ -144,23 +266,123 @@ def appointments_report(request):
 
     return render(request, 'contracts/appointments_report.html', context)
 
-
 @login_required
-def reports(request):
+def reception_venues_report(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
+    # Get date range, location, and period from request
+    start_date_str = request.GET.get('start_date')
+    end_date_str = request.GET.get('end_date')
+    location_id = request.GET.get('location', 'all')
+    period = request.GET.get('period', 'monthly')
+
+    # Default date range to current month if not provided
+    today = datetime.today()
+    first_day_of_month = today.replace(day=1)
+    last_day_of_month = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+
+    if not start_date_str:
+        start_date = first_day_of_month
+        start_date_str = start_date.strftime('%Y-%m-%d')
+    else:
+        start_date = parse_date(start_date_str)
+
+    if not end_date_str:
+        end_date = last_day_of_month
+        end_date_str = end_date.strftime('%Y-%m-%d')
+    else:
+        end_date = parse_date(end_date_str)
+
+    # Filter contracts based on location
+    if location_id == 'all':
+        contracts = Contract.objects.filter(event_date__range=(start_date, end_date))
+    else:
+        contracts = Contract.objects.filter(event_date__range=(start_date, end_date), location_id=location_id)
+
+    # Function to generate a list of months in the date range
+    def month_range(start_date, end_date):
+        start_month = start_date.replace(day=1)
+        end_month = end_date.replace(day=1)
+        current_month = start_month
+        while current_month <= end_month:
+            yield current_month
+            next_month = current_month + timedelta(days=calendar.monthrange(current_month.year, current_month.month)[1])
+            current_month = next_month.replace(day=1)
+
+    # Function to generate a list of weeks in the date range
+    def week_range(start_date, end_date):
+        start_week = start_date - timedelta(days=start_date.weekday())
+        end_week = end_date - timedelta(days=end_date.weekday())
+        current_week = start_week
+        while current_week <= end_week:
+            yield current_week
+            current_week += timedelta(days=7)
+
+    # Gather statistics based on the selected period
+    report_data = []
+    if period == 'monthly':
+        for month_start in month_range(start_date, end_date):
+            month_end = month_start.replace(day=calendar.monthrange(month_start.year, month_start.month)[1])
+            month_contracts = contracts.filter(event_date__range=(month_start, month_end))
+
+            reception_venues = month_contracts.values('reception_site').annotate(
+                event_date=F('event_date'),
+                custom_contract_number=F('custom_contract_number'),
+                status=F('status'),
+                primary_contact=F('client__primary_contact'),
+                partner_contact=F('client__partner_contact'),
+            ).order_by('reception_site')
+
+            for venue in reception_venues:
+                report_data.append({
+                    'reception_site': venue['reception_site'],
+                    'event_date': venue['event_date'],
+                    'custom_contract_number': venue['custom_contract_number'],
+                    'status': venue['status'],
+                    'primary_contact': venue['primary_contact'],
+                    'partner_contact': venue['partner_contact'],
+                })
+    elif period == 'weekly':
+        for week_start in week_range(start_date, end_date):
+            week_end = week_start + timedelta(days=6)
+            week_contracts = contracts.filter(event_date__range=(week_start, week_end))
+
+            reception_venues = week_contracts.values('reception_site').annotate(
+                event_date=F('event_date'),
+                custom_contract_number=F('custom_contract_number'),
+                status=F('status'),
+                primary_contact=F('client__primary_contact'),
+                partner_contact=F('client__partner_contact'),
+            ).order_by('reception_site')
+
+            for venue in reception_venues:
+                report_data.append({
+                    'reception_site': venue['reception_site'],
+                    'event_date': venue['event_date'],
+                    'custom_contract_number': venue['custom_contract_number'],
+                    'status': venue['status'],
+                    'primary_contact': venue['primary_contact'],
+                    'partner_contact': venue['partner_contact'],
+                })
+
+    # Get all locations for the dropdown
+    locations = Location.objects.all()
 
     context = {
         'logo_url': logo_url,
-        'reports': [
-
-            # Add more reports as needed
-        ],
+        'report_data': report_data,
+        'start_date': start_date_str,
+        'end_date': end_date_str,
+        'locations': locations,
+        'selected_location': location_id,
+        'selected_period': period,
     }
 
-    return render(request, 'contracts/reports.html', context)
-
+    return render(request, 'contracts/reception_venues_report.html', context)
 
 def revenue_report(request):
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     selected_location = request.GET.get('location', 'all')
@@ -256,6 +478,7 @@ def revenue_report(request):
     locations = Location.objects.all()
 
     context = {
+        'logo_url': logo_url,
         'start_date': start_date,
         'end_date': end_date,
         'selected_location': selected_location,
@@ -267,6 +490,7 @@ def revenue_report(request):
     return render(request, 'contracts/revenue_report.html', context)
 
 def revenue_by_contract(request):
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     original_start_date = request.GET.get('original_start_date', start_date)
@@ -320,6 +544,7 @@ def revenue_by_contract(request):
     locations = Location.objects.all()
 
     context = {
+        'logo_url': logo_url,
         'contracts_data': contracts_data,
         'start_date': start_date.strftime('%B %d, %Y') if start_date else '',
         'end_date': end_date.strftime('%B %d, %Y') if end_date else '',
@@ -332,6 +557,7 @@ def revenue_by_contract(request):
     return render(request, 'contracts/revenue_by_contract.html', context)
 
 def deferred_revenue_report(request):
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
     report_date = request.GET.get('report_date')
     selected_location = request.GET.get('location', 'all')
 
@@ -380,6 +606,7 @@ def deferred_revenue_report(request):
     locations = Location.objects.all()
 
     context = {
+        'logo_url': logo_url,
         'report_date': report_date,
         'selected_location': selected_location,
         'locations': locations,
@@ -427,6 +654,7 @@ ROLE_DISPLAY_NAMES = {
 }
 
 def event_staff_payroll_report(request):
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     selected_location = request.GET.get('location', 'all')
@@ -510,6 +738,7 @@ def event_staff_payroll_report(request):
     locations = Location.objects.all()
 
     context = {
+        'logo_url': logo_url,
         'start_date': start_date,
         'end_date': end_date,
         'selected_location': selected_location,
@@ -520,6 +749,7 @@ def event_staff_payroll_report(request):
     return render(request, 'contracts/event_staff_payroll_report.html', context)
 
 def sales_detail_report(request):
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     selected_location = request.GET.get('location', 'all')
@@ -589,6 +819,7 @@ def sales_detail_report(request):
     locations = Location.objects.all()
 
     context = {
+        'logo_url': logo_url,
         'start_date': start_date,
         'end_date': end_date,
         'selected_location': selected_location,
@@ -600,6 +831,7 @@ def sales_detail_report(request):
     return render(request, 'contracts/sales_detail_report.html', context)
 
 def sales_detail_by_contract(request):
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     selected_location = request.GET.get('location', 'all')
@@ -667,6 +899,7 @@ def sales_detail_by_contract(request):
     locations = Location.objects.all()
 
     context = {
+        'logo_url': logo_url,
         'start_date': start_date,
         'end_date': end_date,
         'selected_location': selected_location,
@@ -731,6 +964,7 @@ def get_date_range(date_range):
     return start_date, end_date
 
 def sales_tax_report(request):
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
     date_range = request.GET.get('date_range', 'current_quarter')
     start_date, end_date = get_date_range(date_range)
 
@@ -765,6 +999,7 @@ def sales_tax_report(request):
         })
 
     context = {
+        'logo_url': logo_url,
         'date_range': DATE_RANGE_DISPLAY.get(date_range, date_range),
         'start_date': start_date.strftime('%Y-%m-%d') if start_date else '',
         'end_date': end_date.strftime('%Y-%m-%d') if end_date else '',
@@ -772,3 +1007,132 @@ def sales_tax_report(request):
     }
 
     return render(request, 'contracts/sales_tax_report.html', context)
+
+
+def payments_due_report(request):
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
+    # Get date range and location from request
+    start_date_str = request.GET.get('start_date')
+    end_date_str = request.GET.get('end_date')
+    location_id = request.GET.get('location', 'all')
+
+    # Default date range to current month if not provided
+    today = date.today()
+    first_day_of_month = today.replace(day=1)
+    last_day_of_month = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+
+    if not start_date_str:
+        start_date = first_day_of_month
+        start_date_str = start_date.strftime('%Y-%m-%d')
+    else:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+
+    if not end_date_str:
+        end_date = last_day_of_month
+        end_date_str = end_date.strftime('%Y-%m-%d')
+    else:
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+
+    # Filter contracts based on location
+    contract_filters = {
+        'event_date__range': (start_date, end_date)
+    }
+    if location_id != 'all':
+        contract_filters['location_id'] = location_id
+
+    contracts = Contract.objects.filter(**contract_filters)
+
+    # Calculate due payments
+    report_data = []
+    for contract in contracts:
+        client = contract.client
+        if contract.payment_schedule.schedule_type == 'schedule_a':
+            due_date = contract.event_date - timedelta(days=60)
+
+            # Ensure balance_due is a property access
+            balance_due = contract.balance_due
+
+            # Include contracts with a balance due and due date within the selected range
+            if balance_due > 0 and start_date <= due_date <= end_date:
+                report_data.append({
+                    'event_date': contract.event_date,
+                    'amount_due': balance_due,
+                    'date_due': due_date,
+                    'primary_contact': client.primary_contact,
+                    'primary_phone1': client.primary_phone1,
+                    'custom_contract_number': contract.custom_contract_number,
+                    'contract_link': f"/contracts/{contract.contract_id}/"  # Link to the contract details page
+                })
+        elif contract.payment_schedule.schedule_type == 'custom':
+            # Get custom schedule payments
+            schedule_payments = SchedulePayment.objects.filter(schedule=contract.payment_schedule,
+                                                               due_date__range=(start_date, end_date), paid=False)
+            for payment in schedule_payments:
+                if payment.amount > 0:
+                    report_data.append({
+                        'event_date': contract.event_date,
+                        'amount_due': payment.amount,
+                        'date_due': payment.due_date,
+                        'primary_contact': client.primary_contact,
+                        'primary_phone1': client.primary_phone1,
+                        'custom_contract_number': contract.custom_contract_number,
+                        'contract_link': f"/contracts/{contract.contract_id}/"  # Link to the contract details page
+                    })
+
+    locations = Location.objects.all()
+
+    context = {
+        'logo_url': logo_url,
+        'report_data': report_data,
+        'start_date': start_date_str,
+        'end_date': end_date_str,
+        'locations': locations,
+        'selected_location': location_id,
+    }
+
+    return render(request, 'contracts/payments_due_report.html', context)
+
+def formal_wear_deposit_report(request):
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    selected_location = request.GET.get('location', 'all')
+
+    filters = {}
+    if start_date:
+        filters['event_date__gte'] = start_date
+    if end_date:
+        filters['event_date__lte'] = end_date
+    if selected_location != 'all':
+        filters['location_id'] = selected_location
+
+    report_data = []
+    if start_date or end_date or selected_location != 'all':
+        contracts = Contract.objects.filter(**filters).distinct().order_by('event_date')
+
+        for contract in contracts:
+            formal_wear_deposit_exists = ServiceFee.objects.filter(contract=contract, fee_type__name='Formal Wear Deposit').exists()
+
+            if formal_wear_deposit_exists:
+                report_data.append({
+                    'event_date': contract.event_date,
+                    'custom_contract_number': contract.custom_contract_number,
+                    'contract_link': f"/contracts/{contract.contract_id}/",  # Link to the contract details page
+                    'primary_contact': contract.client.primary_contact,
+                    'primary_email': contract.client.primary_email,
+                    'primary_phone1': contract.client.primary_phone1,
+                })
+
+    locations = Location.objects.all()
+
+    context = {
+        'logo_url': logo_url,
+        'report_data': sorted(report_data, key=lambda x: x['event_date']),
+        'start_date': start_date,
+        'end_date': end_date,
+        'selected_location': selected_location,
+        'locations': locations,
+    }
+
+    return render(request, 'contracts/formal_wear_deposit_report.html', context)

@@ -212,10 +212,15 @@ class DiscountRule(models.Model):
     def __str__(self):
         return f"{self.get_discount_type_display()} - Version {self.version} - {self.base_amount}"
 
+class LeadSourceCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
 
 class Contract(models.Model):
 
-    LEAD_SOURCE_CHOICES = (
+    LEAD_SOURCE_CATEGORY_CHOICES = (
         ('ONLINE', 'Online'),
         ('REFERRAL', 'Referral'),
     )
@@ -263,11 +268,24 @@ class Contract(models.Model):
         related_name='contracts_coordinated'
     )
 
+    lead_source_category = models.ForeignKey(LeadSourceCategory, on_delete=models.SET_NULL, null=True, blank=True)
+    lead_source_details = models.CharField(max_length=255, blank=True)
+    # Other fields...
+
+    def get_lead_source_display(self):
+        if self.lead_source_category and self.lead_source_details:
+            return f"{self.lead_source_category.name}: {self.lead_source_details}"
+        elif self.lead_source_category:
+            return self.lead_source_category.name
+        elif self.lead_source_details:
+            return self.lead_source_details
+        return 'Unknown Source'
+
     is_code_92 = models.BooleanField(default=False, verbose_name="Code 92 Flag")
     client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True)
     bridal_party_qty = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=True, blank=True)
     guests_qty = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=True, blank=True)
-    lead_source = models.CharField(max_length=20, choices=LEAD_SOURCE_CHOICES, null=True, blank=True)
+
     ceremony_site = models.CharField(max_length=255, null=True, blank=True)
     ceremony_city = models.CharField(max_length=255, null=True, blank=True)
     ceremony_state = models.CharField(max_length=255, null=True, blank=True)

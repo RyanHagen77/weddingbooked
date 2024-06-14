@@ -1,0 +1,16 @@
+{% for type, messages in messages_by_type.items %}
+    <h3>{{ type|title }} Messages</h3>
+    {% for message in messages %}
+        <div class="message">
+            <p><strong>ID:</strong> {{ message.id }}</p>
+            <p><strong>From:</strong> {{ message.created_by.username }}</p>
+            <p><strong>Date:</strong> {{ message.created_at }}</p>
+            <p>{{ message.content }}</p>
+            <button type="button" class="btn btn-dusty-pink" data-toggle="modal" data-target="#addTaskModal"
+                    data-sender-id="{{ request.user.id }}"
+                    data-contract-id="{{ message.contract.contract_id }}"
+                    data-note-id="{{ message.id }}"
+                    data-type="internal">Add Task</button>
+        </div>
+    {% endfor %}
+{% endfor %}

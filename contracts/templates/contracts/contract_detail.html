@@ -72,7 +72,6 @@
                 <div class="col-lg-4">
                     <p>Contract Date: {{ contract.contract_date|date:"Y-m-d" }}</p>
                     <p id="header-location">Location: {{ contract.location.name }}</p>
-                    <p id="header-lead-source">Lead Source: {{ contract.get_lead_source_display }}</p>
                     <p id="header-csr">Sales Person: {{ contract.csr.get_full_name }}</p>
                     <p id="header-status">Status: {{ contract.get_status_display }}</p>
                 </div>
@@ -1209,10 +1208,26 @@
                     <!-- Messages Tab Content -->
                     <div class="tab-pane fade" id="communication" role="tabpanel" aria-labelledby="communication-tab">
                         <h3>Tasks</h3>
-                        <div id="taskListContainer">
-                            {% include 'contracts/task_list_snippet.html' %}
+                        <div id="contractDetailPage">
+                        <!-- Task List Container -->
+                            <div id="taskListContainer">
+                                <table class="table table-striped" style="font-size: 10pt;">
+                                    <thead>
+                                        <tr>
+                                            <th style="height: 30px;">Sender</th>
+                                            <th style="height: 30px;">Assigned</th>
+                                            <th style="height: 30px;">Note</th>
+                                            <th style="height: 30px;">Due Date</th>
+                                            <th style="height: 30px;">Description</th>
+                                            <th style="height: 30px;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% include 'contracts/task_list_snippet.html' %}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-
                         <!-- Button to trigger the message creation modal -->
                         <button type="button" class="btn btn-dusty-pink mb-3" data-toggle="modal" data-target="#createMessageModal">
                             Create Message
@@ -1221,23 +1236,27 @@
                         <button type="button" class="btn btn-dusty-pink mb-3" data-toggle="modal" data-target="#addTaskModal"
                                 data-sender-id="{{ request.user.id }}"
                                 data-contract-id="{{ contract.contract_id }}"
-                                data-note-id="">Add Task</button>
+                                data-note-id=""
+                                data-type="contract">Add Task</button>
 
-                        {% for type, messages in messages_by_type.items %}
-                            <h3>{{ type|title }} Messages</h3>
-                            {% for message in messages %}
-                                <div class="message">
-                                    <p><strong>ID:</strong> {{ message.id }}</p>
-                                    <p><strong>From:</strong> {{ message.created_by.username }}</p>
-                                    <p><strong>Date:</strong> {{ message.created_at }}</p>
-                                    <p>{{ message.content }}</p>
-                                    <button type="button" class="btn btn-dusty-pink" data-toggle="modal" data-target="#addTaskModal"
-                                            data-sender-id="{{ request.user.id }}"
-                                            data-contract-id="{{ contract.contract_id }}"
-                                            data-note-id="{{ message.id }}">Add Task</button>
-                                </div>
+                        <div id="communicationMessagesContainer">
+                            {% for type, messages in messages_by_type.items %}
+                                <h3>{{ type|title }} Messages</h3>
+                                {% for message in messages %}
+                                    <div class="message">
+                                        <p><strong>ID:</strong> {{ message.id }}</p>
+                                        <p><strong>From:</strong> {{ message.created_by.username }}</p>
+                                        <p><strong>Date:</strong> {{ message.created_at }}</p>
+                                        <p>{{ message.content }}</p>
+                                        <button type="button" class="btn btn-dusty-pink" data-toggle="modal" data-target="#addTaskModal"
+                                                data-sender-id="{{ request.user.id }}"
+                                                data-contract-id="{{ contract.contract_id }}"
+                                                data-note-id="{{ message.id }}"
+                                                data-type="internal">Add Task</button>
+                                    </div>
+                                {% endfor %}
                             {% endfor %}
-                        {% endfor %}
+                        </div>
                     </div>
                     <!-- Change Log tab content -->
                     <div class="tab-pane fade" id="changelog">
@@ -1265,9 +1284,9 @@
                         </div>
                     </div>
                 </div>
-                </div> <!-- Closes the tab-content div for financial tabs -->
-            </div>
-        </div>    <!-- Closes the overarching div, if this is meant to close the container for all content above, ensure its opening tag is correctly placed -->
+            </div> <!-- Closes the tab-content div for financial tabs -->
+        </div>
+    </div>    <!-- Closes the overarching div, if this is meant to close the container for all content above, ensure its opening tag is correctly placed -->
 
     <!-- Include jQuery -->
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
@@ -1390,30 +1409,69 @@
             <div class="modal-body">
                 <form id="scheduleForm" method="post" action="{% url 'contracts:create_or_update_schedule' contract_id=contract.contract_id %}">
                     {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}#payments">
                     {{ schedule_payment_formset.management_form }}  <!-- This renders TOTAL_FORMS for the payment schedule -->
                     <hr>  <!-- Divider between contract number and schedule type -->
                     {{ schedule_form.as_p }}
                     <hr>  <!-- Divider between schedule type and payment entries -->
+                    <!-- Empty Payment Form -->
+                    <div class="payment-form empty-payment-form">
+                        {{ schedule_payment_formset.empty_form.as_p }}
+                    </div>
+                    <hr>  <!-- Divider between empty payment form and existing payment entries -->
                     <div id="paymentScheduleEntries">
                         {% for form in schedule_payment_formset %}
-                            <div class="payment-form">  <!-- Ensure each form wrapper has the payment-form class -->
-                                {{ form.as_p }}
+                            <div class="payment-form mb-3">  <!-- Ensure each form wrapper has the payment-form class -->
+                                <div class="form-check form-check-inline">
+                                    <input type="checkbox" class="form-check-input edit-toggle" id="edit_{{ forloop.counter }}" onclick="toggleEdit(this)">
+                                    <label for="edit_{{ forloop.counter }}" class="form-check-label ml-2 mb-0">Enable Editing</label>
+                                </div>
+                                <div class="form-fields mt-2" id="form_fields_{{ forloop.counter }}">
+                                    {{ form.as_p }}
+                                </div>
                             </div>
                             <hr>  <!-- Divider between each payment entry -->
                         {% endfor %}
                     </div>
-                    <button type="button" class="btn btn-secondary" onclick="addFormsetEntry('paymentScheduleEntries', 'id_schedule_payments-TOTAL_FORMS', '.payment-form')">Add Payment Entry</button>
+                    <button type="button" class="btn-close" onclick="addFormsetEntry('paymentScheduleEntries', 'id_schedule_payments-TOTAL_FORMS', '.payment-form')">Add Payment Entry</button>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-close" data-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-dusty-pink" form="scheduleForm">Save changes</button>
+                <button type="submit" class="btn btn-dusty-pink" form="scheduleForm" onclick="enableAllInputs()">Save changes</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Service Fee Modal -->
+<script>
+function toggleEdit(checkbox) {
+    var formFields = checkbox.closest('.payment-form').querySelector('.form-fields');
+    var inputs = formFields.querySelectorAll('input, select, textarea');
+
+    inputs.forEach(function(input) {
+        input.disabled = !checkbox.checked;
+    });
+}
+
+function enableAllInputs() {
+    var inputs = document.querySelectorAll('#scheduleForm input, #scheduleForm select, #scheduleForm textarea');
+    inputs.forEach(function(input) {
+        input.disabled = false;
+    });
+}
+
+// Disable all form fields initially
+document.addEventListener('DOMContentLoaded', function() {
+    var editToggles = document.querySelectorAll('.edit-toggle');
+
+    editToggles.forEach(function(toggle) {
+        toggleEdit(toggle);
+    });
+});
+</script>
+
+
 <!-- Service Fee Modal -->
 <div class="modal fade" id="serviceFeeModal" tabindex="-1" role="dialog" aria-labelledby="serviceFeeModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -1436,19 +1494,15 @@
                             <hr>  <!-- Divider between each payment entry -->
                         {% endfor %}
                     </div>
-                <button type="button" class="btn btn-secondary" onclick="addFormsetEntry('formsetContainer', 'id_servicefee_set-TOTAL_FORMS', '.service-fee-form')">
-                    Add Fee Entry
-                </button>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-primary" form="serviceFeeForm">Save changes</button>
+                <button type="button" class="btn-close" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn-dusty-pink" form="serviceFeeForm">Save changes</button>
             </div>
         </div>
     </div>
 </div>
-
 
 
 
@@ -1488,9 +1542,10 @@
       </div>
       <div class="modal-body">
         <!-- Task Form -->
-        <form method="post" id="addTaskForm" data-create-task-url="{% url 'contracts:create_task' %}">
+        <form method="post" id="addTaskForm" data-create-task-url="{% url 'contracts:create_contract_task' %}">
             {% csrf_token %}
             {{ task_form.as_p }}
+            <input type="hidden" id="id_type" name="type">
         </form>
       </div>
       <div class="modal-footer">
@@ -1500,6 +1555,7 @@
     </div>
   </div>
 </div>
+
 
 <!-- Special Terms Modal -->
 <div class="modal fade" id="customTextModal" tabindex="-1" role="dialog" aria-labelledby="customTextModalLabel" aria-hidden="true">

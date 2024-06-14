@@ -1,7 +1,7 @@
 from django import forms
 from .models import CustomUser, Role
 from contracts.models import EventStaffBooking
-from communication.models import Task
+from communication.models import Task, UnifiedCommunication
 
 
 class OfficeStaffForm(forms.ModelForm):
@@ -24,11 +24,14 @@ class EventStaffBookingForm(forms.ModelForm):
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['assigned_to', 'sender', 'due_date', 'description']
+        fields = ['sender', 'assigned_to', 'contract', 'note', 'due_date', 'description', 'type']
         widgets = {
-            'due_date': forms.DateInput(attrs={'type': 'date'}),
+            'contract': forms.HiddenInput(),
             'sender': forms.HiddenInput(),
-            'assigned_to': forms.Select(),
+            'note': forms.HiddenInput(),
+            'type': forms.HiddenInput(),
+            'due_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'width: 100%;'}),
+            'description': forms.Textarea(attrs={'rows': 4, 'class': 'form-control', 'style': 'width: 100%;'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -37,9 +40,20 @@ class TaskForm(forms.ModelForm):
         office_roles = Role.objects.filter(name__in=office_role_names)
         office_staff_queryset = CustomUser.objects.filter(role__in=office_roles)
 
-        # Override the queryset for the 'assigned_to' field
+        # Setting the queryset for 'sender' and 'assigned_to' fields
+        self.fields['sender'].queryset = office_staff_queryset
         self.fields['assigned_to'].queryset = office_staff_queryset
 
-        # Set the label for each instance in the queryset to display the full name
+        # Setting the label from instance method to display full names
+        self.fields['sender'].label_from_instance = lambda obj: "{} {}".format(obj.first_name, obj.last_name)
         self.fields['assigned_to'].label_from_instance = lambda obj: "{} {}".format(obj.first_name, obj.last_name)
 
+        # Setting the queryset for 'note' field
+        self.fields['note'].queryset = UnifiedCommunication.objects.filter(
+            note_type__in=[UnifiedCommunication.INTERNAL, UnifiedCommunication.CONTRACT]
+        )
+        self.fields['note'].label_from_instance = lambda obj: "{} - {}".format(obj.note_type, obj.description[:30])
+
+        # Setting field requirements
+        self.fields['contract'].required = False
+        self.fields['note'].required = False

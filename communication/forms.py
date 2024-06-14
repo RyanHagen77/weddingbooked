@@ -4,48 +4,47 @@ from users.models import CustomUser, Role
 
 
 class CommunicationForm(forms.Form):
-    message = forms.CharField(widget=forms.Textarea(attrs={'rows': 4}), label="Note Content")
-
+    message = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control', 'style': 'width: 100%;'}),
+        label="Note Content"
+    )
     message_type = forms.ChoiceField(
         choices=[
             (UnifiedCommunication.INTERNAL, 'Internal Note'),
             (UnifiedCommunication.CONTRACT, 'Contract Note')
         ],
         required=True,
-        label='Message Type'
+        label='Message Type',
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
 
+
 class BookingCommunicationForm(forms.Form):
-    message = forms.CharField(widget=forms.Textarea(attrs={'rows': 4}), label="Note Content")
+    message = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control', 'style': 'width: 100%;'}),
+        label="Note Content"
+    )
     message_type = forms.ChoiceField(
         choices=[
             (UnifiedCommunication.BOOKING, 'Booking Note')
         ],
         required=True,
-        label='Message Type'
+        label='Message Type',
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
-
-
-    # Recipient field (assuming you have a way to identify recipients)
-    # recipient = forms.ChoiceField(choices=[...], required=False, label='Recipient')
-
-    # If you need to handle replies or different types of messages,
-    # you can add more fields here. For example:
-    # reply_to = forms.IntegerField(widget=forms.HiddenInput(), required=False)
-
-    # You can also add a field for the message type if needed
-    # message_type = forms.ChoiceField(choices=UnifiedCommunication.NOTE_TYPES, required=True)
 
 
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['sender', 'assigned_to', 'contract', 'note', 'due_date', 'description']
+        fields = ['sender', 'assigned_to', 'contract', 'note', 'due_date', 'description', 'type']
         widgets = {
             'contract': forms.HiddenInput(),
             'sender': forms.HiddenInput(),
             'note': forms.HiddenInput(),
-            'due_date': forms.DateInput(attrs={'type': 'date'})
+            'type': forms.HiddenInput(),
+            'due_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'width: 100%;'}),
+            'description': forms.Textarea(attrs={'rows': 4, 'class': 'form-control', 'style': 'width: 100%;'})
         }
 
     def __init__(self, *args, **kwargs):
@@ -69,7 +68,5 @@ class TaskForm(forms.ModelForm):
         self.fields['note'].label_from_instance = lambda obj: "{} - {}".format(obj.note_type, obj.description[:30])
 
         # Setting field requirements
-        self.fields['contract'].required = True
+        self.fields['contract'].required = False
         self.fields['note'].required = False
-
-

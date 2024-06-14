@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.contenttypes.models import ContentType
-from .models import UnifiedCommunication
+from .models import UnifiedCommunication, Task
 from contracts.models import Contract
 from .forms import CommunicationForm  # Assuming you have a form for message input
 from django.core.mail import send_mail
@@ -67,21 +67,22 @@ def send_contract_message_email(request, message, contract):
 
 
 def send_task_assignment_email(request, task):
-    context = {
-        'user': task.assigned_to,
-        'task': task,
-        'domain': get_current_site(request).domain,
-    }
-    subject = 'New Task Assigned'
-    message = render_to_string('communication/task_assignment_email.html', context, request=request)
-    send_mail(
-        subject,
-        message,
-        'testmydjango420@gmail.com',  # Your sending email
-        [task.assigned_to.email],
-        fail_silently=False,
-    )
-
+    # Assuming the role is stored in a related model or field called 'role'
+    if task.assigned_to.role.name == 'ADMIN':  # Adjust this line based on how roles are implemented
+        context = {
+            'user': task.assigned_to,
+            'task': task,
+            'domain': get_current_site(request).domain,
+        }
+        subject = 'New Task Assigned'
+        message = render_to_string('communication/task_assignment_email.html', context, request=request)
+        send_mail(
+            subject,
+            message,
+            'testmydjango420@gmail.com',  # Your sending email
+            [task.assigned_to.email],
+            fail_silently=False,
+        )
 
 @login_required
 def send_portal_access(request, contract_id):

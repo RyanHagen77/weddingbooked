@@ -3,119 +3,98 @@
 {% load static %}
 <head>
   <meta charset="UTF-8">
-  <title>Title</title>
-
-    <!-- Revised Style for Header, FAQ Section, and Client Information -->
+  <title>Client Portal</title>
   <style>
-        header {
-            position: fixed;
-            width: 100%;
-            background-color: #fff;
-            border-bottom: 1px solid #ccc;
-            padding: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-
-        .faq-section {
-            margin-top: 60px; /* Adjust as needed */
-        }
-
-        /* Styling for Client Information */
-        .client-info {
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .client-info p {
-            margin: 5px 0;
-            color: #333;
-        }
-        .client-info p strong {
-            color: #000;
-        }
-    </style>
-
+    header {
+        position: fixed;
+        width: 100%;
+        background-color: #fff;
+        border-bottom: 1px solid #ccc;
+        padding: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        z-index: 1000;
+    }
+    .faq-section {
+        margin-top: 60px;
+    }
+    .client-info {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    .client-info p {
+        margin: 5px 0;
+        color: #333;
+    }
+    .client-info p strong {
+        color: #000;
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <img src="{% static 'path/to/your/logo.png' %}" alt="Logo">
+    <span>Your Phone Number</span>
+    <a href="{% url 'contracts:client_portal_logout' %}">Logout</a>
+  </header>
 
-    <header>
-        <img src="{% static 'path/to/your/logo.png' %}" alt="Logo">
-        <span>Your Phone Number</span>
-        <a href="{% url 'contracts:client_portal_logout' %}">Logout</a>
-    </header>
-
-
-    <!-- Enhanced Client Information Display -->
+  <div class="container">
     <h2>Client Information</h2>
     {% if contract.client %}
-        <div class="client-info">
-            <p><strong>Primary Contact:</strong> {{ contract.client.primary_contact }}</p>
-            <p><strong>Primary Email:</strong> {{ contract.client.primary_email }}</p>
-            <p><strong>Primary Phone 1:</strong> {{ contract.client.primary_phone1 }}</p>
-            {% if contract.client.primary_phone2 %}
-                <p><strong>Primary Phone 2:</strong> {{ contract.client.primary_phone2 }}</p>
-            {% endif %}
-            <p><strong>Partner Contact:</strong> {{ contract.client.partner_contact }}</p>
-            {% if contract.client.partner_phone1 %}
-                <p><strong>Partner Phone:</strong> {{ contract.client.partner_phone1 }}</p>
-            {% endif %}
-            <!-- Add other fields as needed -->
-        </div>
+      <div class="client-info">
+        <p><strong>Primary Contact:</strong> {{ contract.client.primary_contact }}</p>
+        <p><strong>Primary Email:</strong> {{ contract.client.primary_email }}</p>
+        <p><strong>Primary Phone 1:</strong> {{ contract.client.primary_phone1 }}</p>
+        {% if contract.client.primary_phone2 %}
+          <p><strong>Primary Phone 2:</strong> {{ contract.client.primary_phone2 }}</p>
+        {% endif %}
+        <p><strong>Partner Contact:</strong> {{ contract.client.partner_contact }}</p>
+        {% if contract.client.partner_phone1 %}
+          <p><strong>Partner Phone:</strong> {{ contract.client.partner_phone1 }}</p>
+        {% endif %}
+      </div>
     {% else %}
-        <p>No client information available.</p>
+      <p>No client information available.</p>
     {% endif %}
 
-
-<!-- Contract Documents Section -->
-<div class="contract-documents">
-    <h3>Your Contract Documents</h3>
-    {% if client_documents %}
+    <div class="contract-documents">
+      <h3>Your Contract Documents</h3>
+      {% if client_documents %}
         {% for document in client_documents %}
-            <p>
-                <a href="{{ document.document.url }}">{{ document.document.name }}</a>
-            </p>
+          <p><a href="{{ document.document.url }}">{{ document.document.name }}</a></p>
         {% endfor %}
-    {% else %}
+      {% else %}
         <p>No contract documents available.</p>
-    {% endif %}
-</div>
-    <!-- Other HTML content -->
-<div class="contract-section">
-    <h2>Contract Details</h2>
-</div>
+      {% endif %}
+    </div>
 
+    <div class="contract-section">
+      <h2>Contract Details</h2>
+    </div>
 
+    <form method="post">
+      {% csrf_token %}
+      {{ form.message.label_tag }} {{ form.message }}
+      <input type="hidden" name="message_type" value="contract">
+      <button type="submit">Send Message</button>
+    </form>
 
-<!-- Template in contracts app -->
-
-<!-- Form for submitting new notes -->
-<form method="post">
-    {% csrf_token %}
-    {{ form.message.label_tag }} {{ form.message }}
-    <input type="hidden" name="message_type" value="contract">
-    <button type="submit">Send Message</button>
-</form>
-
-
-<!-- Display only 'contract' type messages -->
-<h3>Contract Messages</h3>
-{% for note in contract_notes %}
-    <div class="message">
+    <h3>Contract Messages</h3>
+    {% for note in contract_notes %}
+      <div class="message">
         <p><strong>From:</strong> {{ note.created_by.username }}</p>
         <p><strong>Date:</strong> {{ note.created_at }}</p>
         <p>{{ note.content }}</p>
-    </div>
-{% empty %}
-    <p>No contract messages available.</p>
-{% endfor %}
+      </div>
+    {% empty %}
+      <p>No contract messages available.</p>
+    {% endfor %}
+  </div>
 
-
-    <div class="faq-section">
-        <!-- FAQ content here -->
-    </div>
-
+  <div class="faq-section">
+    <!-- FAQ content here -->
+  </div>
 </body>
 </html>

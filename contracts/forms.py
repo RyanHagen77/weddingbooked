@@ -1,6 +1,6 @@
 from django import forms
-from contracts.models import (Contract, ServiceType, Client, Payment, EventStaffBooking, Package, Discount, Location,
-                              ContractDocument, Availability, PaymentSchedule, SchedulePayment,
+from contracts.models import (Contract, LeadSourceCategory, Client, Payment, EventStaffBooking, Package, Discount, Location,
+                              ContractDocument, PaymentSchedule, SchedulePayment,
                               AdditionalEventStaffOption, EngagementSessionOption, AdditionalProduct, ContractProduct,
                               ServiceFee, ContractAgreement, RiderAgreement)
 from django.core.validators import RegexValidator
@@ -106,16 +106,17 @@ class ContractInfoEditForm(forms.ModelForm):
         label="Sales Person"
     )
     status = forms.ChoiceField(choices=Contract.STATUS_CHOICES, required=False)
-    lead_source = forms.ChoiceField(choices=Contract.LEAD_SOURCE_CHOICES, required=False)
+    lead_source_category = forms.ModelChoiceField(queryset=LeadSourceCategory.objects.all(), required=False, label="Lead Source Category")
+    lead_source_details = forms.CharField(max_length=255, required=False, label="Lead Source Details")
+
     old_contract_number = forms.CharField(max_length=255, required=False, label="Old Contract Number")
 
     class Meta:
         model = Contract
-        fields = ['is_code_92', 'event_date', 'location', 'coordinator', 'status', 'csr', 'lead_source',
+        fields = ['is_code_92', 'event_date', 'location', 'coordinator', 'status', 'csr', 'lead_source_category', 'lead_source_details',
                   'old_contract_number', 'custom_text']
         widgets = {
             'custom_text': forms.Textarea(attrs={'rows': 4}),
-
         }
         labels = {
             'custom_text': 'Contract Custom Terms and Conditions',
@@ -124,7 +125,6 @@ class ContractInfoEditForm(forms.ModelForm):
     def clean_old_contract_number(self):
         old_contract_number = self.cleaned_data.get('old_contract_number')
         return old_contract_number
-
 
 class ContractClientEditForm(forms.ModelForm):
     user = forms.ModelChoiceField(
@@ -272,6 +272,12 @@ class ServiceFeeForm(forms.ModelForm):
     class Meta:
         model = ServiceFee
         fields = ['contract', 'amount', 'description', 'fee_type', 'applied_date']
+        widgets = {
+            'description': forms.Textarea(attrs={'class': 'form-control description-field', 'rows': 3}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control'}),
+            'fee_type': forms.Select(attrs={'class': 'form-control'}),
+            'contract': forms.HiddenInput(),  # Assuming contract is not to be edited
+        }
 
 
 
@@ -322,7 +328,7 @@ SchedulePaymentFormSet = inlineformset_factory(
     PaymentSchedule,
     SchedulePayment,
     form=SchedulePaymentForm,  # Use the custom form
-    extra=1,
+    extra=0,
     can_delete=True
 )
 
@@ -351,6 +357,10 @@ class NewContractForm(forms.ModelForm):
     validators=[phone_validator],
     required=False  # Instead of blank=True, null=True
 )
+    lead_source_category = forms.ModelChoiceField(queryset=LeadSourceCategory.objects.all(), required=False, label="Lead Source Category")
+    lead_source_details = forms.CharField(max_length=255, required=False, label="Lead Source Details")
+
+
     event_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
     csr = UserModelChoiceField(
         queryset=CustomUser.objects.filter(groups__name='Sales', is_active=True),
@@ -398,7 +408,7 @@ class NewContractForm(forms.ModelForm):
         model = Contract
         fields = [
             'event_date', 'csr', 'coordinator', 'old_contract_number',
-            'bridal_party_qty', 'guests_qty', 'lead_source',
+            'bridal_party_qty', 'guests_qty', 'lead_source_category', 'lead_source_details',
             'ceremony_site', 'ceremony_city', 'ceremony_state', 'ceremony_contact', 'ceremony_phone', 'ceremony_email',
             'reception_site', 'reception_city', 'reception_state', 'reception_contact', 'reception_phone', 'reception_email',
             'status'
@@ -451,7 +461,8 @@ class ContractForm(forms.ModelForm):
     # Additional fields for Contract set as optional
     bridal_party_qty = forms.IntegerField(min_value=1, required=False)
     guests_qty = forms.IntegerField(min_value=1, required=False)
-    lead_source = forms.ChoiceField(choices=Contract.LEAD_SOURCE_CHOICES, required=False)
+    lead_source_category = forms.ModelChoiceField(queryset=LeadSourceCategory.objects.all(), required=False, label="Lead Source Category")
+    lead_source_details = forms.CharField(max_length=255, required=False, label="Lead Source Details")
     ceremony_site = forms.CharField(max_length=255, required=False)
     ceremony_city = forms.CharField(max_length=255, required=False)
     ceremony_state = forms.CharField(max_length=255, required=False)
@@ -518,7 +529,7 @@ class ContractForm(forms.ModelForm):
             'alt_contact', 'alt_email', 'alt_phone',
 
             # Contract fields
-            'bridal_party_qty', 'guests_qty', 'lead_source',
+            'bridal_party_qty', 'guests_qty', 'lead_source_category', 'lead_source_details',
             'ceremony_site', 'ceremony_city', 'ceremony_state', 'ceremony_contact', 'ceremony_phone', 'ceremony_email',
             'reception_site', 'reception_city', 'reception_state', 'reception_contact', 'reception_phone', 'reception_email',
             'status',

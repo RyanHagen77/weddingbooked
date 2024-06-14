@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 {% load static %}
 <html lang="en">
@@ -6,16 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
-    {% load static %}
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- jQuery and Bootstrap JS -->
     <link rel="stylesheet" href="{% static 'contracts/styles.css' %}">
 
-
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" defer></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" defer></script>
+    <!-- Ensure jQuery is loaded first -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Include additional scripts needed across all pages in the extra_head block -->
+    {% block extra_head %}
+    {% endblock %}
 </head>
 <body>
     <header>
@@ -23,13 +21,13 @@
         <div class="header">
             <div class="logo">
                 <!-- Add your logo here -->
-            <img src="{{ logo_url }}" alt="Logo">
+                <img src="{{ logo_url }}" alt="Logo">
             </div>
             <ul class="menu">
                 <li class="menu-item"><a href="{% url 'users:tasks' %}">Tasks</a></li>
                 <li class="menu-item"><a href="{% url 'contracts:contract_new' %}">New Contract</a></li>
                 <li class="menu-item"><a href="{% url 'contracts:reports' %}">Reports</a></li>
-                <li class="menu-item"><a href="{% url 'admin:index' %}">Admin</a></li>
+                <li class="menu-item"><a href="{% url 'admin:index' %}" target="_blank">Admin</a></li>
                 <li class="menu-item"><a href="{% url 'users:event_staff' %}">Event Staff</a></li>
                 <li class="menu-item"><a href="{% url 'contracts:search' %}">Search</a></li>
             </ul>
@@ -53,6 +51,12 @@
         <!-- Copyright statement, etc. -->
     </footer>
 
+    <!-- Bootstrap and other libraries should load after jQuery -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Custom JavaScript can be included here or in extra_head, depending on dependencies -->
+    <script src="{% static 'contracts/js/eventStaffManagement.js' %}" defer></script>
     <script>
         $(function () {
             $('#myTab a').on('click', function (e) {
@@ -61,6 +65,5 @@
             });
         });
     </script>
-    <script type="module" src="{% static 'contracts/js/eventStaffManagement.js' %}"></script>
 </body>
 </html>

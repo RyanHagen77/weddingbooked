@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="search-results">
-    <h3>Appointments Report</h3>
+    <h3>Lead Source Report</h3>
     <button onclick="history.back()" class="btn btn-dusty-pink">Go Back</button>
 
     <form method="get" class="report-form">
@@ -28,57 +28,23 @@
     </form>
 
     <div class="search-results">
-        <h6>{{ selected_period|title }} Appointments between {{ start_date }} and {{ end_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
+        <h6>{{ selected_period|title }} Lead Sources between {{ start_date }} and {{ end_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
         <table>
             <thead>
                 <tr>
                     <th>Period</th>
-                    <th># Photo</th>
-                    <th># Photo Booked</th>
-                    <th># Video</th>
-                    <th># Video Booked</th>
-                    <th># DJ</th>
-                    <th># DJ Booked</th>
-                    <th># Photobooth</th>
-                    <th># Photobooth Booked</th>
-                    <th>Total Appointments</th>
+                    <th>Lead Source Category</th>
+                    <th>Total Leads</th>
+                    <th>Booked Leads</th>
                 </tr>
             </thead>
             <tbody>
                 {% for data in report_data %}
                 <tr>
                     <td>{{ data.period }}</td>
-                    <td>{{ data.photo_count }}</td>
-                    <td>{{ data.photo_booked_count }}</td>
-                    <td>{{ data.video_count }}</td>
-                    <td>{{ data.video_booked_count }}</td>
-                    <td>{{ data.dj_count }}</td>
-                    <td>{{ data.dj_booked_count }}</td>
-                    <td>{{ data.photobooth_count }}</td>
-                    <td>{{ data.photobooth_booked_count }}</td>
-                    <td>{{ data.total_appointments }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-            <h6 style="margin-top: 10px;">Salesperson Breakdown</h6>
-        <table>
-            <thead>
-                <tr>
-                    <th>Salesperson</th>
-                    <th>Total Appointments</th>
-                    <th>Booked Appointments</th>
-                    <th>Closed Percentage</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for data in sales_data %}
-                <tr>
-                    <td>{{ data.name }}</td>
-                    <td>{{ data.total_sales }}</td>
-                    <td>{{ data.booked_sales }}</td>
-                    <td>{{ data.closed_percentage }}%</td>
+                    <td>{{ data.category }}</td>
+                    <td>{{ data.total_count }}</td>
+                    <td>{{ data.booked_count }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -149,7 +115,3 @@
 }
 
 /* Padding above Salesperson Breakdown */
-.salesperson-breakdown {
-    margin-top: 20px;
-}
-</style>

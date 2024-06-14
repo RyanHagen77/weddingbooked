@@ -25,7 +25,7 @@ from django.db.models.functions import Concat
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model, authenticate, login
 from django.contrib.sites.shortcuts import get_current_site
@@ -284,17 +284,20 @@ def custom_login(request):
 
 def custom_logout(request):
     logout(request)
-    return redirect('contracts:client_portal_login')  # Use the view name, not the URL path
+    response = redirect('contracts:client_portal_login')  # Redirect to the login page or any other page
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
+
 
 @login_required
 def client_portal(request, contract_id):
     contract = get_object_or_404(Contract, pk=contract_id)
-    content_type = ContentType.objects.get_for_model(Contract)
 
     # Fetch 'contract' type notes related to this contract
     contract_notes = UnifiedCommunication.objects.filter(
-        content_type=content_type,
-        object_id=contract.contract_id,
+        contract=contract,
         note_type=UnifiedCommunication.CONTRACT
     ).order_by('-created_at')
 
@@ -312,26 +315,12 @@ def client_portal(request, contract_id):
                 content=form.cleaned_data['message'],
                 note_type=UnifiedCommunication.CONTRACT,
                 created_by=request.user,
-                content_type=content_type,
-                object_id=contract.contract_id
+                contract=contract
             )
 
             # Send an email notification to the coordinator
             if contract.coordinator:
                 send_contract_message_email(request, message, contract)
-
-            # Create a task to review the message
-            task = Task.objects.create(
-                description=f'Please review the message: "{message.content}"',
-                assigned_to=contract.coordinator,
-                sender=request.user,
-                due_date=datetime.now() + timedelta(days=7),  # example due date
-                contract=contract,
-                note=message
-            )
-
-            # Send task assignment email
-            send_task_assignment_email(request, task)
 
             return redirect('contracts:client_portal', contract_id=contract.contract_id)
 
@@ -376,21 +365,19 @@ def send_email_to_client(request, message, contract):
 @login_required
 def contract_detail(request, id):
     contract = get_object_or_404(Contract, pk=id)
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
     form = ContractForm(request.POST or None, instance=contract)
     client = contract.client  # Assuming there's a ForeignKey relationship to the Client model
     booking_form = EventStaffBookingForm()
-    schedule_id = contract.payment_schedule.id if hasattr(contract, 'payment_schedule') else None
-    schedule, created = PaymentSchedule.objects.get_or_create(contract=contract)
+    schedule, created = PaymentSchedule.objects.get_or_create(contract=contract, defaults={'schedule_type': 'schedule_a'})
+    schedule_id = schedule.id
     schedule_form = PaymentScheduleForm(instance=schedule)
     schedule_payment_formset = SchedulePaymentFormSet(instance=schedule)
     service_fee_formset = ServiceFeeForm(instance=contract)
     payment_purposes = PaymentPurpose.objects.all()
     discounts = contract.other_discounts.all()
-    print("Other discounts total:", contract.other_discounts_total)  # Debugging statement
     service_types = ServiceType.objects.all()
     changelogs = ChangeLog.objects.filter(contract=contract).order_by('-timestamp')
-
-
 
     if request.method == 'POST':
         contract_info_edit_form = ContractInfoEditForm(request.POST, instance=contract, prefix='contract_info')
@@ -406,31 +393,23 @@ def contract_detail(request, id):
             client_edit_form.save()
             return redirect('contracts:contract_detail', id=id)
 
-
     communication_form = CommunicationForm()
     task_form = TaskForm()
     tasks = Task.objects.filter(contract=contract)
 
-    # Fetch all documents for this contract
     documents = contract.documents.all()
-
-    # Annotate each document with its visibility status
     for document in documents:
         document.badge_class = 'badge-success' if document.is_client_visible else 'badge-secondary'
         document.badge_label = 'Visible to Client' if document.is_client_visible else 'Internal Use'
 
     document_form = ContractDocumentForm(request.POST or None, request.FILES or None)
-
     if request.method == 'POST' and document_form.is_valid():
         contract_document = document_form.save(commit=False)
         contract_document.contract = contract
         contract_document.save()
-
         return redirect('contracts:contract_detail', id=id)
 
-    content_type = ContentType.objects.get_for_model(contract)
-    all_messages = UnifiedCommunication.objects.filter(content_type=content_type, object_id=contract.contract_id)
-
+    all_messages = UnifiedCommunication.objects.filter(contract=contract)
     messages_by_type = defaultdict(list)
     for message in all_messages:
         messages_by_type[message.note_type].append(message)
@@ -442,19 +421,14 @@ def contract_detail(request, id):
                 content=communication_form.cleaned_data['message'],
                 note_type=communication_form.cleaned_data['message_type'],
                 created_by=request.user,
-                content_type=content_type,
-                object_id=contract.contract_id,
+                contract=contract,
             )
-
-            # Check if the sender is a coordinator and send an email to the client
             if request.user.is_coordinator:
                 send_email_to_client(request, new_message, contract)
-
             return redirect('contracts:contract_detail', id=contract.contract_id)
     else:
         communication_form = CommunicationForm()
 
-    # Fetch related data
     photography_service_type = ServiceType.objects.get(name='Photography')
     videography_service_type = ServiceType.objects.get(name='Videography')
     dj_service_type = ServiceType.objects.get(name='Dj')
@@ -462,99 +436,70 @@ def contract_detail(request, id):
     videography_packages = Package.objects.filter(service_type__name='Videography').order_by('name')
     products_for_contract = contract.contract_products.all()
     payments_made = Payment.objects.filter(contract=contract)
-    additional_photography_options = AdditionalEventStaffOption.objects.filter(service_type=photography_service_type,
-                                                                               is_active=True)
-    additional_videography_options = AdditionalEventStaffOption.objects.filter(service_type=videography_service_type,
-                                                                               is_active=True)
+    additional_photography_options = AdditionalEventStaffOption.objects.filter(service_type=photography_service_type, is_active=True)
+    additional_videography_options = AdditionalEventStaffOption.objects.filter(service_type=videography_service_type, is_active=True)
     additional_dj_options = AdditionalEventStaffOption.objects.filter(service_type=dj_service_type, is_active=True)
     overtime_options = OvertimeOption.objects.all().values('id', 'role', 'rate_per_hour')
-
     engagement_session_options = EngagementSessionOption.objects.filter(is_active=True)
-    print("Engagement Session Options:", engagement_session_options)
 
-    # Check the first object's price attribute if there are any options
-    if engagement_session_options:
-        print("First option price:", engagement_session_options[0].price)
+    total_overtime_cost = sum(
+        overtime.hours * overtime.overtime_option.rate_per_hour
+        for overtime in contract.overtimes.all()
+    )
 
-    total_overtime_cost = 0
-
-    if request.method == 'POST':
-        # Handle your POST logic here, potentially processing AJAX requests
-        # This could involve creating or updating ContractOvertime instances directly
-        pass
-    else:
-        # For a GET request, prepare any data needed for displaying the form
-        # Calculate the total overtime cost directly from related ContractOvertime instances
-        total_overtime_cost = sum(
-            overtime.hours * overtime.overtime_option.rate_per_hour
-            for overtime in contract.overtimes.all()
-        )
-
-    # Calculate costs using methods defined in the Contract model
     photography_cost = contract.calculate_photography_cost()
     videography_cost = contract.calculate_videography_cost()
     dj_cost = contract.calculate_dj_cost()
     photobooth_cost = contract.calculate_photobooth_cost()
 
     products_formset = ContractProductFormset(instance=contract, prefix='contract_products')
-
     product_subtotal = contract.calculate_product_subtotal()
-
-    # Directly access discounts from the contract if they are fields in the Contract model
     package_discount_amount = contract.calculate_package_discount()
     sunday_discount_amount = contract.calculate_sunday_discount()
     other_discounts_total = contract.other_discounts_total
 
-    # Using model's methods to calculate total cost, tax, discounts, final total, paid amount, and balance due
     total_service_cost = contract.calculate_total_service_cost()
     total_discount = contract.calculate_discount()
     final_total = contract.final_total
     amount_paid = contract.amount_paid
     balance_due = contract.balance_due
 
-    # Fetch the tax rate based on the contract's location
     tax_rate_object = TaxRate.objects.filter(location=contract.location, is_active=True).first()
     if tax_rate_object:
         tax_rate = tax_rate_object.tax_rate
     else:
-        tax_rate = Decimal('0.00')  # Fallback value if no tax rate is found
+        tax_rate = Decimal('0.00')
 
-        # Use the fetched tax rate to calculate tax
     tax_amount = contract.calculate_tax()
-
-    # Calculating initial payment
-    initial_payment = math.ceil((contract.final_total * Decimal('0.40')) / 100) * 100
     total_payments_received = sum(payment.amount for payment in contract.payments.all())
 
     if request.method == 'POST':
         service_fee_formset = ServiceFeeFormSet(request.POST, instance=contract)
         if service_fee_formset.is_valid():
             service_fee_formset.save()
-            return redirect('contracts:contract_detail', id=contract.contract_id)  # Redirect back to the contract detail view or elsewhere
+            create_schedule_a_payments(contract.id)  # Recalculate payments
+            return redirect('contracts:contract_detail', id=contract.contract_id)
     else:
         service_fee_formset = ServiceFeeFormSet(instance=contract)
 
-    payment_form = PaymentForm()  # For GET request
+    payment_form = PaymentForm()
+    if request.method == 'POST' and 'submit_payment' in request.POST:
+        payment_form = PaymentForm(request.POST)
+        if payment_form.is_valid():
+            new_payment = payment_form.save(commit=False)
+            new_payment.contract = contract
+            new_payment.save()
+            create_schedule_a_payments(contract.contract_id)  # Recalculate payments
+            return redirect('contracts:contract_detail', id=contract.contract_id)
+        else:
+            print("Payment form errors:", payment_form.errors)
 
-    if request.method == 'POST':
-        if 'submit_payment' in request.POST:
-            payment_form = PaymentForm(request.POST)
-            if payment_form.is_valid():
-                new_payment = payment_form.save(commit=False)
-                new_payment.contract = contract
-                new_payment.save()
-                # Redirect or render as appropriate
-                return redirect('contracts:contract_detail', id=contract.contract_id)
-            else:
-                # Handle form errors
-                print("Payment form errors:", payment_form.errors)
-
-                # Calculating balance due date
     balance_due_date = contract.event_date - timedelta(days=60)
 
     context = {
         'contract': contract,
         'form': form,
+        'logo_url': logo_url,
         'packages': photography_packages,
         'photography_packages': photography_packages,
         'prospect_photographer1': contract.prospect_photographer1,
@@ -562,7 +507,7 @@ def contract_detail(request, id):
         'prospect_photographer3': contract.prospect_photographer3,
         'videography_packages': videography_packages,
         'dj_packages': photography_packages,
-        'booking_form' : booking_form,
+        'booking_form': booking_form,
         'documents': documents,
         'document_form': document_form,
         'communication_form': communication_form,
@@ -579,7 +524,6 @@ def contract_detail(request, id):
         'final_total': final_total,
         'payment_form': payment_form,
         'payment_purposes': payment_purposes,
-        'initial_payment': initial_payment,
         'total_payments_received': total_payments_received,
         'balance_due_date': balance_due_date,
         'balance_due': balance_due,
@@ -607,25 +551,9 @@ def contract_detail(request, id):
         'discounts': discounts,
         'service_types': service_types,
         'changelogs': changelogs,
-
     }
 
-    return render(request, 'contracts/contract_detail.html',  context)
-
-@login_required
-def delete_document(request, document_id):
-    document = get_object_or_404(ContractDocument, pk=document_id)
-
-    # Check if the user has permission to delete the document
-    if request.user.has_perm('contracts.delete_contractdocument') or request.user == document.contract.owner:
-        document.delete()
-        messages.success(request, "Document removed successfully.")
-    else:
-        messages.error(request, "You do not have permission to delete this document.")
-
-    # Redirect back to the contract detail page or wherever appropriate
-    return redirect('contracts:contract_detail', id=document.contract.contract_id)
-
+    return render(request, 'contracts/contract_detail.html', context)
 
 @login_required
 def edit_contract(request, id):
@@ -952,6 +880,21 @@ ROLE_DISPLAY_NAMES = {
     'PHOTOBOOTH_OP1': 'Photobooth Operator 1',
     'PHOTOBOOTH_OP2': 'Photobooth Operator 2'
 }
+
+@login_required
+def delete_document(request, document_id):
+    document = get_object_or_404(ContractDocument, pk=document_id)
+
+    # Check if the user has permission to delete the document
+    if request.user.has_perm('contracts.delete_contractdocument') or request.user == document.contract.owner:
+        document.delete()
+        messages.success(request, "Document removed successfully.")
+    else:
+        messages.error(request, "You do not have permission to delete this document.")
+
+    # Redirect back to the contract detail page or wherever appropriate
+    return redirect('contracts:contract_detail', id=document.contract.contract_id)
+
 
 @login_required
 def generate_contract_pdf(request, contract_id):
@@ -1961,24 +1904,27 @@ def financial_view(request, contract_id):
 
 
 def add_schedule_a(request, contract_id):
-    contract = get_object_or_404(Contract, id=contract_id)
+    contract = get_object_or_404(Contract, contract_id=contract_id)
     if not hasattr(contract, 'payment_schedule'):
         schedule = create_schedule_a_payments(contract_id)
         contract.status = 'booked'  # Optionally update contract status
         contract.save()
     return redirect(request,'contract_detail', id=contract_id) + '#payments'
 
-def create_schedule_a_payments(contract_id, service_fees=None):
+def create_schedule_a_payments(contract_id):
     contract = get_object_or_404(Contract, contract_id=contract_id)
-    schedule = PaymentSchedule.objects.create(contract=contract, schedule_type='schedule_a')
+    schedule, created = PaymentSchedule.objects.get_or_create(contract=contract, defaults={'schedule_type': 'schedule_a'})
+
+    # Clear existing Schedule A payments
+    SchedulePayment.objects.filter(schedule=schedule).delete()
 
     # Change the purpose name from 'Down Payment' to 'Deposit'
     deposit_purpose, _ = PaymentPurpose.objects.get_or_create(name='Deposit')
     balance_payment_purpose, _ = PaymentPurpose.objects.get_or_create(name='Balance Payment')
 
     # Calculate the deposit amount (50% of the total contract cost, rounded up to the nearest 100)
-    raw_deposit_amount = contract.calculate_total_cost() * Decimal('0.50')
-    deposit_amount = ceil(raw_deposit_amount / 100) * 100  # rounding up to the nearest 100
+    raw_deposit_amount = contract.final_total * Decimal('0.50')
+    deposit_amount = (raw_deposit_amount / Decimal('100')).quantize(Decimal('1'), rounding=ROUND_HALF_UP) * Decimal('100')
 
     # Calculate the balance due date (60 days before the event date)
     balance_due_date = contract.event_date - timedelta(days=60)
@@ -1988,33 +1934,24 @@ def create_schedule_a_payments(contract_id, service_fees=None):
         schedule=schedule,
         purpose=deposit_purpose,
         due_date=now(),  # Use the current date
-        amount=deposit_amount
+        amount=deposit_amount,
+        paid=contract.amount_paid >= deposit_amount
     )
 
     # Create the balance payment
-    balance_amount = contract.calculate_total_cost() - deposit_amount
+    balance_amount = contract.final_total - deposit_amount
     SchedulePayment.objects.create(
         schedule=schedule,
         purpose=balance_payment_purpose,
         due_date=balance_due_date,
-        amount=balance_amount
+        amount=balance_amount,
+        paid=contract.amount_paid >= contract.final_total
     )
-
-    # Create payments for each service fee, if provided
-    if service_fees:
-        for fee in service_fees:
-            fee_purpose, _ = PaymentPurpose.objects.get_or_create(name=fee['purpose'])
-            SchedulePayment.objects.create(
-                schedule=schedule,
-                purpose=fee_purpose,
-                due_date=contract.event_date,  # or another appropriate date
-                amount=fee['amount']
-            )
 
     return schedule
 
 def check_payment_schedule_for_contract(contract_id):
-    contract = get_object_or_404(Contract, id=contract_id)
+    contract = get_object_or_404(Contract, contract_id=contract_id)
     try:
         payment_schedule = contract.payment_schedule
         print(f'Payment schedule ID for contract {contract_id} is {payment_schedule.id}')
@@ -2032,27 +1969,40 @@ def create_or_update_schedule(request, contract_id):
 
         if schedule_form.is_valid() and schedule_payment_formset.is_valid():
             saved_schedule = schedule_form.save(commit=False)
-            saved_schedule.schedule_type = request.POST.get('schedule_type', 'schedule_a')
+            schedule_type = request.POST.get('schedule_type', 'schedule_a')
+            saved_schedule.schedule_type = schedule_type
             saved_schedule.save()
             schedule_payment_formset.save()
 
-            # Create or update service fees in the custom schedule
-            service_fees = request.POST.getlist('service_fees')  # Assuming service fees are sent in the POST data
-            if service_fees:
-                for fee in service_fees:
-                    fee_data = fee.split(',')
-                    fee_purpose, _ = PaymentPurpose.objects.get_or_create(name=fee_data[0])
-                    SchedulePayment.objects.create(
-                        schedule=schedule,
-                        purpose=fee_purpose,
-                        due_date=contract.event_date,  # or another appropriate date
-                        amount=Decimal(fee_data[1])
-                    )
+            if schedule_type == 'schedule_a':
+                # Recalculate Schedule A payments
+                create_schedule_a_payments(contract.contract_id)
+            else:
+                # Handle custom schedule service fees
+                service_fees = request.POST.getlist('service_fees')  # Assuming service fees are sent in the POST data
+                if service_fees:
+                    for fee in service_fees:
+                        fee_data = fee.split(',')
+                        fee_purpose, _ = PaymentPurpose.objects.get_or_create(name=fee_data[0])
+                        SchedulePayment.objects.create(
+                            schedule=saved_schedule,
+                            purpose=fee_purpose,
+                            due_date=contract.event_date,  # or another appropriate date
+                            amount=Decimal(fee_data[1])
+                        )
 
-            return HttpResponseRedirect(reverse('contracts:contract_detail', kwargs={'id': contract_id}) + '#payments')
+            next_url = request.POST.get('next', reverse('contracts:contract_detail', kwargs={'id': contract.contract_id}) + '#payments')
+            return HttpResponseRedirect(next_url)
 
-    # If it's not a POST request or if the form is not valid, redirect back to the contract detail page
-    return redirect(reverse('contracts:contract_detail', kwargs={'id': contract_id}))
+    # Render forms if not a POST request or if forms are not valid
+    schedule_form = PaymentScheduleForm(instance=schedule)
+    schedule_payment_formset = SchedulePaymentFormSet(instance=schedule)
+    return render(request, 'contracts/payment_schedule_form.html', {
+        'schedule_form': schedule_form,
+        'schedule_payment_formset': schedule_payment_formset,
+        'contract': contract,
+    })
+
 
 
 def get_custom_schedule(request, contract_id):
@@ -2336,38 +2286,43 @@ def open_task_form(request, contract_id, note_id):
     return render(request, 'task_form.html', {'form': form})
 
 
-@login_required
+
 @require_POST
-def create_task(request):
+def create_contract_task(request, contract_id=None, note_id=None):
     form = TaskForm(request.POST)
     if form.is_valid():
         task = form.save(commit=False)
         task.sender = request.user
+        task.type = 'contract'
+
+        if contract_id:
+            task.contract = get_object_or_404(Contract, id=contract_id)
+        if note_id:
+            task.note = get_object_or_404(UnifiedCommunication, id=note_id)
+
         task.save()
-        if hasattr(task.assigned_to, 'email'):
+
+        if hasattr(task.assigned_to, 'email') and task.assigned_to.email:
             send_task_assignment_email(request, task)
-        tasks = Task.objects.filter(assigned_to=request.user, is_completed=False)
+
+        tasks = Task.objects.filter(
+            contract=task.contract, type='contract', is_completed=False
+        ).distinct().order_by('due_date')
+
         task_list_html = render_to_string('contracts/task_list_snippet.html', {'tasks': tasks}, request=request)
         return JsonResponse({'success': True, 'task_id': task.id, 'task_list_html': task_list_html})
     else:
         return JsonResponse({'success': False, 'errors': form.errors.as_json()})
 
 
-def send_task_assignment_email(request, task):
-    context = {
-        'user': task.assigned_to,
-        'task': task,
-        'domain': get_current_site(request).domain,
-    }
-    subject = 'New Task Assigned'
-    message = render_to_string('communication/task_assignment_email.html', context, request=request)
-    send_mail(
-        subject,
-        message,
-        'testmydjango420@gmail.com',  # Your sending email
-        [task.assigned_to.email],
-        fail_silently=False,
-    )
+@login_required
+def get_contract_tasks(request, contract_id):
+    tasks = Task.objects.filter(
+        assigned_to=request.user, contract_id=contract_id, type='contract', is_completed=False
+    ).order_by('due_date')
+    task_list_html = render_to_string('contracts/internal_task_list_snippet.html', {'tasks': tasks}, request=request)
+    return JsonResponse({'task_list_html': task_list_html})
+
 
 
 @require_http_methods(["POST"])

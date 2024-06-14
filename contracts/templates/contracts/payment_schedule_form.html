@@ -1,0 +1,17 @@
+{% load static %}
+{% load crispy_forms_tags %}
+
+{{ schedule_form.as_p }}
+{{ schedule_payment_formset.management_form }}
+{% for form in schedule_payment_formset %}
+    <div class="payment-form mb-3">
+        <div class="form-check form-check-inline">
+            <input type="checkbox" class="form-check-input edit-toggle" id="edit_{{ forloop.counter }}" onclick="toggleEdit(this)">
+            <label for="edit_{{ forloop.counter }}" class="form-check-label ml-2 mb-0">Enable Editing</label>
+        </div>
+        <div class="form-fields mt-2" id="form_fields_{{ forloop.counter }}">
+            {{ form.as_p }}
+        </div>
+    </div>
+    <hr>
+{% endfor %}

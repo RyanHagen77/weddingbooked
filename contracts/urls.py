@@ -76,15 +76,21 @@ urlpatterns = [
     path('add_note/', views.add_note, name='add_note'),
     path('edit_note/<int:note_id>/', views.edit_note, name='edit_note'),
     path('delete_note/<int:note_id>/', views.delete_note, name='delete_note'),
-    path('tasks/create/', views.create_task, name='create_task'),
+    path('tasks/create/', views.create_contract_task, name='create_contract_task'),
+    path('tasks/get/<int:contract_id>/', views.get_contract_tasks, name='get_contract_tasks'),
     path('reports/', reports_views.reports, name='reports'),
+    path('lead_source_report/', reports_views.lead_source_report, name='lead_source_report'),
     path('appointments/', reports_views.appointments_report, name='appointments_report'),
+    path('reception_venues_report/', reports_views.reception_venues_report, name='reception_venues_report'),
     path('revenue_report/', reports_views.revenue_report, name='revenue_report'),
     path('revenue_by_contract/', reports_views.revenue_by_contract, name='revenue_by_contract'),
     path('deferred_revenue_report/', reports_views.deferred_revenue_report, name='deferred_revenue_report'),
     path('sales_detail_report/', reports_views.sales_detail_report, name='sales_detail_report'),
     path('sales_detail_by_contract/', reports_views.sales_detail_by_contract, name='sales_detail_by_contract'),
     path('sales_taxes_report/', reports_views.sales_tax_report, name='sales_tax_report'),
-    path('event_staff_payroll/', reports_views.event_staff_payroll_report, name='event_staff_payroll_report')
+    path('event_staff_payroll/', reports_views.event_staff_payroll_report, name='event_staff_payroll_report'),
+    path('payments_due_report/', reports_views.payments_due_report, name='payments_due_report'),
+    path('formal_wear_deposit_report/', reports_views.formal_wear_deposit_report, name='formal_wear_deposit_report'),
+
     # Other URLs for this app...
 ]

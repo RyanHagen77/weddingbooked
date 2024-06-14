@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 {% load static %}
-
-<html>
+<html lang="en">
 <head>
-    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -11,43 +11,60 @@
 
     <!-- Ensure jQuery is loaded first -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
     <!-- Include additional scripts needed across all pages in the extra_head block -->
-    {% block extra_head %}{% endblock %}
+    {% block extra_head %}
+    {% endblock %}
 </head>
-
 <body>
-<div class="header">
-    <div class="logo">
-            <img src="{{ logo_url }}" alt="Logo">
-    </div>
-    <ul class="menu">
-        <li class="menu-item"><a href="{% url 'users:tasks' %}">Tasks</a></li>
-        <li class="menu-item"><a href="{% url 'contracts:contract_new' %}">New Contract</a></li>
-        <li class="menu-item"><a href="{% url 'contracts:reports' %}">Reports</a></li>
-        <li class="menu-item"><a href="{% url 'admin:index' %}" target="_blank">Admin</a></li>
-        <li class="menu-item"><a href="{% url 'users:event_staff' %}">Event Staff</a></li>
-        <li class="menu-item"><a href="{% url 'contracts:search' %}">Search</a></li>
-    </ul>
-    <div class="user-info">
-        <span>Hello, {{ request.user.first_name }}</span>
-        <form action="{% url 'users:logout' %}" method="post">
-            {% csrf_token %}
-            <input type="submit" value="Logout" class="logout-button">
-        </form>
-    </div>
-</div>
-<div class="main-content">
-    {% block content %}{% endblock %}
-</div>
+    <header>
+        <!-- Navigation, site title, etc. -->
+        <div class="header">
+            <div class="logo">
+                <!-- Add your logo here -->
+                <img src="{{ logo_url }}" alt="Logo">
+            </div>
+            <ul class="menu">
+                <li class="menu-item"><a href="{% url 'users:tasks' %}">Tasks</a></li>
+                <li class="menu-item"><a href="{% url 'contracts:contract_new' %}">New Contract</a></li>
+                <li class="menu-item"><a href="{% url 'contracts:reports' %}">Reports</a></li>
+                <li class="menu-item"><a href="{% url 'admin:index' %}" target="_blank">Admin</a></li>
+                <li class="menu-item"><a href="{% url 'users:event_staff' %}">Event Staff</a></li>
+                <li class="menu-item"><a href="{% url 'contracts:search' %}">Search</a></li>
+            </ul>
+            <div class="user-info">
+                <span>Hello, {{ request.user.first_name }}</span>
+                <form action="{% url 'users:logout' %}" method="post" style="margin-left: 10px;">
+                    {% csrf_token %}
+                    <input type="submit" value="Logout" class="logout-button">
+                </form>
+            </div>
+        </div>
+    </header>
 
-<!-- Bootstrap and other libraries should load after jQuery -->
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <main>
+        <div class="main-content">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
 
-<!-- Custom JavaScript can be included here or in extra_head, depending on dependencies -->
-<script src="{% static 'communication/js/tasks.js' %}"></script>
-<script src="{% static 'contracts/js/booking_notes.js' %}" defer></script>
+    <footer>
+        <!-- Copyright statement, etc. -->
+    </footer>
+
+    <!-- Bootstrap and other libraries should load after jQuery -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Custom JavaScript can be included here or in extra_head, depending on dependencies -->
+    <script src="{% static 'communication/js/tasks.js' %}"></script>
+
+    <script>
+        $(function () {
+            $('#myTab a').on('click', function (e) {
+                e.preventDefault();
+                $(this).tab('show');
+            });
+        });
+    </script>
 </body>
 </html>
-
