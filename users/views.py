@@ -50,17 +50,23 @@ class OfficeStaffListView(ListView):
 @login_required
 def office_staff_dashboard(request, pk):
     staff_member = get_object_or_404(CustomUser, pk=pk)
-    contract_form = ContractForm()  # Instantiate your contract form
-    tasks = Task.objects.filter(assigned_to=request.user).order_by('due_date')
+    # Fetch both completed and incomplete tasks
+    incomplete_tasks = Task.objects.filter(assigned_to=request.user, is_completed=False).order_by('due_date')
+    completed_tasks = Task.objects.filter(assigned_to=request.user, is_completed=True).order_by('due_date')
+
+    task_form = TaskForm()  # Instantiate your task form
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     context = {
         'staff_member': staff_member,
-        'contract_form': contract_form,  # Add the form to the context
-        'tasks': tasks,
+        'contract_form': ContractForm(),  # Add the contract form to the context if needed
+        'incomplete_tasks': incomplete_tasks,
+        'completed_tasks': completed_tasks,
+        'task_form': task_form,
         'logo_url': logo_url
     }
     return render(request, 'users/office_staff_dashboard.html', context)
+
 
 @login_required
 def task_list(request):

@@ -1396,6 +1396,7 @@
   </div>
 </div>
 
+
 <!-- Add Schedule Modal -->
 <div class="modal fade" id="scheduleModal" tabindex="-1" role="dialog" aria-labelledby="scheduleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -1409,7 +1410,6 @@
             <div class="modal-body">
                 <form id="scheduleForm" method="post" action="{% url 'contracts:create_or_update_schedule' contract_id=contract.contract_id %}">
                     {% csrf_token %}
-                    <input type="hidden" name="next" value="{{ request.path }}#payments">
                     {{ schedule_payment_formset.management_form }}  <!-- This renders TOTAL_FORMS for the payment schedule -->
                     <hr>  <!-- Divider between contract number and schedule type -->
                     {{ schedule_form.as_p }}

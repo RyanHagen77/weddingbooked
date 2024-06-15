@@ -3,7 +3,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.urls import reverse
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.utils.http import urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_encode, urlencode
 from django.utils.encoding import force_bytes
 from django.contrib.contenttypes.models import ContentType
 from .models import UnifiedCommunication, Task
@@ -150,12 +150,12 @@ def send_contract_and_rider_email_to_client(request, contract, rider_type=None, 
         subject = 'Sign Your Contract and Rider Agreements'
         message = f'Please sign your contract and rider agreements at the following link: {agreement_url}'
 
-    login_url = f"http://{request.get_host()}/contracts/client_portal_login/?next={agreement_url}"
+    login_url = f"http://{request.get_host()}{reverse('contracts:client_portal_login')}?{urlencode({'next': agreement_url})}"
 
     try:
         send_mail(
             subject,
-            f"{message}\n\n{login_url}",
+            f"{message}\n\nPlease log in here to sign the documents: {login_url}",
             'testmydjango420@gmail.com',  # Your sending email
             [client_email],
             fail_silently=False,
