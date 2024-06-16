@@ -22,32 +22,32 @@ function addFormsetEntry(containerId, totalFormsId, formClass) {
     }
     let currentTotal = parseInt(totalForms.value, 10);
 
-    // Clone the first form to use as a template
-    let newForm = container.querySelector(`${formClass}:first-child`).cloneNode(true);
-    if (!newForm) {
-        console.error('Form to clone not found:', formClass);
+    // Clone the empty form template
+    let emptyFormTemplate = document.querySelector(`${formClass}.empty-payment-form`);
+    if (!emptyFormTemplate) {
+        console.error('Empty form template not found:', formClass);
         return;
     }
+    let newFormHtml = emptyFormTemplate.innerHTML.replace(/__prefix__/g, currentTotal);
 
-    // Update the indices in the cloned form
-    let regex = new RegExp(`(${currentTotal - 1})`, 'g');
-    newForm.innerHTML = newForm.innerHTML.replace(regex, currentTotal);
+    // Create a new form element and set its inner HTML
+    let newFormDiv = document.createElement('div');
+    newFormDiv.classList.add('payment-form', 'mb-3');
+    newFormDiv.innerHTML = newFormHtml;
 
-    // Reset form fields in the cloned form
-    newForm.querySelectorAll('input, select, textarea').forEach(input => {
-        if (input.type !== 'hidden') {
-            input.value = '';
-        }
-        if (input.type === 'checkbox' || input.type === 'radio') {
-            input.checked = false;
-        }
-    });
+    // Append the new form to the container
+    container.appendChild(newFormDiv);
 
-    container.appendChild(newForm);
+    // Increment the total forms count
     totalForms.value = currentTotal + 1;
+
+    // Ensure new inputs are enabled for editing
+    let newFormCheckbox = newFormDiv.querySelector('.edit-toggle');
+    if (newFormCheckbox) {
+        newFormCheckbox.checked = true;
+        toggleEdit(newFormCheckbox);
+    }
 }
-
-
 
 function populateScheduleTable(scheduleType) {
     let container = document.getElementById('payment-schedule-table');
@@ -157,7 +157,6 @@ function fetchServiceFees() {
         .catch(error => console.error('Error fetching service fees:', error));
 }
 
-
 function createHeaderCell(row, text) {
     let cell = row.insertCell();
     cell.textContent = text;
@@ -214,7 +213,7 @@ function confirmPayment() {
     let balanceDueElement = document.getElementById('balance-due-amount');
     let balanceDue = parseFloat(balanceDueElement.textContent.replace('$', ''));
     let paymentMethod = document.getElementById('payment_method').value;
-    let paymentPurpose = document.getElementById('payment_purpose').value; // Added this line
+    let paymentPurpose = document.getElementById('payment_purpose').value; // Ensure this line is present
     let paymentMemo = document.getElementById('memo').value;
     let paymentReference = document.getElementById('payment_reference').value;
     let paymentId = document.getElementById('payment-id').value;
@@ -230,7 +229,7 @@ function confirmPayment() {
     let formData = new FormData();
     formData.append('amount', paymentAmount);
     formData.append('payment_method', paymentMethod);
-    formData.append('payment_purpose', paymentPurpose); // Added this line
+    formData.append('payment_purpose', paymentPurpose); // Ensure this line is present
     formData.append('memo', paymentMemo);
     formData.append('payment_reference', paymentReference);
 
@@ -269,7 +268,6 @@ function confirmPayment() {
     $('#paymentModal').modal('hide');
 }
 
-
 function clearPaymentForm() {
     document.getElementById('payment-form').reset();
     document.getElementById('payment-id').value = '';
@@ -297,8 +295,7 @@ function editPayment(paymentId, amount, paymentMethod, paymentReference, memo, p
     $('#paymentModal').modal('show');
 }
 
-
-function updatePaymentsTable(paymentAmount, paymentMethod, paymentReference, paymentMemo, paymentId, paymentAction) {
+function updatePaymentsTable(paymentAmount, paymentMethod, paymentPurpose, paymentReference, paymentMemo, paymentId, paymentAction) {
     let paymentsTableBody = document.querySelector('.existing-payments-table tbody');
 
     if (paymentAction === 'edit') {
@@ -306,9 +303,9 @@ function updatePaymentsTable(paymentAmount, paymentMethod, paymentReference, pay
         if (rowToUpdate) {
             rowToUpdate.cells[1].textContent = `$${paymentAmount.toFixed(2)}`;
             rowToUpdate.cells[2].textContent = formatPaymentMethod(paymentMethod);
-            rowToUpdate.cells[3].textContent = paymentPurpose;
-            rowToUpdate.cells[3].textContent = paymentReference;
-            rowToUpdate.cells[4].textContent = paymentMemo;
+            rowToUpdate.cells[3].textContent = paymentPurpose; // Ensure this line uses the paymentPurpose parameter
+            rowToUpdate.cells[4].textContent = paymentReference;
+            rowToUpdate.cells[5].textContent = paymentMemo;
         }
     } else {
         let newRow = paymentsTableBody.insertRow();
@@ -320,7 +317,7 @@ function updatePaymentsTable(paymentAmount, paymentMethod, paymentReference, pay
         newRow.insertCell().textContent = formattedDate;
         newRow.insertCell().textContent = `$${paymentAmount.toFixed(2)}`;
         newRow.insertCell().textContent = formatPaymentMethod(paymentMethod);
-        newRow.insertCell().textContent = paymentPurpose(paymentPurpose);
+        newRow.insertCell().textContent = paymentPurpose; // Ensure this line uses the paymentPurpose parameter
         newRow.insertCell().textContent = paymentReference;
         newRow.insertCell().textContent = paymentMemo;
 
@@ -332,6 +329,34 @@ function updatePaymentsTable(paymentAmount, paymentMethod, paymentReference, pay
     }
 
     updateBalanceDue(paymentAmount);
+}
+
+function updateBalanceDue(paymentAmount) {
+    let balanceDueElement = document.getElementById('balance-due-amount');
+    let balanceDue = parseFloat(balanceDueElement.textContent.replace('$', '')) || 0;
+    let newBalanceDue = balanceDue - paymentAmount;
+    balanceDueElement.textContent = `$${newBalanceDue.toFixed(2)}`;
+}
+
+function editPayment(paymentId, amount, paymentMethod, paymentReference, memo, paymentPurpose) {
+    document.getElementById('payment-id').value = paymentId;
+    document.getElementById('amount').value = amount;
+    document.getElementById('payment_method').value = paymentMethod;
+    document.getElementById('payment_reference').value = paymentReference || ''; // Use empty string instead of null
+    document.getElementById('memo').value = memo || ''; // Use empty string instead of null
+
+    // Set the payment purpose dropdown value
+    const paymentPurposeElement = document.getElementById('payment_purpose');
+    const options = paymentPurposeElement.options;
+    for (let i = 0; i < options.length; i++) {
+        if (options[i].text === paymentPurpose) {
+            paymentPurposeElement.selectedIndex = i;
+            break;
+        }
+    }
+
+    document.getElementById('payment-action').value = 'edit';
+    $('#paymentModal').modal('show');
 }
 
 function formatPaymentMethod(method) {
@@ -400,8 +425,6 @@ function loadExistingPayments() {
         .catch(error => console.error('Error fetching existing payments:', error));
 }
 
-
-
 document.addEventListener('DOMContentLoaded', function() {
     loadExistingPayments();
 
@@ -413,6 +436,11 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         console.log("No payment schedule exists for contract " + contractId);
     }
+
+    // Add an empty form when the modal is shown
+    $('#scheduleModal').on('show.bs.modal', function () {
+        addFormsetEntry('paymentScheduleEntries', 'id_schedule_payments-TOTAL_FORMS', '.payment-form');
+    });
 
     let scheduleDropdown = document.getElementById('payment-schedule');
     let initialScheduleType = scheduleDropdown.value;

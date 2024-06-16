@@ -1410,18 +1410,18 @@
             <div class="modal-body">
                 <form id="scheduleForm" method="post" action="{% url 'contracts:create_or_update_schedule' contract_id=contract.contract_id %}">
                     {% csrf_token %}
-                    {{ schedule_payment_formset.management_form }}  <!-- This renders TOTAL_FORMS for the payment schedule -->
-                    <hr>  <!-- Divider between contract number and schedule type -->
+                    {{ schedule_payment_formset.management_form }} <!-- This renders TOTAL_FORMS for the payment schedule -->
+                    <hr> <!-- Divider between contract number and schedule type -->
                     {{ schedule_form.as_p }}
-                    <hr>  <!-- Divider between schedule type and payment entries -->
-                    <!-- Empty Payment Form -->
-                    <div class="payment-form empty-payment-form">
+                    <hr> <!-- Divider between schedule type and payment entries -->
+                    <!-- Empty Payment Form (used for cloning) -->
+                    <div class="payment-form empty-payment-form" style="display: none;">
                         {{ schedule_payment_formset.empty_form.as_p }}
                     </div>
-                    <hr>  <!-- Divider between empty payment form and existing payment entries -->
+                    <hr> <!-- Divider between empty payment form and existing payment entries -->
                     <div id="paymentScheduleEntries">
                         {% for form in schedule_payment_formset %}
-                            <div class="payment-form mb-3">  <!-- Ensure each form wrapper has the payment-form class -->
+                            <div class="payment-form mb-3"> <!-- Ensure each form wrapper has the payment-form class -->
                                 <div class="form-check form-check-inline">
                                     <input type="checkbox" class="form-check-input edit-toggle" id="edit_{{ forloop.counter }}" onclick="toggleEdit(this)">
                                     <label for="edit_{{ forloop.counter }}" class="form-check-label ml-2 mb-0">Enable Editing</label>
@@ -1430,15 +1430,15 @@
                                     {{ form.as_p }}
                                 </div>
                             </div>
-                            <hr>  <!-- Divider between each payment entry -->
+                            <hr> <!-- Divider between each payment entry -->
                         {% endfor %}
                     </div>
-                    <button type="button" class="btn-close" onclick="addFormsetEntry('paymentScheduleEntries', 'id_schedule_payments-TOTAL_FORMS', '.payment-form')">Add Payment Entry</button>
+                    <button type="button" class="btn btn-dusty-pink" onclick="addFormsetEntry('paymentScheduleEntries', 'id_schedule_payments-TOTAL_FORMS', '.payment-form')">Add Payment Entry</button>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-close" data-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-dusty-pink" form="scheduleForm" onclick="enableAllInputs()">Save changes</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary" form="scheduleForm" onclick="enableAllInputs()">Save changes</button>
             </div>
         </div>
     </div>
@@ -1461,15 +1461,51 @@ function enableAllInputs() {
     });
 }
 
-// Disable all form fields initially
+function addFormsetEntry(containerId, totalFormsId, formClass) {
+    let container = document.getElementById(containerId);
+    let totalForms = document.getElementById(totalFormsId);
+    if (!totalForms) {
+        console.error('Total forms input not found:', totalFormsId);
+        return;
+    }
+    let currentTotal = parseInt(totalForms.value, 10);
+
+    // Clone the empty form template
+    let emptyFormTemplate = document.querySelector(`${formClass}.empty-payment-form`);
+    if (!emptyFormTemplate) {
+        console.error('Empty form template not found:', formClass);
+        return;
+    }
+    let newFormHtml = emptyFormTemplate.innerHTML.replace(/__prefix__/g, currentTotal);
+
+    // Create a new form element and set its inner HTML
+    let newFormDiv = document.createElement('div');
+    newFormDiv.classList.add('payment-form', 'mb-3');
+    newFormDiv.innerHTML = newFormHtml;
+
+    // Append the new form to the container
+    container.appendChild(newFormDiv);
+
+    // Increment the total forms count
+    totalForms.value = currentTotal + 1;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     var editToggles = document.querySelectorAll('.edit-toggle');
-
     editToggles.forEach(function(toggle) {
         toggleEdit(toggle);
     });
+
+    // Add an empty form when the modal is shown
+    $('#scheduleModal').on('show.bs.modal', function () {
+        // Ensure only one empty form is added initially
+        if (document.querySelectorAll('#paymentScheduleEntries .payment-form').length === 0) {
+            addFormsetEntry('paymentScheduleEntries', 'id_schedule_payments-TOTAL_FORMS', '.payment-form');
+        }
+    });
 });
 </script>
+
 
 
 <!-- Service Fee Modal -->

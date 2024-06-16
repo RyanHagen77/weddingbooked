@@ -2179,7 +2179,7 @@ def create_or_update_schedule(request, contract_id):
             schedule_payment_formset.save()
 
             # Create or update service fees in the custom schedule
-            service_fees = request.POST.getlist('service_fees')  # Assuming service fees are sent in the POST data
+            service_fees = request.POST.getlist('service_fees')
             if service_fees:
                 for fee in service_fees:
                     fee_data = fee.split(',')
@@ -2187,14 +2187,22 @@ def create_or_update_schedule(request, contract_id):
                     SchedulePayment.objects.create(
                         schedule=schedule,
                         purpose=fee_purpose,
-                        due_date=contract.event_date,  # or another appropriate date
+                        due_date=contract.event_date,
                         amount=Decimal(fee_data[1])
                     )
 
             return HttpResponseRedirect(reverse('contracts:contract_detail', kwargs={'id': contract_id}) + '#payments')
 
-    # If it's not a POST request or if the form is not valid, redirect back to the contract detail page
-    return redirect(reverse('contracts:contract_detail', kwargs={'id': contract_id}))
+    else:
+        schedule_form = PaymentScheduleForm(instance=schedule)
+        schedule_payment_formset = SchedulePaymentFormSet(instance=schedule)
+
+    return render(request, 'contracts/schedule_form.html', {
+        'contract': contract,
+        'schedule_form': schedule_form,
+        'schedule_payment_formset': schedule_payment_formset,
+    })
+
 
 
 
