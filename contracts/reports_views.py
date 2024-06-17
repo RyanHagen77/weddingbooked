@@ -1035,9 +1035,7 @@ def payments_due_report(request):
         end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
 
     # Filter contracts based on location
-    contract_filters = {
-        'event_date__range': (start_date, end_date)
-    }
+    contract_filters = {}
     if location_id != 'all':
         contract_filters['location_id'] = location_id
 
