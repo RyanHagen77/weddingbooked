@@ -673,10 +673,9 @@ class Contract(models.Model):
         # Custom contract number generation
         if not self.custom_contract_number:
             year, month = timezone.now().strftime("%y"), timezone.now().strftime("%m")
-            last_contract = Contract.objects.filter(custom_contract_number__startswith=f"{year}-{month}").order_by(
-                '-custom_contract_number').first()
-
-            print(f"Last contract: {last_contract}")
+            last_contract = Contract.objects.filter(
+                custom_contract_number__regex=r'^[A-Z]{3}' + year + '-' + month + r'-\d+$'
+            ).order_by('-custom_contract_number').first()
 
             new_number = int(last_contract.custom_contract_number.split('-')[-1]) + 1 if last_contract else 1
 
@@ -687,16 +686,15 @@ class Contract(models.Model):
                     primary_contact_last_name = name_parts[-1][:3].upper()
                 else:
                     primary_contact_last_name = name_parts[0][:3].upper()  # In case only one name is provided
-                print(f"Primary contact last name (first 3 letters): {primary_contact_last_name}")
             else:
                 primary_contact_last_name = "UNK"  # Fallback in case primary_contact is not set
-                print("Primary contact last name is not set. Using 'UNK' as fallback.")
 
             # Format the custom contract number as COU24-05-06
             self.custom_contract_number = f"{primary_contact_last_name}{year}-{month}-{str(new_number).zfill(2)}"
-            print(f"Generated custom contract number: {self.custom_contract_number}")
         else:
             print("Custom contract number already set.")
+
+        super().save(*args, **kwargs)  # Call the "real" save() method.
 
 
         # Set tax rate based on location before saving
