@@ -97,8 +97,23 @@
 
     <!-- Include Bootstrap Datepicker JS -->
     <script>
-        function clearForm(form) {
-            form.reset();
-            window.location.href = "{% url 'contracts:search' %}";
+    function clearForm(form) {
+        // Reset the form
+        form.reset();
+
+        // Get the base URL without any query parameters
+        const baseUrl = window.location.origin + window.location.pathname;
+
+        // Change the browser's URL without reloading the page
+        window.history.replaceState({}, document.title, baseUrl);
+
+        // Clear the input values in the form
+        $(form).find('input, select').val('');
+
+        // Ensure CSRF token is retained if necessary
+        const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+        if (csrfToken) {
+            $(form).find('input[name="csrfmiddlewaretoken"]').val(csrfToken);
         }
+    }
     </script>

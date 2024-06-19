@@ -16,31 +16,30 @@
     {% endblock %}
 </head>
 <body>
-    <header>
-        <!-- Navigation, site title, etc. -->
-        <div class="header">
-            <div class="logo">
-                <!-- Add your logo here -->
-                <img src="{{ logo_url }}" alt="Logo">
-            </div>
-            <ul class="menu">
-                <li class="menu-item"><a href="{% url 'users:tasks' %}">Tasks</a></li>
-                <li class="menu-item"><a href="{% url 'contracts:contract_new' %}">New Contract</a></li>
-                <li class="menu-item"><a href="{% url 'contracts:reports' %}">Reports</a></li>
-                <li class="menu-item"><a href="{% url 'admin:index' %}" target="_blank">Admin</a></li>
-                <li class="menu-item"><a href="{% url 'users:event_staff' %}">Event Staff</a></li>
-                <li class="menu-item"><a href="{% url 'contracts:search' %}">Search</a></li>
-            </ul>
-            <div class="user-info">
-                <span>Hello, {{ request.user.first_name }}</span>
-                <form action="{% url 'users:logout' %}" method="post" style="margin-left: 10px;">
-                    {% csrf_token %}
-                    <input type="submit" value="Logout" class="logout-button">
-                </form>
-            </div>
+    <!-- Navigation, site title, etc. -->
+    <div class="header">
+        <div class="logo">
+            <!-- Add your logo here -->
+            <img src="{{ logo_url }}" alt="Logo">
         </div>
-    </header>
-
+        <div class="user-info">
+            <span>Hello, {{ request.user.first_name }}</span>
+            <form action="{% url 'users:logout' %}" method="post" style="margin-left: 10px;">
+                {% csrf_token %}
+                <input type="submit" value="Logout" class="logout-button">
+            </form>
+        </div>
+    </div>
+    <div class="menu-container">
+        <ul class="menu">
+            <li class="menu-item"><a href="{% url 'users:tasks' %}">Tasks</a></li>
+            <li class="menu-item"><a href="{% url 'contracts:contract_new' %}">New Contract</a></li>
+            <li class="menu-item"><a href="{% url 'contracts:reports' %}">Reports</a></li>
+            <li class="menu-item"><a href="{% url 'users:event_staff' %}">Event Staff</a></li>
+            <li class="menu-item"><a href="{% url 'contracts:contract_search' %}">Contract Search</a></li>
+            <li class="menu-item"><a href="{% url 'contracts:booking_search' %}">Booking Search</a></li>
+        </ul>
+    </div>
     <main>
         <div class="main-content">
             {% block content %}{% endblock %}
@@ -56,7 +55,8 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <!-- Custom JavaScript can be included here or in extra_head, depending on dependencies -->
-    <script src="{% static 'contracts/js/eventStaffManagement.js' %}" defer></script>
+    <script src="{% static 'communication/js/tasks.js' %}"></script>
+
     <script>
         $(function () {
             $('#myTab a').on('click', function (e) {

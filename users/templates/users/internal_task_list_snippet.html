@@ -24,7 +24,7 @@
             {% csrf_token %}
             <input type="checkbox" name="is_completed" class="mark-complete-checkbox" data-mark-complete-url="{% url 'users:mark_complete' task.id %}" {% if task.is_completed %}checked{% endif %}>
         </form>
-        <button type="button" class="btn btn-sm btn-primary edit-task-btn" data-toggle="modal" data-target="#editTaskModal"
+        <button type="button" class="btn-dusty-pink edit-task-btn" data-toggle="modal" data-target="#editTaskModal"
                 data-task-id="{{ task.id }}"
                 data-sender-id="{{ task.sender.id }}"
                 data-assigned-to-id="{{ task.assigned_to.id }}"
@@ -59,7 +59,7 @@
             {% csrf_token %}
             <input type="checkbox" name="is_completed" class="mark-complete-checkbox" data-mark-complete-url="{% url 'users:mark_complete' task.id %}" {% if task.is_completed %}checked{% endif %}>
         </form>
-        <button type="button" class="btn btn-sm btn-primary edit-task-btn" data-toggle="modal" data-target="#editTaskModal"
+        <button type="button" class="btn-dusty-pink edit-task-btn" data-toggle="modal" data-target="#editTaskModal"
                 data-task-id="{{ task.id }}"
                 data-sender-id="{{ task.sender.id }}"
                 data-assigned-to-id="{{ task.assigned_to.id }}"

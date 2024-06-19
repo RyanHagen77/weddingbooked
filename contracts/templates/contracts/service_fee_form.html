@@ -1,0 +1,46 @@
+<!-- contracts/service_fee_form.html -->
+<form id="serviceFeeForm" method="post" action="{% url 'contracts:add_service_fee' contract_id=contract.contract_id %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.path }}#serviceFees">
+    {{ service_fee_formset.management_form }}
+    <hr>
+    <!-- Empty Service Fee Form -->
+    <div class="service-fee-form empty-service-fee-form">
+        {{ service_fee_formset.empty_form.as_p }}
+    </div>
+    <hr>
+    <div id="serviceFeeEntries">
+        {% for form in service_fee_formset %}
+            <div class="service-fee-form mb-3">
+                <div class="form-check form-check-inline">
+                    <input type="checkbox" class="form-check-input edit-toggle" id="edit_fee_{{ forloop.counter }}" onclick="toggleEdit(this)">
+                    <label for="edit_fee_{{ forloop.counter }}" class="form-check-label ml-2 mb-0">Enable Editing</label>
+                </div>
+                <div class="form-fields mt-2" id="form_fields_fee_{{ forloop.counter }}">
+                    {{ form.as_p }}
+                </div>
+            </div>
+            <hr>
+        {% endfor %}
+    </div>
+</form>
+
+<script>
+function toggleEdit(checkbox) {
+    var formFields = checkbox.closest('.service-fee-form').querySelector('.form-fields');
+    var inputs = formFields.querySelectorAll('input, select, textarea');
+
+    inputs.forEach(function(input) {
+        input.disabled = !checkbox.checked;
+    });
+}
+
+// Disable all form fields initially
+document.addEventListener('DOMContentLoaded', function() {
+    var editToggles = document.querySelectorAll('.edit-toggle');
+
+    editToggles.forEach(function(toggle) {
+        toggleEdit(toggle);
+    });
+});
+</script>

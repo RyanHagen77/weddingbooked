@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container">
-    <h4>Staff Rankings</h4>
+<div class="event-staff-form">
+    <h5 class="event-staff-header">Staff Rankings</h5>
     <form method="get" action="">
-        <label for="role">Select Role:</label>
-        <select id="role" name="role" onchange="this.form.submit()">
+        <label for="role" class="event-staff-label">Select Role:</label>
+        <select id="role" name="role" class="event-staff-select" onchange="this.form.submit()">
             {% for role in roles %}
             <option value="{{ role.name }}" {% if role.name == current_role %}selected{% endif %}>
                 {{ role.get_name_display }}
@@ -13,7 +13,7 @@
         </select>
     </form>
 
-    <table class="table">
+    <table class="event-staff-table table-bordered">
         <thead>
             <tr>
                 <th>Staff Member</th>
@@ -31,7 +31,7 @@
                 <td>{{ item.staff.next_year_bookings }}</td>
                 <td>{{ item.days_off_count }}</td>
                 <td>
-                    <button class="btn btn-dusty-pink" onclick="location.href='{% url 'users:event_staff_schedule' item.staff.id %}'">View Schedule</button>
+                    <button class="btn-dusty-pink onclick="location.href='{% url 'users:event_staff_schedule' item.staff.id %}'">View Schedule</button>
                 </td>
             </tr>
             {% endfor %}

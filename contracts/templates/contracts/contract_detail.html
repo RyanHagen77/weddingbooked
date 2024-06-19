@@ -15,82 +15,80 @@
 
     <!-- Include your custom CSS file -->
     <link rel="stylesheet" href="{% static 'contracts/styles.css' %}">
-
     <script src="{% static 'contracts/js/booking_notes.js' %}"></script>
 {% endblock head %}
 
 {% block content %}
 <body data-contract-id="{{ contract.contract_id }}" data-payment-schedule-id="{{ contract.payment_schedule.id }}">
 
-<!-- Top Grey Bar -->
-    <div class="bg-light text-dark py-2">
-        <div class="container">
-            <div class="row justify-content-between">
-                <div class="col-auto">
-                    <h4>Contract ID: {{ contract.custom_contract_number }}</h4>
-                </div>
-                <div class="col-auto">
-                    <a href="{% url 'contracts:generate_contract_pdf' contract_id=contract.contract_id %}" class="btn btn-dusty-pink" target="_blank">Print Contract</a>
-                    <a href="{% url 'contracts:contract_agreement' contract_id=contract.contract_id %}" class="btn btn-dusty-pink" target="_blank">View Contract</a>
-                    <a href="{% url 'communication:send_portal_access' contract_id=contract.contract_id %}" class="btn btn-dusty-pink" id="give-portal-access-btn">Give Portal Access</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Include your other scripts here -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Event listener for the portal access button
-            const portalAccessButton = document.getElementById('give-portal-access-btn');
-            console.log('Checking for portal access button');
-
-            if (portalAccessButton) {
-                console.log('Portal access button found');
-                portalAccessButton.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    console.log('Portal access button clicked');
-                    const userConfirmed = confirm("Are you sure you want to give portal access?");
-                    if (userConfirmed) {
-                        console.log('User confirmed');
-                        window.location.href = this.href;
-                    } else {
-                        console.log('User canceled');
-                    }
-                });
-            } else {
-                console.log('Portal access button not found');
-            }
-        });
-    </script>
-
     <!-- Main Header Section -->
-    <header class="{% if contract.is_code_92 %}bg-dark-sienna{% else %}bg-cool-grey{% endif %} text-white py-3">
+    <header class="bg-cool-grey text-white py-1">
         <div class="container">
-            <div class="row">
-                <!-- Contract Date, Location, Lead Source, CSR, Status -->
-                <div class="col-lg-4">
-                    <p>Contract Date: {{ contract.contract_date|date:"Y-m-d" }}</p>
-                    <p id="header-location">Location: {{ contract.location.name }}</p>
-                    <p id="header-csr">Sales Person: {{ contract.csr.get_full_name }}</p>
-                    <p id="header-status">Status: {{ contract.get_status_display }}</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <p class="mb-0 small-text">Event Date: {{ contract.event_date|date:"Y-m-d" }}</p>
                 </div>
-
-                <!-- Primary Contact Information -->
-                <div class="col-lg-4">
-                    <p>Event Date: {{ contract.event_date }}</p>
-                    <p id="header-primary-contact">Primary Contact: {{ contract.client.primary_contact }}</p>
-                    <p id="header-partner-contact">Partner Contact: {{ contract.client.partner_contact }}</p>
-                    <p id="header-primary-email">Primary Email: {{ contract.client.primary_email }}</p>
-                    <p id="header-primary-phone">Primary Phone 1: {{ contract.client.primary_phone1 }}</p>
+                <div class="d-flex align-items-center">
+                    <a href="{% url 'contracts:generate_contract_pdf' contract_id=contract.contract_id %}" class="section-link small-text" target="_blank">Print Contract</a>
+                    <span class="mx-2 section-divider">|</span>
+                    <a href="{% url 'contracts:contract_agreement' contract_id=contract.contract_id %}" class="section-link small-text" target="_blank">View Contract</a>
+                    <span class="mx-2 section-divider">|</span>
+                    <a href="{% url 'communication:send_portal_access' contract_id=contract.contract_id %}" class="section-link small-text" id="give-portal-access-btn">Give Portal Access</a>
                 </div>
-
-                <!-- Partner Contact Information -->
-                <div class="col-lg-4">
+                <div class="d-flex align-items-center">
+                    <p class="mb-0 small-text">Contract ID: {{ contract.custom_contract_number }}</p>
                 </div>
             </div>
         </div>
     </header>
+
+    <!-- Main Content Section -->
+    <main class="container mt-3">
+        <div class="card-container">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="card bg-white">
+                        <div class="card-body">
+                            <p class="card-text">Status: {{ contract.get_status_display }}</p>
+                            <p class="card-text">Location: {{ contract.location.name }}</p>
+                            <p class="card-text">Sales Person: {{ contract.csr.get_full_name }}</p>
+                            <p class="card-text">Contract Date: {{ contract.contract_date|date:"Y-m-d" }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card bg-white">
+                        <div class="card-body">
+                            <p class="card-text">Primary Contact: {{ contract.client.primary_contact }}</p>
+                            <p class="card-text">Partner Contact: {{ contract.client.partner_contact }}</p>
+                            <p class="card-text">Primary Email: {{ contract.client.primary_email }}</p>
+                            <p class="card-text">Primary Phone 1: {{ contract.client.primary_phone1 }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card bg-white">
+                        <div class="card-body">
+                            <p class="card-text">Next Payment Due: ${{ contract.payment_amount_due }}</p>
+                            <p class="card-text">Due Date: {{ contract.due_date }}</p>
+                            <p class="card-text">Balance Due: ${{ contract.balance_due }}</p>
+                            <p class="card-text">Contract Total: ${{ contract.final_total }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+
+   <!-- Bootstrap and other libraries should load after jQuery -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Custom JavaScript can be included here or in extra_head, depending on dependencies -->
+    <script src="{% static 'communication/js/tasks.js' %}"></script>
+</body>
+
 
     <div class="container mt-3">
         <!-- Hidden Field for Total Cost -->
@@ -319,7 +317,7 @@
 
                                 <!-- Photography Services Section -->
                                 <div class="service-category">
-                                    <h3>Photography Services</h3>
+                                    <h3></h3>
                                     <table class="table table-bordered">
                                         <thead>
                                             <tr>
@@ -857,7 +855,7 @@
                                     </div>
                                 </div>
                             </form>
-                            <table class="table">
+                            <table class="table table-bordered">
                                 <thead>
                                     <tr>
                                         <th>Memo</th>
@@ -893,7 +891,7 @@
                                     <input type="hidden" name="contract_id" value="{{ contract.contract_id }}">
                                     {{ products_formset.management_form }}
                                     <table id="products-table" class="table table-bordered table-hover">
-                                        <thead class="thead-light">
+                                        <thead class="table-bordered">
                                             <tr>
                                                 <th class="product-column">Product</th>
                                                 <th class="description-column">Description</th>
@@ -947,7 +945,7 @@
                         <div class="col-md-6">
                             <div class="card mb-4">
                                 <div class="card-header">
-                                    <h5>Documents</h5>
+                                    <h6>Documents</h6>
                                 </div>
                                 <div class="card-body">
                                     {% if documents %}
@@ -975,7 +973,7 @@
                         <div class="col-md-6">
                             <div class="card mb-4">
                                 <div class="card-header">
-                                    <h5>Signed Digital Agreements</h5>
+                                    <h6>Signed Digital Agreements</h6>
                                 </div>
                                 <div class="card-body">
                                     <table class="table table-striped">
@@ -1019,7 +1017,7 @@
                         <div class="col-md-12">
                             <div class="card mb-4">
                                 <div class="card-header">
-                                    <h5>Upload Documents</h5>
+                                    <h6>Upload Documents</h6>
                                 </div>
                                 <div class="card-body">
                                     <form method="post" action="" enctype="multipart/form-data">
@@ -1037,16 +1035,112 @@
                     <!-- Tab Navigation -->
                     <ul class="nav nav-tabs" id="myTab" role="tablist">
                         <li class="nav-item">
-                            <a class="nav-link active text-dark-sienna" id="sales-tab" data-toggle="tab" href="#sales" role="tab" aria-controls="sales" aria-selected="true">Sales</a>
+                            <a class="nav-link active text-dark-sienna" id="payments-tab" data-toggle="tab" href="#payments" role="tab" aria-controls="payments" aria-selected="true">Payments</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark-sienna" id="payments-tab" data-toggle="tab" href="#payments" role="tab" aria-controls="payments" aria-selected="false">Payments</a>
+                            <a class="nav-link text-dark-sienna" id="sales-tab" data-toggle="tab" href="#sales" role="tab" aria-controls="sales" aria-selected="false">Sales</a>
                         </li>
                     </ul>
                     <!-- Tab Content -->
                     <div class="tab-content">
+                        <!-- Payments Tab -->
+                        <div class="tab-pane fade show active" id="payments" role="tabpanel" aria-labelledby="payments-tab">
+                            <!-- Payments Content -->
+                            <div class="payments-content">
+                                <!-- Payment Schedule Selection -->
+                                <div class="payment-schedule-selection">
+                                    <label for="payment-schedule">Payment Schedule:</label>
+                                    <select id="payment-schedule" name="payment_schedule" onchange="handleScheduleChange(this.value)" disabled>
+                                        <option value="schedule_a" {% if contract.payment_schedule and contract.payment_schedule.schedule_type == 'schedule_a' %}selected{% endif %}>Schedule A</option>
+                                        <option value="custom" {% if contract.payment_schedule and contract.payment_schedule.schedule_type == 'custom' %}selected{% endif %}>Custom</option>
+                                    </select>
+                                    <button type="button" class="btn btn-dusty-pink" data-toggle="modal" data-target="#scheduleModal">
+                                        Add or Update Schedule
+                                    </button>
+                                    <button type="button" id="receive-payment-button" class="btn btn-dusty-pink" onclick="receivePayment()">Receive Payment</button>
+                                    <button type="button" class="btn btn-dusty-pink" data-toggle="modal" data-target="#serviceFeeModal">
+                                        Add or Update Service Fees
+                                    </button>
+                                </div>
+                                <!-- Payment Schedule Table -->
+                                <div id="payment-schedule-table">
+                                    <!-- Table for displaying Schedule A or custom schedule -->
+                                </div>
+                                <hr>
+                                <!-- Existing Payments Table -->
+                                <div class="text-right">
+                                    <div class="contract-total" data-contract-total="{{ contract.calculate_total_cost }}">
+                                        <strong>Total Contract Amount:</strong> ${{ contract.calculate_total_cost }}
+                                    </div>
+                                    <div class="balance-due" data-initial-balance="{{ contract.balance_due }}">
+                                        <strong>Balance Due:</strong> <span id="balance-due-amount">${{ contract.balance_due|floatformat:2 }}</span>
+                                    </div>
+                                </div>
+                                <hr>
+                                <!-- Existing Payments Section -->
+                                <div class="d-flex justify-content-between align-items-center mt-4">
+                                    <h6>Existing Payments:</h6>
+                                </div>
+                                <table class="table table-hover existing-payments-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Amount</th>
+                                            <th>Method</th>
+                                            <th>Purpose</th>
+                                            <th>Reference</th>
+                                            <th>Memo</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for payment in contract.payments.all %}
+                                        <tr data-payment-id="{{ payment.id }}" data-payment-purpose="{{ payment.payment_purpose.name }}">
+                                            <td>{{ payment.date }}</td>
+                                            <td>${{ payment.amount }}</td>
+                                            <td>{{ payment.get_payment_method_display }}</td>
+                                            <td>{{ payment.payment_purpose.name }}</td>
+                                            <td>{{ payment.payment_reference }}</td>
+                                            <td>{{ payment.memo }}</td>
+                                            <td>
+                                                <button type="button" class="btn btn-info btn-sm" onclick="editPayment('{{ payment.id }}', '{{ payment.amount }}', '{{ payment.payment_method }}', '{{ payment.payment_reference }}', '{{ payment.memo }}', '{{ payment.payment_purpose.id }}')">Edit</button>
+                                                <button type="button" class="btn btn-danger btn-sm" onclick="if(confirm('Are you sure?')){ window.location.href='{% url 'contracts:delete_payment' payment.id %}'; }">Delete</button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <hr>
+                                <!-- Service Fees Section -->
+                                <div class="d-flex justify-content-between align-items-center mt-4">
+                                    <h6>Service Fees:</h6>
+                                    <!-- Hidden input for storing contract ID -->
+                                    <input type="hidden" id="contractId" name="contractId" value="{{ contract.contract_id }}">
+                                </div>
+                                <table id="service-fee-table" class="table service-fees-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Description</th>
+                                            <th>Fee Type</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for fee in contract.servicefees.all %}
+                                        <tr>
+                                            <td>{{ fee.name }}</td>
+                                            <td>{{ fee.description }}</td>
+                                            <td>{{ fee.fee_type }}</td>
+                                            <td>${{ fee.amount|floatformat:2 }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                         <!-- Sales Tab -->
-                        <div class="tab-pane fade show active" id="sales" role="tabpanel" aria-labelledby="sales-tab">
+                        <div class="tab-pane fade" id="sales" role="tabpanel" aria-labelledby="sales-tab">
                             <!-- Financial Content -->
                             <div class="financial-content">
                                 <!-- Services Section -->
@@ -1108,106 +1202,11 @@
                                 </table>
                             </div>
                         </div>
-                        <!-- Payments Tab -->
-                        <div class="tab-pane fade" id="payments" role="tabpanel" aria-labelledby="payments-tab">
-                            <!-- Payments Content -->
-                            <div class="payments-content">
-                                <!-- Payment Schedule Selection -->
-                                <div class="payment-schedule-selection">
-                                    <label for="payment-schedule">Payment Schedule:</label>
-                                    <select id="payment-schedule" name="payment_schedule" onchange="handleScheduleChange(this.value)" disabled>
-                                        <option value="schedule_a" {% if contract.payment_schedule and contract.payment_schedule.schedule_type == 'schedule_a' %}selected{% endif %}>Schedule A</option>
-                                        <option value="custom" {% if contract.payment_schedule and contract.payment_schedule.schedule_type == 'custom' %}selected{% endif %}>Custom</option>
-                                    </select>
-                                    <button type="button" class="btn btn-dusty-pink" data-toggle="modal" data-target="#scheduleModal">
-                                        Add or Update Schedule
-                                    </button>
-                                    <button type="button" id="receive-payment-button" class="btn btn-dusty-pink" onclick="receivePayment()">Receive Payment</button>
-                                    <button type="button" class="btn btn-dusty-pink" data-toggle="modal" data-target="#serviceFeeModal">
-                                        Add or Update Service Fees
-                                    </button>
-                                </div>
-                                <!-- Payment Schedule Table -->
-                                <div id="payment-schedule-table">
-                                    <!-- Table for displaying Schedule A or custom schedule -->
-                                </div>
-                                    <!-- Existing Payments Table -->
-                                <!-- Service Fees Section -->
-                                <div class="d-flex justify-content-between align-items-center mt-4">
-                                    <h5>Service Fees</h5>
-                                    <!-- Hidden input for storing contract ID -->
-                                    <input type="hidden" id="contractId" name="contractId" value="{{ contract.contract_id }}">
-                                    <div class="d-flex align-items-center">
-                                        <div class="text-right">
-                                            <div class="contract-total" data-contract-total="{{ contract.calculate_total_cost }}">
-                                                <strong>Total Contract Amount:</strong> ${{ contract.calculate_total_cost }}
-                                            </div>
-                                            <div class="balance-due" data-initial-balance="{{ contract.balance_due }}">
-                                                <strong>Balance Due:</strong> <span id="balance-due-amount">${{ contract.balance_due|floatformat:2 }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <table id="service-fee-table" class="table service-fees-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Description</th>
-                                            <th>Fee Type</th>
-                                            <th>Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for fee in contract.servicefees.all %}
-                                        <tr>
-                                            <td>{{ fee.name }}</td>
-                                            <td>{{ fee.description }}</td>
-                                            <td>{{ fee.fee_type }}</td>
-                                            <td>${{ fee.amount|floatformat:2 }}</td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                                <!-- Existing Payments Section -->
-                                <div class="d-flex justify-content-between align-items-center mt-4">
-                                    <h5>Existing Payments</h5>
-                                </div>
-                                <table class="table table-hover existing-payments-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Amount</th>
-                                            <th>Method</th>
-                                            <th>Purpose</th> <!-- Added this line -->
-                                            <th>Reference</th>
-                                            <th>Memo</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for payment in contract.payments.all %}
-                                        <tr data-payment-id="{{ payment.id }}" data-payment-purpose="{{ payment.payment_purpose.name }}">
-                                            <td>{{ payment.date }}</td>
-                                            <td>${{ payment.amount }}</td>
-                                            <td>{{ payment.get_payment_method_display }}</td>
-                                            <td>{{ payment.payment_purpose.name }}</td>
-                                            <td>{{ payment.payment_reference }}</td>
-                                            <td>{{ payment.memo }}</td>
-                                            <td>
-                                                <button type="button" class="btn btn-info btn-sm" onclick="editPayment('{{ payment.id }}', '{{ payment.amount }}', '{{ payment.payment_method }}', '{{ payment.payment_reference }}', '{{ payment.memo }}', '{{ payment.payment_purpose.id }}')">Edit</button>
-                                                <button type="button" class="btn btn-danger btn-sm" onclick="if(confirm('Are you sure?')){ window.location.href='{% url 'contracts:delete_payment' payment.id %}'; }">Delete</button>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        </div>
                     </div>
+                </div>
                     <!-- Messages Tab Content -->
                     <div class="tab-pane fade" id="communication" role="tabpanel" aria-labelledby="communication-tab">
-                        <h3>Tasks</h3>
+                        <h5>Tasks</h5>
                         <div id="contractDetailPage">
                         <!-- Task List Container -->
                             <div id="taskListContainer">
@@ -1241,7 +1240,7 @@
 
                         <div id="communicationMessagesContainer">
                             {% for type, messages in messages_by_type.items %}
-                                <h3>{{ type|title }} Messages</h3>
+                                <h5>{{ type|title }} Messages</h5>
                                 {% for message in messages %}
                                     <div class="message">
                                         <p><strong>ID:</strong> {{ message.id }}</p>
@@ -1261,7 +1260,7 @@
                     <!-- Change Log tab content -->
                     <div class="tab-pane fade" id="changelog">
                         <div class="table-responsive">
-                            <table class="table">
+                            <table class="table-bordered">
                                 <thead>
                                     <tr>
                                         <th>Date</th>
@@ -1410,18 +1409,18 @@
             <div class="modal-body">
                 <form id="scheduleForm" method="post" action="{% url 'contracts:create_or_update_schedule' contract_id=contract.contract_id %}">
                     {% csrf_token %}
-                    {{ schedule_payment_formset.management_form }} <!-- This renders TOTAL_FORMS for the payment schedule -->
-                    <hr> <!-- Divider between contract number and schedule type -->
+                    {{ schedule_payment_formset.management_form }}
+                    <hr>
                     {{ schedule_form.as_p }}
-                    <hr> <!-- Divider between schedule type and payment entries -->
+                    <hr>
                     <!-- Empty Payment Form (used for cloning) -->
                     <div class="payment-form empty-payment-form" style="display: none;">
                         {{ schedule_payment_formset.empty_form.as_p }}
                     </div>
-                    <hr> <!-- Divider between empty payment form and existing payment entries -->
+                    <hr>
                     <div id="paymentScheduleEntries">
                         {% for form in schedule_payment_formset %}
-                            <div class="payment-form mb-3"> <!-- Ensure each form wrapper has the payment-form class -->
+                            <div class="payment-form mb-3">
                                 <div class="form-check form-check-inline">
                                     <input type="checkbox" class="form-check-input edit-toggle" id="edit_{{ forloop.counter }}" onclick="toggleEdit(this)">
                                     <label for="edit_{{ forloop.counter }}" class="form-check-label ml-2 mb-0">Enable Editing</label>
@@ -1430,7 +1429,7 @@
                                     {{ form.as_p }}
                                 </div>
                             </div>
-                            <hr> <!-- Divider between each payment entry -->
+                            <hr>
                         {% endfor %}
                     </div>
                     <button type="button" class="btn btn-dusty-pink" onclick="addFormsetEntry('paymentScheduleEntries', 'id_schedule_payments-TOTAL_FORMS', '.payment-form')">Add Payment Entry</button>
@@ -1443,68 +1442,6 @@
         </div>
     </div>
 </div>
-
-<script>
-function toggleEdit(checkbox) {
-    var formFields = checkbox.closest('.payment-form').querySelector('.form-fields');
-    var inputs = formFields.querySelectorAll('input, select, textarea');
-
-    inputs.forEach(function(input) {
-        input.disabled = !checkbox.checked;
-    });
-}
-
-function enableAllInputs() {
-    var inputs = document.querySelectorAll('#scheduleForm input, #scheduleForm select, #scheduleForm textarea');
-    inputs.forEach(function(input) {
-        input.disabled = false;
-    });
-}
-
-function addFormsetEntry(containerId, totalFormsId, formClass) {
-    let container = document.getElementById(containerId);
-    let totalForms = document.getElementById(totalFormsId);
-    if (!totalForms) {
-        console.error('Total forms input not found:', totalFormsId);
-        return;
-    }
-    let currentTotal = parseInt(totalForms.value, 10);
-
-    // Clone the empty form template
-    let emptyFormTemplate = document.querySelector(`${formClass}.empty-payment-form`);
-    if (!emptyFormTemplate) {
-        console.error('Empty form template not found:', formClass);
-        return;
-    }
-    let newFormHtml = emptyFormTemplate.innerHTML.replace(/__prefix__/g, currentTotal);
-
-    // Create a new form element and set its inner HTML
-    let newFormDiv = document.createElement('div');
-    newFormDiv.classList.add('payment-form', 'mb-3');
-    newFormDiv.innerHTML = newFormHtml;
-
-    // Append the new form to the container
-    container.appendChild(newFormDiv);
-
-    // Increment the total forms count
-    totalForms.value = currentTotal + 1;
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    var editToggles = document.querySelectorAll('.edit-toggle');
-    editToggles.forEach(function(toggle) {
-        toggleEdit(toggle);
-    });
-
-    // Add an empty form when the modal is shown
-    $('#scheduleModal').on('show.bs.modal', function () {
-        // Ensure only one empty form is added initially
-        if (document.querySelectorAll('#paymentScheduleEntries .payment-form').length === 0) {
-            addFormsetEntry('paymentScheduleEntries', 'id_schedule_payments-TOTAL_FORMS', '.payment-form');
-        }
-    });
-});
-</script>
 
 
 
@@ -1521,20 +1458,33 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="modal-body">
                 <form id="serviceFeeForm" method="post" action="{% url 'contracts:add_service_fee' contract_id=contract.contract_id %}">
                     {% csrf_token %}
-                    {{ service_fee_formset.management_form }}  <!-- Renders management form for the formset -->
-                    <div id="formsetContainer">
+                    {{ service_fee_formset.management_form }}
+                    <hr>
+                    <!-- Empty Service Fee Form (used for cloning) -->
+                    <div class="service-fee-form empty-service-fee-form" style="display: none;">
+                        {{ service_fee_formset.empty_form.as_p }}
+                    </div>
+                    <hr>
+                    <div id="serviceFeeEntries">
                         {% for form in service_fee_formset %}
-                            <div class="service-fee-form">
-                                {{ form.as_p }}
+                            <div class="service-fee-form mb-3">
+                                <div class="form-check form-check-inline">
+                                    <input type="checkbox" class="form-check-input edit-toggle" id="edit_fee_{{ forloop.counter }}" onclick="toggleEdit(this)">
+                                    <label for="edit_fee_{{ forloop.counter }}" class="form-check-label ml-2 mb-0">Enable Editing</label>
+                                </div>
+                                <div class="form-fields mt-2" id="form_fields_fee_{{ forloop.counter }}">
+                                    {{ form.as_p }}
+                                </div>
                             </div>
-                            <hr>  <!-- Divider between each payment entry -->
+                            <hr>
                         {% endfor %}
                     </div>
+                    <button type="button" class="btn btn-dusty-pink" onclick="addFormsetEntry('serviceFeeEntries', 'id_servicefees-TOTAL_FORMS', '.service-fee-form')">Add Service Fee Entry</button>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-close" data-dismiss="modal">Close</button>
-                <button type="submit" class="btn-dusty-pink" form="serviceFeeForm">Save changes</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary" form="serviceFeeForm" onclick="enableAllInputs()">Save changes</button>
             </div>
         </div>
     </div>

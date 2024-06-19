@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Contract Search{% endblock %}
+
+{% block content %}
+<form method="GET" action="{% url 'contracts:contract_search' %}" class="search-form">
+    {% csrf_token %}
+    <div class="quick-search-group">
+        <div class="form-group">
+            <input type="text" name="q" placeholder="Quick Search" value="{{ request.GET.q }}">
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Search">
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="{{ form.contract_number.id_for_label }}">Contract ID:</label>
+                {{ form.contract_number }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.primary_contact.id_for_label }}">Primary contact:</label>
+                {{ form.primary_contact }}
+            </div>
+            <div class="form-group">
+                <label>Contract Date:</label>
+                <div class="date-range-group">
+                    {{ form.contract_date_start }}
+                    {{ form.contract_date_end }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Event Date:</label>
+                <div class="date-range-group">
+                    {{ form.event_date_start }}
+                    {{ form.event_date_end }}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="{{ form.location.id_for_label }}">Location:</label>
+                {{ form.location }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.csr.id_for_label }}">Sales Person:</label>
+                {{ form.csr }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.ceremony_site.id_for_label }}">Ceremony site:</label>
+                {{ form.ceremony_site }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.reception_site.id_for_label }}">Reception site:</label>
+                {{ form.reception_site }}
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="{{ form.status.id_for_label }}">Status:</label>
+                {{ form.status }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.photographer.id_for_label }}">Photographer:</label>
+                {{ form.photographer }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.videographer.id_for_label }}">Videographer:</label>
+                {{ form.videographer }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.photobooth_operator.id_for_label }}">Photobooth Operator:</label>
+                {{ form.photobooth_operator }}
+            </div>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="button-group">
+            <input type="submit" value="Search" class="btn-dusty-pink">
+            <input type="reset" value="Clear" class="btn" onclick="clearForm(this.form)">
+            <!-- Sorting Buttons -->
+            <a href="{% url 'contracts:contract_search' %}?order=asc" class="btn-dusty-pink">Sort Ascending</a>
+            <a href="{% url 'contracts:contract_search' %}?order=desc" class="btn-dusty-pink">Sort Descending</a>
+        </div>
+    </div>
+</form>
+
+{% if contracts %}
+<div class="search-results">
+    <table>
+        <thead>
+            <tr>
+                <th>Contract ID</th>
+                <th>Event Date</th>
+                <th>Primary Contact</th>
+                <th>Photographer</th>
+                <th>Videographer</th>
+                <th>Photobooth</th>
+                <th>Sales Person</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for contract in contracts %}
+        <tr onclick="window.location='{% url 'contracts:contract_detail' id=contract.pk %}';">
+            <td>{{ contract.custom_contract_number }}</td>
+            <td>{{ contract.event_date|date:"Y-m-d" }}</td>
+            <td>{{ contract.client.primary_contact }}</td>
+            {% if contract.photography_package %}
+                <td>
+                    {% if contract.photographer1 %} {{ contract.photographer1.get_full_name }}{% else %} <span style="color:red;">Not Assigned</span>{% endif %}
+                    <br>
+                    {% if contract.photography_additional %}
+                        {% if contract.photographer2 %} {{ contract.photographer2.get_full_name }}{% else %} <span style="color:red;">Not Assigned</span>{% endif %}
+                    {% endif %}
+                </td>
+            {% else %}
+                <td>N/A</td>
+            {% endif %}
+            {% if contract.videography_package %}
+                <td>
+                    {% if contract.videographer1 %} {{ contract.videographer1.get_full_name }}{% else %} <span style="color:red;">Not Assigned</span>{% endif %}
+                    <br>
+                    {% if contract.videography_additional %}
+                        {% if contract.videographer2 %} {{ contract.videographer2.get_full_name }}{% else %} <span style="color:red;">Not Assigned</span>{% endif %}
+                    {% endif %}
+                </td>
+            {% else %}
+                <td>N/A</td>
+            {% endif %}
+            {% if contract.photobooth_package %}
+                <td>
+                    {% if contract.photobooth_op1 %} {{ contract.photobooth_op1.get_full_name }}{% else %} <span style="color:red;">Not Assigned</span>{% endif %}
+                    <br>
+                    {% if contract.photobooth_additional %}
+                        {% if contract.photobooth_op2 %} {{ contract.photobooth_op2.get_full_name }}{% else %} <span style="color:red;">Not Assigned</span>{% endif %}
+                    {% endif %}
+                </td>
+            {% else %}
+                <td>N/A</td>
+            {% endif %}
+            <td>{{ contract.csr.get_full_name }}</td>
+            <td>{{ contract.status }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p>No contracts found</p>
+{% endif %}
+{% endblock %}
+
+{% block extra_head %}
+<script>
+        function clearForm(form) {
+            form.reset();
+            window.location.href = "{% url 'contracts:contract_search' %}";
+        }
+</script>
+{% endblock %}

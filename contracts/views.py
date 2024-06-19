@@ -72,14 +72,12 @@ def get_decimal(value):
 
 def success_view(request):
     return render(request, 'success.html')  # Replace 'success.html' with the actual template name for your success page
+
 @login_required
-def search(request):
+def contract_search(request):
     form = ContractSearchForm(request.GET)
-    contracts = Contract.objects.all().order_by('-event_date')  # Descending order by default
-    tab = request.GET.get('tab', 'contracts')  # Default to 'contracts' if 'tab' is not specified
+    contracts = Contract.objects.all().order_by('-event_date')
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
-
-
 
     order = request.GET.get('order', 'desc')
     if order == 'asc':
@@ -88,7 +86,6 @@ def search(request):
         contracts = contracts.order_by('-event_date')
 
     if form.is_valid():
-        # Existing fields filtering
         if form.cleaned_data.get('location'):
             contracts = contracts.filter(location=form.cleaned_data['location'])
         if form.cleaned_data.get('ceremony_site'):
@@ -96,19 +93,16 @@ def search(request):
         if form.cleaned_data.get('reception_site'):
             contracts = contracts.filter(reception_site__icontains=form.cleaned_data['reception_site'])
 
-        # Event date range filter
         event_date_start = form.cleaned_data.get('event_date_start')
         event_date_end = form.cleaned_data.get('event_date_end')
         if event_date_start and event_date_end:
             contracts = contracts.filter(event_date__range=[event_date_start, event_date_end])
 
-        # Contract date range filter
         contract_date_start = form.cleaned_data.get('contract_date_start')
         contract_date_end = form.cleaned_data.get('contract_date_end')
         if contract_date_start and contract_date_end:
             contracts = contracts.filter(contract_date__range=[contract_date_start, contract_date_end])
 
-        # Custom contract number filter
         if form.cleaned_data.get('contract_number'):
             contracts = contracts.filter(custom_contract_number__icontains=form.cleaned_data['contract_number'])
         if form.cleaned_data.get('primary_contact'):
@@ -118,7 +112,6 @@ def search(request):
         if form.cleaned_data.get('csr'):
             contracts = contracts.filter(csr=form.cleaned_data['csr'])
 
-        # Service Type Filter
         service_type = form.cleaned_data.get('service_type')
         if service_type:
             staff_roles = {
@@ -131,7 +124,6 @@ def search(request):
             service_contracts = EventStaffBooking.objects.filter(role__in=roles).values_list('contract_id', flat=True)
             contracts = contracts.filter(contract_id__in=service_contracts)
 
-        # Filtering by staff roles
         if form.cleaned_data.get('photographer'):
             photographer_contracts = EventStaffBooking.objects.filter(
                 staff=form.cleaned_data['photographer'],
@@ -153,33 +145,81 @@ def search(request):
             ).values_list('contract_id', flat=True)
             contracts = contracts.filter(contract_id__in=photobooth_operator_contracts)
 
-    # Quick search logic
     query = request.GET.get('q')
     if query:
         contracts = contracts.filter(
             Q(custom_contract_number__icontains=query) |
             Q(client__primary_contact__icontains=query) |
             Q(client__partner_contact__icontains=query) |
-            Q(old_contract_number__icontains=query) |  # Added search functionality for old contract number
-            Q(client__primary_email__icontains=query) |  # Added search functionality for primary email
-            Q(client__primary_phone1__icontains=query)  # Added search functionality for primary phone
+            Q(old_contract_number__icontains=query) |
+            Q(client__primary_email__icontains=query) |
+            Q(client__primary_phone1__icontains=query)
         )
 
-    # Booking search
+    return render(request, 'contracts/contract_search.html', {
+        'form': form,
+        'contracts': contracts,
+        'logo_url': logo_url
+    })
+
+@login_required
+def booking_search(request):
     booking_search_query = request.GET.get('booking_q')
     bookings = EventStaffBooking.objects.all()
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
     if booking_search_query:
         bookings = bookings.filter(
             Q(staff__username__icontains=booking_search_query) |
             Q(staff__first_name__icontains=booking_search_query) |
-            Q(staff__last_name__icontains=booking_search_query)
+            Q(staff__last_name__icontains=booking_search_query) |
+            Q(contract__custom_contract_number__icontains=booking_search_query) |
+            Q(contract__client__primary_contact__icontains=booking_search_query) |
+            Q(contract__client__partner_contact__icontains=booking_search_query) |
+            Q(contract__old_contract_number__icontains=booking_search_query) |
+            Q(contract__client__primary_email__icontains=booking_search_query) |
+            Q(contract__client__primary_phone1__icontains=booking_search_query)
         )
 
-    # Additional filtering for bookings
-    # ...
+    if request.GET.get('event_date_start') and request.GET.get('event_date_end'):
+        bookings = bookings.filter(contract__event_date__range=[
+            request.GET.get('event_date_start'), request.GET.get('event_date_end')
+        ])
 
-    return render(request, 'contracts/search.html',
-                  {'form': form, "contracts": contracts, "bookings": bookings, 'active_tab': tab, 'logo_url': logo_url})
+    if request.GET.get('service_type'):
+        service_type = request.GET.get('service_type')
+        if service_type == "PHOTOGRAPHER":
+            roles = ['PHOTOGRAPHER1', 'PHOTOGRAPHER2']
+        elif service_type == "VIDEOGRAPHER":
+            roles = ['VIDEOGRAPHER1', 'VIDEOGRAPHER2']
+        elif service_type == "DJ":
+            roles = ['DJ1', 'DJ2']
+        elif service_type == "PHOTOBOOTH":
+            roles = ['PHOTOBOOTH_OP1', 'PHOTOBOOTH_OP2']
+        else:
+            roles = []
+        bookings = bookings.filter(role__in=roles)
+
+    if request.GET.get('role_filter'):
+        bookings = bookings.filter(role=request.GET.get('role_filter'))
+
+    if request.GET.get('status_filter'):
+        status_filter = request.GET.get('status_filter').lower() == 'true'
+        bookings = bookings.filter(confirmed=status_filter)
+
+    if request.GET.get('sort_by') and request.GET.get('order'):
+        sort_by = request.GET.get('sort_by')
+        order = request.GET.get('order')
+        if order == 'asc':
+            bookings = bookings.order_by(sort_by)
+        else:
+            bookings = bookings.order_by('-' + sort_by)
+
+    return render(request, 'contracts/booking_search.html', {
+        'bookings': bookings,
+        'logo_url': logo_url
+    })
+
 
 @login_required
 def new_contract(request):
@@ -1290,13 +1330,6 @@ def view_submitted_contract(request, contract_id, version_number):
 
     return render(request, 'contracts/view_submitted_contract.html', context)
 
-from django.core.mail import EmailMessage
-from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
-from weasyprint import HTML
-from django.urls import reverse
-from django.utils.html import linebreaks
-
 @login_required
 def client_contract_and_rider_agreement(request, contract_id):
     contract = get_object_or_404(Contract, pk=contract_id)
@@ -2328,14 +2361,15 @@ def get_existing_payments(request, contract_id):
 @login_required
 def booking_detail(request, booking_id):
     # Retrieve the booking instance
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
     contract = booking.contract
 
     # Fetch all booking notes related to this booking
-    booking_notes = UnifiedCommunication.objects.filter(note_type=UnifiedCommunication.BOOKING, object_id=booking_id)
+    booking_notes = UnifiedCommunication.objects.filter(note_type='BOOKING', contract=contract)
 
     # Fetch contract messages related to this contract
-    contract_messages = UnifiedCommunication.objects.filter(note_type=UnifiedCommunication.CONTRACT, object_id=contract.contract_id)
+    contract_messages = UnifiedCommunication.objects.filter(note_type='CONTRACT', contract=contract)
 
     # Categorize notes by type
     notes_by_type = defaultdict(list)
@@ -2350,38 +2384,48 @@ def booking_detail(request, booking_id):
         if communication_form.is_valid():
             new_note = UnifiedCommunication.objects.create(
                 content=communication_form.cleaned_data['message'],
-                note_type='booking',  # Explicitly set note type to booking
+                note_type='BOOKING',  # Explicitly set note type to booking
                 created_by=request.user,
-                content_type=ContentType.objects.get_for_model(booking),
-                object_id=booking_id,
+                contract=contract,
             )
 
             return redirect('contracts:booking_detail', booking_id=booking_id)
     else:
         communication_form = BookingCommunicationForm()
 
+    # Prepare the overtime entries with roles mapped
+    overtime_entries = [
+        {
+            'service_type': overtime.overtime_option.service_type.name,
+            'role': ROLE_DISPLAY_NAMES.get(overtime.overtime_option.role, overtime.overtime_option.role),
+            'hours': overtime.hours,
+        }
+        for overtime in contract.overtimes.all()
+    ]
+
     return render(request, 'contracts/booking_detail_office.html', {
+        'logo_url': logo_url,
         'contract': contract,
         'booking': booking,
         'bookings': EventStaffBooking.objects.filter(contract=contract),
-        'booking_notes': notes_by_type['booking'],  # Render only booking notes
-        'contract_notes': notes_by_type[UnifiedCommunication.CONTRACT],  # Render contract notes
+        'booking_notes': notes_by_type['BOOKING'],  # Render only booking notes
+        'contract_notes': notes_by_type['CONTRACT'],  # Render contract notes
         'communication_form': communication_form,
+        'overtime_entries': overtime_entries,  # Pass overtime entries to the template
     })
+
 
 @login_required
 def booking_detail_staff(request, booking_id):
-    # Retrieve the booking instance
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
     contract = booking.contract
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
-
     # Fetch all booking notes related to this booking
-    booking_notes = UnifiedCommunication.objects.filter(note_type=UnifiedCommunication.BOOKING, object_id=booking_id)
+    booking_notes = UnifiedCommunication.objects.filter(note_type='BOOKING', contract=contract)
 
     # Fetch contract messages related to this contract
-    contract_messages = UnifiedCommunication.objects.filter(note_type=UnifiedCommunication.CONTRACT, object_id=contract.contract_id)
+    contract_messages = UnifiedCommunication.objects.filter(note_type=UnifiedCommunication.CONTRACT, contract_id=contract.contract_id)
 
     # Categorize notes by type
     notes_by_type = defaultdict(list)
@@ -2396,26 +2440,36 @@ def booking_detail_staff(request, booking_id):
         if communication_form.is_valid():
             new_note = UnifiedCommunication.objects.create(
                 content=communication_form.cleaned_data['message'],
-                note_type='booking',  # Explicitly set note type to booking
+                note_type='BOOKING',  # Explicitly set note type to booking
                 created_by=request.user,
-                content_type=ContentType.objects.get_for_model(booking),
-                object_id=booking_id,
+                contract=contract,
             )
-
             return redirect('contracts:booking_detail_staff', booking_id=booking_id)
     else:
         communication_form = BookingCommunicationForm()
+
+    # Prepare the overtime entries with roles mapped
+    overtime_entries = [
+        {
+            'service_type': overtime.overtime_option.service_type.name,
+            'role': ROLE_DISPLAY_NAMES.get(overtime.overtime_option.role, overtime.overtime_option.role),
+            'hours': overtime.hours,
+        }
+        for overtime in contract.overtimes.all()
+    ]
 
     return render(request, 'contracts/booking_detail_staff.html', {
         'contract': contract,
         'booking': booking,
         'bookings': EventStaffBooking.objects.filter(contract=contract),
-        'booking_notes': notes_by_type['booking'],  # Render only booking notes
-        'contract_notes': notes_by_type[UnifiedCommunication.CONTRACT],  # Render contract notes
+        'booking_notes': notes_by_type[UnifiedCommunication.BOOKING],
+        'contract_notes': notes_by_type[UnifiedCommunication.CONTRACT],
         'communication_form': communication_form,
         'staff_member': request.user,
-        'logo_url': logo_url
+        'logo_url': logo_url,
+        'overtime_entries': overtime_entries,
     })
+
 
 def booking_notes(request, booking_id):
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
@@ -2564,49 +2618,42 @@ def clear_booking(request, booking_id):
 
 @login_required
 def booking_list(request):
+    query = request.GET.get('q')
+    event_date_start = request.GET.get('event_date_start')
+    event_date_end = request.GET.get('event_date_end')
+    service_type = request.GET.get('service_type')
+    role_filter = request.GET.get('role_filter')
+    status_filter = request.GET.get('status_filter')
+    sort_by = request.GET.get('sort_by', 'contract__event_date')  # Note the change here
+    order = request.GET.get('order', 'asc')
+
     bookings = EventStaffBooking.objects.all()
 
-    # Fetch the 'q' parameter for quick search
-    search_query = request.GET.get('q')
-    if search_query:
+    if query:
         bookings = bookings.filter(
-            Q(staff__username__icontains=search_query) |
-            Q(staff__first_name__icontains=search_query) |
-            Q(staff__last_name__icontains=search_query)
+            Q(staff__first_name__icontains=query) |
+            Q(staff__last_name__icontains=query) |
+            Q(contract__client__primary_contact__icontains=query)
         )
 
-    # Fetch the 'event_date' parameter from the request if provided
-    date_filter = request.GET.get('event_date')
-    if date_filter:
-        bookings = bookings.filter(contract__event_date=date_filter)
+    if event_date_start and event_date_end:
+        bookings = bookings.filter(contract__event_date__range=[event_date_start, event_date_end])
 
-    # Fetch the 'role_filter' parameter from the request if provided
-    role_filter = request.GET.get('role_filter')
+    if service_type:
+        bookings = bookings.filter(contract__service_type=service_type)
+
     if role_filter:
         bookings = bookings.filter(role=role_filter)
 
-    # Fetch the 'status_filter' parameter from the request if provided
-    status_filter = request.GET.get('status_filter')
     if status_filter:
-        bookings = bookings.filter(status=status_filter)
+        bookings = bookings.filter(confirmed=status_filter)
 
-    # Sorting logic
-    sort_by = request.GET.get('sort_by', '')  # No default sort_by
-    order = request.GET.get('order', 'asc')  # Default to ascending if not provided
+    if order == 'asc':
+        bookings = bookings.order_by(sort_by)
+    else:
+        bookings = bookings.order_by('-' + sort_by)
 
-    if sort_by:
-        # Modify the sort_by parameter to prefix with 'contract__' for fields in Contract
-        if sort_by in ['event_date', '...other Contract fields...']:
-            sort_by = 'contract__' + sort_by
-
-        # The '-' prefix indicates descending order in Django querysets
-        order_prefix = '-' if order == 'desc' else ''
-        bookings = bookings.order_by(order_prefix + sort_by)
-    elif status_filter:
-        # If no specific sorting is selected, sort by status when filtering by status
-        bookings = bookings.order_by('status')
-
-    return render(request, 'contracts/booking_list.html', {'bookings': bookings})
+    return render(request, 'contracts/booking_search_results.html', {'bookings': bookings})
 
 
 def get_available_staff(request):

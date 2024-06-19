@@ -1,3 +1,4 @@
+// Get CSRF Token
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -13,6 +14,7 @@ function getCookie(name) {
     return cookieValue;
 }
 
+// Add formset entry
 function addFormsetEntry(containerId, totalFormsId, formClass) {
     let container = document.getElementById(containerId);
     let totalForms = document.getElementById(totalFormsId);
@@ -22,17 +24,24 @@ function addFormsetEntry(containerId, totalFormsId, formClass) {
     }
     let currentTotal = parseInt(totalForms.value, 10);
 
-    // Clone the empty form template
-    let emptyFormTemplate = document.querySelector(`${formClass}.empty-payment-form`);
+    // Determine the correct empty form template based on the form class
+    let emptyFormTemplate;
+    if (formClass === '.payment-form') {
+        emptyFormTemplate = document.querySelector('.empty-payment-form');
+    } else if (formClass === '.service-fee-form') {
+        emptyFormTemplate = document.querySelector('.empty-service-fee-form');
+    }
+
     if (!emptyFormTemplate) {
         console.error('Empty form template not found:', formClass);
         return;
     }
+
     let newFormHtml = emptyFormTemplate.innerHTML.replace(/__prefix__/g, currentTotal);
 
     // Create a new form element and set its inner HTML
     let newFormDiv = document.createElement('div');
-    newFormDiv.classList.add('payment-form', 'mb-3');
+    newFormDiv.classList.add(formClass.replace('.', ''), 'mb-3');
     newFormDiv.innerHTML = newFormHtml;
 
     // Append the new form to the container
@@ -49,6 +58,45 @@ function addFormsetEntry(containerId, totalFormsId, formClass) {
     }
 }
 
+// Toggle edit state
+function toggleEdit(checkbox) {
+    var formFields = checkbox.closest('.payment-form, .service-fee-form').querySelector('.form-fields');
+    var inputs = formFields.querySelectorAll('input, select, textarea');
+
+    inputs.forEach(function(input) {
+        input.disabled = !checkbox.checked;
+    });
+}
+
+// Enable all inputs
+function enableAllInputs() {
+    var inputs = document.querySelectorAll('#scheduleForm input, #scheduleForm select, #scheduleForm textarea, #serviceFeeForm input, #serviceFeeForm select, #serviceFeeForm textarea');
+    inputs.forEach(function(input) {
+        input.disabled = false;
+    });
+}
+
+// Initialize form inputs as disabled
+function initializeFormInputs() {
+    var formInputs = document.querySelectorAll('.payment-form .form-fields input, .payment-form .form-fields select, .payment-form .form-fields textarea, .service-fee-form .form-fields input, .service-fee-form .form-fields select, .service-fee-form .form-fields textarea');
+    formInputs.forEach(function(input) {
+        input.disabled = true;
+    });
+}
+
+// Format payment method
+function formatPaymentMethod(method) {
+    const methodMapping = {
+        'CASH': 'Cash',
+        'CHECK': 'Check',
+        'CREDIT_CARD': 'Credit Card',
+        'ZELLE': 'Zelle',
+        'VENMO': 'Venmo'
+    };
+    return methodMapping[method] || method;
+}
+
+// Populate schedule table based on schedule type
 function populateScheduleTable(scheduleType) {
     let container = document.getElementById('payment-schedule-table');
     container.innerHTML = ''; // Clear existing table content
@@ -75,6 +123,7 @@ function populateScheduleTable(scheduleType) {
     updateDepositStatus();
 }
 
+// Populate Schedule A
 function populateScheduleA(tbody) {
     let depositAmount = Math.ceil((contractData.servicesTotalAfterDiscounts * 0.50) / 100) * 100;
     let totalContractAmount = parseFloat(document.querySelector('.contract-total').getAttribute('data-contract-total'));
@@ -92,6 +141,7 @@ function populateScheduleA(tbody) {
     fetchServiceFees();
 }
 
+// Populate custom schedule
 function populateCustomSchedule(tbody) {
     let contractId = document.body.getAttribute('data-contract-id');
     fetch(`/contracts/${contractId}/get_custom_schedule/`)
@@ -108,6 +158,7 @@ function populateCustomSchedule(tbody) {
         .catch(error => console.error('Error fetching custom schedule:', error));
 }
 
+// Add a schedule row
 function addScheduleRow(tbody, description, dueDate, amount, status) {
     let row = tbody.insertRow();
     row.insertCell().textContent = description;
@@ -116,6 +167,7 @@ function addScheduleRow(tbody, description, dueDate, amount, status) {
     row.insertCell().textContent = status;
 }
 
+// Fetch service fees
 function fetchServiceFees() {
     let contractId = document.body.getAttribute('data-contract-id');
     let serviceFeeContainers = document.getElementsByClassName('service-fees-table');
@@ -157,12 +209,14 @@ function fetchServiceFees() {
         .catch(error => console.error('Error fetching service fees:', error));
 }
 
+// Create header cell
 function createHeaderCell(row, text) {
     let cell = row.insertCell();
     cell.textContent = text;
     cell.style.fontWeight = 'bold';
 }
 
+// Handle schedule change
 function handleScheduleChange(scheduleType) {
     populateScheduleTable(scheduleType);
     let scheduleModalButton = document.querySelector('[data-target="#scheduleModal"]');
@@ -174,6 +228,7 @@ function handleScheduleChange(scheduleType) {
     }
 }
 
+// Receive payment
 function receivePayment() {
     let scheduleType = document.getElementById('payment-schedule').value;
 
@@ -197,6 +252,7 @@ function receivePayment() {
     $('#paymentModal').modal('show');
 }
 
+// Get total payments
 function getTotalPayments() {
     let paymentsTableBody = document.querySelector('.existing-payments-table tbody');
     let totalPayments = 0;
@@ -208,12 +264,13 @@ function getTotalPayments() {
     return totalPayments;
 }
 
+// Confirm payment
 function confirmPayment() {
     let paymentAmount = parseFloat(document.getElementById('amount').value);
     let balanceDueElement = document.getElementById('balance-due-amount');
     let balanceDue = parseFloat(balanceDueElement.textContent.replace('$', ''));
     let paymentMethod = document.getElementById('payment_method').value;
-    let paymentPurpose = document.getElementById('payment_purpose').value; // Ensure this line is present
+    let paymentPurpose = document.getElementById('payment_purpose').value;
     let paymentMemo = document.getElementById('memo').value;
     let paymentReference = document.getElementById('payment_reference').value;
     let paymentId = document.getElementById('payment-id').value;
@@ -229,7 +286,7 @@ function confirmPayment() {
     let formData = new FormData();
     formData.append('amount', paymentAmount);
     formData.append('payment_method', paymentMethod);
-    formData.append('payment_purpose', paymentPurpose); // Ensure this line is present
+    formData.append('payment_purpose', paymentPurpose);
     formData.append('memo', paymentMemo);
     formData.append('payment_reference', paymentReference);
 
@@ -268,20 +325,21 @@ function confirmPayment() {
     $('#paymentModal').modal('hide');
 }
 
+// Clear payment form
 function clearPaymentForm() {
     document.getElementById('payment-form').reset();
     document.getElementById('payment-id').value = '';
     document.getElementById('payment-action').value = 'add';
 }
 
+// Edit payment
 function editPayment(paymentId, amount, paymentMethod, paymentReference, memo, paymentPurpose) {
     document.getElementById('payment-id').value = paymentId;
     document.getElementById('amount').value = amount;
     document.getElementById('payment_method').value = paymentMethod;
-    document.getElementById('payment_reference').value = paymentReference || ''; // Use empty string instead of null
-    document.getElementById('memo').value = memo || ''; // Use empty string instead of null
+    document.getElementById('payment_reference').value = paymentReference || '';
+    document.getElementById('memo').value = memo || '';
 
-    // Set the payment purpose dropdown value
     const paymentPurposeElement = document.getElementById('payment_purpose');
     const options = paymentPurposeElement.options;
     for (let i = 0; i < options.length; i++) {
@@ -295,6 +353,7 @@ function editPayment(paymentId, amount, paymentMethod, paymentReference, memo, p
     $('#paymentModal').modal('show');
 }
 
+// Update payments table
 function updatePaymentsTable(paymentAmount, paymentMethod, paymentPurpose, paymentReference, paymentMemo, paymentId, paymentAction) {
     let paymentsTableBody = document.querySelector('.existing-payments-table tbody');
 
@@ -303,7 +362,7 @@ function updatePaymentsTable(paymentAmount, paymentMethod, paymentPurpose, payme
         if (rowToUpdate) {
             rowToUpdate.cells[1].textContent = `$${paymentAmount.toFixed(2)}`;
             rowToUpdate.cells[2].textContent = formatPaymentMethod(paymentMethod);
-            rowToUpdate.cells[3].textContent = paymentPurpose; // Ensure this line uses the paymentPurpose parameter
+            rowToUpdate.cells[3].textContent = paymentPurpose;
             rowToUpdate.cells[4].textContent = paymentReference;
             rowToUpdate.cells[5].textContent = paymentMemo;
         }
@@ -317,7 +376,7 @@ function updatePaymentsTable(paymentAmount, paymentMethod, paymentPurpose, payme
         newRow.insertCell().textContent = formattedDate;
         newRow.insertCell().textContent = `$${paymentAmount.toFixed(2)}`;
         newRow.insertCell().textContent = formatPaymentMethod(paymentMethod);
-        newRow.insertCell().textContent = paymentPurpose; // Ensure this line uses the paymentPurpose parameter
+        newRow.insertCell().textContent = paymentPurpose;
         newRow.insertCell().textContent = paymentReference;
         newRow.insertCell().textContent = paymentMemo;
 
@@ -331,6 +390,7 @@ function updatePaymentsTable(paymentAmount, paymentMethod, paymentPurpose, payme
     updateBalanceDue(paymentAmount);
 }
 
+// Update balance due
 function updateBalanceDue(paymentAmount) {
     let balanceDueElement = document.getElementById('balance-due-amount');
     let balanceDue = parseFloat(balanceDueElement.textContent.replace('$', '')) || 0;
@@ -338,38 +398,7 @@ function updateBalanceDue(paymentAmount) {
     balanceDueElement.textContent = `$${newBalanceDue.toFixed(2)}`;
 }
 
-function editPayment(paymentId, amount, paymentMethod, paymentReference, memo, paymentPurpose) {
-    document.getElementById('payment-id').value = paymentId;
-    document.getElementById('amount').value = amount;
-    document.getElementById('payment_method').value = paymentMethod;
-    document.getElementById('payment_reference').value = paymentReference || ''; // Use empty string instead of null
-    document.getElementById('memo').value = memo || ''; // Use empty string instead of null
-
-    // Set the payment purpose dropdown value
-    const paymentPurposeElement = document.getElementById('payment_purpose');
-    const options = paymentPurposeElement.options;
-    for (let i = 0; i < options.length; i++) {
-        if (options[i].text === paymentPurpose) {
-            paymentPurposeElement.selectedIndex = i;
-            break;
-        }
-    }
-
-    document.getElementById('payment-action').value = 'edit';
-    $('#paymentModal').modal('show');
-}
-
-function formatPaymentMethod(method) {
-    const methodMapping = {
-        'CASH': 'Cash',
-        'CHECK': 'Check',
-        'CREDIT_CARD': 'Credit Card',
-        'ZELLE': 'Zelle',
-        'VENMO': 'Venmo'
-    };
-    return methodMapping[method] || method;
-}
-
+// Update deposit status
 function updateDepositStatus() {
     let scheduleType = document.getElementById('payment-schedule').value;
     let totalContractAmount = parseFloat(document.querySelector('.contract-total').getAttribute('data-contract-total'));
@@ -394,6 +423,7 @@ function updateDepositStatus() {
     }
 }
 
+// Load existing payments
 function loadExistingPayments() {
     let contractId = document.body.getAttribute('data-contract-id');
     fetch(`/contracts/${contractId}/get_existing_payments/`)
@@ -411,7 +441,7 @@ function loadExistingPayments() {
                 newRow.insertCell().textContent = formattedDate;
                 newRow.insertCell().textContent = `$${parseFloat(payment.amount).toFixed(2)}`;
                 newRow.insertCell().textContent = formatPaymentMethod(payment.method);
-                newRow.insertCell().textContent = payment.purpose || ''; // Ensure purpose is correctly set
+                newRow.insertCell().textContent = payment.purpose || '';
                 newRow.insertCell().textContent = payment.reference || '';
                 newRow.insertCell().textContent = payment.memo || '';
 
@@ -425,6 +455,7 @@ function loadExistingPayments() {
         .catch(error => console.error('Error fetching existing payments:', error));
 }
 
+// Document ready
 document.addEventListener('DOMContentLoaded', function() {
     loadExistingPayments();
 
@@ -437,11 +468,18 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("No payment schedule exists for contract " + contractId);
     }
 
+    initializeFormInputs(); // Initialize form inputs as disabled
+
     // Add an empty form when the modal is shown
     $('#scheduleModal').on('show.bs.modal', function () {
         addFormsetEntry('paymentScheduleEntries', 'id_schedule_payments-TOTAL_FORMS', '.payment-form');
     });
 
+    $('#serviceFeeModal').on('show.bs.modal', function () {
+        addFormsetEntry('serviceFeeEntries', 'id_servicefees-TOTAL_FORMS', '.service-fee-form');
+    });
+
+    // Handle schedule type changes
     let scheduleDropdown = document.getElementById('payment-schedule');
     let initialScheduleType = scheduleDropdown.value;
     populateScheduleTable(initialScheduleType);

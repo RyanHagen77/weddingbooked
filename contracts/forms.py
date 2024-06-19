@@ -285,7 +285,7 @@ ServiceFeeFormSet = inlineformset_factory(
     parent_model=Contract,
     model=ServiceFee,
     form=ServiceFeeForm,
-    extra=1,
+    extra=0,
     can_delete=True  # Allows deletion of service fees directly from the formset
 )
 
@@ -699,8 +699,11 @@ class ContractForm(forms.ModelForm):
 
 
 class ContractDocumentForm(forms.ModelForm):
-    is_client_visible = forms.BooleanField(initial=False, required=False)
-
+    is_client_visible = forms.BooleanField(
+        initial=False,
+        required=False,
+        widget=forms.CheckboxInput(attrs={'style': 'font-size: 11pt;'})
+    )
     class Meta:
         model = ContractDocument
         fields = ['document', 'is_client_visible']

@@ -1,5 +1,4 @@
 /* Basic styles */
-
 body {
     font-family: Arial, sans-serif;
 }
@@ -11,12 +10,103 @@ body {
     background-color: #f3f3f3;
     padding: 10px;
     border-bottom: 1px solid #e0e0e0; /* Light grey border */
-    padding-bottom: 15px; /* Add some padding below the menu items */
 }
 
 .logo img {
     height: 50px; /* Adjust the height as needed */
-    padding-left: 60px; /* Adds padding to the left, pushing the content to the right */
+    padding-left: 10px; /* Adds padding to the left, pushing the content to the right */
+}
+
+/* Header Bar for viewing, printing contracts */
+.bg-cool-grey {
+    background-color: #f3f3f3;
+}
+
+header p, .section-link, .small-text {
+    color: white;
+    margin: 0;
+    padding: 0 10px; /* Add padding for spacing */
+    font-size: 0.875rem; /* Smaller text size */
+}
+
+.header .section-divider {
+    border-left: 1px solid white; /* Add vertical line */
+    padding-left: 10px;
+}
+
+.section-link {
+    color: white;
+    text-decoration: none;
+    padding: 0 10px;
+}
+
+.section-link:hover {
+    color: #cccccc; /* Darker shade on hover */
+    text-decoration: none; /* No underline on hover */
+}
+
+.card-text {
+    font-size: 10pt; /* Text size set to 13pt */
+}
+
+.card-header {
+    font-size: 10pt; /* Text size set to 10pt */
+}
+.card-body {    font-size: 11pt; /* Text size set to 10pt */
+}
+
+.card-container {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow-x: auto; /* Enable horizontal scrolling for small screens */
+}
+
+.card-container .row {
+    margin-left: -10px;
+    margin-right: -10px;
+}
+
+.card-container .col-md-4 {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+
+footer {
+    border-top: 1px solid #e0e0e0;
+    padding-top: 10px;
+    text-align: center;
+}
+
+/* Hello user section */
+.user-info {
+    display: flex;
+    font-size: 10pt; /* Ensure the text size is appropriate */
+    align-items: center;
+    padding-right: 10px; /* Adjust padding to tighten the space */
+    margin-right: 0; /* Remove any default margin */
+}
+
+.user-info span {
+    margin-right: 10px; /* Add some space between the greeting and the logout button */
+}
+
+.logout-button {
+    padding: 5px 10px; /* Adjust padding to make the button more compact */
+    font-size: 10px; /* Ensure the text size is appropriate */
+    margin: 0; /* Remove default margin */
+}
+
+/* Menu section below top header */
+.menu-container {
+    background-color: #f3f3f3;
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0; /* Light grey border */
+    display: flex;
+    justify-content: center; /* Center the menu items */
 }
 
 .menu {
@@ -42,10 +132,10 @@ body {
     color: white; /* Sets all text to white */
     display: block; /* Ensures the link fills the `.menu-item` for better clickability */
     background-color: #a1c9a5; /* Lighter pastel pistachio color */
-    padding: 8px 16px; /* Smaller padding to reduce overall size */
+    padding: 4px 8px; /* Smaller padding to reduce overall size */
     border-radius: 5px; /* Slightly smaller border-radius for a less pronounced curve */
     transition: background-color 0.3s; /* Smooth transition for background color change */
-    font-size: 13px; /* Smaller text size */
+    font-size: 10pt; /* Smaller text size */
 }
 
 .menu-item a:hover {
@@ -62,11 +152,33 @@ body {
     }
 }
 
+
+
 .field-box .row .col-12 textarea {
     width: 100%;
+    font-size: 11pt; /* Text size set to 13pt for field-box */
 }
 
+.nav-tabs {font-size: 11pt;
+}
+.col-md-6 {    font-size: 11pt;
+}
+
+.table-bordered {
+    font-size: 11pt;
+    max-width: 1200px; /* Adjusted maximum width */
+
+}
+
+.total-cost-container {    font-size: 11pt;
+}
 /* New Contract */
+
+.form-section-container {
+    display: flex;
+    justify-content: center; /* Centers the form section horizontally */
+
+}
 
 .form-section .form-title {
     text-align: center;
@@ -75,14 +187,16 @@ body {
     margin-bottom: 20px;
 }
 
-/* Enhance the overall form appearance */
 .form-section {
     display: flex;
+    max-width: 900px; /* Adjusted maximum width */
+    width: 100%; /* Ensures it uses the maximum available width */
     font-size: 10pt; /* Set font size to 10pt */
     flex-wrap: wrap; /* Allows form sections to wrap in smaller screens */
-    margin: 40px;
-    padding: 15px;
+    margin: 10px;
+    padding: 10px; /* Increased padding for better spacing */
     border: 1px solid #ddd;
+    border-radius: 5px; /* Optional: Rounded corners */
     background-color: #f9f9f9; /* Light gray background */
     box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Adds subtle shadow for depth */
 }
@@ -90,13 +204,14 @@ body {
 /* Column styling */
 .left-column, .right-column {
     flex: 1;
-    padding: 20px;
+    padding: 10px;
     min-width: 280px; /* Minimum width for smaller screens */
 }
 
 /* Button styling for aesthetic consistency */
 .toggle-button, .btn-dusty-pink {
     background-color: #c67c85; /* Dusty Pink */
+    font-size: 13px; /* Smaller text size */
     color: white;
     border: none;
     margin: 10px 0;
@@ -116,16 +231,6 @@ body {
     padding: 10px;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-.user-info {
-    display: flex;
-    align-items: center;
-    padding-right: 60px; /* Adds padding to the right, pushing the content to the left */
-}
-
-.user-info span {
-    margin-right: 10px; /* Space between the text and the logout button */
 }
 
 
@@ -221,7 +326,7 @@ input[type="reset"]:hover,
 /* Search form styling */
 .search-form {
     margin: 20px auto; /* Center the form */
-    max-width: 1200px; /* Set maximum width */
+    max-width: 1000px; /* Set maximum width */
     background-color: #ffffff; /* Background color for the form */
     padding: 20px; /* Padding inside the form */
     border: 1px solid #ddd; /* Border for the form */
@@ -243,7 +348,7 @@ input[type="reset"]:hover,
 .search-results {
     margin: 20px auto; /* Center the table */
     width: 100%; /* Set table width */
-    max-width: 1200px; /* Set maximum width */
+    max-width: 1000px; /* Set maximum width */
     background-color: #ffffff; /* Background color for the table */
     padding: 5px; /* Padding inside the table */
     border: 1px solid #ddd; /* Border for the table */
@@ -272,11 +377,53 @@ input[type="reset"]:hover,
     line-height: 0px; /* Align text vertically, should match the height */
 }
 
+
+/* Search results table styling */
+.search-results table {
+    width: 100%; /* Make table width match the container */
+    border-collapse: collapse; /* Collapses border to single line */
+}
+
+.search-results th, .search-results td {
+    border: 1px solid #ddd; /* Adds border to table cells */
+    padding: 8px; /* Padding inside cells */
+    text-align: left; /* Aligns text to the left */
+    font-size: 10pt; /* Set font size to 10pt */
+}
+
+/* Alternating row colors */
+.search-results tr:nth-child(odd) {
+    background-color: #f2f2f2; /* Light gray for odd rows */
+}
+
+.search-results tr:nth-child(even) {
+    background-color: #ffffff; /* White for even rows */
+}
+
+/* Hover effect for rows */
+.search-results tr:hover {
+    background-color: #ddd; /* Color when row is hovered */
+    cursor: pointer; /* Change cursor to indicate clickable */
+}
+
+/* Table header styling */
+.search-results th {
+    background-color: #c67c85; /* Dusty pink for table headers */
+    color: white;
+    padding: 10px; /* Padding for headers */
+}
+
 /* Form rows and groups */
 .form-row {
     display: flex; /* Use flexbox for the form row */
+    font-size: 11pt;
     justify-content: space-between; /* Space out the columns */
     margin-bottom: 10px;
+    padding: 10px;
+}
+
+.form-control {
+    font-size: 11pt;
 }
 
 .form-group {
@@ -314,51 +461,6 @@ label {
     font-weight: normal;
 }
 
-/* Search results container styling */
-.search-results {
-    margin: 20px auto; /* Center the table */
-    width: 100%; /* Set table width */
-    max-width: 1200px; /* Set maximum width */
-    background-color: #ffffff; /* Background color for the container */
-    padding: 5px; /* Padding inside the container */
-    border: 1px solid #ddd; /* Border for the container */
-    border-radius: 5px; /* Optional: Rounded corners */
-}
-
-/* Search results table styling */
-.search-results table {
-    width: 100%; /* Make table width match the container */
-    border-collapse: collapse; /* Collapses border to single line */
-}
-
-.search-results th, .search-results td {
-    border: 1px solid #ddd; /* Adds border to table cells */
-    padding: 8px; /* Padding inside cells */
-    text-align: left; /* Aligns text to the left */
-    font-size: 10pt; /* Set font size to 10pt */
-}
-
-/* Alternating row colors */
-.search-results tr:nth-child(odd) {
-    background-color: #f2f2f2; /* Light gray for odd rows */
-}
-
-.search-results tr:nth-child(even) {
-    background-color: #ffffff; /* White for even rows */
-}
-
-/* Hover effect for rows */
-.search-results tr:hover {
-    background-color: #ddd; /* Color when row is hovered */
-    cursor: pointer; /* Change cursor to indicate clickable */
-}
-
-/* Table header styling */
-.search-results th {
-    background-color: #c67c85; /* Dusty pink for table headers */
-    color: white;
-    padding: 10px; /* Padding for headers */
-}
 
 /* Body or general styling */
 body {
@@ -456,8 +558,12 @@ body {
     align-items: center;
 }
 
+.payments-content {
+    font-size: 11pt;
+}
+
 .balance-due {
-    font-size: 1rem; /* Adjust the font size as needed */
+    font-size: 11pt; /* Adjust the font size as needed */
 
 }
 /* Communication Tab Styles */
@@ -486,6 +592,7 @@ body {
 }
 
 .message {
+    font-size: 11pt; /* Adjust the font size as needed */
     background-color: #f9f9f9;
     border: 1px solid #ddd;
     padding: 10px;
@@ -512,7 +619,7 @@ body {
 /* Task container styling */
 .task-container {
     margin: 20px auto; /* Center the task container */
-    max-width: 1200px; /* Set maximum width */
+    max-width: 900px; /* Set maximum width */
     background-color: #ffffff; /* Background color for the container */
     padding: 10px; /* Padding inside the container */
     border: 1px solid #ddd; /* Border for the container */
@@ -710,4 +817,123 @@ body {
         text-decoration: none;
         cursor: pointer;
     }
+
+.event-staff-form {
+    display: flex;
+    flex-direction: column; /* Stack children vertically */
+    max-width: 900px; /* Adjusted maximum width */
+    width: 100%; /* Ensures it uses the maximum available width */
+    font-size: 10pt; /* Set font size to 10pt */
+    flex-wrap: wrap; /* Allows form sections to wrap in smaller screens */
+    margin: 0 auto; /* Center the form horizontally */
+    padding: 10px; /* Increased padding for better spacing */
+    border: 1px solid #ddd;
+    border-radius: 5px; /* Optional: Rounded corners */
+    background-color: #f9f9f9; /* Light gray background */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Adds subtle shadow for depth */
+    align-items: center; /* Center align items vertically */
+}
+
+.event-staff-header {
+    margin-bottom: 20px; /* Add space below the heading */
+    text-align: center; /* Center the heading */
+}
+
+.event-staff-label {
+    margin-right: 10px;
+    margin-bottom: 10px; /* Add space below the label */
+}
+
+.event-staff-select {
+    margin-bottom: 20px; /* Add space below the select element */
+}
+
+.event-staff-table {
+    width: 100%;
+    margin-top: 20px;
+}
+
+.event-staff-table th, .event-staff-table td {
+    padding: 10px;
+}
+
+.event-staff-button {
+    background-color: #d9534f; /* Custom color for the button */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.event-staff-button:hover {
+    background-color: #c9302c; /* Darker shade on hover */
+}
+
+
+
+
+
+/* Reports Section Styling */
+.reports-section {
+    margin: 20px auto; /* Center the section */
+    width: 100%; /* Set section width */
+    max-width: 900px; /* Set maximum width */
+    background-color: #ffffff; /* Background color for the section */
+    padding: 10px; /* Padding inside the section */
+    border: 1px solid #ddd; /* Border for the section */
+    border-radius: 5px; /* Optional: Rounded corners */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Adds subtle shadow for depth */
+    overflow-x: auto; /* Enable horizontal scrolling for small screens */
+}
+
+/* Reports Table Styling */
+.reports-section table {
+    width: 100%; /* Make table width match the container */
+    border-collapse: collapse; /* Collapses border to single line */
+}
+
+.reports-section th, .reports-section td {
+    border: 1px solid #ddd; /* Adds border to table cells */
+    padding: 8px; /* Padding inside cells */
+    text-align: left; /* Aligns text to the left */
+    font-size: 10pt; /* Set font size to 10pt */
+}
+
+/* Alternating row colors */
+.reports-section tr:nth-child(odd) {
+    background-color: #f2f2f2; /* Light gray for odd rows */
+}
+
+.reports-section tr:nth-child(even) {
+    background-color: #ffffff; /* White for even rows */
+}
+
+/* Hover effect for rows */
+.reports-section tr:hover {
+    background-color: #ddd; /* Color when row is hovered */
+    cursor: pointer; /* Change cursor to indicate clickable */
+}
+
+/* Table header styling */
+.reports-section th {
+    background-color: #c67c85; /* Dusty pink for table headers */
+    color: white;
+    padding: 10px; /* Padding for headers */
+}
+
+/* Link styling for report list */
+.reports-section .report-list a {
+    color: #3C1414; /* Dark red color for links */
+    text-decoration: none; /* Remove underline from links */
+}
+
+.reports-section .report-list a:hover {
+    text-decoration: underline; /* Underline on hover */
+}
 

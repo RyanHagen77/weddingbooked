@@ -3,9 +3,9 @@
 {% load app_filters %}
 
 {% block content %}
-<div class="search-results">
-    <h3>Appointments Report</h3>
-    <button onclick="history.back()" class="btn btn-dusty-pink">Go Back</button>
+<div class="reports-section">
+    <h4>Appointments Report</h4>
+    <button onclick="history.back()" class="btn-dusty-pink">Go Back</button>
 
     <form method="get" class="report-form">
         <label for="start_date">Start Date:</label>
@@ -24,7 +24,7 @@
             <option value="monthly" {% if selected_period == 'monthly' %}selected{% endif %}>Monthly</option>
             <option value="weekly" {% if selected_period == 'weekly' %}selected{% endif %}>Weekly</option>
         </select>
-        <button type="submit">Generate Report</button>
+        <button type="submit" class="btn-dusty-pink">Generate Report</button>
     </form>
 
     <div class="search-results">
@@ -33,14 +33,14 @@
             <thead>
                 <tr>
                     <th>Period</th>
-                    <th># Photo</th>
-                    <th># Photo Booked</th>
-                    <th># Video</th>
-                    <th># Video Booked</th>
-                    <th># DJ</th>
-                    <th># DJ Booked</th>
-                    <th># Photobooth</th>
-                    <th># Photobooth Booked</th>
+                    <th>Photo</th>
+                    <th>Photo Booked</th>
+                    <th>Video</th>
+                    <th>Video Booked</th>
+                    <th>DJ</th>
+                    <th>DJ Booked</th>
+                    <th>Photobooth</th>
+                    <th>Photobooth Booked</th>
                     <th>Total Appointments</th>
                 </tr>
             </thead>

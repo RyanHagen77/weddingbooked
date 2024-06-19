@@ -2,8 +2,7 @@
 {% load static %}
 
 {% block content %}
-
-<div class="search-results">
+<div class="reports-section">
     <table class="category-table">
         <thead>
             <tr>
@@ -19,7 +18,6 @@
                         <li><a href="{% url 'contracts:appointments_report' %}">Appointments Report</a></li>
                         <li><a href="{% url 'contracts:lead_source_report' %}">Lead Source Report</a></li>
                         <li><a href="{% url 'contracts:reception_venues_report' %}">Reception Venues Report</a></li>
-
                         <!-- Add more event reports as needed -->
                     </ul>
                 </td>
@@ -35,8 +33,6 @@
                         <li><a href="{% url 'contracts:sales_tax_report' %}">Sales Tax Report</a></li>
                         <li><a href="{% url 'contracts:payments_due_report' %}">Payments Due Report</a></li>
                         <li><a href="{% url 'contracts:formal_wear_deposit_report' %}">Formal Wear Report</a></li>
-
-
                     </ul>
                 </td>
             </tr>
@@ -52,54 +48,4 @@
         </tbody>
     </table>
 </div>
-{% endblock %}
-
-{% block extra_styles %}
-<style>
-/* Search results container styling */
-.search-results {
-    margin: 20px auto; /* Center the table */
-    width: 100%; /* Set table width */
-    max-width: 1200px; /* Set maximum width */
-    background-color: #ffffff; /* Background color for the container */
-    padding: 5px; /* Padding inside the container */
-    border: 1px solid #ddd; /* Border for the container */
-    border-radius: 5px; /* Optional: Rounded corners */
-}
-
-/* Search results table styling */
-.search-results table {
-    width: 100%; /* Make table width match the container */
-    border-collapse: collapse; /* Collapses border to single line */
-}
-
-.search-results th, .search-results td {
-    border: 1px solid #ddd; /* Adds border to table cells */
-    padding: 8px; /* Padding inside cells */
-    text-align: left; /* Aligns text to the left */
-    font-size: 10pt; /* Set font size to 10pt */
-}
-
-/* Alternating row colors */
-.search-results tr:nth-child(odd) {
-    background-color: #f2f2f2; /* Light gray for odd rows */
-}
-
-.search-results tr:nth-child(even) {
-    background-color: #ffffff; /* White for even rows */
-}
-
-/* Hover effect for rows */
-.search-results tr:hover {
-    background-color: #ddd; /* Color when row is hovered */
-    cursor: pointer; /* Change cursor to indicate clickable */
-}
-
-/* Table header styling */
-.search-results th {
-    background-color: #c67c85; /* Dusty pink for table headers */
-    color: white;
-    padding: 10px; /* Padding for headers */
-}
-</style>
 {% endblock %}
