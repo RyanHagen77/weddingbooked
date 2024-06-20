@@ -2,129 +2,132 @@
 {% block title %}Booking Search{% endblock %}
 
 {% block content %}
-<form method="GET" action="{% url 'contracts:booking_search' %}" class="search-form">
-    {% csrf_token %}
-    <div class="quick-search-group">
-        <div class="form-group">
-            <input type="text" name="booking_q" placeholder="Quick Search" value="{{ request.GET.booking_q }}">
-        </div>
-        <div class="form-group">
-            <input type="submit" value="Search" class="btn">
-        </div>
-    </div>
-
-    <div class="form-row">
-        <div class="col-md-4">
+<div class="outer-container">
+    <form method="GET" action="{% url 'contracts:booking_search' %}" class="search-form">
+        {% csrf_token %}
+        <div class="quick-search-group">
             <div class="form-group">
-                <label>Event Date Start:</label>
-                <input type="date" name="event_date_start" value="{{ request.GET.event_date_start }}">
+                <input type="text" name="booking_q" placeholder="Quick Search" value="{{ request.GET.booking_q }}">
             </div>
             <div class="form-group">
-                <label>Event Date End:</label>
-                <input type="date" name="event_date_end" value="{{ request.GET.event_date_end }}">
-            </div>
-
-            <div class="form-group">
-                <label>Filter by Service Type:</label>
-                <select name="service_type">
-                    <option value="">All Service Types</option>
-                    <option value="PHOTOGRAPHER">Photographer</option>
-                    <option value="VIDEOGRAPHER">Videographer</option>
-                    <option value="DJ">DJ</option>
-                    <option value="PHOTOBOOTH">Photobooth</option>
-                    <!-- Add other service types as needed -->
-                </select>
+                <input type="submit" value="Search" class="btn">
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="form-group">
-                <label>Filter by Role:</label>
-                <select name="role_filter">
-                    <option value="">All Roles</option>
-                    <option value="PHOTOGRAPHER1">Photographer 1</option>
-                    <option value="PHOTOGRAPHER2">Photographer 2</option>
-                    <option value="ENGAGEMENT">Engagement</option>
-                    <option value="VIDEOGRAPHER1">Videographer 1</option>
-                    <option value="VIDEOGRAPHER2">Videographer 2</option>
-                    <option value="DJ1">DJ 1</option>
-                    <option value="DJ2">DJ 2</option>
-                    <option value="PHOTOBOOTH_OP">Photobooth Operator</option>
-                    <!-- Add other roles as needed -->
-                </select>
+        <div class="form-row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Event Date Start:</label>
+                    <input type="date" name="event_date_start" value="{{ request.GET.event_date_start }}">
+                </div>
+                <div class="form-group">
+                    <label>Event Date End:</label>
+                    <input type="date" name="event_date_end" value="{{ request.GET.event_date_end }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Filter by Service Type:</label>
+                    <select name="service_type">
+                        <option value="">All Service Types</option>
+                        <option value="PHOTOGRAPHER">Photographer</option>
+                        <option value="VIDEOGRAPHER">Videographer</option>
+                        <option value="DJ">DJ</option>
+                        <option value="PHOTOBOOTH">Photobooth</option>
+                        <!-- Add other service types as needed -->
+                    </select>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label>Filter by Status:</label>
-                <select name="status_filter">
-                    <option value="">All Statuses</option>
-                    <option value="PROSPECT">Prospect</option>
-                    <option value="APPROVED">Approved</option>
-                    <!-- Add other statuses as needed -->
-                </select>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Filter by Role:</label>
+                    <select name="role_filter">
+                        <option value="">All Roles</option>
+                        <option value="PHOTOGRAPHER1">Photographer 1</option>
+                        <option value="PHOTOGRAPHER2">Photographer 2</option>
+                        <option value="ENGAGEMENT">Engagement</option>
+                        <option value="VIDEOGRAPHER1">Videographer 1</option>
+                        <option value="VIDEOGRAPHER2">Videographer 2</option>
+                        <option value="DJ1">DJ 1</option>
+                        <option value="DJ2">DJ 2</option>
+                        <option value="PHOTOBOOTH_OP">Photobooth Operator</option>
+                        <!-- Add other roles as needed -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Filter by Status:</label>
+                    <select name="status_filter">
+                        <option value="">All Statuses</option>
+                        <option value="PROSPECT">Prospect</option>
+                        <option value="APPROVED">Approved</option>
+                        <!-- Add other statuses as needed -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Sort by:</label>
+                    <select name="sort_by">
+                        <option value="contract__event_date">Event Date</option>
+                        <option value="role">Role</option>
+                        <!-- Add other sorting options as needed -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Order:</label>
+                    <select name="order">
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
+                    </select>
+                </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="form-group">
-                <label>Sort by:</label>
-                <select name="sort_by">
-                    <option value="contract__event_date">Event Date</option>
-                    <option value="role">Role</option>
-                    <!-- Add other sorting options as needed -->
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Order:</label>
-                <select name="order">
-                    <option value="asc">Ascending</option>
-                    <option value="desc">Descending</option>
-                </select>
+        <div class="form-row">
+            <div class="button-group">
+                <input type="submit" value="Filter/Sort" class="btn">
+                <input type="reset" value="Clear" class="btn" onclick="clearForm(this.form)">
             </div>
         </div>
-    </div>
-
-    <div class="form-row">
-        <div class="button-group">
-            <input type="submit" value="Filter/Sort" class="btn">
-            <input type="reset" value="Clear" class="btn" onclick="clearForm(this.form)">
-        </div>
-    </div>
-</form>
-
+    </form>
+</div>
 {% if bookings %}
-<div class="search-results">
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Event Staff</th>
-                <th>Event Date</th>
-                <th>Primary Contact</th>
-                <th>Role</th>
-                <th>Confirmed</th>
-                <!-- Add other columns as needed -->
-            </tr>
-        </thead>
-        <tbody>
-            {% for booking in bookings %}
-            <tr onclick="window.location='{% url 'contracts:booking_detail' booking.id %}';">
-                <td>{{ booking.staff.get_full_name }}</td>
-                <td>{{ booking.contract.event_date|date:"Y-m-d" }}</td>
-                <td>{{ booking.contract.client.primary_contact }}</td>
-                <td>{{ booking.get_role_display }}</td>
-                <td>
-                    {% if booking.confirmed %}
-                        <span class="badge badge-success">Yes</span>
-                    {% else %}
-                        <span class="badge badge-danger">No</span>
-                    {% endif %}
-                </td>
-                <!-- Add other data as needed -->
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="outer-container">
+    <div class="search-results">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Event Staff</th>
+                    <th>Event Date</th>
+                    <th>Primary Contact</th>
+                    <th>Role</th>
+                    <th>Confirmed</th>
+                    <!-- Add other columns as needed -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr onclick="window.location='{% url 'contracts:booking_detail' booking.id %}';">
+                    <td>{{ booking.staff.get_full_name }}</td>
+                    <td>{{ booking.contract.event_date|date:"Y-m-d" }}</td>
+                    <td>{{ booking.contract.client.primary_contact }}</td>
+                    <td>{{ booking.get_role_display }}</td>
+                    <td>
+                        {% if booking.confirmed %}
+                            <span class="badge badge-success">Yes</span>
+                        {% else %}
+                            <span class="badge badge-danger">No</span>
+                        {% endif %}
+                    </td>
+                    <!-- Add other data as needed -->
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% else %}
 <p>No bookings found</p>

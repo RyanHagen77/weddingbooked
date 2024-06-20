@@ -365,7 +365,7 @@ input[type="reset"]:hover,
 .search-results {
     margin: 20px auto; /* Center the table */
     width: 100%; /* Set table width */
-    max-width: 1000px; /* Set maximum width */
+    max-width: 1200px; /* Set maximum width */
     background-color: #ffffff; /* Background color for the table */
     padding: 5px; /* Padding inside the table */
     border: 1px solid #ddd; /* Border for the table */
