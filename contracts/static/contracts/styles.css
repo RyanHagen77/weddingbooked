@@ -26,7 +26,7 @@ header p, .section-link, .small-text {
     color: white;
     margin: 0;
     padding: 0 10px; /* Add padding for spacing */
-    font-size: 0.875rem; /* Smaller text size */
+    font-size: 11pt; /* Smaller text size */
 }
 
 .header .section-divider {
@@ -46,11 +46,11 @@ header p, .section-link, .small-text {
 }
 
 .card-text {
-    font-size: 10pt; /* Text size set to 13pt */
+    font-size: 11pt; /* Text size set to 13pt */
 }
 
 .card-header {
-    font-size: 10pt; /* Text size set to 10pt */
+    font-size: 11pt; /* Text size set to 10pt */
 }
 .card-body {    font-size: 11pt; /* Text size set to 10pt */
 }
@@ -84,7 +84,7 @@ footer {
 /* Hello user section */
 .user-info {
     display: flex;
-    font-size: 10pt; /* Ensure the text size is appropriate */
+    font-size: 11pt; /* Ensure the text size is appropriate */
     align-items: center;
     padding-right: 10px; /* Adjust padding to tighten the space */
     margin-right: 0; /* Remove any default margin */
@@ -135,7 +135,7 @@ footer {
     padding: 4px 8px; /* Smaller padding to reduce overall size */
     border-radius: 5px; /* Slightly smaller border-radius for a less pronounced curve */
     transition: background-color 0.3s; /* Smooth transition for background color change */
-    font-size: 10pt; /* Smaller text size */
+    font-size: 11pt; /* Smaller text size */
 }
 
 .menu-item a:hover {
@@ -189,7 +189,7 @@ footer {
 
 .form-section {
     display: flex;
-    max-width: 900px; /* Adjusted maximum width */
+    max-width: 1200px; /* Adjusted maximum width */
     width: 100%; /* Ensures it uses the maximum available width */
     font-size: 10pt; /* Set font size to 10pt */
     flex-wrap: wrap; /* Allows form sections to wrap in smaller screens */
@@ -247,6 +247,7 @@ input[type="reset"],
     line-height: 20px; /* Center text vertically within the button */
     padding: 5px 15px; /* Adjust padding as needed */
     background-color: #c67c85;
+    text-decoration: none; /* Remove underline */
     color: white;
     border: none;
     border-radius: 4px;
@@ -261,6 +262,7 @@ input[type="reset"]:hover,
 .button-group a:hover {
     background-color: #b55f66; /* Darker dusty pink for hover */
     color: white; /* Change text color on hover */
+    text-decoration: none; /* Remove underline */
 }
 
 .close {
@@ -326,12 +328,12 @@ input[type="reset"]:hover,
 /* Search form styling */
 .search-form {
     margin: 20px auto; /* Center the form */
-    max-width: 1000px; /* Set maximum width */
+    max-width: 1200px; /* Set maximum width */
     background-color: #ffffff; /* Background color for the form */
     padding: 20px; /* Padding inside the form */
     border: 1px solid #ddd; /* Border for the form */
     border-radius: 5px; /* Optional: Rounded corners */
-    font-size: 10pt; /* Set font size to 10pt */
+    font-size: 11pt; /* Set font size to 11pt */
 
 }
 
@@ -619,7 +621,7 @@ body {
 /* Task container styling */
 .task-container {
     margin: 20px auto; /* Center the task container */
-    max-width: 900px; /* Set maximum width */
+    max-width: 1200px; /* Set maximum width */
     background-color: #ffffff; /* Background color for the container */
     padding: 10px; /* Padding inside the container */
     border: 1px solid #ddd; /* Border for the container */
@@ -821,9 +823,9 @@ body {
 .event-staff-form {
     display: flex;
     flex-direction: column; /* Stack children vertically */
-    max-width: 900px; /* Adjusted maximum width */
+    max-width: 1200px; /* Adjusted maximum width */
     width: 100%; /* Ensures it uses the maximum available width */
-    font-size: 10pt; /* Set font size to 10pt */
+    font-size: 11pt; /* Set font size to 10pt */
     flex-wrap: wrap; /* Allows form sections to wrap in smaller screens */
     margin: 0 auto; /* Center the form horizontally */
     padding: 10px; /* Increased padding for better spacing */
@@ -857,33 +859,11 @@ body {
     padding: 10px;
 }
 
-.event-staff-button {
-    background-color: #d9534f; /* Custom color for the button */
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 14px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 5px;
-}
-
-.event-staff-button:hover {
-    background-color: #c9302c; /* Darker shade on hover */
-}
-
-
-
-
-
 /* Reports Section Styling */
 .reports-section {
     margin: 20px auto; /* Center the section */
     width: 100%; /* Set section width */
-    max-width: 900px; /* Set maximum width */
+    max-width: 1200px; /* Set maximum width */
     background-color: #ffffff; /* Background color for the section */
     padding: 10px; /* Padding inside the section */
     border: 1px solid #ddd; /* Border for the section */
@@ -902,7 +882,7 @@ body {
     border: 1px solid #ddd; /* Adds border to table cells */
     padding: 8px; /* Padding inside cells */
     text-align: left; /* Aligns text to the left */
-    font-size: 10pt; /* Set font size to 10pt */
+    font-size: 11pt; /* Set font size to 10pt */
 }
 
 /* Alternating row colors */
@@ -935,5 +915,48 @@ body {
 
 .reports-section .report-list a:hover {
     text-decoration: underline; /* Underline on hover */
+}
+
+#calendar {
+    background-color: #ffffff; /* Set background color */
+    border-radius: 8px; /* Rounded corners */
+    padding: 10px; /* Add padding */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+}
+
+.fc-toolbar h2 {
+    font-size: 16pt; /* Adjust header font size */
+    color: #c67c85; /* Header text color */
+}
+
+.fc-button {
+    text-decoration: none; /* Removes underline from links */
+    color: white; /* Sets all text to white */
+    display: block; /* Ensures the link fills the `.menu-item` for better clickability */
+    background-color: #c67c85; /* Lighter pastel pistachio color */
+    padding: 4px 8px; /* Smaller padding to reduce overall size */
+    border-radius: 5px; /* Slightly smaller border-radius for a less pronounced curve */
+    transition: background-color 0.3s; /* Smooth transition for background color change */
+    font-size: 11pt; /* Smaller text size */
+}
+
+.fc-button:hover {
+    background-color: #c67c85; /* Slightly darker shade on hover for a subtle effect */
+}
+
+.fc-daygrid-day-number {
+    font-size: 13pt; /* Adjust day number font size */
+    color: #333333; /* Day number color */
+}
+
+.fc-event {
+    background-color: #a1c9a5; /* Event background color */
+    color: white; /* Event text color */
+    border-radius: 4px; /* Rounded event corners */
+    padding: 2px; /* Add padding to event */
+}
+
+.fc-event:hover {
+    background-color: #9aac9a; /* Darken event color on hover */
 }
 

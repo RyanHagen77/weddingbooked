@@ -31,7 +31,7 @@
                 <td>{{ item.staff.next_year_bookings }}</td>
                 <td>{{ item.days_off_count }}</td>
                 <td>
-                    <button class="btn-dusty-pink onclick="location.href='{% url 'users:event_staff_schedule' item.staff.id %}'">View Schedule</button>
+                    <a class="btn-dusty-pink" href="{% url 'users:event_staff_schedule' item.staff.id %}">View Schedule</a>
                 </td>
             </tr>
             {% endfor %}

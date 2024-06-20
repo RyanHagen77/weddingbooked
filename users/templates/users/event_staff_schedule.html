@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container" style="display: flex;">
+<div class="search-results" style="display: flex;">
     <div style="flex: 1; display: flex; flex-direction: column; padding: 20px;">
         <div>
-            <h4>Days Off</h4>
-            <table id="daysOffList" class="styled-table">
+            <h5>Days Off</h5>
+            <table id="daysOffList" class="table">
                 <thead>
                     <tr>
                         <th>Date</th>
@@ -18,7 +18,7 @@
             </table>
         </div>
         <div class="bulk-select-controls" style="margin-top: 20px;">
-            <h5>Select Days Always Off</h5>
+            <h6>Select Days Always Off</h6>
             <select id="alwaysOffDay" class="styled-select" multiple>
                 <option value="0">Monday</option>
                 <option value="1">Tuesday</option>
@@ -31,7 +31,7 @@
             <button id="updateAvailabilityBtn" class="btn-dusty-pink">Update</button>
         </div>
         <div style="margin-top: 20px;">
-            <h4>Always Off</h4>
+            <h5>Always Off</h5>
             <ul id="alwaysOffDays" class="styled-list">
                 <!-- Recurring days off will be dynamically listed here -->
             </ul>

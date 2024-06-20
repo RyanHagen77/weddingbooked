@@ -2540,9 +2540,8 @@ def open_task_form(request, contract_id, note_id):
     form = TaskForm(initial=initial_data)
     return render(request, 'task_form.html', {'form': form})
 
-
-
 @require_POST
+@login_required
 def create_contract_task(request, contract_id=None, note_id=None):
     form = TaskForm(request.POST)
     if form.is_valid():
@@ -2568,7 +2567,6 @@ def create_contract_task(request, contract_id=None, note_id=None):
         return JsonResponse({'success': True, 'task_id': task.id, 'task_list_html': task_list_html})
     else:
         return JsonResponse({'success': False, 'errors': form.errors.as_json()})
-
 
 @login_required
 def get_contract_tasks(request, contract_id):
