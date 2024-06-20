@@ -5,8 +5,8 @@
 {% block content %}
 <div class="outer-container">
     <div class="search-results">
-        <h4>Lead Source Report</h4>
-        <button onclick="history.back()" class="btn-dusty-pink">Go Back</button>
+        <h4>Reception Venue Report</h4>
+        <button onclick="history.back()" class="btn btn-dusty-pink">Go Back</button>
 
         <form method="get" class="report-form">
             <label for="start_date">Start Date:</label>
@@ -29,23 +29,28 @@
         </form>
 
         <div class="search-results">
-            <h6>{{ selected_period|title }} Lead Sources between {{ start_date }} and {{ end_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
+            <h6>Reception Venues between {{ start_date }} and {{ end_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
             <table>
                 <thead>
                     <tr>
-                        <th>Period</th>
-                        <th>Lead Source Category</th>
-                        <th>Total Leads</th>
-                        <th>Booked Leads</th>
+                        <th>Reception Site</th>
+                        <th>Event Date</th>
+                        <th>Contract Number</th>
+                        <th>Contacts</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for data in report_data %}
                     <tr>
-                        <td>{{ data.period }}</td>
-                        <td>{{ data.category }}</td>
-                        <td>{{ data.total_count }}</td>
-                        <td>{{ data.booked_count }}</td>
+                        <td>{{ data.reception_site }}</td>
+                        <td>{{ data.event_date }}</td>
+                        <td>{{ data.custom_contract_number }}</td>
+                        <td>
+                            {{ data.primary_contact }}<br>
+                            {{ data.partner_contact }}
+                        </td>
+                        <td>{{ data.status }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

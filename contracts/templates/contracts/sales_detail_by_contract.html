@@ -2,134 +2,76 @@
 {% load app_filters %}
 
 {% block content %}
-<div class="search-results">
-    <h3>Sales Detail by Contract</h3>
-    <button onclick="history.back()" class="btn btn-dusty-pink">Go Back</button>
+<div class="outer-container">
+    <div class="search-results">
+        <h4>Sales Detail by Contract</h4>
+        <button onclick="history.back()" class="btn-dusty-pink">Go Back</button>
 
-    <form method="get" class="report-form">
-        <label for="start_date">Start Date:</label>
-        <input type="date" id="start_date" name="start_date" value="{{ start_date }}" required>
-        <label for="end_date">End Date:</label>
-        <input type="date" id="end_date" name="end_date" value="{{ end_date }}" required>
-        <label for="location">Location:</label>
-        <select id="location" name="location">
-            <option value="all" {% if selected_location == 'all' %}selected{% endif %}>All Locations</option>
-            {% for location in locations %}
-            <option value="{{ location.id }}" {% if selected_location == location.id|stringformat:"s" %}selected{% endif %}>{{ location.name }}</option>
-            {% endfor %}
-        </select>
-        <label for="group_by">Group By:</label>
-        <select id="group_by" name="group_by">
-            <option value="week" {% if group_by == 'week' %}selected{% endif %}>Week</option>
-            <option value="month" {% if group_by == 'month' %}selected{% endif %}>Month</option>
-        </select>
-        <button type="submit">Filter Report</button>
-    </form>
-        <div class="search-results">
-            <h6>{{ group_by|capfirst }}ly Contract Breakdown between {{ start_date }} and {{ end_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Contract Number</th>
-                        <th>Location</th>
-                        <th>Service Sales</th>
-                        <th>Product Sales</th>
-                        <th>Taxable Products Sold</th>
-                        <th>Sales Tax Collected</th>
-                        <th>Other Revenue</th>
-                        <th>Total Sales w/ Tax</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for data in contract_data %}
-                    <tr>
-                        <td><a href="{% url 'contracts:contract_detail' data.contract_id %}">{{ data.custom_contract_number }}</a></td>
-                        <td>{{ data.location }}</td>
-                        <td>${{ data.service_revenue|floatformat:2 }}</td>
-                        <td>${{ data.products_revenue|floatformat:2 }}</td>
-                        <td>${{ data.taxable_products_revenue|floatformat:2 }}</td>
-                        <td>${{ data.tax_collected|floatformat:2 }}</td>
-                        <td>${{ data.other_revenue|floatformat:2 }}</td>
-                        <td>${{ data.total_revenue|floatformat:2 }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <th colspan="2">Totals</th>
-                        <th>${{ total_service_revenue|floatformat:2 }}</th>
-                        <th>${{ total_products_revenue|floatformat:2 }}</th>
-                        <th>${{ total_taxable_products_revenue|floatformat:2 }}</th>
-                        <th>${{ total_other_revenue|floatformat:2 }}</th>
-                        <th>${{ total_tax_collected|floatformat:2 }}</th>
-                        <th>${{ total_revenue|floatformat:2 }}</th>
-                    </tr>
-                </tfoot>
+        <form method="get" class="report-form">
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" value="{{ start_date }}" required>
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" value="{{ end_date }}" required>
+            <label for="location">Location:</label>
+            <select id="location" name="location">
+                <option value="all" {% if selected_location == 'all' %}selected{% endif %}>All Locations</option>
+                {% for location in locations %}
+                <option value="{{ location.id }}" {% if selected_location == location.id|stringformat:"s" %}selected{% endif %}>{{ location.name }}</option>
+                {% endfor %}
+            </select>
+            <label for="group_by">Group By:</label>
+            <select id="group_by" name="group_by">
+                <option value="week" {% if group_by == 'week' %}selected{% endif %}>Week</option>
+                <option value="month" {% if group_by == 'month' %}selected{% endif %}>Month</option>
+            </select>
+            <button type="submit">Filter Report</button>
+        </form>
+            <div class="search-results">
+                <h6>{{ group_by|capfirst }}ly Contract Breakdown between {{ start_date }} and {{ end_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Contract Number</th>
+                            <th>Location</th>
+                            <th>Service Sales</th>
+                            <th>Product Sales</th>
+                            <th>Taxable Products Sold</th>
+                            <th>Sales Tax Collected</th>
+                            <th>Other Revenue</th>
+                            <th>Total Sales w/ Tax</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in contract_data %}
+                        <tr>
+                            <td><a href="{% url 'contracts:contract_detail' data.contract_id %}">{{ data.custom_contract_number }}</a></td>
+                            <td>{{ data.location }}</td>
+                            <td>${{ data.service_revenue|floatformat:2 }}</td>
+                            <td>${{ data.products_revenue|floatformat:2 }}</td>
+                            <td>${{ data.taxable_products_revenue|floatformat:2 }}</td>
+                            <td>${{ data.tax_collected|floatformat:2 }}</td>
+                            <td>${{ data.other_revenue|floatformat:2 }}</td>
+                            <td>${{ data.total_revenue|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="2">Totals</th>
+                            <th>${{ total_service_revenue|floatformat:2 }}</th>
+                            <th>${{ total_products_revenue|floatformat:2 }}</th>
+                            <th>${{ total_taxable_products_revenue|floatformat:2 }}</th>
+                            <th>${{ total_other_revenue|floatformat:2 }}</th>
+                            <th>${{ total_tax_collected|floatformat:2 }}</th>
+                            <th>${{ total_revenue|floatformat:2 }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
             </table>
         </div>
-        </table>
     </div>
 </div>
 {% endblock %}
 
-<style>
-/* Report container styling */
-.report-container {
-    margin: 20px auto;
-    padding: 50px;
-    width: 100%;
-    max-width: 1200px;
-    background-color: #ffffff;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
 
-/* Report form styling */
-.report-form {
-    margin-bottom: 20px;
-}
-
-/* Search results container styling */
-.search-results {
-    width: 100%; /* Set table width */
-    background-color: #ffffff; /* Background color for the container */
-    border: 1px solid #ddd; /* Border for the container */
-    border-radius: 5px; /* Rounded corners */
-    padding: 5px; /* Padding inside the container */
-}
-
-/* Search results table styling */
-.search-results table {
-    width: 100%; /* Make table width match the container */
-    border-collapse: collapse; /* Collapses border to single line */
-}
-
-.search-results th, .search-results td {
-    border: 1px solid #ddd; /* Adds border to table cells */
-    padding: 8px; /* Padding inside cells */
-    text-align: left; /* Aligns text to the left */
-    font-size: 10pt; /* Set font size to 10pt */
-}
-
-/* Alternating row colors */
-.search-results tr:nth-child(odd) {
-    background-color: #f2f2f2; /* Light gray for odd rows */
-}
-
-.search-results tr:nth-child(even) {
-    background-color: #ffffff; /* White for even rows */
-}
-
-/* Hover effect for rows */
-.search-results tr:hover {
-    background-color: #ddd; /* Color when row is hovered */
-    cursor: pointer; /* Change cursor to indicate clickable */
-}
-
-/* Table header styling */
-.search-results th {
-    background-color: #c67c85; /* Dusty pink for table headers */
-    color: white;
-    padding: 10px; /* Padding for headers */
-}
-</style>

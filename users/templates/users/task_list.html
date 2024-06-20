@@ -10,39 +10,41 @@
 {% endblock %}
 
 {% block content %}
-<div class="task-container">
-    <h5>Tasks</h5>
-    <div class="task-actions">
-        <!-- Add Task Button -->
-        <button type="button" class="btn-dusty-pink mb-2" data-toggle="modal" data-target="#addTaskModal"
-                data-sender-id="{{ request.user.id }}"
-                data-contract-id="{{ contract.contract_id }}"
-                data-note-id="{{ note.id }}"
-                data-type="internal">Add Task</button>
-        <!-- Refresh Tasks Button -->
-        <button type="button" class="btn-dusty-pink mb-2" onclick="window.location.reload();">Refresh Tasks</button>
-    </div>
-    <!-- Task List Container -->
-    <div id="taskListContainer">
-        <label>
-        <input type="checkbox" id="showCompletedTasks"> <label for="showCompletedTasks" style="font-size: 10pt;">Show Completed Tasks</label>
-        </label>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Sender</th>
-                    <th>Created</th>
-                    <th>Contract</th>
-                    <th>Note</th>
-                    <th>Due Date</th>
-                    <th>Description</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% include 'users/internal_task_list_snippet.html' %}
-            </tbody>
-        </table>
+<div class="outer-container">
+    <div class="task-container">
+        <h5>Tasks</h5>
+        <div class="task-actions">
+            <!-- Add Task Button -->
+            <button type="button" class="btn-dusty-pink mb-2" data-toggle="modal" data-target="#addTaskModal"
+                    data-sender-id="{{ request.user.id }}"
+                    data-contract-id="{{ contract.contract_id }}"
+                    data-note-id="{{ note.id }}"
+                    data-type="internal">Add Task</button>
+            <!-- Refresh Tasks Button -->
+            <button type="button" class="btn-dusty-pink mb-2" onclick="window.location.reload();">Refresh Tasks</button>
+        </div>
+        <!-- Task List Container -->
+        <div id="taskListContainer">
+            <label>
+            <input type="checkbox" id="showCompletedTasks"> <label for="showCompletedTasks" style="font-size: 10pt;">Show Completed Tasks</label>
+            </label>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Sender</th>
+                        <th>Created</th>
+                        <th>Contract</th>
+                        <th>Note</th>
+                        <th>Due Date</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% include 'users/internal_task_list_snippet.html' %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
     <!-- Modal for adding a new task -->

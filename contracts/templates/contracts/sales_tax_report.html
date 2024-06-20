@@ -2,42 +2,44 @@
 {% load static %}
 
 {% block content %}
-<div class="search-results">
-    <h3>Sales Tax Report</h3>
-    <button onclick="history.back()" class="btn btn-dusty-pink">Go Back</button>
-
-    <form method="get" class="report-form">
-        <label for="date_range">Date Range:</label>
-        <select id="date_range" name="date_range">
-            <option value="current_quarter" {% if date_range == 'Current Quarter' %}selected{% endif %}>Current Quarter</option>
-            <option value="last_quarter" {% if date_range == 'Last Quarter' %}selected{% endif %}>Last Quarter</option>
-            <option value="this_month" {% if date_range == 'This Month' %}selected{% endif %}>This Month</option>
-            <option value="last_month" {% if date_range == 'Last Month' %}selected{% endif %}>Last Month</option>
-            <option value="this_year" {% if date_range == 'This Year' %}selected{% endif %}>This Year</option>
-            <option value="last_year" {% if date_range == 'Last Year' %}selected{% endif %}>Last Year</option>
-        </select>
-        <button type="submit">Generate Report</button>
-    </form>
+<div class="outer-container">
     <div class="search-results">
-        <h6>Sales Tax Report for {{ date_range }}</h6>
-        <table>
-            <thead>
-                <tr>
-                    <th>Location</th>
-                    <th>Taxable Products Sold</th>
-                    <th>Sales Tax Collected</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for data in report_data %}
-                <tr>
-                    <td>{{ data.location }}</td>
-                    <td>${{ data.taxable_products_revenue|floatformat:2 }}</td>
-                    <td>${{ data.tax_collected|floatformat:2 }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <h4>Sales Tax Report</h4>
+        <button onclick="history.back()" class="btn-dusty-pink">Go Back</button>
+
+        <form method="get" class="report-form">
+            <label for="date_range">Date Range:</label>
+            <select id="date_range" name="date_range">
+                <option value="current_quarter" {% if date_range == 'Current Quarter' %}selected{% endif %}>Current Quarter</option>
+                <option value="last_quarter" {% if date_range == 'Last Quarter' %}selected{% endif %}>Last Quarter</option>
+                <option value="this_month" {% if date_range == 'This Month' %}selected{% endif %}>This Month</option>
+                <option value="last_month" {% if date_range == 'Last Month' %}selected{% endif %}>Last Month</option>
+                <option value="this_year" {% if date_range == 'This Year' %}selected{% endif %}>This Year</option>
+                <option value="last_year" {% if date_range == 'Last Year' %}selected{% endif %}>Last Year</option>
+            </select>
+            <button type="submit" class="btn-dusty-pink">Generate Report</button>
+        </form>
+        <div class="search-results">
+            <h6>Sales Tax Report for {{ date_range }}</h6>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Location</th>
+                        <th>Taxable Products Sold</th>
+                        <th>Sales Tax Collected</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in report_data %}
+                    <tr>
+                        <td>{{ data.location }}</td>
+                        <td>${{ data.taxable_products_revenue|floatformat:2 }}</td>
+                        <td>${{ data.tax_collected|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

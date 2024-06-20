@@ -267,7 +267,7 @@ def appointments_report(request):
     return render(request, 'contracts/appointments_report.html', context)
 
 @login_required
-def reception_venues_report(request):
+def reception_venue_report(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     # Get date range, location, and period from request
@@ -378,7 +378,7 @@ def reception_venues_report(request):
         'selected_period': period,
     }
 
-    return render(request, 'contracts/reception_venues_report.html', context)
+    return render(request, 'contracts/reception_venue_report.html', context)
 
 def revenue_report(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"

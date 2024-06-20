@@ -3,40 +3,42 @@
 {% load app_filters %}
 
 {% block content %}
-<div class="search-results">
-    <h3>Deferred Revenue Report</h3>
-    <button onclick="history.back()" class="btn btn-dusty-pink">Go Back</button>
-
-    <form method="get" class="report-form">
-        <label for="report_date">Report Date:</label>
-        <input type="date" id="report_date" name="report_date" value="{{ report_date }}" required>
-        <label for="location">Location:</label>
-        <select id="location" name="location">
-            <option value="all" {% if selected_location == 'all' %}selected{% endif %}>All Locations</option>
-            {% for location in locations %}
-            <option value="{{ location.id }}" {% if selected_location == location.id|stringformat:"s" %}selected{% endif %}>{{ location.name }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">Generate Report</button>
-    </form>
+<div class="outer-container">
     <div class="search-results">
-        <h6>Deferred Revenue for {{ report_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
-        <table>
-            <thead>
-                <tr>
-                    <th>Location</th>
-                    <th>Deferred Revenue</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for data in report_data %}
-                <tr>
-                    <td>{{ data.location }}</td>
-                    <td>${{ data.deferred_revenue }}</td>
-                </tr>
+        <h4>Deferred Revenue Report</h4>
+        <button onclick="history.back()" class="btn-dusty-pink">Go Back</button>
+
+        <form method="get" class="report-form">
+            <label for="report_date">Report Date:</label>
+            <input type="date" id="report_date" name="report_date" value="{{ report_date }}" required>
+            <label for="location">Location:</label>
+            <select id="location" name="location">
+                <option value="all" {% if selected_location == 'all' %}selected{% endif %}>All Locations</option>
+                {% for location in locations %}
+                <option value="{{ location.id }}" {% if selected_location == location.id|stringformat:"s" %}selected{% endif %}>{{ location.name }}</option>
                 {% endfor %}
-            </tbody>
-        </table>
+            </select>
+            <button type="submit" class="btn-dusty-pink">Generate Report</button>
+        </form>
+        <div class="search-results">
+            <h6>Deferred Revenue for {{ report_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Location</th>
+                        <th>Deferred Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in report_data %}
+                    <tr>
+                        <td>{{ data.location }}</td>
+                        <td>${{ data.deferred_revenue }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

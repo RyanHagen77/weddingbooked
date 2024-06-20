@@ -2,71 +2,73 @@
 {% load app_filters %}
 
 {% block content %}
-<div class="search-results">
-    <h3>Revenue by Contract</h3>
-    <button onclick="history.back()" class="btn btn-dusty-pink">Go Back</button>
-
-    <form method="get" class="report-form">
-        <label for="start_date">Start Date:</label>
-        <input type="date" id="start_date" name="start_date" value="{{ original_start_date }}" required>
-        <label for="end_date">End Date:</label>
-        <input type="date" id="end_date" name="end_date" value="{{ original_end_date }}" required>
-        <label for="location">Location:</label>
-        <select id="location" name="location">
-            <option value="all" {% if selected_location == 'all' %}selected{% endif %}>All Locations</option>
-            {% for location in locations %}
-            <option value="{{ location.id }}" {% if selected_location == location.id|stringformat:"s" %}selected{% endif %}>{{ location.name }}</option>
-            {% endfor %}
-        </select>
-        <label for="group_by">Group By:</label>
-        <select id="group_by" name="group_by">
-            <option value="week" {% if group_by == 'week' %}selected{% endif %}>Week</option>
-            <option value="month" {% if group_by == 'month' %}selected{% endif %}>Month</option>
-        </select>
-        <button type="submit">Filter Report</button>
-    </form>
+<div class="outer-container">
     <div class="search-results">
-    <h6>{{ group_by|capfirst }}ly Revenue between {{ start_date }} and {{ end_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
-        <table>
-            <thead>
-                <tr>
-                    <th>Custom Contract ID</th>
-                    <th>Location</th>
-                    <th>Payment Date</th>
-                    <th>Payment Amount</th>
-                    <th>Payment Purpose</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for data in contracts_data %}
-                <tr>
-                    <td><a href="{% url 'contracts:contract_detail' data.contract_id %}">{{ data.custom_contract_number }}</a></td>
-                    <td>{{ data.location }}</td>
-                    <td>
-                        <ul>
-                            {% for payment in data.payments %}
-                            <li>{{ payment.date|date:"F j, Y" }}</li>
-                            {% endfor %}
-                        </ul>
-                    </td>
-                    <td>
-                        <ul>
-                            {% for payment in data.payments %}
-                            <li>${{ payment.amount }}</li>
-                            {% endfor %}
-                        </ul>
-                    </td>
-                    <td>
-                        <ul>
-                            {% for payment in data.payments %}
-                            <li>{{ payment.purpose }}</li>
-                            {% endfor %}
-                        </ul>
-                    </td>
-                </tr>
+        <h4>Revenue by Contract</h4>
+        <button onclick="history.back()" class="btn-dusty-pink">Go Back</button>
+
+        <form method="get" class="report-form">
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" value="{{ original_start_date }}" required>
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" value="{{ original_end_date }}" required>
+            <label for="location">Location:</label>
+            <select id="location" name="location">
+                <option value="all" {% if selected_location == 'all' %}selected{% endif %}>All Locations</option>
+                {% for location in locations %}
+                <option value="{{ location.id }}" {% if selected_location == location.id|stringformat:"s" %}selected{% endif %}>{{ location.name }}</option>
                 {% endfor %}
-            </tbody>
-        </table>
+            </select>
+            <label for="group_by">Group By:</label>
+            <select id="group_by" name="group_by">
+                <option value="week" {% if group_by == 'week' %}selected{% endif %}>Week</option>
+                <option value="month" {% if group_by == 'month' %}selected{% endif %}>Month</option>
+            </select>
+        <button type="submit" class="btn-dusty-pink">Generate Report</button>
+        </form>
+        <div class="search-results">
+        <h6>{{ group_by|capfirst }}ly Revenue between {{ start_date }} and {{ end_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Custom Contract ID</th>
+                        <th>Location</th>
+                        <th>Payment Date</th>
+                        <th>Payment Amount</th>
+                        <th>Payment Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in contracts_data %}
+                    <tr>
+                        <td><a href="{% url 'contracts:contract_detail' data.contract_id %}">{{ data.custom_contract_number }}</a></td>
+                        <td>{{ data.location }}</td>
+                        <td>
+                            <ul>
+                                {% for payment in data.payments %}
+                                <li>{{ payment.date|date:"F j, Y" }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td>
+                            <ul>
+                                {% for payment in data.payments %}
+                                <li>${{ payment.amount }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td>
+                            <ul>
+                                {% for payment in data.payments %}
+                                <li>{{ payment.purpose }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

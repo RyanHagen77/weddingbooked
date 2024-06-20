@@ -187,12 +187,12 @@ footer {
     margin-bottom: 20px;
 }
 
-.form-section {
+.new-contract-form{
     display: flex;
+    flex-direction: column; /* Arrange items vertically */
     max-width: 1200px; /* Adjusted maximum width */
     width: 100%; /* Ensures it uses the maximum available width */
     font-size: 10pt; /* Set font size to 10pt */
-    flex-wrap: wrap; /* Allows form sections to wrap in smaller screens */
     margin: 10px;
     padding: 10px; /* Increased padding for better spacing */
     border: 1px solid #ddd;
@@ -200,6 +200,21 @@ footer {
     background-color: #f9f9f9; /* Light gray background */
     box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Adds subtle shadow for depth */
 }
+
+/* Optional: Style for the inputs within the new contract form */
+.new-contract-form input[type="text"],
+.new-contract-form input[type="email"],
+.new-contract-form input[type="number"],
+.new-contract-form select,
+.new-contract-form textarea {
+    width: 100%;
+    padding: 8px;
+    margin: 0;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
 
 /* Column styling */
 .left-column, .right-column {
@@ -618,6 +633,11 @@ body {
     color: #000 !important;
 }
 
+/* Outer Container Styling */
+.outer-container {
+    margin: 10px; /* Space outside the reports section */
+}
+
 /* Task container styling */
 .task-container {
     margin: 20px auto; /* Center the task container */
@@ -959,4 +979,3 @@ body {
 .fc-event:hover {
     background-color: #9aac9a; /* Darken event color on hover */
 }
-
