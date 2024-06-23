@@ -345,7 +345,6 @@ class ClientForm(forms.ModelForm):
 
 
 class NewContractForm(forms.ModelForm):
-
     is_code_92 = forms.BooleanField(required=False)
     old_contract_number = forms.CharField(max_length=255, required=False)
     location = forms.ModelChoiceField(queryset=Location.objects.all())
@@ -353,13 +352,12 @@ class NewContractForm(forms.ModelForm):
     partner_contact = forms.CharField(max_length=255)
     primary_email = forms.EmailField(required=True)
     primary_phone1 = forms.CharField(
-    max_length=12,  # Adjusted to accommodate dashes
-    validators=[phone_validator],
-    required=False  # Instead of blank=True, null=True
-)
+        max_length=12,  # Adjusted to accommodate dashes
+        validators=[phone_validator],
+        required=False  # Instead of blank=True, null=True
+    )
     lead_source_category = forms.ModelChoiceField(queryset=LeadSourceCategory.objects.all(), required=False, label="Lead Source Category")
     lead_source_details = forms.CharField(max_length=255, required=False, label="Lead Source Details")
-
 
     event_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
     csr = UserModelChoiceField(
@@ -375,10 +373,10 @@ class NewContractForm(forms.ModelForm):
 
     # Optional fields
     primary_phone2 = forms.CharField(
-    max_length=12,  # Adjusted to accommodate dashes
-    validators=[phone_validator],
-    required=False  # Instead of blank=True, null=True
-)
+        max_length=12,  # Adjusted to accommodate dashes
+        validators=[phone_validator],
+        required=False  # Instead of blank=True, null=True
+    )
     primary_address1 = forms.CharField(max_length=255, required=False)
     primary_address2 = forms.CharField(max_length=255, required=False)
     city = forms.CharField(max_length=255, required=False)
@@ -386,28 +384,27 @@ class NewContractForm(forms.ModelForm):
     postal_code = forms.CharField(max_length=255, required=False)
     partner_email = forms.EmailField(required=False)
     partner_phone1 = forms.CharField(
-    max_length=12,  # Adjusted to accommodate dashes
-    validators=[phone_validator],
-    required=False  # Instead of blank=True, null=True
-)
+        max_length=12,  # Adjusted to accommodate dashes
+        validators=[phone_validator],
+        required=False  # Instead of blank=True, null=True
+    )
     partner_phone2 = forms.CharField(
-    max_length=12,  # Adjusted to accommodate dashes
-    validators=[phone_validator],
-    required=False  # Instead of blank=True, null=True
-)
+        max_length=12,  # Adjusted to accommodate dashes
+        validators=[phone_validator],
+        required=False  # Instead of blank=True, null=True
+    )
     alt_contact = forms.CharField(max_length=255, required=False)
     alt_email = forms.EmailField(required=False)
     alt_phone = forms.CharField(
-    max_length=12,  # Adjusted to accommodate dashes
-    validators=[phone_validator],
-    required=False  # Instead of blank=True, null=True
-)
-
+        max_length=12,  # Adjusted to accommodate dashes
+        validators=[phone_validator],
+        required=False  # Instead of blank=True, null=True
+    )
 
     class Meta:
         model = Contract
         fields = [
-            'event_date', 'csr', 'coordinator', 'old_contract_number',
+            'event_date', 'csr', 'coordinator', 'old_contract_number', 'is_code_92',
             'bridal_party_qty', 'guests_qty', 'lead_source_category', 'lead_source_details',
             'ceremony_site', 'ceremony_city', 'ceremony_state', 'ceremony_contact', 'ceremony_phone', 'ceremony_email',
             'reception_site', 'reception_city', 'reception_state', 'reception_contact', 'reception_phone', 'reception_email',
@@ -417,8 +414,7 @@ class NewContractForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['csr'].queryset = CustomUser.objects.filter(is_active=True, groups__name='Sales')
-        self.fields['coordinator'].queryset = CustomUser.objects.filter(role__name='COORDINATOR',
-                                                                        groups__name='Office Staff')
+        self.fields['coordinator'].queryset = CustomUser.objects.filter(role__name='COORDINATOR', groups__name='Office Staff')
 
     def save(self, commit=True):
         # Save the contract instance
@@ -426,6 +422,8 @@ class NewContractForm(forms.ModelForm):
         # Add the location to the contract
         contract.location = self.cleaned_data.get('location')
 
+        # Set is_code_92
+        contract.is_code_92 = self.cleaned_data.get('is_code_92', False)
 
         if commit:
             contract.save()

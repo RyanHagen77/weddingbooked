@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.contrib.auth.decorators import user_passes_test
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from .models import Contract, LeadSourceCategory, Location, Payment, ServiceFee, ContractOvertime, SchedulePayment
@@ -11,7 +12,13 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-@login_required
+def custom_403_view(request, exception=None):
+    return render(request, '403.html', status=403)
+
+def is_report_viewer(user):
+    return user.groups.filter(name__in=['EventStaffPayrollReportViewer', 'AllReportViewer']).exists()
+
+@user_passes_test(is_report_viewer)
 def reports(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 

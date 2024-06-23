@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load app_filters %}
 
 {% block content %}
 <div class="outer-container">
@@ -16,10 +17,12 @@
                     <td>Performance</td>
                     <td>
                         <ul class="report-list">
-                            <li><a href="{% url 'contracts:appointments_report' %}">Appointments Report</a></li>
-                            <li><a href="{% url 'contracts:lead_source_report' %}">Lead Source Report</a></li>
-                            <li><a href="{% url 'contracts:reception_venue_report' %}">Reception Venue Report</a></li>
-                            <!-- Add more event reports as needed -->
+                            {% if request.user|in_group:"AllReportViewer" %}
+                                <li><a href="{% url 'contracts:appointments_report' %}">Appointments Report</a></li>
+                                <li><a href="{% url 'contracts:lead_source_report' %}">Lead Source Report</a></li>
+                                <li><a href="{% url 'contracts:reception_venue_report' %}">Reception Venue Report</a></li>
+                                <!-- Add more event reports as needed -->
+                            {% endif %}
                         </ul>
                     </td>
                 </tr>
@@ -27,13 +30,15 @@
                     <td>Finance</td>
                     <td>
                         <ul class="report-list">
-                            <li><a href="{% url 'contracts:sales_detail_report' %}">Sales Detail Report</a></li>
-                            <li><a href="{% url 'contracts:revenue_report' %}">Revenue Report</a></li>
-                            <li><a href="{% url 'contracts:revenue_by_contract' %}">Revenue by Contract</a></li>
-                            <li><a href="{% url 'contracts:deferred_revenue_report' %}">Deferred Revenue Report</a></li>
-                            <li><a href="{% url 'contracts:sales_tax_report' %}">Sales Tax Report</a></li>
-                            <li><a href="{% url 'contracts:payments_due_report' %}">Payments Due Report</a></li>
-                            <li><a href="{% url 'contracts:formal_wear_deposit_report' %}">Formal Wear Report</a></li>
+                            {% if request.user|in_group:"AllReportViewer" %}
+                                <li><a href="{% url 'contracts:sales_detail_report' %}">Sales Detail Report</a></li>
+                                <li><a href="{% url 'contracts:revenue_report' %}">Revenue Report</a></li>
+                                <li><a href="{% url 'contracts:revenue_by_contract' %}">Revenue by Contract</a></li>
+                                <li><a href="{% url 'contracts:deferred_revenue_report' %}">Deferred Revenue Report</a></li>
+                                <li><a href="{% url 'contracts:sales_tax_report' %}">Sales Tax Report</a></li>
+                                <li><a href="{% url 'contracts:payments_due_report' %}">Payments Due Report</a></li>
+                                <li><a href="{% url 'contracts:formal_wear_deposit_report' %}">Formal Wear Report</a></li>
+                            {% endif %}
                         </ul>
                     </td>
                 </tr>
@@ -41,8 +46,9 @@
                     <td>Event Staff</td>
                     <td>
                         <ul class="report-list">
-                            <!-- Add event staff reports as needed -->
-                            <li><a href="{% url 'contracts:event_staff_payroll_report' %}">Event Staff Payroll Report</a></li>
+                            {% if request.user|in_group:"AllReportViewer" or request.user|in_group:"EventStaffPayrollReportViewer" %}
+                                <li><a href="{% url 'contracts:event_staff_payroll_report' %}">Event Staff Payroll Report</a></li>
+                            {% endif %}
                         </ul>
                     </td>
                 </tr>
@@ -50,4 +56,39 @@
         </table>
     </div>
 </div>
+<!-- Access Denied Modal -->
+<div class="modal fade" id="accessDeniedModal" tabindex="-1" aria-labelledby="accessDeniedModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="accessDeniedModalLabel">Access Denied</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                You do not have permission to view this report.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const reportLinks = document.querySelectorAll('.report-link');
+        const userGroups = {{ user_groups|safe }};
+
+        reportLinks.forEach(link => {
+            link.addEventListener('click', function (event) {
+                const requiredGroups = JSON.parse(this.getAttribute('data-groups'));
+
+                if (!requiredGroups.some(group => userGroups.includes(group))) {
+                    event.preventDefault();
+                    new bootstrap.Modal(document.getElementById('accessDeniedModal')).show();
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}

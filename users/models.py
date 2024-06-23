@@ -92,7 +92,7 @@ class CustomUser(AbstractUser):
         ('ACTIVE', 'Active'),
         ('INACTIVE', 'Inactive'),
     )
-    status = models.CharField(choices=STATUS_CHOICES, max_length=10, default='TRAINEE')
+    status = models.CharField(choices=STATUS_CHOICES, max_length=10, default='ACTIVE')
     website = models.URLField(max_length=200, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
 

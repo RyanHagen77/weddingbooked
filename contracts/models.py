@@ -8,11 +8,11 @@ from django.core.validators import MinValueValidator, EmailValidator
 from django.db import models
 from django.core.validators import RegexValidator
 from django.utils import timezone
+import re
+from django.db import transaction
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
-import json
-from django.http import HttpResponse, JsonResponse
 from .constants import SERVICE_ROLE_MAPPING  # Adjust the import path as needed
 
 
@@ -670,42 +670,44 @@ class Contract(models.Model):
     def save(self, *args, **kwargs):
         """Custom save method to handle custom contract number generation and tax calculations."""
 
-        # Custom contract number generation
+        print("Entering save method")
+
         if not self.custom_contract_number:
             year, month = timezone.now().strftime("%y"), timezone.now().strftime("%m")
-            last_contract = Contract.objects.filter(
-                custom_contract_number__regex=r'^[A-Z]{3}' + year + '-' + month + r'-\d+$'
-            ).order_by('-custom_contract_number').first()
-
-            new_number = int(last_contract.custom_contract_number.split('-')[-1]) + 1 if last_contract else 1
 
             # Extract first 3 letters of the primary contact's last name
-            if self.client.primary_contact:
+            primary_contact_last_name = "UNK"  # Default value
+            if self.client and self.client.primary_contact:
                 name_parts = self.client.primary_contact.split()
                 if len(name_parts) > 1:
                     primary_contact_last_name = name_parts[-1][:3].upper()
                 else:
                     primary_contact_last_name = name_parts[0][:3].upper()  # In case only one name is provided
-            else:
-                primary_contact_last_name = "UNK"  # Fallback in case primary_contact is not set
 
-            # Format the custom contract number as COU24-05-06
-            self.custom_contract_number = f"{primary_contact_last_name}{year}-{month}-{str(new_number).zfill(2)}"
+            # Use a transaction to ensure atomicity
+            with transaction.atomic():
+                # Query to retrieve all contracts for the current year and month
+                regex_pattern = rf'^[A-Z]{{3}}-{year}-{month}-(\d+)$'
+                contracts = Contract.objects.filter(custom_contract_number__regex=regex_pattern).order_by(
+                    '-custom_contract_number')
+
+                # Find the highest number in the retrieved contracts
+                if contracts:
+                    highest_number = max(int(re.search(r'-(\d+)$', contract.custom_contract_number).group(1)) for contract in contracts)
+                    new_number = highest_number + 1
+                else:
+                    new_number = 1
+
+                # Format the custom contract number with hyphen
+                self.custom_contract_number = f"{primary_contact_last_name}-{year}-{month}-{str(new_number).zfill(2)}"
+                print(f"Generated custom contract number: {self.custom_contract_number}")
+
+                # Save the contract with the new custom contract number
+                super().save(*args, **kwargs)
+                print("Saved contract with custom contract number")
         else:
             print("Custom contract number already set.")
-
-        super().save(*args, **kwargs)  # Call the "real" save() method.
-
-
-        # Set tax rate based on location before saving
-        tax_rate_obj = TaxRate.objects.filter(location=self.location, is_active=True).first()
-        if tax_rate_obj:
-            self.tax_rate = tax_rate_obj.tax_rate
-        else:
-            self.tax_rate = Decimal('0.00')  # Default tax rate if none is found
-
-        # Save the instance to ensure it has a primary key for further calculations
-        super(Contract, self).save(*args, **kwargs)
+            super().save(*args, **kwargs)
 
         # Recalculate and store the tax amount
         taxable_amount = Decimal('0.00')
@@ -724,6 +726,8 @@ class Contract(models.Model):
         # Recalculate the total cost and apply discounts
         self.total_cost = self.calculate_total_cost()  # Update total cost before saving
         super(Contract, self).save(*args, **kwargs)  # Save the contract with updated total
+
+
 
 
 class ContractOvertime(models.Model):

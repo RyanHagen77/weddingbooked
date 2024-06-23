@@ -25,7 +25,7 @@
     <header class="bg-cool-grey text-white py-1">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center" id="header-event-date">
                     <p class="mb-0 small-text">Event Date: {{ contract.event_date|date:"Y-m-d" }}</p>
                 </div>
                 <div class="d-flex align-items-center">
@@ -49,9 +49,9 @@
                 <div class="col-md-4 mb-3">
                     <div class="card bg-white">
                         <div class="card-body">
-                            <p class="card-text">Status: {{ contract.get_status_display }}</p>
-                            <p class="card-text">Location: {{ contract.location.name }}</p>
-                            <p class="card-text">Sales Person: {{ contract.csr.get_full_name }}</p>
+                            <p class="card-text" id="header-status">Status: {{ contract.get_status_display }}</p>
+                            <p class="card-text" id="header-location">Location: {{ contract.location.name }}</p>
+                            <p class="card-text" id="header-csr">Sales Person: {{ contract.csr.get_full_name }}</p>
                             <p class="card-text">Contract Date: {{ contract.contract_date|date:"Y-m-d" }}</p>
                         </div>
                     </div>
@@ -59,18 +59,18 @@
                 <div class="col-md-4 mb-3">
                     <div class="card bg-white">
                         <div class="card-body">
-                            <p class="card-text">Primary Contact: {{ contract.client.primary_contact }}</p>
-                            <p class="card-text">Partner Contact: {{ contract.client.partner_contact }}</p>
-                            <p class="card-text">Primary Email: {{ contract.client.primary_email }}</p>
-                            <p class="card-text">Primary Phone 1: {{ contract.client.primary_phone1 }}</p>
+                            <p class="card-text" id="header-primary-contact">Primary Contact: {{ contract.client.primary_contact }}</p>
+                            <p class="card-text" id="header-partner-contact">Partner Contact: {{ contract.client.partner_contact }}</p>
+                            <p class="card-text" id="header-primary-email">Primary Email: {{ contract.client.primary_email }}</p>
+                            <p class="card-text" id="header-primary-phone">Primary Phone 1: {{ contract.client.primary_phone1 }}</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4 mb-3">
                     <div class="card bg-white">
                         <div class="card-body">
-                            <p class="card-text">Next Payment Due: ${{ contract.payment_amount_due }}</p>
-                            <p class="card-text">Due Date: {{ contract.due_date }}</p>
+                            <p id="payment-amount-due" class="card-text">Next Payment Due: $0.00</p>
+                            <p id="due-date" class="card-text">Due Date: N/A</p>
                             <p class="card-text">Balance Due: ${{ contract.balance_due }}</p>
                             <p class="card-text">Contract Total: ${{ contract.final_total }}</p>
                         </div>
@@ -79,7 +79,6 @@
             </div>
         </div>
     </main>
-
 
    <!-- Bootstrap and other libraries should load after jQuery -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
@@ -134,8 +133,7 @@
                             Add/Edit Special Terms
                         </button>
                     </div>
-
-                    <div id="edit-contract-info" style="display:none;">
+                    <div id="edit-contract-info" class="col-md-6" style="display:none;">
                         <form id="edit-contract-info-form" method="post" action="{% url 'contracts:edit_contract' id=contract.contract_id %}" enctype="multipart/form-data">
                             {% csrf_token %}
                             {{ contract_info_edit_form.as_p }}
@@ -1313,6 +1311,7 @@
             paymentScheduleId: {{ schedule_id|default:"null" }},        };
     </script>
 
+<!-- Modal HTML -->
 <div class="modal fade" id="bookingModal" tabindex="-1" role="dialog" aria-labelledby="bookingModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -1326,18 +1325,21 @@
                 <form method="post" action="{% url 'contracts:manage_staff_assignments' id=contract.contract_id %}" id="bookingForm">
                     {% csrf_token %}
                     <input type="hidden" id="id_booking_id" name="booking_id" value="">
+                    <input type="hidden" name="next" value="{{ request.path }}#services">
                     {{ booking_form.as_p }}
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-close" data-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-dusty-pink" id="submitBooking">Book</button>
-                <button type="submit" class="btn btn-primary" id="updateBooking">Update</button>
+                <button type="submit" class="btn-dusty-pink" id="submitBooking">Book</button>
+                <button type="submit" class="btn-dusty-pink" id="updateBooking">Update</button>
                 <button type="button" class="btn btn-danger btn-sm" id="deleteBooking">Delete</button>
             </div>
         </div>
     </div>
 </div>
+
+
 
 <!-- Payment Modal -->
 <div class="modal fade" id="paymentModal" tabindex="-1" role="dialog" aria-labelledby="paymentModalLabel" aria-hidden="true">

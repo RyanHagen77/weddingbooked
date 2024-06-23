@@ -34,7 +34,7 @@ from django.core.mail import EmailMessage
 from django.core.files.base import ContentFile
 from .serializers import ContractSerializer
 from rest_framework import viewsets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import json
 from django.utils.timezone import now
 from django.http import HttpResponse, JsonResponse
@@ -863,6 +863,7 @@ def get_contract_data(request, id):
         'event_date': contract.event_date.strftime('%Y-%m-%d') if contract.event_date else '',
         'status': contract.get_status_display(),
         'csr': contract.csr.get_full_name() if contract.csr else '',
+        'coordinator': contract.coordinator.get_full_name() if contract.coordinator else '',
         'lead_source': contract.get_lead_source_display(),
         'client': client_data,  # Add the client data here
 
@@ -2238,6 +2239,33 @@ def create_or_update_schedule(request, contract_id):
 
 
 
+def get_schedule_payments_due(request, contract_id):
+    contract = get_object_or_404(Contract, contract_id=contract_id)
+    schedule = contract.payment_schedule
+
+    if not schedule:
+        return JsonResponse({'next_payment_amount': '0.00', 'next_payment_due_date': 'N/A'})
+
+    if schedule.schedule_type == 'schedule_a':
+        next_payment_due_date = contract.event_date - timedelta(days=60)
+        next_payment_amount = contract.balance_due
+    else:
+        schedule_payments = schedule.schedule_payments.filter(paid=False).order_by('due_date')
+        if schedule_payments.exists():
+            next_payment = schedule_payments.first()
+            next_payment_due_date = next_payment.due_date
+            next_payment_amount = next_payment.amount
+        else:
+            next_payment_due_date = 'N/A'
+            next_payment_amount = '0.00'
+
+    payment_details = {
+        'next_payment_amount': str(next_payment_amount),
+        'next_payment_due_date': next_payment_due_date.strftime('%Y-%m-%d') if next_payment_due_date != 'N/A' else 'N/A'
+    }
+
+    return JsonResponse(payment_details)
+
 
 def get_custom_schedule(request, contract_id):
     contract = get_object_or_404(Contract, contract_id=contract_id)
@@ -2587,6 +2615,8 @@ def clear_booking(request, booking_id):
     status = booking.status
     hours_booked = booking.hours_booked
 
+    print(f"Attempting to delete booking with ID: {booking_id}")
+
     # Update the staff availability for the date if necessary
     if booking.staff:
         availability, created = Availability.objects.get_or_create(
@@ -2612,7 +2642,11 @@ def clear_booking(request, booking_id):
     # Delete the booking and inform the user
     booking.delete()
     messages.success(request, f'Booking for {staff_name} has been cleared!')
-    return redirect(reverse("contracts:search") + "?tab=bookings")
+
+    # Redirect to the provided next URL or default to the contract details page
+    next_url = request.POST.get('next', reverse('contracts:contract_detail', args=[contract.contract_id]) + "#services")
+    return redirect(next_url)
+
 
 @login_required
 def booking_list(request):

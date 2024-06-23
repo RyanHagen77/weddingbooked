@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const saveCustomTextButton = document.getElementById('saveCustomText');
     const modalCustomText = document.getElementById('modalCustomText');
 
-
     // Event listener for contract info edit button
     if (contractEditButton && contractEditForm) {
         contractEditButton.addEventListener('click', function() {
@@ -85,6 +84,22 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleEventButton.textContent = isHidden ? 'Show Less Event Details' : 'Show More Event Details';
         });
     }
+
+    // Fetch and update payment details
+    const contractId = document.body.getAttribute('data-contract-id');
+    fetch(`/contracts/${contractId}/schedule_payments_due/`)
+    .then(response => response.json())
+    .then(paymentData => {
+        console.log('Payment data:', paymentData);  // Log payment data
+        updateField('payment-amount-due', 'Next Payment Due: $' + paymentData.next_payment_amount);
+        updateField('due-date', 'Due Date: ' + paymentData.next_payment_due_date);
+    })
+    .catch(error => {
+        console.error('Error fetching payment details:', error);
+    });
+
+    // Initialize fields on page load
+    updateContractDisplay(contractId);
 });
 
 function toggleEditForm(editMode) {
@@ -104,7 +119,7 @@ function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
+        for (let i = 0; cookies.length; i++) {
             const cookie = cookies[i].trim();
             if (cookie.substring(0, name.length + 1) === (name + '=')) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
@@ -255,9 +270,9 @@ function updateContractDisplay(contractId) {
         }
 
         updateField('header-location', 'Location: ' + data.location);
-        updateField('header-lead-source', 'Lead Source: ' + data.lead_source);
         updateField('header-csr', 'Sales Person: ' + data.csr);
         updateField('header-status', 'Status: ' + data.status);
+        updateField('header-event-date', 'Event Date: ' + data.event_date);
     })
     .catch(error => {
         console.error('Error updating contract display:', error);

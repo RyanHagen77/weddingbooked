@@ -38,7 +38,7 @@ class TaskForm(forms.ModelForm):
         super(TaskForm, self).__init__(*args, **kwargs)
         office_role_names = ['ADMIN', 'SALES PERSON', 'MANAGER', 'COORDINATOR']
         office_roles = Role.objects.filter(name__in=office_role_names)
-        office_staff_queryset = CustomUser.objects.filter(role__in=office_roles)
+        office_staff_queryset = CustomUser.objects.filter(role__in=office_roles, status='ACTIVE')
 
         # Setting the queryset for 'sender' and 'assigned_to' fields
         self.fields['sender'].queryset = office_staff_queryset

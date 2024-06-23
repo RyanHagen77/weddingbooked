@@ -22,3 +22,8 @@ def sum_values(queryset, attr):
     for item in queryset:
         total += getattr(item, attr, Decimal('0.00'))
     return total
+
+
+@register.filter(name='in_group')
+def in_group(user, group_name):
+    return user.groups.filter(name=group_name).exists()
