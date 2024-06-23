@@ -162,13 +162,10 @@
         .signature-section label {
             padding-bottom: 10px;
         }
-        .signature-section canvas, .signature-placeholder {
+        .signature-section img, .signature-placeholder {
             border: 1px solid #000;
             width: 100%;
             height: 100px;
-        }
-        .signature-section button {
-            margin-top: 10px;
         }
         .main-signature-section {
             display: flex;
@@ -179,13 +176,10 @@
         .main-signature-section label {
             margin-bottom: 10px;
         }
-        .main-signature-section canvas {
+        .main-signature-section img {
             border: 1px solid #000;
             width: 400px;
             height: 100px;
-        }
-        .main-signature-section button {
-            margin-top: 10px;
         }
         .rider-inputs {
             display: flex;
@@ -282,7 +276,7 @@
                 <strong>Bridal Party:</strong> {{ contract.bridal_party_qty }}<br>
                 <strong>No. of Guests:</strong> {{ contract.guests_qty }}<br>
             </p>
-            <p><strong>Photographer Choice:</strong> {{ first_agreement.photographer_choice.get_full_name }}</p>
+            <p><strong>Photographer Choice:</strong> {{ latest_agreement.photographer_choice.get_full_name }}</p>
         </div>
 
         <div class="right-column">
@@ -500,40 +494,40 @@
         </table>
     </div>
 
-<!-- Custom text area -->
-<div class="text-box">
-    {{ contract.custom_text }}
-</div>
-
-<!-- Main Contract Signature -->
-<div class="contract-details">
-    <div style="text-align: left;">
-        <p><strong>Signature:</strong> {{ latest_agreement.initials }}</p>
-        <img src="{{ latest_agreement.signature }}" alt="Contract Signature" class="signature-img">
-        <p><strong>Date Created:</strong> {{ latest_agreement.created_at|date:"Y-m-d H:i:s" }}</p>
+    <!-- Custom text area -->
+    <div class="text-box">
+        {{ contract.custom_text }}
     </div>
-</div>
 
-<!-- Rider Agreements -->
-{% for rider in rider_agreements %}
-<div class="page-break"></div>
-<div class="contract-details">
-    <h2>{{ rider.rider_type|title }} Rider Agreement</h2>
-    <div class="rider-text">{{ rider.rider_text|safe }}</div>
-    <p><strong>Client Name:</strong> {{ rider.client_name }}</p>
-    <p><strong>Date:</strong> {{ rider.agreement_date }}</p>
-    <div style="display: flex; flex-direction: column; align-items: flex-start;">
-        <div style="text-align: left; margin-bottom: 20px;">
-            <label>Client Signature:</label>
-            <img src="{{ rider.signature }}" alt="{{ rider.rider_type|title }} Signature" class="signature-img">
-        </div>
+    <!-- Main Contract Signature -->
+    <div class="contract-details">
         <div style="text-align: left;">
-            <label>Essence Rep Signature (Placeholder):</label>
-            <img src="{{ rider.signature }}" alt="{{ rider.rider_type|title }} Signature" class="signature-img">
+            <p><strong>Signature:</strong> {{ latest_agreement.initials }}</p>
+            <img src="{{ latest_agreement.signature }}" alt="Contract Signature" class="signature-img">
+            <p><strong>Date Created:</strong> {{ latest_agreement.created_at|date:"Y-m-d H:i:s" }}</p>
         </div>
     </div>
-</div>
-<div class="divider"></div>
-{% endfor %}
 
-
+    <!-- Rider Agreements -->
+    {% for rider in rider_agreements %}
+    <div class="page-break"></div>
+    <div class="contract-details">
+        <h2>{{ rider.rider_type|title }} Rider Agreement</h2>
+        <div class="rider-text">{{ rider.rider_text|safe }}</div>
+        <p><strong>Client Name:</strong> {{ rider.client_name }}</p>
+        <p><strong>Date:</strong> {{ rider.agreement_date }}</p>
+        <div style="display: flex; flex-direction: column; align-items: flex-start;">
+            <div style="text-align: left; margin-bottom: 20px;">
+                <label>Client Signature:</label>
+                <img src="{{ rider.signature }}" alt="{{ rider.rider_type|title }} Signature" class="signature-img">
+            </div>
+            <div style="text-align: left;">
+                <label>Essence Rep Signature (Placeholder):</label>
+                <img src="{{ rider.signature }}" alt="{{ rider.rider_type|title }} Signature" class="signature-img">
+            </div>
+        </div>
+    </div>
+    <div class="divider"></div>
+    {% endfor %}
+<body>
+<html>

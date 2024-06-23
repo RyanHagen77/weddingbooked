@@ -128,10 +128,6 @@
                     </div>
                         <!-- Edit Button -->
                         <button id="edit-contract-info-button" class="btn-dusty-pink" onclick="toggleEditForm(true)">Edit Contract Info</button>
-                        <!-- Add Special Terms Button -->
-                        <button type="button" class="btn-dusty-pink" data-toggle="modal" data-target="#customTextModal">
-                            Add/Edit Special Terms
-                        </button>
                     </div>
                     <div id="edit-contract-info" class="col-md-6" style="display:none;">
                         <form id="edit-contract-info-form" method="post" action="{% url 'contracts:edit_contract' id=contract.contract_id %}" enctype="multipart/form-data">
@@ -1543,38 +1539,6 @@
     </div>
   </div>
 </div>
-
-
-<!-- Special Terms Modal -->
-<div class="modal fade" id="customTextModal" tabindex="-1" role="dialog" aria-labelledby="customTextModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="customTextModalLabel">Custom Contract Terms and Conditions</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <textarea id="modalCustomText" class="form-control" rows="10"></textarea>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="saveCustomText">Save</button>
-            </div>
-        </div>
-    </div>
-</div>
-
- <!-- Modal for unauthorized access -->
-    <div id="unauthorizedModal" class="modal" style="display:none;">
-        <div class="modal-content">
-            <span class="close" onclick="document.getElementById('unauthorizedModal').style.display='none'">&times;</span>
-            <p id="unauthorizedMessage"></p>
-        </div>
-    </div>
-
-
 
 </body>
 

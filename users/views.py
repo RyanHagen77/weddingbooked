@@ -286,7 +286,6 @@ def get_event_staff_schedule(request, user_id):
     start_date_str = request.GET.get('start', None)
     end_date_str = request.GET.get('end', None)
 
-    # Parse the start and end dates from the request or default to the current year
     if start_date_str and end_date_str:
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
         end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
@@ -307,12 +306,16 @@ def get_event_staff_schedule(request, user_id):
         query_filters['staff__role__id'] = role_id
 
     bookings = EventStaffBooking.objects.filter(**query_filters)
+    booking_dates = set()
+
     for booking in bookings:
+        booking_date_str = booking.contract.event_date.strftime('%Y-%m-%d')
+        booking_dates.add(booking_date_str)
         events.append({
-            "start": booking.contract.event_date.strftime('%Y-%m-%d'),
+            "start": booking_date_str,
             "day": booking.contract.event_date.strftime('%A'),
             "allDay": True,
-            "color": "#378006",  # Color for normal booking events
+            "color": "#378006",
             "type": "booking"
         })
 
@@ -321,39 +324,42 @@ def get_event_staff_schedule(request, user_id):
         date__gte=start_date,
         date__lte=end_date,
         available=False
-    )
+    ).exclude(date__in=booking_dates)  # Exclude days that are already booked
+
     for day in days_off:
         events.append({
             "start": day.date.strftime('%Y-%m-%d'),
             "day": day.date.strftime('%A'),
             "allDay": True,
             "rendering": "background",
-            "color": "#ff9f89",  # Color for days off
+            "color": "#ff9f89",
             "type": "day_off"
         })
 
-    # Fetch always off weekdays from the Availability record
     try:
         always_off_record = Availability.objects.get(staff_id=user_id, date__isnull=True)
         always_off_days = always_off_record.always_off_days
         current_date = start_date
         while current_date <= end_date:
             if current_date.weekday() in always_off_days:
-                always_off_days_list.append(current_date.strftime('%A'))
-                events.append({
-                    "start": current_date.strftime('%Y-%m-%d'),
-                    "day": current_date.strftime('%A'),
-                    "allDay": True,
-                    "rendering": "background",
-                    "color": "#ff0000",  # Red color for always off days
-                    "type": "always_off"
-                })
+                current_date_str = current_date.strftime('%Y-%m-%d')
+                if current_date_str not in booking_dates:  # Exclude always off days that are already booked
+                    always_off_days_list.append(current_date.strftime('%A'))
+                    events.append({
+                        "start": current_date_str,
+                        "day": current_date.strftime('%A'),
+                        "allDay": True,
+                        "rendering": "background",
+                        "color": "#ff0000",
+                        "type": "always_off"
+                    })
             current_date += timedelta(days=1)
     except Availability.DoesNotExist:
-        pass  # Handle the case where no always off record is found
+        pass
 
     sorted_events = sorted(events, key=lambda x: x['start'])
     return JsonResponse({"events": sorted_events, "alwaysOffDays": list(set(always_off_days_list))}, safe=False)
+
 
 @require_http_methods(["POST"])
 def update_specific_date_availability(request, user_id):
