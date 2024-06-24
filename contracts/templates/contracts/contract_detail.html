@@ -95,7 +95,7 @@
         <input type="hidden" id="total_service_cost" name="total_service_cost" value="">
 
         <!-- Nav tabs -->
-        <ul class="nav nav-tabs">
+        <ul class="nav nav-tabs" id="mainTabs">
             <li class="nav-item"><a class="nav-link active text-dark-sienna" href="#info" data-toggle="tab">Info</a></li>
             <li class="nav-item"><a class="nav-link text-dark-sienna" href="#client" data-toggle="tab">Client</a></li>
             <li class="nav-item"><a class="nav-link text-dark-sienna" href="#event" data-toggle="tab">Event</a></li>
@@ -128,6 +128,10 @@
                     </div>
                         <!-- Edit Button -->
                         <button id="edit-contract-info-button" class="btn-dusty-pink" onclick="toggleEditForm(true)">Edit Contract Info</button>
+                        <!-- Add Special Terms Button -->
+                        <button type="button" class="btn-dusty-pink" data-toggle="modal" data-target="#customTextModal">
+                            Add/Edit Special Terms
+                        </button>
                     </div>
                     <div id="edit-contract-info" class="col-md-6" style="display:none;">
                         <form id="edit-contract-info-form" method="post" action="{% url 'contracts:edit_contract' id=contract.contract_id %}" enctype="multipart/form-data">
@@ -1286,18 +1290,38 @@
     <!-- Include Bootstrap JS -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <!-- Your custom script for handling tabs -->
-    <script>
-        $(document).ready(function() {
-            var hash = window.location.hash;
-            if (hash) {
-                $('.nav-tabs a[href="' + hash + '"]').tab('show');
-            }
+<script>
+    $(document).ready(function() {
+        var hash = window.location.hash;
+        if (hash) {
+            var hashParts = hash.split('/');
+            var mainHash = hashParts[0];
+            var subHash = hashParts.length > 1 ? '#' + hashParts[1] : null;
 
-            $('.nav-tabs a').on('click', function(e) {
-                window.location.hash = this.hash;
-            });
+            // Activate main tab
+            $('.nav-tabs a[href="' + mainHash + '"]').tab('show');
+
+            // Activate nested service tab if present
+            if (subHash) {
+                $('.nav-tabs a[href="' + subHash + '"]').tab('show');
+            }
+        }
+
+        $('.nav-tabs a').on('click', function(e) {
+            window.location.hash = this.hash;
         });
-    </script>
+
+        // Ensure the tab state is maintained after page refresh
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+            if (e.target.hash.startsWith('#services')) {
+                window.location.hash = e.target.hash.split('#')[1] + '/' + e.relatedTarget.hash.split('#')[1];
+            } else {
+                window.location.hash = e.target.hash;
+            }
+        });
+    });
+</script>
+
 
     <script>
         let contractData = {
@@ -1540,6 +1564,27 @@
   </div>
 </div>
 
+
+<!-- Special Terms Modal -->
+<div class="modal fade" id="customTextModal" tabindex="-1" role="dialog" aria-labelledby="customTextModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="customTextModalLabel">Custom Contract Terms and Conditions</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <textarea id="modalCustomText" class="form-control" rows="10"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveCustomText">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 
 

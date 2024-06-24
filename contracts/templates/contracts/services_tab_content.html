@@ -1,0 +1,193 @@
+<!-- services_tab_content.html -->
+<ul class="nav nav-tabs" id="serviceTabs">
+    <li class="nav-item"><a class="nav-link active text-dark-sienna" href="#photography" data-toggle="tab">Photography</a></li>
+    <li class="nav-item"><a class="nav-link text-dark-sienna" href="#videography" data-toggle="tab">Videography</a></li>
+    <li class="nav-item"><a class="nav-link text-dark-sienna" href="#dj" data-toggle="tab">DJ</a></li>
+    <li class="nav-item"><a class="nav-link text-dark-sienna" href="#photobooth" data-toggle="tab">Photobooth</a></li>
+    <li class="nav-item"><a class="nav-link text-dark-sienna" href="#discounts" data-toggle="tab">Discounts</a></li>
+</ul>
+
+<div class="tab-content">
+    <!-- Photography Tab Content -->
+    <div class="tab-pane active" id="photography">
+        <!-- Your photography form and content go here -->
+        <form method="post" action="{% url 'contracts:edit_services' id=contract.contract_id %}">
+            {% csrf_token %}
+            <!-- Hidden Fields -->
+            <input type="hidden" id="contractId" value="{{ contract.contract_id }}">
+            <input type="hidden" id="id_event_date" value="{{ contract.event_date|date:'Y-m-d' }}">
+            <input type="hidden" id="discount" value="{{ initial_discount_value }}">
+            <input type="hidden" id="overtimeServiceType" value="">
+            <input type="hidden" name="section" value="photography">
+            <input type="hidden" id="hiddenSavedPhotographyPackageId" value="{{ contract.photography_package_id }}">
+            <input type="hidden" id="hiddenSavedPhotographyAdditionalStaffId" value="{{ contract.photography_additional_id }}">
+            <input type="hidden" id="hiddenSavedEngagementSessionId" value="{{ contract.engagement_session_id }}">
+
+            <!-- Photography Services Section -->
+            <div class="service-category">
+                <h3></h3>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Hours</th>
+                            <th>Price</th>
+                            <th>Staff</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Photography Package -->
+                        <tr>
+                            <td>
+                                <select id="id_photography_package" name="photography_package">
+                                    <option value="">Select a Photography Package</option>
+                                    {% for package in photography_packages %}
+                                        <option value="{{ package.id }}"
+                                                data-price="{{ package.price|floatformat:2 }}"
+                                                data-hours="{{ package.hours }}"
+                                                {% if contract.photography_package.id == package.id %}selected="selected"{% endif %}>
+                                            {{ package.name }} - ${{ package.price|floatformat:2 }} - {{ package.hours }} hours
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td id="photography-package-hours"></td>
+                            <td id="photography-package-price"><!-- Dynamically populated price --></td>
+                            <td id="assigned-photographer1"><!-- Dynamically populated assigned staff --></td>
+                            <td>
+                                <button type="button" class="btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOGRAPHER1" data-service-type="Photography">Assign</button>
+                                <button type="button" class="btn-dusty-pink edit-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOGRAPHER1" data-service-type="Photography" data-booking-id="1">Edit</button>
+                            </td>
+                        </tr>
+                        <!-- Additional Photographer -->
+                        <tr>
+                            <td>
+                                <select id="id_photography_additional" name="photography_additional">
+                                    <option value="">Select Additional Photographer</option>
+                                    {% for option in additional_photography_options %}
+                                        <option value="{{ option.id }}" data-price="{{ option.price|floatformat:2 }}"
+                                            {% if contract.photography_additional and contract.photography_additional.id == option.id %}selected="selected"{% endif %}>
+                                            {{ option.name }} - ${{ option.price|floatformat:2 }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td id="additional-photography-hours"></td>
+                            <td id="additional-photography-price"><!-- Dynamically populated price --></td>
+                            <td id="assigned-photographer2"><!-- Dynamically populated assigned staff --></td>
+                            <td>
+                                <button type="button" class="btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOGRAPHER2" data-service-type="Photography">Assign</button>
+                                <button type="button" class="btn-dusty-pink edit-button" data-toggle="modal" data-target="#bookingModal" data-role="PHOTOGRAPHER2" data-service-type="Photography" data-booking-id="1">Edit</button>
+                            </td>
+                        </tr>
+                        <!-- Engagement Session -->
+                        <tr>
+                            <td>
+                                <select id="id_engagement_session" name="engagement_session">
+                                    <option value="">Select an Engagement Session</option>
+                                    {% for session in engagement_session_options %}
+                                        <option value="{{ session.id }}" data-price="{{ session.price|floatformat:2 }}"
+                                            {% if contract.engagement_session and contract.engagement_session.id == session.id %}selected="selected"{% endif %}>
+                                            {{ session.name }} - ${{ session.price|floatformat:2 }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td id="engagement-session-hours"></td>
+                            <td id="engagement-session-price"><!-- Dynamically populated price --></td>
+                            <td id="engagement-session-staff"><!-- Dynamically populated staff --></td>
+                            <td>
+                                <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="ENGAGEMENT" data-service-type="Photography">Assign</button>
+                                <button type="button" class="btn-dusty-pink edit-button" data-toggle="modal" data-target="#bookingModal" data-role="ENGAGEMENT" data-service-type="Photography" data-booking-id="1">Edit</button>
+                            </td>
+                        </tr>
+                        <!-- Prospect Photographers -->
+                        <tr>
+                            <td colspan="5"><strong>Prospect Photographers</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Prospect Photographer 1</td>
+                            <td colspan="3">{{ contract.prospect_photographer1.get_full_name|default:"None" }}</td>
+                            <td>
+                                <button type="button" class="btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PROSPECT1" data-service-type="Photography" data-staff-id="{{ contract.prospect_photographer1.id }}">Assign</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Prospect Photographer 2</td>
+                            <td colspan="3">{{ contract.prospect_photographer2.get_full_name|default:"None" }}</td>
+                            <td>
+                                <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PROSPECT2" data-service-type="Photography" data-staff-id="{{ contract.prospect_photographer2.id }}">Assign</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Prospect Photographer 3</td>
+                            <td colspan="3">{{ contract.prospect_photographer3.get_full_name|default:"None" }}</td>
+                            <td>
+                                <button type="button" class="btn btn-dusty-pink book-button" data-toggle="modal" data-target="#bookingModal" data-role="PROSPECT3" data-service-type="Photography" data-staff-id="{{ contract.prospect_photographer3.id }}">Assign</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- Overtime Details Section -->
+            <div>
+                <h6><strong>Overtime Details</strong></h6>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Hours</th>
+                            <th>Cost</th>
+                            <th>Staff</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="photographyOvertimeEntriesDisplay" class="overtime-entries-display">
+                        <!-- Dynamically added overtime entries will be inserted here -->
+                        <!-- Example entry -->
+                        <tr>
+                            <td>Photography</td>
+                            <td>2 hours</td>
+                            <td>$200</td>
+                            <td>John Doe</td>
+                            <td>
+                                <button type="button" class="btn btn-dusty-pink edit-overtime-button" data-id="1" data-service="Photography">Edit</button>
+                                <button type="button" class="btn btn-dusty-pink remove-overtime-button" data-id="1" data-service="Photography">Remove</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button id="addPhotographyOvertimeEntryButton" type="button" class="btn btn-dusty-pink">Add Overtime Entry</button>
+                <div id="photographyOvertimeEntryForm" style="display:none;">
+                    <input type="hidden" id="photographyOvertimeEntryId" value="">
+                    <select id="photographyOvertimeOptionSelect"></select>
+                    <input type="number" id="photographyOvertimeHours" placeholder="Hours">
+                    <button type="button" id="savePhotographyOvertimeEntryButton" class="btn btn-dusty-pink">Save Overtime Entry</button>
+                </div>
+            </div>
+            <!-- Total Overtime and Photography Cost -->
+            <div class="text-right total-cost-container">
+                <p><strong>Total Overtime Cost:</strong> <span id="total-photography-overtime-cost"></span></p>
+                <p><strong>Total Photography Cost:</strong> <span id="total-photography-cost"></span></p>
+            </div>
+            <button type="button" id="savePhotographySection" class="btn btn-dusty-pink float-right">Save Changes</button>
+        </form>
+    </div>
+    <!-- Videography Tab Content -->
+    <div class="tab-pane" id="videography">
+        <!-- Your videography form and content go here -->
+    </div>
+    <!-- DJ Tab Content -->
+    <div class="tab-pane" id="dj">
+        <!-- Your DJ form and content go here -->
+    </div>
+    <!-- Photobooth Tab Content -->
+    <div class="tab-pane" id="photobooth">
+        <!-- Your photobooth form and content go here -->
+    </div>
+    <!-- Discounts Tab Content -->
+    <div class="tab-pane" id="discounts">
+        <!-- Your discounts form and content go here -->
+    </div>
+</div>

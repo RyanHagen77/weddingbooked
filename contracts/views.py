@@ -670,6 +670,7 @@ def edit_contract(request, id):
         'contract': contract
     })
 
+
 @login_required
 def edit_services(request, id):
     contract = get_object_or_404(Contract, pk=id)
@@ -698,7 +699,8 @@ def edit_services(request, id):
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'status': 'success', 'message': 'Services updated successfully'})
             else:
-                return redirect('contracts:edit_services', id=id)
+                url = reverse('contracts:contract_detail', args=[id]) + '#services'
+                return redirect(url)
         else:
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'status': 'error', 'errors': form.errors.as_json()}, status=400)
@@ -709,6 +711,7 @@ def edit_services(request, id):
     }
 
     return render(request, 'contracts/contract_detail.html', context)
+
 
 def update_prospect_photographers(request, id):
     if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':

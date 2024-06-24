@@ -602,13 +602,10 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('photography_package', document.getElementById('id_photography_package').value);
             formData.append('photography_additional', document.getElementById('id_photography_additional').value);
             formData.append('engagement_session', document.getElementById('id_engagement_session').value);
-
             formData.append('videography_package', document.getElementById('id_videography_package').value);
             formData.append('videography_additional', document.getElementById('id_videography_additional').value);
-
             formData.append('dj_package', document.getElementById('id_dj_package').value);
             formData.append('dj_additional', document.getElementById('id_dj_additional').value);
-
             formData.append('photobooth_package', document.getElementById('id_photobooth_package').value);
             formData.append('photobooth_additional', document.getElementById('id_photobooth_additional').value);
 
@@ -631,6 +628,8 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 if (data.status === 'success') {
                     console.log('Photography section saved successfully');
+                    window.location.href = `/contracts/${contractId}/#services`;
+                    window.location.reload();
                 } else {
                     console.error('Error saving photography section:', data.message);
                 }
@@ -649,13 +648,10 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('photography_package', document.getElementById('id_photography_package').value);
             formData.append('photography_additional', document.getElementById('id_photography_additional').value);
             formData.append('engagement_session', document.getElementById('id_engagement_session').value);
-
             formData.append('videography_package', document.getElementById('id_videography_package').value);
             formData.append('videography_additional', document.getElementById('id_videography_additional').value);
-
             formData.append('dj_package', document.getElementById('id_dj_package').value);
             formData.append('dj_additional', document.getElementById('id_dj_additional').value);
-
             formData.append('photobooth_package', document.getElementById('id_photobooth_package').value);
             formData.append('photobooth_additional', document.getElementById('id_photobooth_additional').value);
 
@@ -678,6 +674,8 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 if (data.status === 'success') {
                     console.log('Videography section saved successfully');
+                    window.location.href = `/contracts/${contractId}/#services`;
+                    window.location.reload();
                 } else {
                     console.error('Error saving videography section:', data.message);
                 }
@@ -696,13 +694,10 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('photography_package', document.getElementById('id_photography_package').value);
             formData.append('photography_additional', document.getElementById('id_photography_additional').value);
             formData.append('engagement_session', document.getElementById('id_engagement_session').value);
-
             formData.append('videography_package', document.getElementById('id_videography_package').value);
             formData.append('videography_additional', document.getElementById('id_videography_additional').value);
-
             formData.append('dj_package', document.getElementById('id_dj_package').value);
             formData.append('dj_additional', document.getElementById('id_dj_additional').value);
-
             formData.append('photobooth_package', document.getElementById('id_photobooth_package').value);
             formData.append('photobooth_additional', document.getElementById('id_photobooth_additional').value);
 
@@ -725,6 +720,8 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 if (data.status === 'success') {
                     console.log('DJ section saved successfully');
+                    window.location.href = `/contracts/${contractId}/#services`;
+                    window.location.reload();
                 } else {
                     console.error('Error saving DJ section:', data.message);
                 }
@@ -743,13 +740,10 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('photography_package', document.getElementById('id_photography_package').value);
             formData.append('photography_additional', document.getElementById('id_photography_additional').value);
             formData.append('engagement_session', document.getElementById('id_engagement_session').value);
-
             formData.append('videography_package', document.getElementById('id_videography_package').value);
             formData.append('videography_additional', document.getElementById('id_videography_additional').value);
-
             formData.append('dj_package', document.getElementById('id_dj_package').value);
             formData.append('dj_additional', document.getElementById('id_dj_additional').value);
-
             formData.append('photobooth_package', document.getElementById('id_photobooth_package').value);
             formData.append('photobooth_additional', document.getElementById('id_photobooth_additional').value);
 
@@ -772,12 +766,15 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 if (data.status === 'success') {
                     console.log('Photobooth section saved successfully');
+                    window.location.href = `/contracts/${contractId}/#services`;
+                    window.location.reload();
                 } else {
                     console.error('Error saving Photobooth section:', data.message);
                 }
             })
             .catch(error => console.error('Error:', error));
         },
+
     };
 
     PhotographyMgmt.init();
