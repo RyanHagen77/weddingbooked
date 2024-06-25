@@ -518,11 +518,18 @@ class Contract(models.Model):
         is_photobooth_selected = self.photobooth_package is not None
 
         discount = Decimal('0.00')
+        base_amount = discount_rule.base_amount
 
         if len(selected_services) >= 2:
-            discount += discount_rule.base_amount * len(selected_services)
+            # $200 off each non-photobooth service
+            discount += base_amount * len(selected_services)
+
+            # If photobooth is also selected, additional $200 off for it
             if is_photobooth_selected:
-                discount += discount_rule.base_amount
+                discount += base_amount
+        elif is_photobooth_selected and len(selected_services) == 1:
+            # $200 off the single other service when combined with photobooth
+            discount += base_amount
 
         return discount.quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
 
