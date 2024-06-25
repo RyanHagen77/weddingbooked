@@ -12,13 +12,12 @@ $(document).ready(function() {
         selectHelper: true,
         editable: true,
         events: function(start, end, timezone, callback) {
-            // Fetch events with start and end dates
             fetch(staffScheduleUrl + `?start=${start.format('YYYY-MM-DD')}&end=${end.format('YYYY-MM-DD')}`)
                 .then(response => response.json())
                 .then(data => {
                     callback(data.events);
                     updateAlwaysOffDays(data.alwaysOffDays);
-                    updateDaysOffList();
+                    updateDaysOffList(data.events);
                 });
         },
         eventAfterAllRender: function(view) {
@@ -61,12 +60,10 @@ $(document).ready(function() {
         });
     }
 
-    function updateDaysOffList() {
+    function updateDaysOffList(events) {
         $('#daysOffList tr:not(:first)').remove();  // Clear existing entries except the header
-        var events = $('#calendar').fullCalendar('clientEvents', function(evt) {
-            return evt.rendering === 'background' && evt.type === 'day_off';
-        });
-        events.forEach(function(evt) {
+        var daysOff = events.filter(event => event.type === 'day_off');
+        daysOff.forEach(function(evt) {
             var date = moment(evt.start);
             $('#daysOffList').append(
                 '<tr><td>' + date.format('YYYY-MM-DD') + '</td>' +
@@ -92,7 +89,6 @@ $(document).ready(function() {
                 if(response.status === 'success') {
                     alert('Day off updated successfully!');
                     calendar.fullCalendar('refetchEvents');
-                    updateDaysOffList();
                 } else {
                     alert('Error: ' + response.message);
                 }

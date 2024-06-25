@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="search-results" style="display: flex;">
+<div class="container" style="display: flex;">
     <div style="flex: 1; display: flex; flex-direction: column; padding: 20px;">
         <div>
-            <h5>Days Off</h5>
-            <table id="daysOffList" class="table">
+            <h4>Days Off</h4>
+            <table id="daysOffList" class="styled-table">
                 <thead>
                     <tr>
                         <th>Date</th>
@@ -31,7 +31,7 @@
             <button id="updateAvailabilityBtn" class="btn-dusty-pink">Update</button>
         </div>
         <div style="margin-top: 20px;">
-            <h5>Always Off</h5>
+            <h4>Always Off</h4>
             <ul id="alwaysOffDays" class="styled-list">
                 <!-- Recurring days off will be dynamically listed here -->
             </ul>
@@ -47,28 +47,21 @@
 
 {% block extra_head %}
 {% load static %}
-<script>
-// Assign the userId using Django template syntax
-var userId = {{ staff_member.id }};
-</script>
-
 <link href='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css' rel='stylesheet' />
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js'></script>
 
-
-<!-- Global variables setup for JavaScript -->
+<!-- JavaScript variables embedded in HTML -->
 <script>
-var staffScheduleUrl = '{% url "users:get_event_staff_schedule" user_id=staff_member.id %}';
-var updateScheduleUrl = '{% url "users:update_always_off_days" user_id=staff_member.id %}';
+    var userId = {{ staff_member.id }};
+    var staffScheduleUrl = '{% url "users:get_event_staff_schedule" user_id=staff_member.id %}';
 </script>
 
 <script src="{% static 'users/js/schedule.js' %}"></script>
 
-<!-- Inline script that uses the above variables -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Load the event staff schedule and always off days
+    // Fetch and display the always off days and days off
     fetch(staffScheduleUrl)
         .then(response => response.json())
         .then(data => {
@@ -79,11 +72,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 li.textContent = day;
                 alwaysOffDaysList.appendChild(li);
             });
+
+            var daysOffList = document.getElementById('daysOffList').getElementsByTagName('tbody')[0];
+            daysOffList.innerHTML = ''; // Clear any existing content
+            data.events.filter(event => event.type === 'day_off').forEach(function(event) {
+                var row = daysOffList.insertRow();
+                var cellDate = row.insertCell(0);
+                var cellDay = row.insertCell(1);
+                var cellAction = row.insertCell(2);
+                cellDate.textContent = event.start;
+                cellDay.textContent = event.day;
+                cellAction.innerHTML = `<button class="remove-day-off" data-date="${event.start}">Clear</button>`;
+            });
         });
 
     // Attach event listener to update availability button
     document.getElementById('updateAvailabilityBtn').addEventListener('click', function() {
-        updateSchedule(userId);  // Call function with userId
+        updateSchedule(userId);
     });
 });
 </script>

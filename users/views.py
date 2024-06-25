@@ -360,7 +360,6 @@ def get_event_staff_schedule(request, user_id):
     sorted_events = sorted(events, key=lambda x: x['start'])
     return JsonResponse({"events": sorted_events, "alwaysOffDays": list(set(always_off_days_list))}, safe=False)
 
-
 @require_http_methods(["POST"])
 def update_specific_date_availability(request, user_id):
     try:
