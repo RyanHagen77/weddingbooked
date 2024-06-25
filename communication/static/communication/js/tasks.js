@@ -26,7 +26,7 @@ $(document).ready(function () {
         submitButton.prop('disabled', true);
 
         formData = formData.filter(field => field.name !== 'type' || field.value !== '');
-        formData.push({ name: 'type', value: 'internal' }); // Default type value
+        formData.push({ name: 'type', value: 'contract' }); // Default type value
 
         $.ajax({
             type: 'POST',
@@ -34,13 +34,11 @@ $(document).ready(function () {
             data: $.param(formData),
             success: function(response) {
                 if (response.success) {
-                    $('#addTaskModal').modal('hide');
-                    $('#taskListContainer tbody').html(response.task_list_html);
-                    initializeTaskListEventListeners(); // Re-initialize JavaScript
+                    location.reload(); // Force page refresh on success
                 } else {
                     console.error("Error:", response.errors);
+                    submitButton.prop('disabled', false);
                 }
-                submitButton.prop('disabled', false);
             },
             error: function(xhr, status, error) {
                 console.error("Error creating task:", error);

@@ -1553,7 +1553,7 @@
         <form method="post" id="addTaskForm" data-create-task-url="{% url 'contracts:create_contract_task' %}">
             {% csrf_token %}
             {{ task_form.as_p }}
-            <input type="hidden" id="id_type" name="type">
+            <input type="hidden" id="id_type" name="type" value="contract">
         </form>
       </div>
       <div class="modal-footer">
@@ -1563,6 +1563,8 @@
     </div>
   </div>
 </div>
+
+
 
 
 <!-- Special Terms Modal -->
@@ -1617,7 +1619,6 @@
 <script type="module" src="{% static 'contracts/js/costManagement.js' %}"></script>
 <script src="{% static 'contracts/js/ContractEdit.js' %}"></script>
 <script src="{% static 'contracts/js/moneyMgmt.js' %}" defer></script>
-<script src="{% static 'communication/js/tasks.js' %}"></script>
 
 
 </html>
