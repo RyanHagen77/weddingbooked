@@ -220,6 +220,7 @@ def event_staff_dashboard(request, pk):
 
     return render(request, 'users/event_staff_dashboard.html', context)
 
+@login_required
 def event_staff(request):
     # Get role from request parameters or default to 'PHOTOGRAPHER'
     role_name = request.GET.get('role', 'PHOTOGRAPHER')
@@ -267,6 +268,7 @@ def update_event_staff_ranking(request):
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
+@login_required
 def event_staff_schedule(request, user_id):
     staff_member = CustomUser.objects.get(id=user_id)
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"

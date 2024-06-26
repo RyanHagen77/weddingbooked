@@ -131,7 +131,7 @@ footer {
     text-decoration: none; /* Removes underline from links */
     color: white; /* Sets all text to white */
     display: block; /* Ensures the link fills the `.menu-item` for better clickability */
-    background-color: #a1c9a5; /* Lighter pastel pistachio color */
+    background-color: #A0C49D; /* Lighter pastel pistachio color */
     padding: 4px 8px; /* Smaller padding to reduce overall size */
     border-radius: 5px; /* Slightly smaller border-radius for a less pronounced curve */
     transition: background-color 0.3s; /* Smooth transition for background color change */
@@ -139,7 +139,7 @@ footer {
 }
 
 .menu-item a:hover {
-    background-color: #9cac9a; /* Slightly darker shade on hover for a subtle effect */
+    background-color: #c8dcc9 /* Slightly darker shade on hover for a subtle effect */
 }
 
 @media (max-width: 600px) {
@@ -225,7 +225,7 @@ footer {
 
 /* Button styling for aesthetic consistency */
 .toggle-button, .btn-dusty-pink {
-    background-color: #c67c85; /* Dusty Pink */
+    background-color: #d9727a; /* Dusty Pink */
     font-size: 13px; /* Smaller text size */
     color: white;
     border: none;
@@ -236,7 +236,7 @@ footer {
 }
 
 .toggle-button:hover, .btn-dusty-pink:hover {
-    background-color: #b55f66; /* Darker shade for hover */
+    background-color: #ebcdc3; /* Darker shade for hover */
 }
 
 /* Specific styles for hidden fields container */
@@ -261,7 +261,7 @@ input[type="reset"],
     font-weight: normal !important; /* Make text not bold */
     line-height: 20px; /* Center text vertically within the button */
     padding: 5px 15px; /* Adjust padding as needed */
-    background-color: #c67c85;
+    background-color: #d9727a;
     text-decoration: none; /* Remove underline */
     color: white;
     border: none;
@@ -275,7 +275,7 @@ button:hover,
 input[type="submit"]:hover,
 input[type="reset"]:hover,
 .button-group a:hover {
-    background-color: #b55f66; /* Darker dusty pink for hover */
+    background-color: #ebcdc3; /* Darker dusty pink for hover */
     color: white; /* Change text color on hover */
     text-decoration: none; /* Remove underline */
 }
@@ -322,7 +322,7 @@ input[type="reset"]:hover,
     font-weight: normal !important; /* Make text not bold */
     line-height: 0px; /* Align text vertically, should match the height */
     padding: 5px 10px;
-    background-color: #c67c85;
+    background-color: #A0C49D;
     color: white;
     border: none;
     border-radius: 4px;
@@ -425,7 +425,7 @@ input[type="reset"]:hover,
 
 /* Table header styling */
 .search-results th {
-    background-color: #c67c85; /* Dusty pink for table headers */
+    background-color: #d9727a; /* Dusty pink for table headers */
     color: white;
     padding: 10px; /* Padding for headers */
 }
@@ -752,7 +752,7 @@ body {
 }
 
 .styled-table thead tr {
-    background-color: #c67c85;
+    background-color: #d9727a;
     color: #ffffff;
     text-align: left;
 }
@@ -771,7 +771,7 @@ body {
 }
 
 .styled-table tbody tr:last-of-type {
-    border-bottom: 2px solid #c67c85;
+    border-bottom: 2px solid #d9727a;
 }
 
 .styled-table tbody tr.active-row {
@@ -922,7 +922,7 @@ body {
 
 /* Table header styling */
 .reports-section th {
-    background-color: #c67c85; /* Dusty pink for table headers */
+    background-color: #d9727a; /* Dusty pink for table headers */
     color: white;
     padding: 10px; /* Padding for headers */
 }
@@ -946,14 +946,14 @@ body {
 
 .fc-toolbar h2 {
     font-size: 16pt; /* Adjust header font size */
-    color: #c67c85; /* Header text color */
+    color: #d9727a; /* Header text color */
 }
 
 .fc-button {
     text-decoration: none; /* Removes underline from links */
     color: white; /* Sets all text to white */
     display: block; /* Ensures the link fills the `.menu-item` for better clickability */
-    background-color: #c67c85; /* Lighter pastel pistachio color */
+    background-color: #d9727a; /* Lighter pastel pistachio color */
     padding: 4px 8px; /* Smaller padding to reduce overall size */
     border-radius: 5px; /* Slightly smaller border-radius for a less pronounced curve */
     transition: background-color 0.3s; /* Smooth transition for background color change */
@@ -961,7 +961,7 @@ body {
 }
 
 .fc-button:hover {
-    background-color: #c67c85; /* Slightly darker shade on hover for a subtle effect */
+    background-color: #d9727a; /* Slightly darker shade on hover for a subtle effect */
 }
 
 .fc-daygrid-day-number {
