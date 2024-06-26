@@ -10,10 +10,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='contractdocument',
-            name='is_visible',
-        ),
+        # migrations.RemoveField(
+          #  model_name='contractdocument',
+           # name='is_visible',
+#        ),
         migrations.AddField(
             model_name='contractdocument',
             name='is_client_visible',
