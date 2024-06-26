@@ -13,10 +13,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='contract',
-            name='photobooth_op',
-        ),
+        # migrations.RemoveField(
+         #   model_name='contract',
+         #   name='photobooth_op',
+       # ),
         migrations.AddField(
             model_name='contract',
             name='photobooth_op1',
