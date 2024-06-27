@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Wedding Day Guide PDF</title>
+    <style>
+        /* Add styles for PDF layout */
+    </style>
+</head>
+<body>
+    <h1>Wedding Day Guide for {{ guide.primary_contact }} and {{ guide.partner_contact }}</h1>
+    <p>Event Date: {{ guide.event_date }}</p>
+    <h2>General Info</h2>
+    <p>Primary Contact: {{ guide.primary_contact }}</p>
+    <p>Primary Email: {{ guide.primary_email }}</p>
+    <p>Primary Phone: {{ guide.primary_phone }}</p>
+    <p>Partner Contact: {{ guide.partner_contact }}</p>
+    <p>Partner Email: {{ guide.partner_email }}</p>
+    <p>Partner Phone: {{ guide.partner_phone }}</p>
+    <h2>Wedding Day Locations</h2>
+    <h3>Bride's Dressing Location</h3>
+    <p>Location: {{ guide.dressing_location }}</p>
+    <p>Address: {{ guide.dressing_address }}</p>
+    <p>Start Time: {{ guide.dressing_start_time }}</p>
+    <h3>Ceremony Location</h3>
+    <p>Location: {{ guide.ceremony_location }}</p>
+    <p>Address: {{ guide.ceremony_address }}</p>
+    <p>Phone: {{ guide.ceremony_phone }}</p>
+    <p>Start Time: {{ guide.ceremony_start }}</p>
+    <p>End Time: {{ guide.ceremony_end }}</p>
+    <h3>Reception Location</h3>
+    <p>Location: {{ guide.reception_location }}</p>
+    <p>Address: {{ guide.reception_address }}</p>
+    <p>Phone: {{ guide.reception_phone }}</p>
+    <p>Start Time: {{ guide.reception_start }}</p>
+    <p>End Time: {{ guide.reception_end }}</p>
+    <!-- Add other sections similarly -->
+</body>
+</html>

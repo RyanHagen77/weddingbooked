@@ -1,9 +1,8 @@
-// Initial console log and global variables
-console.log("costManagement.js loaded and executed!");
-
 import {extractPrice, contractData} from '/static/contracts/js/utilities.js';
 // Make the function available globally
 
+// Initial console log and global variables
+console.log("costManagement.js loaded and executed!");
 
 const eventDateElement = document.getElementById('id_event_date');
 if (eventDateElement) {
@@ -313,6 +312,5 @@ function onSelectionChange() {
     updateTotalDiscountField();
     calculateAndUpdateTotalCost(); // This will calculate and update the total cost based on current selections
 }
-
 
 

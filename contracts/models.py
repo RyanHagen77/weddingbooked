@@ -329,6 +329,9 @@ class Contract(models.Model):
     photobooth_op2 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
                                        related_name='photobooth_op2_contracts')
 
+
+
+
     # Other fields...
 
 
@@ -571,7 +574,8 @@ class Contract(models.Model):
         return total_cost_after_discounts.quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
 
     def calculate_product_subtotal(self):
-        return sum(product.price * product.quantity for product in self.contract_products.all())
+        return sum(contract_product.product.price * contract_product.quantity for contract_product in
+                   self.contract_products.all())
 
     def calculate_tax(self):
         """Calculate the tax amount based on the contract's tax rate and taxable products."""
@@ -580,8 +584,9 @@ class Contract(models.Model):
             if contract_product.product.is_taxable:
                 taxable_amount += contract_product.product.price * contract_product.quantity
 
-        # Calculate tax based on the contract's tax rate
-        return taxable_amount * self.tax_rate / 100
+        # Get the tax rate from the location
+        tax_rate = self.location.tax_rate if self.location else Decimal('0.00')
+        return taxable_amount * tax_rate / 100
 
     def calculate_total_service_fees(self):
         """Calculate the total of all service fees."""
@@ -630,9 +635,6 @@ class Contract(models.Model):
         # Ensure the total is rounded to two decimal places
         return total_service_cost.quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
 
-    def calculate_product_subtotal(self):
-        return sum(contract_product.product.price * contract_product.quantity for contract_product in
-                   self.contract_products.all())
 
     def calculate_total_cost(self):
         """Calculate the total cost including services, products, tax, discounts, and service fees."""
@@ -1118,3 +1120,56 @@ class RiderAgreement(models.Model):
 
     def __str__(self):
         return f"{self.contract} - {self.rider_type}"
+
+class WeddingDayGuide(models.Model):
+    contract = models.OneToOneField(Contract, on_delete=models.CASCADE, related_name='wedding_day_guide')
+    event_date = models.DateField()
+    primary_contact = models.CharField(max_length=255)
+    primary_email = models.EmailField()
+    primary_phone = models.CharField(max_length=15)
+    partner_contact = models.CharField(max_length=255)
+    partner_email = models.EmailField()
+    partner_phone = models.CharField(max_length=15)
+    dressing_location = models.CharField(max_length=255)
+    dressing_address = models.CharField(max_length=255)
+    dressing_start_time = models.TimeField()
+    ceremony_location = models.CharField(max_length=255)
+    ceremony_address = models.CharField(max_length=255)
+    ceremony_phone = models.CharField(max_length=15)
+    ceremony_start = models.TimeField()
+    ceremony_end = models.TimeField()
+    reception_location = models.CharField(max_length=255)
+    reception_address = models.CharField(max_length=255)
+    reception_phone = models.CharField(max_length=15)
+    reception_start = models.TimeField()
+    reception_end = models.TimeField()
+    staff_table = models.CharField(max_length=255, null=True, blank=True)
+    photo_stop1 = models.CharField(max_length=255, null=True, blank=True)
+    photo_stop2 = models.CharField(max_length=255, null=True, blank=True)
+    photo_stop3 = models.CharField(max_length=255, null=True, blank=True)
+    photo_stop4 = models.CharField(max_length=255, null=True, blank=True)
+    photographer2_start_location = models.CharField(max_length=255, null=True, blank=True)
+    photographer2_start_location_address = models.CharField(max_length=255, null=True, blank=True)
+    photographer2_start = models.TimeField(null=True, blank=True)
+    maid_of_honor = models.CharField(max_length=255)
+    bridesmaids_qty = models.IntegerField()
+    flower_girl_qty = models.IntegerField()
+    usher_qty = models.IntegerField()
+    best_man = models.CharField(max_length=255)
+    groomsmen_qty = models.IntegerField()
+    ring_bearer_qty = models.IntegerField()
+    bride_parents_names = models.TextField()
+    bride_sibling_names = models.TextField()
+    bride_grandparents_names = models.TextField()
+    groom_parents_names = models.TextField()
+    groom_siblings_names = models.TextField()
+    groom_grandparents_names = models.TextField()
+    additional_photo_request1 = models.TextField(null=True, blank=True)
+    additional_photo_request2 = models.TextField(null=True, blank=True)
+    additional_photo_request3 = models.TextField(null=True, blank=True)
+    additional_photo_request4 = models.TextField(null=True, blank=True)
+    additional_photo_request5 = models.TextField(null=True, blank=True)
+    submitted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Wedding Day Guide for {self.primary_contact} and {self.partner_contact}"

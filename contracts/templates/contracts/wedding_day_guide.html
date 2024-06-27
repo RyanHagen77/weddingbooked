@@ -1,0 +1,10 @@
+
+{% block content %}
+<h1>Wedding Day Guide</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" name="save">Save</button>
+    <button type="submit" name="submit">Submit</button>
+</form>
+{% endblock %}

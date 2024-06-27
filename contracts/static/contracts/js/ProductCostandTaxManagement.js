@@ -33,15 +33,21 @@ function updateServerSideProducts(contractId) {
         }
     }
 
+    console.log('Updating server-side products with:', products, 'and tax amount:', contractData.taxAmount); // Log data being sent
+
     fetch(`/contracts/${contractId}/save_products/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCsrfToken() // Assuming you have a function to get CSRF token
+            'X-CSRFToken': getCsrfToken()
         },
-        body: JSON.stringify({ products: products })
+        body: JSON.stringify({ products: products, tax_amount: contractData.taxAmount })
     })
     .then(response => {
+        if (response.status === 302) {
+            console.error('Redirection occurred. Check authentication and permissions.');
+            return;
+        }
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -49,7 +55,6 @@ function updateServerSideProducts(contractId) {
     })
     .then(data => {
         console.log('Server-side products updated successfully:', data);
-        // Update the tax amount in the UI
         updateTaxAmountField(data.tax_amount);
     })
     .catch(error => {
@@ -57,9 +62,6 @@ function updateServerSideProducts(contractId) {
     });
 }
 
-function getCsrfToken() {
-    return document.querySelector('[name=csrfmiddlewaretoken]').value;
-}
 
 function calculateAdditionalProductCosts() {
     let totalProductCost = 0;
@@ -141,14 +143,14 @@ function updateTaxAmountField(taxAmount) {
 }
 
 function fetchTaxRate(locationId) {
-    if (typeof locationId === 'undefined') {
-        console.error('Error fetching tax rate: locationId is undefined');
-        return;
+    if (!locationId) {
+        console.error('Location ID is undefined');
+        return Promise.reject('Location ID is undefined');
     }
 
     const taxRateUrl = `/contracts/api/tax_rate/${locationId}/`;
 
-    fetch(taxRateUrl)
+    return fetch(taxRateUrl)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -158,6 +160,7 @@ function fetchTaxRate(locationId) {
         .then(data => {
             if (data.tax_rate !== undefined) {
                 currentTaxRate = data.tax_rate;
+                console.log('Fetched tax rate:', currentTaxRate); // Log fetched tax rate
                 displayTaxRate(); // Update the UI with the new tax rate
                 calculateTax(); // Recalculate tax with the new rate
                 updateTotalProductCostDisplay(); // Update the total cost display, including the tax
@@ -169,6 +172,7 @@ function fetchTaxRate(locationId) {
             console.error('Error fetching tax rate for location:', locationId, error);
         });
 }
+
 
 function displayTaxRate() {
     const taxRateElement = document.getElementById('id_tax_rate');

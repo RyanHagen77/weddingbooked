@@ -13,12 +13,12 @@ from .forms import (ContractSearchForm, ClientForm, NewContractForm, ContractFor
                     ContractClientEditForm, ContractAgreementForm,
                     ContractEventEditForm, ContractServicesForm, ContractDocumentForm,
                     EventStaffBookingForm, ContractProductFormset, PaymentForm, PaymentScheduleForm,
-                    SchedulePaymentFormSet, ServiceFeeFormSet, ServiceFeeForm)
+                    SchedulePaymentFormSet, ServiceFeeFormSet, ServiceFeeForm, WeddingDayGuideForm)
 from communication.forms import CommunicationForm, BookingCommunicationForm, TaskForm  # Importing from the communication app
-from .models import (Contract, ServiceType, Availability, Payment, Package,
+from .models import (Client, Contract, ServiceType, Availability, Payment, Package,
                      AdditionalEventStaffOption, EngagementSessionOption, Discount, EventStaffBooking, ContractOvertime, AdditionalProduct,
                      OvertimeOption, PaymentPurpose, PaymentSchedule, SchedulePayment,
-                     TaxRate, ContractDocument, ChangeLog, ServiceFee, ContractAgreement, RiderAgreement)
+                     TaxRate, ContractDocument, ChangeLog, ServiceFee, ContractAgreement, RiderAgreement, WeddingDayGuide)
 from django.db import transaction
 from django.core.mail import send_mail
 from django.db.models.functions import Concat
@@ -34,7 +34,7 @@ from django.core.mail import EmailMessage
 from django.core.files.base import ContentFile
 from .serializers import ContractSerializer
 from rest_framework import viewsets
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 import json
 from django.utils.timezone import now
 from django.http import HttpResponse, JsonResponse
@@ -2024,6 +2024,9 @@ def save_products(request, id):
                 data = json.loads(request.body)
                 products = data.get('products', [])
 
+                # Log incoming data for debugging
+                print('Incoming products data:', products)
+
                 # Clear existing products
                 contract.contract_products.all().delete()
 
@@ -2039,9 +2042,15 @@ def save_products(request, id):
                 contract.tax_amount = tax_amount
                 contract.save()
 
+                print('Tax calculated and saved:', tax_amount)  # Log calculated tax
+
                 return JsonResponse({'status': 'success', 'tax_amount': tax_amount})
             except json.JSONDecodeError as e:
                 return JsonResponse({'status': 'fail', 'error': 'Invalid JSON data', 'details': str(e)}, status=400)
+            except Product.DoesNotExist as e:
+                return JsonResponse({'status': 'fail', 'error': 'Product not found', 'details': str(e)}, status=400)
+            except Exception as e:
+                return JsonResponse({'status': 'fail', 'error': 'An unexpected error occurred', 'details': str(e)}, status=500)
         else:
             product_formset = ContractProductFormset(request.POST, instance=contract, prefix='contract_products')
             if product_formset.is_valid():
@@ -2898,3 +2907,42 @@ def get_current_booking(request):
         'available_staff': available_staff_data,
     })
 
+
+@login_required
+def wedding_day_guide(request, contract_id):
+    contract = get_object_or_404(Contract, contract_id=contract_id, client__user=request.user)
+    try:
+        guide = WeddingDayGuide.objects.get(contract=contract)
+    except WeddingDayGuide.DoesNotExist:
+        guide = None
+
+    if request.method == 'POST':
+        form = WeddingDayGuideForm(request.POST, instance=guide)
+        if form.is_valid():
+            guide = form.save(commit=False)
+            guide.contract = contract
+            if 'submit' in request.POST:
+                guide.submitted = True
+            guide.save()
+            if 'submit' in request.POST:
+                return redirect('contracts:wedding_day_guide_pdf', pk=guide.pk)
+    else:
+        form = WeddingDayGuideForm(instance=guide)
+
+    return render(request, 'contracts/wedding_day_guide.html', {'form': form, 'submitted': guide.submitted if guide else False})
+
+@login_required
+def wedding_day_guide_view(request, pk):
+    guide = get_object_or_404(WeddingDayGuide, pk=pk, contract__client__user=request.user)
+    return render(request, 'wedding_day_guide_view.html', {'guide': guide})
+
+@login_required
+def wedding_day_guide_pdf(request, pk):
+    guide = get_object_or_404(WeddingDayGuide, pk=pk, contract__client__user=request.user)
+    html_string = render_to_string('wedding_day_guide_pdf.html', {'guide': guide})
+    html = HTML(string=html_string)
+    pdf = html.write_pdf()
+
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = f'filename="wedding_day_guide_{guide.pk}.pdf"'
+    return response
