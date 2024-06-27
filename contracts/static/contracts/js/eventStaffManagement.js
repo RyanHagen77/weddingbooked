@@ -170,8 +170,8 @@ document.addEventListener("DOMContentLoaded", () => {
     eventStaffManagement.init();
 
     const contractId = $('#contractId').val();
-    const roles = ['PHOTOGRAPHER1', 'PHOTOGRAPHER2', 'VIDEOGRAPHER1', 'VIDEOGRAPHER2', 'DJ1', 'DJ2', 'PHOTOBOOTH1',
-        'PHOTOBOOTH2', 'PROSPECT1', 'PROSPECT2', 'PROSPECT3'];
+    const roles = ['PHOTOGRAPHER1', 'PHOTOGRAPHER2', 'VIDEOGRAPHER1', 'VIDEOGRAPHER2', 'DJ1', 'DJ2', 'PHOTOBOOTH_OP1',
+        'PHOTOBOOTH_OP2', 'PROSPECT1', 'PROSPECT2', 'PROSPECT3'];
     roles.forEach(role => {
         fetch(`/contracts/get_current_booking/?contract_id=${contractId}&role=${role}`)
             .then(response => response.json())
