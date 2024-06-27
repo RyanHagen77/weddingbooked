@@ -196,19 +196,8 @@
             max-width: 400px;
             margin-bottom: 10px;
         }
-        .submit-btn {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            display: block;
-            width: 100%;
-            max-width: 300px;
-            margin: 20px auto;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
+
+
         .rider-text {
             font-size: 7pt;
         }
@@ -496,7 +485,7 @@
 
     <!-- Custom text area -->
     <div class="text-box">
-        {{ contract.custom_text }}
+        {{ contract.custom_text|default_if_none:"" }}
     </div>
 
     <!-- Main Contract Signature -->

@@ -2,7 +2,7 @@ from django import forms
 from contracts.models import (Contract, LeadSourceCategory, Client, Payment, EventStaffBooking, Package, Discount, Location,
                               ContractDocument, PaymentSchedule, SchedulePayment,
                               AdditionalEventStaffOption, EngagementSessionOption, AdditionalProduct, ContractProduct,
-                              ServiceFee, ContractAgreement, RiderAgreement)
+                              ServiceFee, ContractAgreement, RiderAgreement, WeddingDayGuide)
 from django.core.validators import RegexValidator
 from users.models import Role, CustomUser
 from django.forms.widgets import DateInput
@@ -728,3 +728,32 @@ class RiderAgreementForm(forms.ModelForm):
     class Meta:
         model = RiderAgreement
         fields = ['signature', 'client_name', 'agreement_date', 'notes']
+
+class WeddingDayGuideForm(forms.ModelForm):
+    class Meta:
+        model = WeddingDayGuide
+        fields = [
+            'event_date', 'primary_contact', 'primary_email', 'primary_phone',
+            'partner_contact', 'partner_email', 'partner_phone', 'dressing_location',
+            'dressing_address', 'dressing_start_time', 'ceremony_location',
+            'ceremony_address', 'ceremony_phone', 'ceremony_start', 'ceremony_end',
+            'reception_location', 'reception_address', 'reception_phone',
+            'reception_start', 'reception_end', 'staff_table', 'photo_stop1',
+            'photo_stop2', 'photo_stop3', 'photo_stop4', 'photographer2_start_location',
+            'photographer2_start_location_address', 'photographer2_start', 'maid_of_honor',
+            'bridesmaids_qty', 'flower_girl_qty', 'usher_qty', 'best_man',
+            'groomsmen_qty', 'ring_bearer_qty', 'bride_parents_names',
+            'bride_sibling_names', 'bride_grandparents_names', 'groom_parents_names',
+            'groom_siblings_names', 'groom_grandparents_names',
+            'additional_photo_request1', 'additional_photo_request2',
+            'additional_photo_request3', 'additional_photo_request4',
+            'additional_photo_request5'
+        ]
+        widgets = {
+            'event_date': forms.DateInput(attrs={'type': 'date'}),
+            'dressing_start_time': forms.TimeInput(attrs={'type': 'time'}),
+            'ceremony_start': forms.TimeInput(attrs={'type': 'time'}),
+            'ceremony_end': forms.TimeInput(attrs={'type': 'time'}),
+            'reception_start': forms.TimeInput(attrs={'type': 'time'}),
+            'reception_end': forms.TimeInput(attrs={'type': 'time'}),
+        }

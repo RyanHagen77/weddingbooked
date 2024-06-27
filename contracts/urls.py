@@ -94,6 +94,9 @@ urlpatterns = [
     path('event_staff_payroll/', reports_views.event_staff_payroll_report, name='event_staff_payroll_report'),
     path('payments_due_report/', reports_views.payments_due_report, name='payments_due_report'),
     path('formal_wear_deposit_report/', reports_views.formal_wear_deposit_report, name='formal_wear_deposit_report'),
+    path('wedding-day-guide/<int:contract_id>/', views.wedding_day_guide, name='wedding_day_guide'),
+    path('wedding-day-guide/view/<int:pk>/', views.wedding_day_guide_view, name='wedding_day_guide_view'),
+    path('wedding_day_guide/pdf/<int:pk>/', views.wedding_day_guide_pdf, name='wedding_day_guide_pdf'),
 
     # Other URLs for this app...
 ]

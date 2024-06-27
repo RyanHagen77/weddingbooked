@@ -70,6 +70,16 @@
       {% endif %}
     </div>
 
+    <!-- Add the link to open the Wedding Day Guide here -->
+    {% if contract.wedding_day_guide %}
+      <div class="wedding-day-guide">
+        <h3>Wedding Day Guide</h3>
+        <p><a href="{% url 'contracts:wedding_day_guide' contract.contract_id %}">Open Wedding Day Guide</a></p>
+      </div>
+    {% else %}
+      <p><a href="{% url 'contracts:wedding_day_guide' contract.contract_id %}">Create Wedding Day Guide</a></p>
+    {% endif %}
+
     <div class="contract-section">
       <h2>Contract Details</h2>
     </div>
