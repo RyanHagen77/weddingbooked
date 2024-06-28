@@ -3,8 +3,8 @@ from django.contrib.auth.decorators import user_passes_test
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from .models import Contract, LeadSourceCategory, Location, Payment, ServiceFee, ContractOvertime, SchedulePayment
-from django.db.models import Sum, F
-from decimal import Decimal
+from django.db.models import Sum, F, Q
+from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime, timedelta, date
 from django.utils.dateparse import parse_date
 import calendar
@@ -59,11 +59,11 @@ def lead_source_report(request):
     else:
         end_date = parse_date(end_date_str)
 
-    # Filter contracts based on location
+    # Filter contracts based on location and contract date
     if location_id == 'all':
-        contracts = Contract.objects.filter(event_date__range=(start_date, end_date))
+        contracts = Contract.objects.filter(contract_date__range=(start_date, end_date))
     else:
-        contracts = Contract.objects.filter(event_date__range=(start_date, end_date), location_id=location_id)
+        contracts = Contract.objects.filter(contract_date__range=(start_date, end_date), location_id=location_id)
 
     # Function to generate a list of months in the date range
     def month_range(start_date, end_date):
@@ -89,7 +89,7 @@ def lead_source_report(request):
     if period == 'monthly':
         for month_start in month_range(start_date, end_date):
             month_end = month_start.replace(day=calendar.monthrange(month_start.year, month_start.month)[1])
-            month_contracts = contracts.filter(event_date__range=(month_start, month_end))
+            month_contracts = contracts.filter(contract_date__range=(month_start, month_end))
 
             for category in LeadSourceCategory.objects.all():
                 total_count = month_contracts.filter(lead_source_category=category).count()
@@ -103,7 +103,7 @@ def lead_source_report(request):
     elif period == 'weekly':
         for week_start in week_range(start_date, end_date):
             week_end = week_start + timedelta(days=6)
-            week_contracts = contracts.filter(event_date__range=(week_start, week_end))
+            week_contracts = contracts.filter(contract_date__range=(week_start, week_end))
 
             for category in LeadSourceCategory.objects.all():
                 total_count = week_contracts.filter(lead_source_category=category).count()
@@ -129,6 +129,7 @@ def lead_source_report(request):
     }
 
     return render(request, 'contracts/lead_source_report.html', context)
+
 
 @login_required
 def appointments_report(request):
@@ -157,11 +158,26 @@ def appointments_report(request):
     else:
         end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
 
-    # Filter contracts based on location
+    # Filter contracts based on location and ensure contracts have at least one service
     if location_id == 'all':
-        contracts = Contract.objects.filter(contract_date__range=(start_date, end_date))
+        contracts = Contract.objects.filter(
+            contract_date__range=(start_date, end_date)
+        ).filter(
+            Q(photography_package__isnull=False) |
+            Q(videography_package__isnull=False) |
+            Q(dj_package__isnull=False) |
+            Q(photobooth_package__isnull=False)
+        )
     else:
-        contracts = Contract.objects.filter(contract_date__range=(start_date, end_date), location_id=location_id)
+        contracts = Contract.objects.filter(
+            contract_date__range=(start_date, end_date),
+            location_id=location_id
+        ).filter(
+            Q(photography_package__isnull=False) |
+            Q(videography_package__isnull=False) |
+            Q(dj_package__isnull=False) |
+            Q(photobooth_package__isnull=False)
+        )
 
     # Function to generate a list of months in the date range
     def month_range(start_date, end_date):
@@ -197,7 +213,7 @@ def appointments_report(request):
             dj_booked_count = month_contracts.filter(dj_package__isnull=False, status='booked').count()
             photobooth_count = month_contracts.filter(photobooth_package__isnull=False).count()
             photobooth_booked_count = month_contracts.filter(photobooth_package__isnull=False, status='booked').count()
-            total_appointments = month_contracts.count()
+            total_appointments = photo_count + video_count + dj_count + photobooth_count
 
             report_data.append({
                 'logo_url': logo_url,
@@ -225,7 +241,7 @@ def appointments_report(request):
             dj_booked_count = week_contracts.filter(dj_package__isnull=False, status='booked').count()
             photobooth_count = week_contracts.filter(photobooth_package__isnull=False).count()
             photobooth_booked_count = week_contracts.filter(photobooth_package__isnull=False, status='booked').count()
-            total_appointments = week_contracts.count()
+            total_appointments = photo_count + video_count + dj_count + photobooth_count
 
             report_data.append({
                 'period': f"{week_start.strftime('%b %d, %Y')} - {week_end.strftime('%b %d, %Y')}",
@@ -246,14 +262,27 @@ def appointments_report(request):
 
     for salesperson in salespeople:
         sales_contracts = contracts.filter(csr=salesperson)
-        total_sales = sales_contracts.count()
-        booked_sales = sales_contracts.filter(status='booked').count()
-        closed_percentage = (booked_sales / total_sales * 100) if total_sales > 0 else 0
+
+        # Calculate total appointments for the salesperson
+        photo_count = sales_contracts.filter(photography_package__isnull=False).count()
+        video_count = sales_contracts.filter(videography_package__isnull=False).count()
+        dj_count = sales_contracts.filter(dj_package__isnull=False).count()
+        photobooth_count = sales_contracts.filter(photobooth_package__isnull=False).count()
+
+        total_appointments = photo_count + video_count + dj_count + photobooth_count
+        booked_appointments = sales_contracts.filter(
+            Q(photography_package__isnull=False, status='booked') |
+            Q(videography_package__isnull=False, status='booked') |
+            Q(dj_package__isnull=False, status='booked') |
+            Q(photobooth_package__isnull=False, status='booked')
+        ).count()
+
+        closed_percentage = (booked_appointments / total_appointments * 100) if total_appointments > 0 else 0
 
         sales_data.append({
             'name': salesperson.get_full_name(),
-            'total_sales': total_sales,
-            'booked_sales': booked_sales,
+            'total_appointments': total_appointments,
+            'booked_appointments': booked_appointments,
             'closed_percentage': round(closed_percentage, 2),
         })
 
@@ -272,6 +301,7 @@ def appointments_report(request):
     }
 
     return render(request, 'contracts/appointments_report.html', context)
+
 
 @login_required
 def reception_venue_report(request):
@@ -300,7 +330,7 @@ def reception_venue_report(request):
     else:
         end_date = parse_date(end_date_str)
 
-    # Filter contracts based on location
+    # Filter contracts based on location and event date
     if location_id == 'all':
         contracts = Contract.objects.filter(event_date__range=(start_date, end_date))
     else:
@@ -387,11 +417,18 @@ def reception_venue_report(request):
 
     return render(request, 'contracts/reception_venue_report.html', context)
 
+@login_required
 def revenue_report(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
+    # Get the current date
+    today = datetime.today()
+    first_day_of_month = today.replace(day=1)
+    last_day_of_month = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+
+    # Get start_date and end_date from request or default to current month
+    start_date = request.GET.get('start_date', first_day_of_month.strftime('%Y-%m-%d'))
+    end_date = request.GET.get('end_date', last_day_of_month.strftime('%Y-%m-%d'))
     selected_location = request.GET.get('location', 'all')
     group_by = request.GET.get('group_by', 'week')  # Default to grouping by week
 
@@ -455,8 +492,8 @@ def revenue_report(request):
             total_revenue += period_total_revenue
 
             report_data.append({
-                'period_start': current_date,
-                'period_end': period_end_date,
+                'period_start': current_date.strftime('%Y-%m-%d'),
+                'period_end': period_end_date.strftime('%Y-%m-%d'),
                 'deposits_received': deposits_received.quantize(Decimal('0.00')),
                 'other_payments': other_payments.quantize(Decimal('0.00')),
                 'tax_collected': tax_collected.quantize(Decimal('0.00')),
@@ -496,10 +533,18 @@ def revenue_report(request):
 
     return render(request, 'contracts/revenue_report.html', context)
 
+@login_required
 def revenue_by_contract(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
+
+    # Get the current date
+    today = datetime.today()
+    first_day_of_month = today.replace(day=1)
+    last_day_of_month = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+
+    # Get start_date and end_date from request or default to current month
+    start_date = request.GET.get('start_date', first_day_of_month.strftime('%Y-%m-%d'))
+    end_date = request.GET.get('end_date', last_day_of_month.strftime('%Y-%m-%d'))
     original_start_date = request.GET.get('original_start_date', start_date)
     original_end_date = request.GET.get('original_end_date', end_date)
     selected_location = request.GET.get('location', 'all')
@@ -520,14 +565,14 @@ def revenue_by_contract(request):
     contracts_data = []
 
     if start_date and end_date:
-        start_date = datetime.strptime(start_date, '%Y-%m-%d')
-        end_date = datetime.strptime(end_date, '%Y-%m-%d')
+        start_date_dt = datetime.strptime(start_date, '%Y-%m-%d')
+        end_date_dt = datetime.strptime(end_date, '%Y-%m-%d')
 
         for contract in contracts:
             contract_payments = Payment.objects.filter(
                 contract=contract,
-                date__date__gte=start_date,
-                date__date__lte=end_date
+                date__date__gte=start_date_dt,
+                date__date__lte=end_date_dt
             )
 
             payments_data = [
@@ -553,8 +598,8 @@ def revenue_by_contract(request):
     context = {
         'logo_url': logo_url,
         'contracts_data': contracts_data,
-        'start_date': start_date.strftime('%B %d, %Y') if start_date else '',
-        'end_date': end_date.strftime('%B %d, %Y') if end_date else '',
+        'start_date': start_date_dt.strftime('%B %d, %Y') if start_date_dt else '',
+        'end_date': end_date_dt.strftime('%B %d, %Y') if end_date_dt else '',
         'original_start_date': original_start_date,
         'original_end_date': original_end_date,
         'selected_location': selected_location,
@@ -755,10 +800,19 @@ def event_staff_payroll_report(request):
 
     return render(request, 'contracts/event_staff_payroll_report.html', context)
 
+
+@login_required
 def sales_detail_report(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
+
+    # Get the current date
+    today = datetime.today()
+    first_day_of_month = today.replace(day=1)
+    last_day_of_month = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+
+    # Get start_date and end_date from request or default to current month
+    start_date = request.GET.get('start_date', first_day_of_month.strftime('%Y-%m-%d'))
+    end_date = request.GET.get('end_date', last_day_of_month.strftime('%Y-%m-%d'))
     selected_location = request.GET.get('location', 'all')
     group_by = request.GET.get('group_by', 'week')  # Default to grouping by week
 
@@ -803,7 +857,7 @@ def sales_detail_report(request):
                         taxable_products_revenue += product_revenue
                         contract_taxable_amount += product_revenue
 
-                tax_collected += contract_taxable_amount * contract.tax_rate / 100
+                tax_collected += contract_taxable_amount * Decimal(contract.location.tax_rate) / Decimal('100.00')
 
             total_revenue = service_revenue + products_revenue + other_revenue
 
@@ -837,6 +891,7 @@ def sales_detail_report(request):
 
     return render(request, 'contracts/sales_detail_report.html', context)
 
+@login_required
 def sales_detail_by_contract(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
     start_date = request.GET.get('start_date')
@@ -970,19 +1025,28 @@ def get_date_range(date_range):
         end_date = None
     return start_date, end_date
 
+
+@login_required
 def sales_tax_report(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
     date_range = request.GET.get('date_range', 'current_quarter')
     start_date, end_date = get_date_range(date_range)
 
-    if not start_date or not end_date:
+    # Check if custom date range is provided
+    if date_range == 'custom_range':
         custom_start_date = request.GET.get('start_date')
         custom_end_date = request.GET.get('end_date')
         if custom_start_date and custom_end_date:
             start_date = datetime.strptime(custom_start_date, '%Y-%m-%d')
             end_date = datetime.strptime(custom_end_date, '%Y-%m-%d')
+        else:
+            today = datetime.today()
+            first_day_of_month = today.replace(day=1)
+            last_day_of_month = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+            start_date = first_day_of_month
+            end_date = last_day_of_month
 
-    contracts = Contract.objects.filter(contract_date__gte=start_date, contract_date__lte=end_date)
+    contracts = Contract.objects.filter(event_date__gte=start_date, event_date__lte=end_date)
 
     report_data = []
 
@@ -993,28 +1057,32 @@ def sales_tax_report(request):
         tax_collected = Decimal('0.00')
 
         for contract in location_contracts:
+            contract_taxable_amount = Decimal('0.00')
             for cp in contract.contract_products.all():
-                product_revenue = cp.quantity * cp.product.price
+                product_revenue = Decimal(cp.quantity) * cp.product.price
                 if cp.product.is_taxable:
                     taxable_products_revenue += product_revenue
-                    tax_collected += product_revenue * contract.tax_rate / 100
+                    contract_taxable_amount += product_revenue
+
+            tax_collected += (contract_taxable_amount * Decimal(contract.location.tax_rate) / Decimal('100.00')).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
         report_data.append({
             'location': location.name,
-            'taxable_products_revenue': taxable_products_revenue,
-            'tax_collected': tax_collected,
+            'taxable_products_revenue': taxable_products_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
+            'tax_collected': tax_collected.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
         })
 
     context = {
         'logo_url': logo_url,
-        'date_range': DATE_RANGE_DISPLAY.get(date_range, date_range),
+        'date_range': date_range,
         'start_date': start_date.strftime('%Y-%m-%d') if start_date else '',
         'end_date': end_date.strftime('%Y-%m-%d') if end_date else '',
         'report_data': report_data,
+        'selected_location': request.GET.get('location', 'all'),
+        'locations': locations,
     }
 
     return render(request, 'contracts/sales_tax_report.html', context)
-
 
 def payments_due_report(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
@@ -1098,10 +1166,18 @@ def payments_due_report(request):
 
     return render(request, 'contracts/payments_due_report.html', context)
 
+@login_required
 def formal_wear_deposit_report(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
+
+    # Get the current date
+    today = datetime.today()
+    first_day_of_month = today.replace(day=1)
+    last_day_of_month = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+
+    # Get start_date and end_date from request or default to current month
+    start_date = request.GET.get('start_date', first_day_of_month.strftime('%Y-%m-%d'))
+    end_date = request.GET.get('end_date', last_day_of_month.strftime('%Y-%m-%d'))
     selected_location = request.GET.get('location', 'all')
 
     filters = {}

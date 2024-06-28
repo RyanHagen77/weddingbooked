@@ -5,7 +5,7 @@
 {% block content %}
 <div class="outer-container">
     <div class="search-results">
-        <h4>Revenue Report</h3>
+        <h4>Revenue Report</h4>
         <button onclick="history.back()" class="btn btn-dusty-pink">Go Back</button>
 
         <form method="get" class="report-form">
@@ -45,14 +45,14 @@
                     <tr>
                         <td>
                             {% if data.period_start != 'Totals' %}
-                            <a href="{% url 'contracts:revenue_by_contract' %}?start_date={{ data.period_start|date:'Y-m-d' }}&end_date={{ data.period_end|date:'Y-m-d' }}&original_start_date={{ start_date }}&original_end_date={{ end_date }}&location={{ selected_location }}&group_by={{ group_by }}">
-                                {{ data.period_start|date:"Y-m-d" }}
+                            <a href="{% url 'contracts:revenue_by_contract' %}?start_date={{ data.period_start }}&end_date={{ data.period_end }}&original_start_date={{ start_date }}&original_end_date={{ end_date }}&location={{ selected_location }}&group_by={{ group_by }}">
+                                {{ data.period_start }}
                             </a>
                             {% else %}
                             Totals
                             {% endif %}
                         </td>
-                        <td>{{ data.period_end|date:"Y-m-d" }}</td>
+                        <td>{{ data.period_end }}</td>
                         <td>${{ data.deposits_received }}</td>
                         <td>${{ data.other_payments }}</td>
                         <td>${{ data.tax_collected }}</td>
@@ -65,4 +65,3 @@
     </div>
 </div>
 {% endblock %}
-

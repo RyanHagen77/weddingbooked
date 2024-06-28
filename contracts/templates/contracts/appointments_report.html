@@ -74,14 +74,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for data in sales_data %}
-                    <tr>
-                        <td>{{ data.name }}</td>
-                        <td>{{ data.total_sales }}</td>
-                        <td>{{ data.booked_sales }}</td>
-                        <td>{{ data.closed_percentage }}%</td>
-                    </tr>
-                    {% endfor %}
+                {% for data in sales_data %}
+                <tr>
+                    <td>{{ data.name }}</td>
+                    <td>{{ data.total_appointments }}</td>
+                    <td>{{ data.booked_appointments }}</td>
+                    <td>{{ data.closed_percentage }}%</td>
+                </tr>
+                {% endfor %}
                 </tbody>
             </table>
         </div>
