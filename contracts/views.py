@@ -272,7 +272,7 @@ def send_password_reset_email(user_email):
             form.save(
                 request=request,
                 use_https=True,
-                from_email='testmydjango420@gmail.com',
+                from_email='enetadmin@enet2.com',
                 email_template_name='registration/password_reset_email.html'
             )
             print("Password reset email sent successfully.")
@@ -394,7 +394,7 @@ def send_email_to_client(request, message, contract):
         send_mail(
             subject,
             message_body,
-            'testmydjango420@gmail.com',
+            'enetadmin@enet2.com',
             [client_user.email],
             fail_silently=False,
         )
@@ -2055,7 +2055,7 @@ def save_products(request, id):
             product_formset = ContractProductFormset(request.POST, instance=contract, prefix='contract_products')
             if product_formset.is_valid():
                 product_formset.save()
-                return redirect('contracts:contract_detail', id=contract.contract_id)
+                return redirect(reverse('contracts:contract_detail', kwargs={'id': contract.contract_id}) + '#products')
             else:
                 # If the formset is not valid, re-render the page with the formset errors
                 context = {
@@ -2081,11 +2081,12 @@ def add_service_fees(request, contract_id):
             # Optional: Update contract totals if necessary
             contract.total_cost = sum([fee.amount for fee in contract.servicefees.all()])
             contract.save()
-            return redirect('contracts:contract_detail', id=contract.contract_id)
+            return redirect(reverse('contracts:contract_detail', kwargs={'id': contract_id}) + '#financial')
     else:
         service_fee_formset = ServiceFeeFormSet(instance=contract)
 
     return render(request, 'contracts/contract_detail.html', {'service_fee_formset': service_fee_formset, 'contract': contract})
+
 
 @login_required
 def delete_service_fee(request, fee_id):
@@ -2237,7 +2238,7 @@ def create_or_update_schedule(request, contract_id):
                         amount=Decimal(fee_data[1])
                     )
 
-            return HttpResponseRedirect(reverse('contracts:contract_detail', kwargs={'id': contract_id}) + '#payments')
+            return HttpResponseRedirect(reverse('contracts:contract_detail', kwargs={'id': contract_id}) + '#financial')
 
     else:
         schedule_form = PaymentScheduleForm(instance=schedule)
@@ -2851,7 +2852,7 @@ def send_booking_email(request, staff, contract, role, is_update):
     }
     subject = 'Booking Updated' if is_update else 'New Booking Assigned'
     message = render_to_string('communication/booking_assignment_email.html', context, request=request)
-    from_email = 'testmydjango420@gmail.com'
+    from_email = 'enetadmin@enet2.com'
     to_email = [staff.email]
 
     send_mail(

@@ -270,16 +270,21 @@ function confirmPayment() {
     let balanceDueElement = document.getElementById('balance-due-amount');
     let balanceDue = parseFloat(balanceDueElement.textContent.replace('$', ''));
     let paymentMethod = document.getElementById('payment_method').value;
-    let paymentPurpose = document.getElementById('payment_purpose').value;
+    let paymentPurposeElement = document.getElementById('payment_purpose');
+    let paymentPurpose = paymentPurposeElement.value;
+    let paymentPurposeText = paymentPurposeElement.options[paymentPurposeElement.selectedIndex].text;  // Get payment purpose text
     let paymentMemo = document.getElementById('memo').value;
     let paymentReference = document.getElementById('payment_reference').value;
     let paymentId = document.getElementById('payment-id').value;
     let paymentAction = document.getElementById('payment-action').value;
     let url = (paymentAction === 'edit') ? `/contracts/edit_payment/${paymentId}/` : `/contracts/add_payment/${contractData.paymentScheduleId}/`;
 
-    // Check if payment amount exceeds balance due
-    if (paymentAmount > balanceDue) {
-        alert('Payment amount exceeds the remaining balance. Please enter a valid amount.');
+    let originalAmount = parseFloat(document.getElementById('original-amount').value) || 0;
+    let amountDifference = paymentAmount - originalAmount;
+
+    // Check if the difference in payment amount exceeds balance due
+    if (amountDifference > balanceDue) {
+        alert('The difference in the payment amount exceeds the remaining balance. Please enter a valid amount.');
         return;
     }
 
@@ -306,10 +311,10 @@ function confirmPayment() {
     })
     .then(data => {
         // Update the UI based on the payment
-        updatePaymentsTable(paymentAmount, paymentMethod, paymentPurpose, paymentReference, paymentMemo, data.payment_id, paymentAction);
+        updatePaymentsTable(paymentAmount, paymentMethod, paymentPurposeText, paymentReference, paymentMemo, data.payment_id, paymentAction);  // Pass paymentPurposeText
 
         // Recalculate the balance due
-        let newBalanceDue = balanceDue - paymentAmount;
+        let newBalanceDue = balanceDue - amountDifference;
         balanceDueElement.textContent = `$${newBalanceDue.toFixed(2)}`;
 
         // Update the deposit status if applicable
@@ -325,16 +330,19 @@ function confirmPayment() {
     $('#paymentModal').modal('hide');
 }
 
+
 // Clear payment form
 function clearPaymentForm() {
     document.getElementById('payment-form').reset();
     document.getElementById('payment-id').value = '';
     document.getElementById('payment-action').value = 'add';
+    document.getElementById('original-amount').value = '';
 }
 
 // Edit payment
 function editPayment(paymentId, amount, paymentMethod, paymentReference, memo, paymentPurpose) {
     document.getElementById('payment-id').value = paymentId;
+    document.getElementById('original-amount').value = amount; // Store original amount
     document.getElementById('amount').value = amount;
     document.getElementById('payment_method').value = paymentMethod;
     document.getElementById('payment_reference').value = paymentReference || '';

@@ -1,13 +1,14 @@
 # your_app/templatetags/app_filters.py
 from django import template
 from decimal import Decimal
+import json
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
 @register.filter(name='multiply')
 def multiply(value, arg):
     return float(value) * float(arg)
-
 
 @register.filter
 def get_location_name(locations, selected_location):
@@ -23,7 +24,10 @@ def sum_values(queryset, attr):
         total += getattr(item, attr, Decimal('0.00'))
     return total
 
-
 @register.filter(name='in_group')
 def in_group(user, group_name):
     return user.groups.filter(name=group_name).exists()
+
+@register.filter(is_safe=True)
+def to_json(value):
+    return mark_safe(json.dumps(value))

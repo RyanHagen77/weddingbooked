@@ -21,17 +21,17 @@ def is_report_viewer(user):
 @user_passes_test(is_report_viewer)
 def reports(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+    user_groups = list(request.user.groups.values_list('name', flat=True))  # Fetch user groups
 
     context = {
         'logo_url': logo_url,
+        'user_groups': user_groups,  # Add user groups to the context
         'reports': [
-
             # Add more reports as needed
         ],
     }
 
     return render(request, 'contracts/reports.html', context)
-
 @login_required
 def lead_source_report(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"

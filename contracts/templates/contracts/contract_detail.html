@@ -935,7 +935,7 @@
                             </div>
                         </div>
                     </div>
-                </div> <!-- Closes the tab-pane container fade for the Products div -->
+                </div>
                 <!-- Documents Tab Content -->
                 <div class="tab-pane fade" id="docs">
                     <div class="row">
@@ -1009,7 +1009,6 @@
                             </div>
                         </div>
                     </div>
-
                     <!-- Document Upload Section -->
                     <div class="row">
                         <div class="col-md-12">
@@ -1070,6 +1069,7 @@
                                     <div class="contract-total" data-contract-total="{{ contract.calculate_total_cost }}">
                                         <strong>Total Contract Amount:</strong> ${{ contract.calculate_total_cost }}
                                     </div>
+                                    <!-- Balance due element -->
                                     <div class="balance-due" data-initial-balance="{{ contract.balance_due }}">
                                         <strong>Balance Due:</strong> <span id="balance-due-amount">${{ contract.balance_due|floatformat:2 }}</span>
                                     </div>
@@ -1375,7 +1375,7 @@
         <form id="payment-form" method="post">
           <input type="hidden" id="payment-id" name="payment_id">
           <input type="hidden" id="payment-action" name="payment_action">
-          <input type="hidden" id="original-payment-amount" value="">
+          <input type="hidden" id="original-amount" value="">
           <div class="form-group">
             <label for="amount">Amount:</label>
             <input type="number" class="form-control" id="amount" name="amount" step="0.01" required>

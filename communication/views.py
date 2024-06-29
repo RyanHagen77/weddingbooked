@@ -57,7 +57,7 @@ def send_contract_message_email(request, message, contract):
         send_mail(
             subject,
             message_body,
-            'testmydjango420@gmail.com',  # Use a valid sender email address
+            'enetadmin@enet2.com',  # Use a valid sender email address
             [contract.coordinator.email],
             fail_silently=False,
         )
@@ -79,7 +79,7 @@ def send_task_assignment_email(request, task):
         send_mail(
             subject,
             message,
-            'testmydjango420@gmail.com',  # Your sending email
+            'enetadmin@enet2.com',  # Your sending email
             [task.assigned_to.email],
             fail_silently=False,
         )
@@ -114,7 +114,7 @@ def send_portal_access(request, contract_id):
             send_mail(
                 subject,
                 message,
-                'testmydjango420@gmail.com',  # Your sending email
+                'enetadmin@enet2.com',  # Your sending email
                 [client.user.email],
                 fail_silently=False,
             )
@@ -156,7 +156,7 @@ def send_contract_and_rider_email_to_client(request, contract, rider_type=None, 
         send_mail(
             subject,
             f"{message}\n\nPlease log in here to sign the documents: {login_url}",
-            'testmydjango420@gmail.com',  # Your sending email
+            'enetadmin@enet2.com',  # Your sending email
             [client_email],
             fail_silently=False,
         )

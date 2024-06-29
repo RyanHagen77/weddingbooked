@@ -62,7 +62,6 @@ function updateServerSideProducts(contractId) {
     });
 }
 
-
 function calculateAdditionalProductCosts() {
     let totalProductCost = 0;
     document.querySelectorAll('.total-price').forEach(function(priceCell) {
@@ -126,9 +125,6 @@ function updateProductDetails(selectProduct, inputDescription, inputQuantity, in
 
         // Update the total cost display
         updateTotalProductCostDisplay();
-
-        // Update the tax amount field in the UI
-        updateTaxAmountField(contractData.taxAmount);
     } else {
         inputDescription.value = '';
         inputPrice.textContent = ''; // Clear the price text content
@@ -173,7 +169,6 @@ function fetchTaxRate(locationId) {
         });
 }
 
-
 function displayTaxRate() {
     const taxRateElement = document.getElementById('id_tax_rate');
     if (taxRateElement) {
@@ -184,7 +179,10 @@ function displayTaxRate() {
 function fetchAdditionalProducts() {
     fetch('/contracts/api/additional_products/')
         .then(response => response.json())
-        .then(data => globalAdditionalProducts = data)
+        .then(data => {
+            globalAdditionalProducts = data;
+            console.log('Fetched additional products:', globalAdditionalProducts); // Log fetched products
+        })
         .catch(error => console.error('Error fetching additional products:', error));
 }
 
@@ -226,6 +224,10 @@ window.addProduct = function() {
                 input.type = 'textarea';
                 input.classList.add('special-notes-textarea'); // Add a class for specific styling
                 break;
+            case 'price':
+                input.type = 'text';
+                input.classList.add('total-price'); // Add a class for specific styling
+                break;
             default:
                 input.type = 'text';
                 break;
@@ -236,6 +238,7 @@ window.addProduct = function() {
 
     totalForms.value = formIndex + 1;
 
+    // Attach event listeners to the new row's elements
     newRow.querySelector(`[name="contract_products-${formIndex}-product"]`).addEventListener('change', function() {
         const inputDescription = newRow.querySelector(`[name="contract_products-${formIndex}-description"]`);
         const inputQuantity = newRow.querySelector(`[name="contract_products-${formIndex}-quantity"]`);
@@ -248,6 +251,10 @@ window.addProduct = function() {
         const inputPrice = newRow.querySelector(`[name="contract_products-${formIndex}-price"]`);
         updateProductDetails(selectProduct, inputDescription, this, inputPrice);
     });
+
+    // Update total product cost and tax
+    updateTotalProductCostDisplay();
+    calculateTax();
 };
 
 contractData.additionalProductCosts = calculateAdditionalProductCosts();
