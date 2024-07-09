@@ -3,7 +3,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from users.models import CustomUser  # Import CustomUser
 from django.db.models import Q, F, Value, CharField, Sum
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_GET
+from rest_framework_simplejwt.views import TokenObtainPairView
 from django.urls import reverse
 from users.models import Role
 from django.conf import settings
@@ -36,6 +37,7 @@ from .serializers import ContractSerializer
 from rest_framework import viewsets
 from datetime import datetime, timedelta
 import json
+import os
 from django.utils.timezone import now
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
@@ -46,6 +48,7 @@ from django.http import HttpRequest, HttpResponseRedirect
 from django.contrib.auth import logout
 from .constants import SERVICE_ROLE_MAPPING  # Adjust the import path as needed
 from django.template.defaultfilters import linebreaks
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
@@ -332,6 +335,10 @@ def custom_logout(request):
     response['Expires'] = '0'
     return response
 
+class CustomTokenObtainPairView(TokenObtainPairView):
+    def post(self, request, *args, **kwargs):
+        print(request.data)  # Debugging: print the request data to verify it
+        return super().post(request, *args, **kwargs)
 
 @login_required
 def client_portal(request, contract_id):
@@ -713,25 +720,6 @@ def edit_services(request, id):
     return render(request, 'contracts/contract_detail.html', context)
 
 
-def update_prospect_photographers(request, id):
-    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        contract = get_object_or_404(Contract, pk=id)
-        form = ContractServicesForm(request.POST, instance=contract)
-
-        if form.is_valid():
-            # Update the prospect photographers
-            contract.prospect_photographer1 = form.cleaned_data.get('prospect_photographer1')
-            contract.prospect_photographer2 = form.cleaned_data.get('prospect_photographer2')
-            contract.prospect_photographer3 = form.cleaned_data.get('prospect_photographer3')
-            contract.save()
-
-            return JsonResponse({'status': 'success', 'message': 'Prospect photographers updated successfully'})
-        else:
-            # Return form errors
-            return JsonResponse({'status': 'error', 'errors': form.errors.as_json()}, status=400)
-    else:
-        return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
-
 
 @login_required
 @csrf_exempt
@@ -941,8 +929,23 @@ def delete_document(request, document_id):
     # Redirect back to the contract detail page or wherever appropriate
     return redirect('contracts:contract_detail', id=document.contract.contract_id)
 
-
-from collections import defaultdict
+@require_GET
+def client_documents(request, contract_id):
+    try:
+        contract = Contract.objects.get(contract_id=contract_id)
+        documents = contract.documents.filter(is_client_visible=True)
+        document_list = [
+            {
+                'id': doc.id,
+                'url': doc.document.url,
+                'name': os.path.basename(doc.document.name),  # Extract the file name
+                'badge_class': 'badge-success' if doc.is_client_visible else 'badge-secondary',
+                'badge_label': 'Visible to Client' if doc.is_client_visible else 'Internal Use'
+            } for doc in documents
+        ]
+        return JsonResponse(document_list, safe=False)
+    except Contract.DoesNotExist:
+        return JsonResponse({'error': 'Contract not found'}, status=404)
 
 @login_required
 def generate_contract_pdf(request, contract_id):
@@ -1936,6 +1939,7 @@ def get_engagement_session_options(request):
     # Wrap the list in an object with a 'sessions' key
     return JsonResponse({'sessions': sessions_list})
 
+@csrf_exempt
 def get_prospect_photographers(request):
     contract_id = request.GET.get('contract_id')
     if contract_id:
@@ -1944,22 +1948,27 @@ def get_prospect_photographers(request):
             data = {
                 'prospect_photographer1': {
                     'id': contract.prospect_photographer1.id,
-                    'name': f"{contract.prospect_photographer1.first_name} {contract.prospect_photographer1.last_name}"
+                    'name': f"{contract.prospect_photographer1.first_name} {contract.prospect_photographer1.last_name}",
+                    'profile_picture': contract.prospect_photographer1.profile_picture.url if contract.prospect_photographer1.profile_picture else None,
+                    'website': contract.prospect_photographer1.website
                 } if contract.prospect_photographer1 else None,
                 'prospect_photographer2': {
                     'id': contract.prospect_photographer2.id,
-                    'name': f"{contract.prospect_photographer2.first_name} {contract.prospect_photographer2.last_name}"
+                    'name': f"{contract.prospect_photographer2.first_name} {contract.prospect_photographer2.last_name}",
+                    'profile_picture': contract.prospect_photographer2.profile_picture.url if contract.prospect_photographer2.profile_picture else None,
+                    'website': contract.prospect_photographer2.website
                 } if contract.prospect_photographer2 else None,
                 'prospect_photographer3': {
                     'id': contract.prospect_photographer3.id,
-                    'name': f"{contract.prospect_photographer3.first_name} {contract.prospect_photographer3.last_name}"
+                    'name': f"{contract.prospect_photographer3.first_name} {contract.prospect_photographer3.last_name}",
+                    'profile_picture': contract.prospect_photographer3.profile_picture.url if contract.prospect_photographer3.profile_picture else None,
+                    'website': contract.prospect_photographer3.website
                 } if contract.prospect_photographer3 else None,
             }
             return JsonResponse(data)
         except Contract.DoesNotExist:
             return JsonResponse({'error': 'Contract not found'}, status=404)
     return JsonResponse({'error': 'Contract ID is required'}, status=400)
-
 
 def remove_discount(request, contract_id, discount_id):
     contract = get_object_or_404(Contract, contract_id=contract_id)
@@ -2911,6 +2920,8 @@ def get_current_booking(request):
 
 @login_required
 def wedding_day_guide(request, contract_id):
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
     contract = get_object_or_404(Contract, contract_id=contract_id, client__user=request.user)
     try:
         guide = WeddingDayGuide.objects.get(contract=contract)
@@ -2918,7 +2929,7 @@ def wedding_day_guide(request, contract_id):
         guide = None
 
     if request.method == 'POST':
-        form = WeddingDayGuideForm(request.POST, instance=guide)
+        form = WeddingDayGuideForm(request.POST, instance=guide, contract=contract)
         if form.is_valid():
             guide = form.save(commit=False)
             guide.contract = contract
@@ -2928,9 +2939,9 @@ def wedding_day_guide(request, contract_id):
             if 'submit' in request.POST:
                 return redirect('contracts:wedding_day_guide_pdf', pk=guide.pk)
     else:
-        form = WeddingDayGuideForm(instance=guide)
+        form = WeddingDayGuideForm(instance=guide, contract=contract)
 
-    return render(request, 'contracts/wedding_day_guide.html', {'form': form, 'submitted': guide.submitted if guide else False})
+    return render(request, 'contracts/wedding_day_guide.html', {'logo_url' : logo_url, 'form': form, 'submitted': guide.submitted if guide else False})
 
 @login_required
 def wedding_day_guide_view(request, pk):

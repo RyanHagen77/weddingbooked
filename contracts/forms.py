@@ -735,9 +735,9 @@ class WeddingDayGuideForm(forms.ModelForm):
         fields = [
             'event_date', 'primary_contact', 'primary_email', 'primary_phone',
             'partner_contact', 'partner_email', 'partner_phone', 'dressing_location',
-            'dressing_address', 'dressing_start_time', 'ceremony_location',
+            'dressing_address', 'dressing_start_time', 'ceremony_site',
             'ceremony_address', 'ceremony_phone', 'ceremony_start', 'ceremony_end',
-            'reception_location', 'reception_address', 'reception_phone',
+            'reception_site', 'reception_address', 'reception_phone',
             'reception_start', 'reception_end', 'staff_table', 'photo_stop1',
             'photo_stop2', 'photo_stop3', 'photo_stop4', 'photographer2_start_location',
             'photographer2_start_location_address', 'photographer2_start', 'maid_of_honor',
@@ -747,7 +747,9 @@ class WeddingDayGuideForm(forms.ModelForm):
             'groom_siblings_names', 'groom_grandparents_names',
             'additional_photo_request1', 'additional_photo_request2',
             'additional_photo_request3', 'additional_photo_request4',
-            'additional_photo_request5'
+            'additional_photo_request5', 'video_client_names', 'wedding_story_song_title',
+            'wedding_story_song_artist', 'dance_montage_song_title', 'dance_montage_song_artist',
+            'video_special_dances', 'photo_booth_text_line1', 'photo_booth_text_line2'
         ]
         widgets = {
             'event_date': forms.DateInput(attrs={'type': 'date'}),
@@ -757,3 +759,19 @@ class WeddingDayGuideForm(forms.ModelForm):
             'reception_start': forms.TimeInput(attrs={'type': 'time'}),
             'reception_end': forms.TimeInput(attrs={'type': 'time'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        contract = kwargs.pop('contract', None)
+        super().__init__(*args, **kwargs)
+        if contract:
+            client = contract.client  # Access the related Client instance
+            self.fields['event_date'].initial = contract.event_date
+            self.fields['primary_contact'].initial = client.primary_contact
+            self.fields['primary_email'].initial = client.primary_email
+            self.fields['primary_phone'].initial = client.primary_phone1
+            self.fields['partner_contact'].initial = client.partner_contact
+            self.fields['partner_email'].initial = client.partner_email
+            self.fields['partner_phone'].initial = client.partner_phone1
+            self.fields['ceremony_site'].initial = contract.ceremony_site
+            self.fields['reception_site'].initial = contract.reception_site
+            # Set initial values for other fields similarly

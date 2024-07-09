@@ -765,10 +765,12 @@ class ContractDocument(models.Model):
     contract = models.ForeignKey('Contract', related_name='documents', on_delete=models.CASCADE)
     document = models.FileField(upload_to='contract_documents/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    is_client_visible = models.BooleanField(default=True, help_text="Check if this document should be visible to clients.")
+    is_client_visible = models.BooleanField(default=True,
+                                            help_text="Check if this document should be visible to clients.")
 
     def __str__(self):
         return f"Document for {self.contract}"
+
 
 class PaymentPurpose(models.Model):
     name = models.CharField(max_length=50)
@@ -776,6 +778,7 @@ class PaymentPurpose(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Payment(models.Model):
     PAYMENT_CHOICES = [
@@ -805,8 +808,6 @@ class Payment(models.Model):
         super().save(*args, **kwargs)
 
 
-
-
 class PaymentSchedule(models.Model):
     contract = models.OneToOneField(Contract, on_delete=models.CASCADE, related_name='payment_schedule')
     schedule_type = models.CharField(max_length=20, choices=[('schedule_a', 'Schedule A'), ('custom', 'Custom')])
@@ -820,6 +821,7 @@ class PaymentSchedule(models.Model):
 
     payment_summary.short_description = "Payment Summary"
 
+
 class SchedulePayment(models.Model):
     schedule = models.ForeignKey(PaymentSchedule, on_delete=models.CASCADE, related_name='schedule_payments')
     purpose = models.ForeignKey(PaymentPurpose, on_delete=models.SET_NULL, null=True, blank=True)
@@ -830,11 +832,14 @@ class SchedulePayment(models.Model):
     def __str__(self):
         return f'{self.purpose} - {self.amount} due on {self.due_date}'
 
+
 class ServiceFeeType(models.Model):
     name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
+
+
 class ServiceFee(models.Model):
     contract = models.ForeignKey(Contract, related_name='servicefees', on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
@@ -1031,6 +1036,7 @@ class EventStaffBooking(models.Model):
                 setattr(self.contract, role_field, self.staff)
             self.contract.save()
 
+
 class Availability(models.Model):
     staff = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -1072,6 +1078,7 @@ class Availability(models.Model):
         CustomUser = get_user_model()
         return CustomUser.objects.exclude(id__in=all_unavailable_ids)
 
+
 class Service(models.Model):
     role_identifier = models.CharField(max_length=30)  # Match this with ROLE_CHOICES in EventStaffBooking
     name = models.CharField(max_length=100)
@@ -1089,6 +1096,7 @@ class ChangeLog(models.Model):
 
     def __str__(self):
         return f"{self.timestamp} - {self.user}"
+
 
 class ContractAgreement(models.Model):
     contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name='contract_agreements')
@@ -1121,8 +1129,9 @@ class RiderAgreement(models.Model):
     def __str__(self):
         return f"{self.contract} - {self.rider_type}"
 
+
 class WeddingDayGuide(models.Model):
-    contract = models.OneToOneField(Contract, on_delete=models.CASCADE, related_name='wedding_day_guide')
+    contract = models.OneToOneField('Contract', on_delete=models.CASCADE, related_name='wedding_day_guide')
     event_date = models.DateField()
     primary_contact = models.CharField(max_length=255)
     primary_email = models.EmailField()
@@ -1133,12 +1142,12 @@ class WeddingDayGuide(models.Model):
     dressing_location = models.CharField(max_length=255)
     dressing_address = models.CharField(max_length=255)
     dressing_start_time = models.TimeField()
-    ceremony_location = models.CharField(max_length=255)
+    ceremony_site = models.CharField(max_length=255)
     ceremony_address = models.CharField(max_length=255)
     ceremony_phone = models.CharField(max_length=15)
     ceremony_start = models.TimeField()
     ceremony_end = models.TimeField()
-    reception_location = models.CharField(max_length=255)
+    reception_site = models.CharField(max_length=255)
     reception_address = models.CharField(max_length=255)
     reception_phone = models.CharField(max_length=15)
     reception_start = models.TimeField()
@@ -1158,18 +1167,43 @@ class WeddingDayGuide(models.Model):
     best_man = models.CharField(max_length=255)
     groomsmen_qty = models.IntegerField()
     ring_bearer_qty = models.IntegerField()
-    bride_parents_names = models.TextField()
-    bride_sibling_names = models.TextField()
-    bride_grandparents_names = models.TextField()
-    groom_parents_names = models.TextField()
-    groom_siblings_names = models.TextField()
-    groom_grandparents_names = models.TextField()
-    additional_photo_request1 = models.TextField(null=True, blank=True)
-    additional_photo_request2 = models.TextField(null=True, blank=True)
-    additional_photo_request3 = models.TextField(null=True, blank=True)
-    additional_photo_request4 = models.TextField(null=True, blank=True)
-    additional_photo_request5 = models.TextField(null=True, blank=True)
+    bride_parents_names = models.TextField(max_length=255, null=True, blank=True)
+    bride_sibling_names = models.TextField(max_length=255, null=True, blank=True)
+    bride_grandparents_names = models.TextField(max_length=255, null=True, blank=True)
+    groom_parents_names = models.TextField(max_length=255, null=True, blank=True)
+    groom_siblings_names = models.TextField(max_length=255, null=True, blank=True)
+    groom_grandparents_names = models.TextField(max_length=255, null=True, blank=True)
+    additional_photo_request1 = models.TextField(max_length=255, null=True, blank=True)
+    additional_photo_request2 = models.TextField(max_length=255, null=True, blank=True)
+    additional_photo_request3 = models.TextField(max_length=255, null=True, blank=True)
+    additional_photo_request4 = models.TextField(max_length=255, null=True, blank=True)
+    additional_photo_request5 = models.TextField(max_length=255, null=True, blank=True)
+
+    video_client_names = models.CharField(max_length=255, null=True, blank=True)
+    wedding_story_song_title = models.CharField(max_length=255, null=True, blank=True)
+    wedding_story_song_artist = models.CharField(max_length=255, null=True, blank=True)
+    dance_montage_song_title = models.CharField(max_length=255, null=True, blank=True)
+    dance_montage_song_artist = models.CharField(max_length=255, null=True, blank=True)
+    video_special_dances = models.TextField(max_length=255, null=True, blank=True)
+
+    photo_booth_text_line1 = models.TextField(max_length=255, null=True, blank=True)
+    photo_booth_text_line2 = models.TextField(max_length=255, null=True, blank=True)
+
     submitted = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Wedding Day Guide for {self.primary_contact} and {self.partner_contact}"
+
+    def save(self, *args, **kwargs):
+        if not self.pk:  # Only populate if it's a new instance
+            contract = self.contract
+            self.event_date = contract.event_date
+            self.primary_contact = contract.client.primary_contact
+            self.primary_email = contract.client.primary_email
+            self.primary_phone = contract.client.primary_phone1
+            self.partner_contact = contract.client.partner_contact
+            self.partner_email = contract.client.partner_email
+            self.partner_phone = contract.client.partner_phone
+            # Populate other fields similarly
+
+        super().save(*args, **kwargs)

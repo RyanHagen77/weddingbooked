@@ -6,44 +6,44 @@ from django.contrib.auth.decorators import login_required
 from django.utils.http import urlsafe_base64_encode, urlencode
 from django.utils.encoding import force_bytes
 from django.contrib.contenttypes.models import ContentType
-from .models import UnifiedCommunication, Task
+from .models import UnifiedCommunication
 from contracts.models import Contract
 from .forms import CommunicationForm  # Assuming you have a form for message input
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
 
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import Contract, UnifiedCommunication
+from .serializers import UnifiedCommunicationSerializer
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_contract_messages(request, contract_id):
+    contract = get_object_or_404(Contract, contract_id=contract_id)
+    messages = UnifiedCommunication.objects.filter(contract=contract, note_type=UnifiedCommunication.CONTRACT).order_by('-created_at')
+    serializer = UnifiedCommunicationSerializer(messages, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def post_contract_message(request, contract_id):
-    contract = get_object_or_404(Contract, id=contract_id)
-
-    if request.method == 'POST':
-        form = CommunicationForm(request.POST)
-        if form.is_valid():
-            content_type = ContentType.objects.get_for_model(Contract)
-            message = UnifiedCommunication.objects.create(
-                content=form.cleaned_data['message'],
-                note_type='contract',  # or determine type based on user role or form input
-                created_by=request.user,
-                content_type=content_type,
-                object_id=contract.id
-            )
-            # Debugging: Print details about the message
-            print(f"Message created: {message.content}, for contract ID: {contract.contract_id}")
-
-            # Call to send email to the assigned coordinator
-            if send_contract_message_email(request, message, contract):
-                print("Email sent successfully.")
-            else:
-                print("Failed to send email.")
-
-            return redirect('client_portal', contract_id=contract.id)  # Redirect to the client portal page
-        else:
-            return render(request, 'post_contract_message.html', {'form': form, 'contract': contract})
-    else:
-        form = CommunicationForm()
-        return render(request, 'post_contract_message.html', {'form': form, 'contract': contract})
-
+    contract = get_object_or_404(Contract, contract_id=contract_id)
+    content = request.data.get('content')
+    if content:
+        message = UnifiedCommunication.objects.create(
+            content=content,
+            note_type=UnifiedCommunication.CONTRACT,
+            created_by=request.user,
+            contract=contract
+        )
+        send_contract_message_email(request, message, contract)  # Call the email sending function
+        serializer = UnifiedCommunicationSerializer(message)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response({'error': 'Content is required'}, status=status.HTTP_400_BAD_REQUEST)
 
 def send_contract_message_email(request, message, contract):
     if contract.coordinator and contract.coordinator.email:
@@ -64,7 +64,6 @@ def send_contract_message_email(request, message, contract):
         print("Email sent to coordinator:", contract.coordinator.email)
     else:
         print("No coordinator assigned, or missing email.")
-
 
 def send_task_assignment_email(request, task):
     # Assuming the role is stored in a related model or field called 'role'
