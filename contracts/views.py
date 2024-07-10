@@ -5,6 +5,7 @@ from django.db.models import Q, F, Value, CharField, Sum
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_GET
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.urls import reverse
 from users.models import Role
 from django.conf import settings
@@ -335,10 +336,16 @@ def custom_logout(request):
     response['Expires'] = '0'
     return response
 
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['name'] = user.username
+        return token
+
 class CustomTokenObtainPairView(TokenObtainPairView):
-    def post(self, request, *args, **kwargs):
-        print(request.data)  # Debugging: print the request data to verify it
-        return super().post(request, *args, **kwargs)
+    serializer_class = CustomTokenObtainPairSerializer
 
 @login_required
 def client_portal(request, contract_id):
