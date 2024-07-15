@@ -3,6 +3,7 @@ from django.urls import path
 from django.shortcuts import redirect
 from . import views, reports_views
 from django.contrib.auth import views as auth_views
+from .views import CustomTokenObtainPairView
 
 
 app_name = 'contracts'
@@ -42,6 +43,7 @@ urlpatterns = [
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 
     # JWT Authentication URLs
+    path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
 
     # Prospect Photographers API
     path('api/prospect-photographers/', views.get_prospect_photographers, name='prospect-photographers'),

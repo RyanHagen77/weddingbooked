@@ -23,6 +23,10 @@
         .field-title {
             font-weight: bold;
         }
+        .logo img {
+            max-width: 200px;
+            max-height: 100px;
+        }
     </style>
 </head>
 <body class="bg-lightpink min-h-screen flex items-center justify-center">
@@ -31,7 +35,7 @@
             <div class="logo text-center mb-6">
                 <img src="{{ logo_url }}" alt="Logo">
             </div>
-            <h1 class="text-2xl font-bold text-center mb-6">Wedding Day Guide</h1>
+            <h3 class="text-2xl font-bold text-center mb-6">Wedding Day Guide</h3>
 
             <!-- Emergency Contact Section -->
             <div class="section-box">
@@ -44,33 +48,39 @@
                 <!-- General Info Section -->
                 <div class="section-box">
                     <div class="section-title">General Info</div>
-                    <div class="form-group">
-                        <label class="field-title" for="id_event_date">Wedding Date:</label>
-                        {{ form.event_date }}
-                    </div>
-                    <div class="form-group">
-                        <label class="field-title" for="id_primary_contact">Bride's Full Name:</label>
-                        {{ form.primary_contact }}
-                    </div>
-                    <div class="form-group">
-                        <label class="field-title" for="id_partner_contact">Groom's Full Name:</label>
-                        {{ form.partner_contact }}
-                    </div>
-                    <div class="form-group">
-                        <label class="field-title" for="id_primary_email">Bride's Email:</label>
-                        {{ form.primary_email }}
-                    </div>
-                    <div class="form-group">
-                        <label class="field-title" for="id_partner_email">Groom's Email:</label>
-                        {{ form.partner_email }}
-                    </div>
-                    <div class="form-group">
-                        <label class="field-title" for="id_primary_phone">Bride's Cell #:</label>
-                        {{ form.primary_phone }}
-                    </div>
-                    <div class="form-group">
-                        <label class="field-title" for="id_partner_phone">Groom's Cell #:</label>
-                        {{ form.partner_phone }}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="field-title" for="id_event_date">Wedding Date:</label>
+                                {{ form.event_date }}
+                            </div>
+                            <div class="form-group">
+                                <label class="field-title" for="id_primary_contact">Primary Full Name:</label>
+                                {{ form.primary_contact }}
+                            </div>
+                            <div class="form-group">
+                                <label class="field-title" for="id_primary_email">Primary Email:</label>
+                                {{ form.primary_email }}
+                            </div>
+                            <div class="form-group">
+                                <label class="field-title" for="id_primary_phone">Primary Cell #:</label>
+                                {{ form.primary_phone }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="field-title" for="id_partner_contact">Partner Full Name:</label>
+                                {{ form.partner_contact }}
+                            </div>
+                            <div class="form-group">
+                                <label class="field-title" for="id_partner_email">Partner Email:</label>
+                                {{ form.partner_email }}
+                            </div>
+                            <div class="form-group">
+                                <label class="field-title" for="id_partner_phone">Partner Cell #:</label>
+                                {{ form.partner_phone }}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -79,100 +89,136 @@
                     <div class="section-title">Wedding Day Locations</div>
                     <h4>For The Lead Photographer</h4>
                     <div class="mb-4">
-                        <h5>Bride's Dressing Location</h5>
+                        <h5>Primary Dressing Location</h5>
                         <p>The photographer typically comes to the bride's dressing location 3 hours before the ceremony.</p>
-                        <div class="form-group">
-                            <label class="field-title" for="id_dressing_location">Dressing Location:</label>
-                            {{ form.dressing_location }}
-                        </div>
-                        <div class="form-group">
-                            <label class="field-title" for="id_dressing_address">Dressing Address:</label>
-                            {{ form.dressing_address }}
-                        </div>
-                        <div class="form-group">
-                            <label class="field-title" for="id_dressing_start_time">Start Time:</label>
-                            {{ form.dressing_start_time }}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_dressing_location">Dressing Location:</label>
+                                    {{ form.dressing_location }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_dressing_start_time">Start Time:</label>
+                                    {{ form.dressing_start_time }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_dressing_address">Dressing Address:</label>
+                                    {{ form.dressing_address }}
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="mb-4">
                         <h5>Ceremony Location</h5>
-                        <div class="form-group">
-                            <label class="field-title" for="id_ceremony_location">Ceremony Location:</label>
-                            {{ form.ceremony_location }}
-                        </div>
-                        <div class="form-group">
-                            <label class="field-title" for="id_ceremony_address">Ceremony Address:</label>
-                            {{ form.ceremony_address }}
-                        </div>
-                        <div class="form-group">
-                            <label class="field-title" for="id_ceremony_start">Ceremony Times:</label>
-                            {{ form.ceremony_start }} to {{ form.ceremony_end }}
-                        </div>
-                        <div class="form-group">
-                            <label class="field-title" for="id_ceremony_phone">Ceremony Phone #:</label>
-                            {{ form.ceremony_phone }}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_ceremony_location">Ceremony Location:</label>
+                                    {{ form.ceremony_site }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_ceremony_start">Ceremony Times:</label>
+                                    {{ form.ceremony_start }} to {{ form.ceremony_end }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_ceremony_address">Ceremony Address:</label>
+                                    {{ form.ceremony_address }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_ceremony_phone">Ceremony Phone #:</label>
+                                    {{ form.ceremony_phone }}
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="mb-4">
                         <h5>Reception Location</h5>
-                        <div class="form-group">
-                            <label class="field-title" for="id_reception_location">Reception Location:</label>
-                            {{ form.reception_location }}
-                        </div>
-                        <div class="form-group">
-                            <label class="field-title" for="id_reception_address">Reception Address:</label>
-                            {{ form.reception_address }}
-                        </div>
-                        <div class="form-group">
-                            <label class="field-title" for="id_reception_start">Cocktail Start Time:</label>
-                            {{ form.reception_start }}
-                        </div>
-                        <div class="form-group">
-                            <label class="field-title" for="id_reception_phone">Reception Phone #:</label>
-                            {{ form.reception_phone }}
-                        </div>
-                        <p><strong>Dinner Start Time:</strong> 7:00 pm</p>
-                        <p><strong>Reception Ends:</strong> 11:00 pm</p>
-                        <p>It is recommended that you seat your photographer/videographer in the room for dinner so that we don't miss anything</p>
-                        <div class="form-group">
-                            <label class="field-title" for="id_staff_table">Table #:</label>
-                            {{ form.staff_table }}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_reception_location">Reception Location:</label>
+                                    {{ form.reception_site }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_reception_start">Cocktail Start Time:</label>
+                                    {{ form.reception_start }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_reception_phone">Reception Phone #:</label>
+                                    {{ form.reception_phone }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_reception_address">Reception Address:</label>
+                                    {{ form.reception_address }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_dinner_start_time">Dinner Start Time:</label>
+                                    {{ form.dinner_start }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_reception_end_time">Reception Ends:</label>
+                                    {{ form.reception_end }}
+                                </div>
+                                <p>It is recommended that you seat your photographer/videographer in the room for dinner so that we don't miss anything</p>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_staff_table">Table #:</label>
+                                    {{ form.staff_table }}
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="mb-4">
                         <h5>Location Photo Stops</h5>
                         <p>It is recommended that you only have 1-2 photo location stops, and that you accurately factor in transportation time</p>
-                        <div class="form-group">
-                            <label class="field-title" for="id_photo_stop1">Stop 1:</label>
-                            {{ form.photo_stop1 }}
-                        </div>
-                        <div class="form-group">
-                            <label class="field-title" for="id_photo_stop2">Stop 2:</label>
-                            {{ form.photo_stop2 }}
-                        </div>
-                        <div class="form-group">
-                            <label class="field-title" for="id_photo_stop3">Stop 3:</label>
-                            {{ form.photo_stop3 }}
-                        </div>
-                        <div class="form-group">
-                            <label class="field-title" for="id_photo_stop4">Stop 4:</label>
-                            {{ form.photo_stop4 }}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_photo_stop1">Stop 1:</label>
+                                    {{ form.photo_stop1 }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_photo_stop3">Stop 3:</label>
+                                    {{ form.photo_stop3 }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_photo_stop2">Stop 2:</label>
+                                    {{ form.photo_stop2 }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_photo_stop4">Stop 4:</label>
+                                    {{ form.photo_stop4 }}
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <h4>For The 2nd Photographer</h4>
                     <div class="mb-4">
                         <h5>2nd Photographer</h5>
-                        <div class="form-group">
-                            <label class="field-title" for="id_photographer2_start_location">Starting Location:</label>
-                            {{ form.photographer2_start_location }}
-                        </div>
-                        <div class="form-group">
-                            <label class="field-title" for="id_photographer2_start_location_address">Starting Location Address:</label>
-                            {{ form.photographer2_start_location_address }}
-                        </div>
-                        <div class="form-group">
-                            <label class="field-title" for="id_photographer2_start">Starting Time:</label>
-                            {{ form.photographer2_start }}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_photographer2_start_location">Starting Location:</label>
+                                    {{ form.photographer2_start_location }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_photographer2_start_location_address">Starting Location Address:</label>
+                                    {{ form.photographer2_start_location_address }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_photographer2_start">Starting Time:</label>
+                                    {{ form.photographer2_start }}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -181,122 +227,133 @@
                 <div class="section-box">
                     <div class="section-title">Shot List</div>
                     <p>What follows are the photos Essence photographers take at a typical wedding depending on time and organization. Additional photo requests can be added in the next section.</p>
-                    <h5>Bride Details</h5>
-                    <ul>
-                        <li>Dress</li>
-                        <li>Shoes</li>
-                        <li>Bouquet</li>
-                        <li>Putting Dress On</li>
-                    </ul>
-                    <h5>Before Ceremony</h5>
-                    <ul>
-                        <li>Bride</li>
-                        <li>Bride w/ Bridesmaids</li>
-                        <li>Bride w/ Flower Girls</li>
-                        <li>Bride & Mom</li>
-                        <li>Bride & Dad</li>
-                        <li>Bride w/ Mom & Dad</li>
-                        <li>Bride w/ Siblings</li>
-                        <li>Bride w/ Immediate Family</li>
-                        <li>Bride's Parents</li>
-                        <li>Groom</li>
-                        <li>Groom w/ Groomsmen</li>
-                        <li>Groom w/ Ring Bearers</li>
-                        <li>Groom w/ Ushers</li>
-                        <li>Groom & Mom</li>
-                        <li>Groom & Dad</li>
-                        <li>Groom w/ Mom & Dad</li>
-                        <li>Groom w/ Siblings</li>
-                        <li>Groom w/ Immediate Family</li>
-                    </ul>
-                    <h5>Post-Ceremony</h5>
-                    <ul>
-                        <li>Bride at Altar</li>
-                        <li>Groom at Altar</li>
-                        <li>Bride & Groom at Altar</li>
-                        <li>B&G w/ Bridal Party</li>
-                        <li>B&G w/ Bride's Parents</li>
-                        <li>B&G w/ Bride's Immediate Family</li>
-                        <li>B&G w/ Bride's Grandparents</li>
-                        <li>B&G w/ Bride's Extended Family</li>
-                        <li>B&G w/ Both Sets of Parents</li>
-                        <li>B&G w/ Groom's Parents</li>
-                        <li>B&G w/ Groom's Immediate Family</li>
-                        <li>B&G w/ Groom's Grandparents</li>
-                        <li>B&G w/ Groom's Extended Family</li>
-                        <li>Church Getaway (Exit)</li>
-                    </ul>
-                    <h5>On Location</h5>
-                    <ul>
-                        <li>Bride Alone</li>
-                        <li>Groom Alone</li>
-                        <li>Bride w/ Groomsmen</li>
-                        <li>Groom w/ Bridesmaids</li>
-                        <li>Directed B&G Photos</li>
-                        <li>Fun Bridal Party Photos</li>
-                    </ul>
-                    <h5>Ceremony</h5>
-                    <ul>
-                        <li>Processional</li>
-                        <li>Vows</li>
-                        <li>Ring Exchange</li>
-                        <li>First Kiss</li>
-                        <li>Flowers to Mothers</li>
-                        <li>Presentation of Couple</li>
-                        <li>Recessional</li>
-                    </ul>
-                    <h5>Reception</h5>
-                    <ul>
-                        <li>Reception Details</li>
-                        <li>Cocktail Hour Mingling</li>
-                        <li>Introductions</li>
-                        <li>Cake Cutting</li>
-                        <li>Toasts</li>
-                        <li>First Dance</li>
-                        <li>Special Dances</li>
-                        <li>Bouquet Toss</li>
-                        <li>Garter Toss</li>
-                        <li>General Dancing</li>
-                        <li>Goodbye Shot</li>
-                    </ul>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Bride Details</h5>
+                            <ul>
+                                <li>Dress</li>
+                                <li>Shoes</li>
+                                <li>Bouquet</li>
+                                <li>Putting Dress On</li>
+                            </ul>
+                            <h5>Before Ceremony</h5>
+                            <ul>
+                                <li>Bride</li>
+                                <li>Bride w/ Bridesmaids</li>
+                                <li>Bride w/ Flower Girls</li>
+                                <li>Bride & Mom</li>
+                                <li>Bride & Dad</li>
+                                <li>Bride w/ Mom & Dad</li>
+                                <li>Bride w/ Siblings</li>
+                                <li>Bride w/ Immediate Family</li>
+                                <li>Bride's Parents</li>
+                            </ul>
+                            <h5>On Location</h5>
+                            <ul>
+                                <li>Bride Alone</li>
+                                <li>Groom Alone</li>
+                                <li>Bride w/ Groomsmen</li>
+                                <li>Groom w/ Bridesmaids</li>
+                                <li>Directed B&G Photos</li>
+                                <li>Fun Bridal Party Photos</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Before Ceremony (Cont'd)</h5>
+                            <ul>
+                                <li>Groom</li>
+                                <li>Groom w/ Groomsmen</li>
+                                <li>Groom w/ Ring Bearers</li>
+                                <li>Groom w/ Ushers</li>
+                                <li>Groom & Mom</li>
+                                <li>Groom & Dad</li>
+                                <li>Groom w/ Mom & Dad</li>
+                                <li>Groom w/ Siblings</li>
+                                <li>Groom w/ Immediate Family</li>
+                            </ul>
+                            <h5>Post-Ceremony</h5>
+                            <ul>
+                                <li>Bride at Altar</li>
+                                <li>Groom at Altar</li>
+                                <li>Bride & Groom at Altar</li>
+                                <li>B&G w/ Bridal Party</li>
+                                <li>B&G w/ Bride's Parents</li>
+                                <li>B&G w/ Bride's Immediate Family</li>
+                                <li>B&G w/ Bride's Grandparents</li>
+                                <li>B&G w/ Bride's Extended Family</li>
+                                <li>B&G w/ Both Sets of Parents</li>
+                                <li>B&G w/ Groom's Parents</li>
+                                <li>B&G w/ Groom's Immediate Family</li>
+                                <li>B&G w/ Groom's Grandparents</li>
+                                <li>B&G w/ Groom's Extended Family</li>
+                                <li>Church Getaway (Exit)</li>
+                            </ul>
+                            <h5>Ceremony</h5>
+                            <ul>
+                                <li>Processional</li>
+                                <li>Vows</li>
+                                <li>Ring Exchange</li>
+                                <li>First Kiss</li>
+                                <li>Flowers to Mothers</li>
+                                <li>Presentation of Couple</li>
+                                <li>Recessional</li>
+                            </ul>
+                            <h5>Reception</h5>
+                            <ul>
+                                <li>Reception Details</li>
+                                <li>Cocktail Hour Mingling</li>
+                                <li>Introductions</li>
+                                <li>Cake Cutting</li>
+                                <li>Toasts</li>
+                                <li>First Dance</li>
+                                <li>Special Dances</li>
+                                <li>Bouquet Toss</li>
+                                <li>Garter Toss</li>
+                                <li>General Dancing</li>
+                                <li>Goodbye Shot</li>
+                            </ul>
+                        </div>
+                    </div>
                     <p>Essence does not recommend table shots or backdrop photography with a single photographer. If you require either of these things, please call us to add a second photographer.</p>
                 </div>
 
                 <!-- Family & Bridal Party Info Section -->
                 <div class="section-box">
                     <div class="section-title">Family & Bridal Party Info</div>
-                    <h4>Bridal Party</h4>
-                    <div class="form-group">
-                        <label class="field-title" for="id_maid_of_honor">Maid/Matron of Honor:</label>
-                        {{ form.maid_of_honor }}
-                    </div>
-                    <div class="form-group">
-                        <label class="field-title" for="id_best_man">Best Man:</label>
-                        {{ form.best_man }}
-                    </div>
-                    <div class="form-group">
-                        <label class="field-title" for="id_bridesmaids_qty"># of Bridesmaids:</label>
-                        {{ form.bridesmaids_qty }}
-                    </div>
-                    <div class="form-group">
-                        <label class="field-title" for="id_groomsmen_qty"># of Groomsmen:</label>
-                        {{ form.groomsmen_qty }}
-                    </div>
-                    <div class="form-group">
-                        <label class="field-title" for="id_flower_girl_qty"># of Flower Girls:</label>
-                        {{ form.flower_girl_qty }}
-                    </div>
-                    <div class="form-group">
-                        <label class="field-title" for="id_ring_bearer_qty"># of Ring Bearers:</label>
-                        {{ form.ring_bearer_qty }}
-                    </div>
-                    <div class="form-group">
-                        <label class="field-title" for="id_usher_qty"># of Ushers:</label>
-                        {{ form.usher_qty }}
-                    </div>
-                    <h4>Family</h4>
                     <div class="row">
                         <div class="col-md-6">
+                            <h4>Bridal Party</h4>
+                            <div class="form-group">
+                                <label class="field-title" for="id_maid_of_honor">Maid/Matron of Honor:</label>
+                                {{ form.maid_of_honor }}
+                            </div>
+                            <div class="form-group">
+                                <label class="field-title" for="id_best_man">Best Man:</label>
+                                {{ form.best_man }}
+                            </div>
+                            <div class="form-group">
+                                <label class="field-title" for="id_bridesmaids_qty"># of Bridesmaids:</label>
+                                {{ form.bridesmaids_qty }}
+                            </div>
+                            <div class="form-group">
+                                <label class="field-title" for="id_groomsmen_qty"># of Groomsmen:</label>
+                                {{ form.groomsmen_qty }}
+                            </div>
+                            <div class="form-group">
+                                <label class="field-title" for="id_flower_girl_qty"># of Flower Girls:</label>
+                                {{ form.flower_girl_qty }}
+                            </div>
+                            <div class="form-group">
+                                <label class="field-title" for="id_ring_bearer_qty"># of Ring Bearers:</label>
+                                {{ form.ring_bearer_qty }}
+                            </div>
+                            <div class="form-group">
+                                <label class="field-title" for="id_usher_qty"># of Ushers:</label>
+                                {{ form.usher_qty }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Family</h4>
                             <p><strong>Bride's Side</strong></p>
                             <div class="form-group">
                                 <label class="field-title" for="id_bride_parents_names">Bride's Parents:</label>
@@ -310,8 +367,6 @@
                                 <label class="field-title" for="id_bride_grandparents_names">Bride's Grandparents:</label>
                                 {{ form.bride_grandparents_names }}
                             </div>
-                        </div>
-                        <div class="col-md-6">
                             <p><strong>Groom's Side</strong></p>
                             <div class="form-group">
                                 <label class="field-title" for="id_groom_parents_names">Groom's Parents:</label>
@@ -411,15 +466,20 @@
                     </div>
                     <p>Please describe the location in your facility where we will be setting up. Please remember that we will need a 5'x7' space within 15 feet of an outlet, and a skirted high-top table. (Example: You will be in the far corner of the room next to the head table. or You will be in the front, just inside the doors.)</p>
                     <div class="form-group">
-                        <label class="field-title" for="id_photo_booth_desc">Desc:</label>
-                        {{ form.photo_booth_desc }}
+                        <label class="field-title" for="id_photo_booth_placement">Placement:</label>
+                        {{ form.photo_booth_placement }}
                     </div>
                 </div>
-
                 <div class="flex justify-between">
                     <button type="submit" name="save" class="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition mr-2">Save</button>
-                    <button type="submit" name="submit" class="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition">Submit</button>
+                    <button type="submit" name="submit" class="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition" onclick="return confirmSubmit()">Submit</button>
                 </div>
+<script>
+    function confirmSubmit() {
+        return confirm("Are you sure you want to submit? Once submitted, no more edits can be made.");
+    }
+</script>
+
             </form>
         </div>
     </div>

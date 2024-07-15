@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 {% load static %}
+{% load group_tags %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -38,6 +39,9 @@
             <li class="menu-item"><a href="{% url 'users:event_staff' %}">Event Staff</a></li>
             <li class="menu-item"><a href="{% url 'contracts:contract_search' %}">Contract Search</a></li>
             <li class="menu-item"><a href="{% url 'contracts:booking_search' %}">Booking Search</a></li>
+            {% if request.user|in_group:"IT-Admin" %}
+            <li class="menu-item"><a href="/admin">Admin</a></li>
+            {% endif %}
         </ul>
     </div>
     <main>

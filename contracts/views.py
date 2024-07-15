@@ -4,6 +4,8 @@ from users.models import CustomUser  # Import CustomUser
 from django.db.models import Q, F, Value, CharField, Sum
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_GET
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.urls import reverse
 from users.models import Role
 from django.conf import settings
@@ -229,31 +231,33 @@ def new_contract(request):
     client_form = ClientForm(request.POST or None)
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
+    if request.method == 'POST':
+        if client_form.is_valid() and contract_form.is_valid():
+            with transaction.atomic():
+                primary_email = client_form.cleaned_data['primary_email']
+                User = get_user_model()
+                user, created = User.objects.get_or_create(
+                    username=primary_email,
+                    defaults={'email': primary_email, 'user_type': 'client'}
+                )
 
-    if request.method == 'POST' and client_form.is_valid() and contract_form.is_valid():
-        with transaction.atomic():
-            primary_email = client_form.cleaned_data['primary_email']
-            User = get_user_model()  # Get the user model dynamically
-            user, created = User.objects.get_or_create(
-                username=primary_email,
-                defaults={'email': primary_email, 'user_type': 'client'}
-            )
+                client = client_form.save(commit=False)
+                client.user = user
+                client.save()
 
-            client = client_form.save(commit=False)
-            client.user = user  # Assign the user to the client
-            client.save()
+                contract = contract_form.save(commit=False)
+                contract.client = client
+                contract.save()
 
-            contract = contract_form.save(commit=False)
-            contract.client = client
-            contract.save()
+                create_schedule_a_payments(contract.contract_id)
+                contract.status = 'pipeline'
+                contract.save()
 
-            # Assuming there's a function to create payment schedules
-            create_schedule_a_payments(contract.contract_id)
-            contract.status = 'pipeline'  # Set initial contract status
-            contract.save()
+                return JsonResponse({'redirect': reverse('contracts:contract_detail', kwargs={'id': contract.contract_id})})
 
-            # Redirect to the contract_detail page for the newly created contract
-            return redirect(reverse('contracts:contract_detail', kwargs={'id': contract.contract_id}))
+        else:
+            errors = {**contract_form.errors, **client_form.errors}
+            return JsonResponse({'errors': errors}, status=400)
 
     return render(request, 'contracts/contract_new.html', {
         'contract_form': contract_form,
@@ -335,6 +339,32 @@ def custom_logout(request):
     return response
 
 
+User = get_user_model()
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        # Add custom claims
+        try:
+            client = Client.objects.get(user=user)
+            contract = Contract.objects.get(client=client)
+            token['contract_id'] = contract.contract_id
+        except (Client.DoesNotExist, Contract.DoesNotExist):
+            token['contract_id'] = None
+        return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        refresh = self.get_token(self.user)
+
+        data['refresh'] = str(refresh)
+        data['access'] = str(refresh.access_token)
+        data['contract_id'] = refresh['contract_id']
+        return data
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 @login_required
 def client_portal(request, contract_id):
@@ -2913,11 +2943,9 @@ def get_current_booking(request):
         'available_staff': available_staff_data,
     })
 
-
 @login_required
 def wedding_day_guide(request, contract_id):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
-
     contract = get_object_or_404(Contract, contract_id=contract_id, client__user=request.user)
     try:
         guide = WeddingDayGuide.objects.get(contract=contract)
@@ -2925,8 +2953,9 @@ def wedding_day_guide(request, contract_id):
         guide = None
 
     if request.method == 'POST':
-        form = WeddingDayGuideForm(request.POST, instance=guide, contract=contract)
-        if form.is_valid():
+        strict_validation = 'submit' in request.POST
+        form = WeddingDayGuideForm(request.POST, instance=guide, strict_validation=strict_validation, contract=contract)
+        if form.is_valid() or not strict_validation:
             guide = form.save(commit=False)
             guide.contract = contract
             if 'submit' in request.POST:
@@ -2934,10 +2963,16 @@ def wedding_day_guide(request, contract_id):
             guide.save()
             if 'submit' in request.POST:
                 return redirect('contracts:wedding_day_guide_pdf', pk=guide.pk)
+            return redirect('contracts:wedding_day_guide', contract_id=contract.contract_id)
     else:
-        form = WeddingDayGuideForm(instance=guide, contract=contract)
+        form = WeddingDayGuideForm(instance=guide, strict_validation=False, contract=contract)
 
-    return render(request, 'contracts/wedding_day_guide.html', {'logo_url' : logo_url, 'form': form, 'submitted': guide.submitted if guide else False})
+
+    return render(request, 'contracts/wedding_day_guide.html', {
+        'form': form,
+        'submitted': guide.submitted if guide else False,
+        'logo_url': logo_url
+    })
 
 @login_required
 def wedding_day_guide_view(request, pk):

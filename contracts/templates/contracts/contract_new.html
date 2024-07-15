@@ -25,12 +25,33 @@
             flex: 1;
         }
     </style>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 {% endblock head %}
 
 {% block content %}
 <body>
-    <form method="POST">
+    <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorModalLabel">Form Error</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <ul id="errorList"></ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-close data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="contractForm" method="POST" novalidate>
         {% csrf_token %}
         <div class="form-section-container">
             <div class="new-contract-form">
@@ -70,6 +91,40 @@
             </div>
         </div>
     </form>
+
+    <script>
+        $(document).ready(function() {
+            $('#contractForm').on('submit', function(event) {
+                event.preventDefault(); // Prevent the form from submitting normally
+
+                let form = $(this);
+                let data = form.serialize();
+                let url = form.attr('action');
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: data,
+                    success: function(response) {
+                        // If successful, submit the form normally or handle success logic
+                        form.off('submit').submit();
+                    },
+                    error: function(response) {
+                        // Display errors in the modal
+                        let errors = response.responseJSON.errors;
+                        let errorList = $('#errorList');
+                        errorList.empty();
+
+                        $.each(errors, function(key, value) {
+                            errorList.append('<li>' + value + '</li>');
+                        });
+
+                        $('#errorModal').modal('show');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 {% endblock content %}
 </html>
