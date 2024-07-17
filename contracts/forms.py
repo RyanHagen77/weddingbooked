@@ -738,7 +738,7 @@ class WeddingDayGuideForm(forms.ModelForm):
             'dressing_address', 'dressing_start_time', 'ceremony_site',
             'ceremony_address', 'ceremony_phone', 'ceremony_start', 'ceremony_end',
             'reception_site', 'reception_address', 'reception_phone',
-            'reception_start', 'reception_end', 'staff_table', 'photo_stop1',
+            'reception_start', 'dinner_start', 'reception_end', 'staff_table', 'photo_stop1',
             'photo_stop2', 'photo_stop3', 'photo_stop4', 'photographer2_start_location',
             'photographer2_start_location_address', 'photographer2_start', 'maid_of_honor',
             'bridesmaids_qty', 'flower_girl_qty', 'usher_qty', 'best_man',
@@ -749,22 +749,72 @@ class WeddingDayGuideForm(forms.ModelForm):
             'additional_photo_request3', 'additional_photo_request4',
             'additional_photo_request5', 'video_client_names', 'wedding_story_song_title',
             'wedding_story_song_artist', 'dance_montage_song_title', 'dance_montage_song_artist',
-            'video_special_dances', 'photo_booth_text_line1', 'photo_booth_text_line2'
+            'video_special_dances', 'photo_booth_text_line1', 'photo_booth_text_line2', 'photo_booth_placement'
         ]
         widgets = {
-            'event_date': forms.DateInput(attrs={'type': 'date'}),
-            'dressing_start_time': forms.TimeInput(attrs={'type': 'time'}),
-            'ceremony_start': forms.TimeInput(attrs={'type': 'time'}),
-            'ceremony_end': forms.TimeInput(attrs={'type': 'time'}),
-            'reception_start': forms.TimeInput(attrs={'type': 'time'}),
-            'reception_end': forms.TimeInput(attrs={'type': 'time'}),
+            'event_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control form-control-sm'}),
+            'dressing_start_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control form-control-sm'}),
+            'ceremony_start': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control form-control-sm'}),
+            'ceremony_end': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control form-control-sm'}),
+            'reception_start': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control form-control-sm'}),
+            'dinner_start': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control form-control-sm'}),
+            'reception_end': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control form-control-sm'}),
+            'bride_parents_names': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'bride_sibling_names': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'bride_grandparents_names': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'groom_parents_names': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'groom_siblings_names': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'groom_grandparents_names': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'primary_contact': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'primary_email': forms.EmailInput(attrs={'class': 'form-control form-control-sm'}),
+            'primary_phone': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'partner_contact': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'partner_email': forms.EmailInput(attrs={'class': 'form-control form-control-sm'}),
+            'partner_phone': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'dressing_location': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'dressing_address': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'ceremony_site': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'ceremony_address': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'ceremony_phone': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'reception_site': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'reception_address': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'reception_phone': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'photo_stop1': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'photo_stop2': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'photo_stop3': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'photo_stop4': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'photographer2_start_location': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'photographer2_start_location_address': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'photographer2_start': forms.TimeInput(attrs={'class': 'form-control form-control-sm'}),
+            'maid_of_honor': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'bridesmaids_qty': forms.NumberInput(attrs={'class': 'form-control form-control-sm'}),
+            'flower_girl_qty': forms.NumberInput(attrs={'class': 'form-control form-control-sm'}),
+            'usher_qty': forms.NumberInput(attrs={'class': 'form-control form-control-sm'}),
+            'best_man': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'groomsmen_qty': forms.NumberInput(attrs={'class': 'form-control form-control-sm'}),
+            'ring_bearer_qty': forms.NumberInput(attrs={'class': 'form-control form-control-sm'}),
+            'additional_photo_request1': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'additional_photo_request2': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'additional_photo_request3': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'additional_photo_request4': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'additional_photo_request5': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'video_client_names': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'wedding_story_song_title': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'wedding_story_song_artist': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'dance_montage_song_title': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'dance_montage_song_artist': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'video_special_dances': forms.Textarea(attrs={'class': 'form-control form-control-sm'}),
+            'photo_booth_text_line1': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'photo_booth_text_line2': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'photo_booth_placement': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
         }
 
     def __init__(self, *args, **kwargs):
+        self.strict_validation = kwargs.pop('strict_validation', True)
         contract = kwargs.pop('contract', None)
         super().__init__(*args, **kwargs)
         if contract:
-            client = contract.client  # Access the related Client instance
+            client = contract.client
             self.fields['event_date'].initial = contract.event_date
             self.fields['primary_contact'].initial = client.primary_contact
             self.fields['primary_email'].initial = client.primary_email
@@ -774,4 +824,15 @@ class WeddingDayGuideForm(forms.ModelForm):
             self.fields['partner_phone'].initial = client.partner_phone1
             self.fields['ceremony_site'].initial = contract.ceremony_site
             self.fields['reception_site'].initial = contract.reception_site
-            # Set initial values for other fields similarly
+
+        # Make all fields optional initially
+        for field in self.fields:
+            self.fields[field].required = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.strict_validation:
+            for field in self.Meta.fields:
+                if not cleaned_data.get(field):
+                    self.add_error(field, f"{field.replace('_', ' ').title()} is required.")
+        return cleaned_data
