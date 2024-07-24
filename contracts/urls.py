@@ -10,7 +10,7 @@ app_name = 'contracts'
 
 
 def redirect_to_next_login(request):
-    return redirect('http://localhost:3000/login')
+    return redirect('http://localhost:3000/Login')
 
 
 urlpatterns = [

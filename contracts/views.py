@@ -4,6 +4,8 @@ from users.models import CustomUser  # Import CustomUser
 from django.db.models import Q, F, Value, CharField, Sum
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_GET
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.urls import reverse
@@ -2943,14 +2945,18 @@ def get_current_booking(request):
         'available_staff': available_staff_data,
     })
 
+
 @login_required
 def wedding_day_guide(request, contract_id):
+    # No need for custom authentication function
+    user = request.user
+
+    # Build the logo URL
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
-    contract = get_object_or_404(Contract, contract_id=contract_id, client__user=request.user)
-    try:
-        guide = WeddingDayGuide.objects.get(contract=contract)
-    except WeddingDayGuide.DoesNotExist:
-        guide = None
+
+    # Retrieve the contract and handle authorization
+    contract = get_object_or_404(Contract, pk=contract_id, client__user=user)
+    guide = WeddingDayGuide.objects.filter(contract=contract).first()
 
     if request.method == 'POST':
         strict_validation = 'submit' in request.POST
@@ -2961,12 +2967,12 @@ def wedding_day_guide(request, contract_id):
             if 'submit' in request.POST:
                 guide.submitted = True
             guide.save()
+
             if 'submit' in request.POST:
                 return redirect('contracts:wedding_day_guide_pdf', pk=guide.pk)
             return redirect('contracts:wedding_day_guide', contract_id=contract.contract_id)
     else:
         form = WeddingDayGuideForm(instance=guide, strict_validation=False, contract=contract)
-
 
     return render(request, 'contracts/wedding_day_guide.html', {
         'form': form,
