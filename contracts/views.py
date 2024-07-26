@@ -4,8 +4,6 @@ from users.models import CustomUser  # Import CustomUser
 from django.db.models import Q, F, Value, CharField, Sum
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_GET
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.urls import reverse
@@ -2970,7 +2968,8 @@ def wedding_day_guide(request, contract_id):
 
             if 'submit' in request.POST:
                 return redirect('contracts:wedding_day_guide_pdf', pk=guide.pk)
-            return redirect('contracts:wedding_day_guide', contract_id=contract.contract_id)
+            # Redirect to the new Next.js portal instead of old Django-based portal
+            return redirect(f'https://www.enet2.com/client_portal/contract/{contract.contract_id}/')
     else:
         form = WeddingDayGuideForm(instance=guide, strict_validation=False, contract=contract)
 
@@ -2979,6 +2978,7 @@ def wedding_day_guide(request, contract_id):
         'submitted': guide.submitted if guide else False,
         'logo_url': logo_url
     })
+
 
 @login_required
 def wedding_day_guide_view(request, pk):
