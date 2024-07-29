@@ -265,7 +265,7 @@ def new_contract(request):
         'logo_url': logo_url
     })
 
-def send_password_reset_email(user_email):
+#def send_password_reset_email(user_email):
     print(f"Starting to send password reset email to: {user_email}")
     form = PasswordResetForm({'email': user_email})
     if form.is_valid():
