@@ -126,6 +126,7 @@ class ContractInfoEditForm(forms.ModelForm):
         old_contract_number = self.cleaned_data.get('old_contract_number')
         return old_contract_number
 
+
 class ContractClientEditForm(forms.ModelForm):
     user = forms.ModelChoiceField(
         queryset=get_user_model().objects.all(),
@@ -133,6 +134,7 @@ class ContractClientEditForm(forms.ModelForm):
         disabled=True,  # Disable the field to make it read-only
         widget=forms.HiddenInput()  # Optionally hide the field if it doesn't need to be visible
     )
+
     # ... other fields ...
 
     class Meta:
@@ -160,6 +162,22 @@ class ContractClientEditForm(forms.ModelForm):
         self.fields['alt_contact'].widget.attrs.update({'id': 'client-alt-contact'})
         self.fields['alt_email'].widget.attrs.update({'id': 'client-alt-email'})
         self.fields['alt_phone'].widget.attrs.update({'id': 'client-alt-phone'})
+
+    def save(self, commit=True):
+        client = super(ContractClientEditForm, self).save(commit=False)
+
+        # Update the associated user email if the primary_email has changed
+        if self.changed_data and 'primary_email' in self.changed_data:
+            user = client.user
+            if user.email != client.primary_email:
+                user.email = client.primary_email
+                if commit:
+                    user.save()
+
+        if commit:
+            client.save()
+
+        return client
 
 
 # Django form for Event Details
