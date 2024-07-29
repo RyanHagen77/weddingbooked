@@ -265,27 +265,6 @@ def new_contract(request):
         'logo_url': logo_url
     })
 
-#def send_password_reset_email(user_email):
-    print(f"Starting to send password reset email to: {user_email}")
-    form = PasswordResetForm({'email': user_email})
-    if form.is_valid():
-        request = HttpRequest()
-        request.META['SERVER_NAME'] = '127.0.0.1'
-        request.META['SERVER_PORT'] = '8000'
-
-
-        try:
-            form.save(
-                request=request,
-                use_https=True,
-                from_email='enetadmin@enet2.com',
-                email_template_name='registration/password_reset_email.html'
-            )
-            print("Password reset email sent successfully.")
-        except Exception as e:
-            print(f"Failed to send password reset email due to: {e}")
-    else:
-        print("PasswordResetForm is invalid. Errors:", form.errors)
 
 def custom_login(request):
     User = get_user_model()  # Use the custom user model
