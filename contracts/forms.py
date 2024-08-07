@@ -351,15 +351,37 @@ SchedulePaymentFormSet = inlineformset_factory(
 )
 
 class ClientForm(forms.ModelForm):
+    primary_phone1 = forms.CharField(
+        max_length=12,
+        validators=[phone_validator],
+        required=True
+    )
+    primary_phone2 = forms.CharField(
+        max_length=12,
+        validators=[phone_validator],
+        required=False
+    )
+
     class Meta:
         model = Client
         fields = [
             'primary_contact', 'primary_email', 'primary_phone1', 'primary_phone2',
             'primary_address1', 'primary_address2', 'city', 'state', 'postal_code',
             'partner_contact', 'partner_email', 'partner_phone1', 'partner_phone2',
-            'alt_contact', 'alt_email', 'alt_phone',
+            'alt_contact', 'alt_email', 'alt_phone'
         ]
 
+    def clean_primary_email(self):
+        email = self.cleaned_data.get('primary_email')
+        if not email:
+            raise forms.ValidationError('This field is required.')
+        return email
+
+    def clean_primary_phone1(self):
+        phone = self.cleaned_data.get('primary_phone1')
+        if phone and not phone.isdigit():
+            raise forms.ValidationError('Enter a valid phone number.')
+        return phone
 
 
 class NewContractForm(forms.ModelForm):
@@ -372,28 +394,27 @@ class NewContractForm(forms.ModelForm):
     primary_phone1 = forms.CharField(
         max_length=12,  # Adjusted to accommodate dashes
         validators=[phone_validator],
-        required=False  # Instead of blank=True, null=True
+        required=True  # Changed to required
     )
     lead_source_category = forms.ModelChoiceField(queryset=LeadSourceCategory.objects.all(), required=False, label="Lead Source Category")
     lead_source_details = forms.CharField(max_length=255, required=False, label="Lead Source Details")
 
     event_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
-    csr = UserModelChoiceField(
+    csr = forms.ModelChoiceField(
         queryset=CustomUser.objects.filter(groups__name='Sales', is_active=True),
         required=False,
         label="Sales Person"
     )
-    coordinator = UserModelChoiceField(
+    coordinator = forms.ModelChoiceField(
         queryset=CustomUser.objects.filter(role__name='COORDINATOR', groups__name='Office Staff', is_active=True),
         required=False,
         label="Coordinator"
     )
 
-    # Optional fields
     primary_phone2 = forms.CharField(
         max_length=12,  # Adjusted to accommodate dashes
         validators=[phone_validator],
-        required=False  # Instead of blank=True, null=True
+        required=False
     )
     primary_address1 = forms.CharField(max_length=255, required=False)
     primary_address2 = forms.CharField(max_length=255, required=False)
@@ -404,19 +425,19 @@ class NewContractForm(forms.ModelForm):
     partner_phone1 = forms.CharField(
         max_length=12,  # Adjusted to accommodate dashes
         validators=[phone_validator],
-        required=False  # Instead of blank=True, null=True
+        required=False
     )
     partner_phone2 = forms.CharField(
         max_length=12,  # Adjusted to accommodate dashes
         validators=[phone_validator],
-        required=False  # Instead of blank=True, null=True
+        required=False
     )
     alt_contact = forms.CharField(max_length=255, required=False)
     alt_email = forms.EmailField(required=False)
     alt_phone = forms.CharField(
         max_length=12,  # Adjusted to accommodate dashes
         validators=[phone_validator],
-        required=False  # Instead of blank=True, null=True
+        required=False
     )
 
     class Meta:
