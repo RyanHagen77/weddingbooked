@@ -233,22 +233,20 @@ def new_contract(request):
 
     if request.method == 'POST':
         if client_form.is_valid() and contract_form.is_valid():
+            primary_email = client_form.cleaned_data['primary_email']
+            User = get_user_model()
+
+            # Check if the user already exists before creating
+            try:
+                user = User.objects.get(email=primary_email)
+                if user.username != primary_email:
+                    return JsonResponse({'errors': {'primary_email': ['A user with this email already exists.']}}, status=400)
+            except User.DoesNotExist:
+                user = User(username=primary_email, email=primary_email, user_type='client')
+                user.set_unusable_password()  # Or set a default password if needed
+                user.save()
+
             with transaction.atomic():
-                primary_email = client_form.cleaned_data['primary_email']
-                User = get_user_model()
-
-                # Check if the user already exists
-                user, user_created = User.objects.get_or_create(
-                    username=primary_email,
-                    defaults={'email': primary_email, 'user_type': 'client'}
-                )
-
-                if not user_created:
-                    # Ensure the email matches
-                    if user.email != primary_email:
-                        return JsonResponse({'errors': {'primary_email': ['A user with this email already exists.']}},
-                                            status=400)
-
                 client, client_created = Client.objects.get_or_create(
                     user=user,
                     defaults={
@@ -279,8 +277,7 @@ def new_contract(request):
                 contract.status = 'pipeline'
                 contract.save()
 
-                return JsonResponse(
-                    {'redirect': reverse('contracts:contract_detail', kwargs={'id': contract.contract_id})})
+                return JsonResponse({'redirect': reverse('contracts:contract_detail', kwargs={'id': contract.contract_id})})
 
         else:
             # Combine form errors and return them in JSON response
@@ -292,7 +289,6 @@ def new_contract(request):
         'client_form': client_form,
         'logo_url': logo_url
     })
-
 
 def send_password_reset_email(user_email):
     print(f"Starting to send password reset email to: {user_email}")
