@@ -350,44 +350,16 @@ SchedulePaymentFormSet = inlineformset_factory(
     can_delete=True
 )
 
-
 class ClientForm(forms.ModelForm):
-    primary_phone1 = forms.CharField(
-        max_length=12,
-        validators=[phone_validator],
-        required=True
-    )
-    primary_phone2 = forms.CharField(
-        max_length=12,
-        validators=[phone_validator],
-        required=False
-    )
-
     class Meta:
         model = Client
         fields = [
             'primary_contact', 'primary_email', 'primary_phone1', 'primary_phone2',
             'primary_address1', 'primary_address2', 'city', 'state', 'postal_code',
             'partner_contact', 'partner_email', 'partner_phone1', 'partner_phone2',
-            'alt_contact', 'alt_email', 'alt_phone'
+            'alt_contact', 'alt_email', 'alt_phone',
         ]
 
-    def clean_primary_email(self):
-        email = self.cleaned_data.get('primary_email')
-        if not email:
-            raise forms.ValidationError('This field is required.')
-
-        User = get_user_model()
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError('A user with this email already exists.')
-
-        return email
-
-    def clean_primary_phone1(self):
-        phone = self.cleaned_data.get('primary_phone1')
-        if phone and not phone.isdigit():
-            raise forms.ValidationError('Enter a valid phone number.')
-        return phone
 
 
 class NewContractForm(forms.ModelForm):
