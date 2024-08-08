@@ -236,33 +236,14 @@ def new_contract(request):
             with transaction.atomic():
                 primary_email = client_form.cleaned_data['primary_email']
                 User = get_user_model()
-
-                # Try to get an existing user and client
-                user, user_created = User.objects.get_or_create(
+                user, created = User.objects.get_or_create(
                     username=primary_email,
                     defaults={'email': primary_email, 'user_type': 'client'}
                 )
-                client, client_created = Client.objects.get_or_create(
-                    user=user,
-                    defaults={
-                        'primary_contact': client_form.cleaned_data['primary_contact'],
-                        'primary_email': primary_email,
-                        'primary_phone1': client_form.cleaned_data['primary_phone1'],
-                        'primary_phone2': client_form.cleaned_data['primary_phone2'],
-                        'primary_address1': client_form.cleaned_data['primary_address1'],
-                        'primary_address2': client_form.cleaned_data['primary_address2'],
-                        'city': client_form.cleaned_data['city'],
-                        'state': client_form.cleaned_data['state'],
-                        'postal_code': client_form.cleaned_data['postal_code'],
-                        'partner_contact': client_form.cleaned_data['partner_contact'],
-                        'partner_email': client_form.cleaned_data['partner_email'],
-                        'partner_phone1': client_form.cleaned_data['partner_phone1'],
-                        'partner_phone2': client_form.cleaned_data['partner_phone2'],
-                        'alt_contact': client_form.cleaned_data['alt_contact'],
-                        'alt_email': client_form.cleaned_data['alt_email'],
-                        'alt_phone': client_form.cleaned_data['alt_phone']
-                    }
-                )
+
+                client = client_form.save(commit=False)
+                client.user = user
+                client.save()
 
                 contract = contract_form.save(commit=False)
                 contract.client = client
@@ -275,10 +256,8 @@ def new_contract(request):
                 return JsonResponse({'redirect': reverse('contracts:contract_detail', kwargs={'id': contract.contract_id})})
 
         else:
-            # Combine form errors and return them in JSON response
             errors = {**contract_form.errors, **client_form.errors}
-            error_dict = {field: error for form in [contract_form, client_form] for field, error in form.errors.items()}
-            return JsonResponse({'errors': error_dict}, status=400)
+            return JsonResponse({'errors': errors}, status=400)
 
     return render(request, 'contracts/contract_new.html', {
         'contract_form': contract_form,
