@@ -449,7 +449,6 @@ class NewContractForm(forms.ModelForm):
 
         return contract
 
-
 class ContractForm(forms.ModelForm):
     # Required fields
     is_code_92 = forms.BooleanField(required=False)
