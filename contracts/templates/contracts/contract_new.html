@@ -74,7 +74,7 @@
                         {% if contract_form.location.errors %}
                             <div class="error">{{ contract_form.location.errors }}</div>
                         {% endif %}
-                        <p>{{ contract_form.status.label_tag }} {{ contract_form.status }}</p>
+                        <p>{{ contract_form.status.label_tag }} {{ contract_form.status }}</div>
                         {% if contract_form.status.errors %}
                             <div class="error">{{ contract_form.status.errors }}</div>
                         {% endif %}
@@ -152,8 +152,10 @@
                         let errorList = $('#errorList');
                         errorList.empty();
 
-                        $.each(errors, function(key, value) {
-                            errorList.append('<li>' + value + '</li>');
+                        $.each(errors, function(field, messages) {
+                            $.each(messages, function(index, message) {
+                                errorList.append('<li>' + field + ': ' + message + '</li>');
+                            });
                         });
 
                         $('#errorModal').modal('show');
