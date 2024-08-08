@@ -390,73 +390,93 @@ class ClientForm(forms.ModelForm):
         return phone
 
 
-@login_required
-def new_contract(request):
-    contract_form = NewContractForm(request.POST or None)
-    client_form = ClientForm(request.POST or None)
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+class NewContractForm(forms.ModelForm):
+    is_code_92 = forms.BooleanField(required=False)
+    old_contract_number = forms.CharField(max_length=255, required=False)
+    location = forms.ModelChoiceField(queryset=Location.objects.all())
+    primary_contact = forms.CharField(max_length=255, required=True)
+    partner_contact = forms.CharField(max_length=255)
+    primary_email = forms.EmailField(required=True)
+    primary_phone1 = forms.CharField(
+        max_length=12,  # Adjusted to accommodate dashes
+        validators=[phone_validator],
+        required=False  # Instead of blank=True, null=True
+    )
+    lead_source_category = forms.ModelChoiceField(queryset=LeadSourceCategory.objects.all(), required=False, label="Lead Source Category")
+    lead_source_details = forms.CharField(max_length=255, required=False, label="Lead Source Details")
 
-    if request.method == 'POST':
-        if client_form.is_valid() and contract_form.is_valid():
-            with transaction.atomic():
-                primary_email = client_form.cleaned_data['primary_email']
-                User = get_user_model()
+    event_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
+    csr = UserModelChoiceField(
+        queryset=CustomUser.objects.filter(groups__name='Sales', is_active=True),
+        required=False,
+        label="Sales Person"
+    )
+    coordinator = UserModelChoiceField(
+        queryset=CustomUser.objects.filter(role__name='COORDINATOR', groups__name='Office Staff', is_active=True),
+        required=False,
+        label="Coordinator"
+    )
 
-                # Check if the user already exists
-                user, user_created = User.objects.get_or_create(
-                    username=primary_email,
-                    defaults={'email': primary_email, 'user_type': 'client'}
-                )
+    # Optional fields
+    primary_phone2 = forms.CharField(
+        max_length=12,  # Adjusted to accommodate dashes
+        validators=[phone_validator],
+        required=False  # Instead of blank=True, null=True
+    )
+    primary_address1 = forms.CharField(max_length=255, required=False)
+    primary_address2 = forms.CharField(max_length=255, required=False)
+    city = forms.CharField(max_length=255, required=False)
+    state = forms.CharField(max_length=255, required=False)
+    postal_code = forms.CharField(max_length=255, required=False)
+    partner_email = forms.EmailField(required=False)
+    partner_phone1 = forms.CharField(
+        max_length=12,  # Adjusted to accommodate dashes
+        validators=[phone_validator],
+        required=False  # Instead of blank=True, null=True
+    )
+    partner_phone2 = forms.CharField(
+        max_length=12,  # Adjusted to accommodate dashes
+        validators=[phone_validator],
+        required=False  # Instead of blank=True, null=True
+    )
+    alt_contact = forms.CharField(max_length=255, required=False)
+    alt_email = forms.EmailField(required=False)
+    alt_phone = forms.CharField(
+        max_length=12,  # Adjusted to accommodate dashes
+        validators=[phone_validator],
+        required=False  # Instead of blank=True, null=True
+    )
 
-                if not user_created:
-                    # Ensure the email matches
-                    if user.email != primary_email:
-                        return JsonResponse({'errors': {'primary_email': ['A user with this email already exists.']}},
-                                            status=400)
+    class Meta:
+        model = Contract
+        fields = [
+            'event_date', 'csr', 'coordinator', 'old_contract_number', 'is_code_92',
+            'bridal_party_qty', 'guests_qty', 'lead_source_category', 'lead_source_details',
+            'ceremony_site', 'ceremony_city', 'ceremony_state', 'ceremony_contact', 'ceremony_phone', 'ceremony_email',
+            'reception_site', 'reception_city', 'reception_state', 'reception_contact', 'reception_phone', 'reception_email',
+            'status'
+        ]
 
-                client, client_created = Client.objects.get_or_create(
-                    user=user,
-                    defaults={
-                        'primary_contact': client_form.cleaned_data['primary_contact'],
-                        'primary_email': primary_email,
-                        'primary_phone1': client_form.cleaned_data['primary_phone1'],
-                        'primary_phone2': client_form.cleaned_data['primary_phone2'],
-                        'primary_address1': client_form.cleaned_data['primary_address1'],
-                        'primary_address2': client_form.cleaned_data['primary_address2'],
-                        'city': client_form.cleaned_data['city'],
-                        'state': client_form.cleaned_data['state'],
-                        'postal_code': client_form.cleaned_data['postal_code'],
-                        'partner_contact': client_form.cleaned_data['partner_contact'],
-                        'partner_email': client_form.cleaned_data['partner_email'],
-                        'partner_phone1': client_form.cleaned_data['partner_phone1'],
-                        'partner_phone2': client_form.cleaned_data['partner_phone2'],
-                        'alt_contact': client_form.cleaned_data['alt_contact'],
-                        'alt_email': client_form.cleaned_data['alt_email'],
-                        'alt_phone': client_form.cleaned_data['alt_phone']
-                    }
-                )
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['csr'].queryset = CustomUser.objects.filter(is_active=True, groups__name='Sales')
+        self.fields['coordinator'].queryset = CustomUser.objects.filter(role__name='COORDINATOR', groups__name='Office Staff')
 
-                contract = contract_form.save(commit=False)
-                contract.client = client
-                contract.save()
+    def save(self, commit=True):
+        # Save the contract instance
+        contract = super().save(commit=False)
+        # Add the location to the contract
+        contract.location = self.cleaned_data.get('location')
 
-                create_schedule_a_payments(contract.contract_id)
-                contract.status = 'pipeline'
-                contract.save()
+        # Set is_code_92
+        contract.is_code_92 = self.cleaned_data.get('is_code_92', False)
 
-                return JsonResponse(
-                    {'redirect': reverse('contracts:contract_detail', kwargs={'id': contract.contract_id})})
+        if commit:
+            contract.save()
+            self.save_m2m()
 
-        else:
-            # Combine form errors and return them in JSON response
-            errors = {**contract_form.errors, **client_form.errors}
-            return JsonResponse({'errors': errors}, status=400)
+        return contract
 
-    return render(request, 'contracts/contract_new.html', {
-        'contract_form': contract_form,
-        'client_form': client_form,
-        'logo_url': logo_url
-    })
 
 class ContractForm(forms.ModelForm):
     # Required fields
