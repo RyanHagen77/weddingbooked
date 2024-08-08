@@ -225,6 +225,7 @@ def booking_search(request):
     })
 
 
+
 @login_required
 def new_contract(request):
     contract_form = NewContractForm(request.POST or None)
@@ -285,6 +286,7 @@ def new_contract(request):
         'client_form': client_form,
         'logo_url': logo_url
     })
+
 
 def send_password_reset_email(user_email):
     print(f"Starting to send password reset email to: {user_email}")
