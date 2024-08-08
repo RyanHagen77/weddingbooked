@@ -262,11 +262,6 @@ def new_contract(request):
                 # Automatically create a WeddingDayGuide for the contract
                 WeddingDayGuide.objects.create(
                     contract=contract,
-                    event_date=contract.event_date,
-                    primary_contact=contract.primary_contact,
-                    primary_email=contract.primary_email,
-                    primary_phone=contract.primary_phone1,
-                    # Add any other necessary fields here
                 )
 
                 create_schedule_a_payments(contract.contract_id)
