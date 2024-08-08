@@ -36,6 +36,12 @@
 
 {% block content %}
 <body>
+    {% if error_message %}
+    <div class="alert alert-danger" role="alert">
+        {{ error_message }}
+    </div>
+    {% endif %}
+
     <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -49,7 +55,7 @@
                     <ul id="errorList"></ul>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn-close" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -63,6 +69,12 @@
                     <!-- Contract Fields -->
                     <div>
                         <h5>New Contract</h5>
+                        <div>
+                            {{ contract_form.is_code_92.label_tag }} {{ contract_form.is_code_92 }}
+                            {% if contract_form.is_code_92.errors %}
+                                <div class="error">{{ contract_form.is_code_92.errors }}</div>
+                            {% endif %}
+                        </div>
                         <div>
                             {{ contract_form.event_date.label_tag }} {{ contract_form.event_date }}
                             {% if contract_form.event_date.errors %}
@@ -94,6 +106,18 @@
                             {% endif %}
                         </div>
                         <div>
+                            {{ contract_form.lead_source_category.label_tag }} {{ contract_form.lead_source_category }}
+                            {% if contract_form.lead_source_category.errors %}
+                                <div class="error">{{ contract_form.lead_source_category.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ contract_form.lead_source_details.label_tag }} {{ contract_form.lead_source_details }}
+                            {% if contract_form.lead_source_details.errors %}
+                                <div class="error">{{ contract_form.lead_source_details.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
                             {{ client_form.primary_contact.label_tag }} {{ client_form.primary_contact }}
                             {% if client_form.primary_contact.errors %}
                                 <div class="error">{{ client_form.primary_contact.errors }}</div>
@@ -122,6 +146,18 @@
                 <div class="right-column">
                     <!-- Contract Fields -->
                     <div>
+                        <div>
+                            {{ contract_form.bridal_party_qty.label_tag }} {{ contract_form.bridal_party_qty }}
+                            {% if contract_form.bridal_party_qty.errors %}
+                                <div class="error">{{ contract_form.bridal_party_qty.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ contract_form.guests_qty.label_tag }} {{ contract_form.guests_qty }}
+                            {% if contract_form.guests_qty.errors %}
+                                <div class="error">{{ contract_form.guests_qty.errors }}</div>
+                            {% endif %}
+                        </div>
                         <div>
                             {{ contract_form.ceremony_site.label_tag }} {{ contract_form.ceremony_site }}
                             {% if contract_form.ceremony_site.errors %}
@@ -165,7 +201,7 @@
                             {% endif %}
                         </div>
                     </div>
-                    <input type="submit" value="Submit" class="btn btn-primary">
+                    <input type="submit" value="Submit" class="btn-dusty-pink">
                 </div>
             </div>
         </div>
@@ -185,20 +221,28 @@
                     type: 'POST',
                     data: data,
                     success: function(response) {
-                        // If successful, submit the form normally or handle success logic
-                        form.off('submit').submit();
+                        // If successful, redirect to the contract detail page or handle success logic
+                        if (response.redirect_url) {
+                            window.location.href = response.redirect_url;
+                        } else {
+                            console.error('Redirect URL not found in response');
+                        }
                     },
                     error: function(response) {
                         // Display errors in the modal
-                        let errors = response.responseJSON.errors;
-                        let errorList = $('#errorList');
-                        errorList.empty();
+                        if (response.responseJSON && response.responseJSON.errors) {
+                            let errors = response.responseJSON.errors;
+                            let errorList = $('#errorList');
+                            errorList.empty();
 
-                        $.each(errors, function(key, value) {
-                            errorList.append('<li>' + key + ': ' + value.join(', ') + '</li>');
-                        });
+                            $.each(errors, function(key, value) {
+                                errorList.append('<li>' + key + ': ' + value.join(', ') + '</li>');
+                            });
 
-                        $('#errorModal').modal('show');
+                            $('#errorModal').modal('show');
+                        } else {
+                            console.error('Error response not in expected format');
+                        }
                     }
                 });
             });

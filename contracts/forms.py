@@ -360,8 +360,10 @@ class ClientForm(forms.ModelForm):
             'alt_contact', 'alt_email', 'alt_phone',
         ]
 
-
-
+    def clean_primary_email(self):
+        primary_email = self.cleaned_data.get('primary_email')
+        # Skip uniqueness validation here
+        return primary_email
 class NewContractForm(forms.ModelForm):
     is_code_92 = forms.BooleanField(required=False)
     old_contract_number = forms.CharField(max_length=255, required=False)
@@ -380,12 +382,12 @@ class NewContractForm(forms.ModelForm):
     event_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
     csr = UserModelChoiceField(
         queryset=CustomUser.objects.filter(groups__name='Sales', is_active=True),
-        required=False,
+        required=True,
         label="Sales Person"
     )
     coordinator = UserModelChoiceField(
         queryset=CustomUser.objects.filter(role__name='COORDINATOR', groups__name='Office Staff', is_active=True),
-        required=False,
+        required=True,
         label="Coordinator"
     )
 

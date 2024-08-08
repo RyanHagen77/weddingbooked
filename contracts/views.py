@@ -232,31 +232,52 @@ def new_contract(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     if request.method == 'POST':
-        if client_form.is_valid() and contract_form.is_valid():
+        if client_form.is_valid() and contract_form.is_valid():  # Ensure both forms are validated
             with transaction.atomic():
-                primary_email = client_form.cleaned_data['primary_email']
+                primary_email = client_form.cleaned_data.get('primary_email')
                 User = get_user_model()
-                user, created = User.objects.get_or_create(
-                    username=primary_email,
-                    defaults={'email': primary_email, 'user_type': 'client'}
-                )
 
-                client = client_form.save(commit=False)
-                client.user = user
-                client.save()
+                try:
+                    # Check if the user already exists
+                    user = User.objects.get(email=primary_email)
+                    # Check if the client associated with the user exists
+                    client = Client.objects.get(user=user)
+                except User.DoesNotExist:
+                    # If the user does not exist, create a new user
+                    user = User.objects.create(username=primary_email, email=primary_email, user_type='client')
+                    client = client_form.save(commit=False)
+                    client.user = user
+                    client.save()
+                except Client.DoesNotExist:
+                    # If the user exists but the client does not, create a new client
+                    client = client_form.save(commit=False)
+                    client.user = user
+                    client.save()
 
+                # Create and save the contract
                 contract = contract_form.save(commit=False)
                 contract.client = client
                 contract.save()
+
+                # Automatically create a WeddingDayGuide for the contract
+                WeddingDayGuide.objects.create(
+                    contract=contract,
+                    event_date=contract.event_date,
+                    primary_contact=contract.primary_contact,
+                    primary_email=contract.primary_email,
+                    primary_phone=contract.primary_phone1,
+                    # Add any other necessary fields here
+                )
 
                 create_schedule_a_payments(contract.contract_id)
                 contract.status = 'pipeline'
                 contract.save()
 
-                return JsonResponse({'redirect': reverse('contracts:contract_detail', kwargs={'id': contract.contract_id})})
+                return JsonResponse({'redirect_url': reverse('contracts:contract_detail', kwargs={'id': contract.contract_id})})
 
         else:
-            errors = {**contract_form.errors, **client_form.errors}
+            # Combine errors from both forms and return them in a JSON response
+            errors = {**client_form.errors, **contract_form.errors}
             return JsonResponse({'errors': errors}, status=400)
 
     return render(request, 'contracts/contract_new.html', {
@@ -264,6 +285,7 @@ def new_contract(request):
         'client_form': client_form,
         'logo_url': logo_url
     })
+
 
 def send_password_reset_email(user_email):
     print(f"Starting to send password reset email to: {user_email}")
