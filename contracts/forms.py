@@ -393,16 +393,44 @@ class ClientForm(forms.ModelForm):
         ]
 
 class NewContractForm(forms.ModelForm):
+    is_code_92 = forms.BooleanField(required=False)
+    old_contract_number = forms.CharField(max_length=255, required=False)
+    location = forms.ModelChoiceField(queryset=Location.objects.all())
+    primary_contact = forms.CharField(max_length=255, required=True)
+    partner_contact = forms.CharField(max_length=255)
+    primary_email = forms.EmailField(required=True)
     primary_phone1 = forms.CharField(
         max_length=12,
         validators=[phone_validator],
-        required=True
+        required=False
     )
+    lead_source_category = forms.ModelChoiceField(queryset=LeadSourceCategory.objects.all(), required=False, label="Lead Source Category")
+    lead_source_details = forms.CharField(max_length=255, required=False, label="Lead Source Details")
+
+    event_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
+    csr = UserModelChoiceField(
+        queryset=CustomUser.objects.filter(groups__name='Sales', is_active=True),
+        required=False,
+        label="Sales Person"
+    )
+    coordinator = UserModelChoiceField(
+        queryset=CustomUser.objects.filter(role__name='COORDINATOR', groups__name='Office Staff', is_active=True),
+        required=False,
+        label="Coordinator"
+    )
+
+    # Optional fields
     primary_phone2 = forms.CharField(
         max_length=12,
         validators=[phone_validator],
         required=False
     )
+    primary_address1 = forms.CharField(max_length=255, required=False)
+    primary_address2 = forms.CharField(max_length=255, required=False)
+    city = forms.CharField(max_length=255, required=False)
+    state = forms.CharField(max_length=255, required=False)
+    postal_code = forms.CharField(max_length=255, required=False)
+    partner_email = forms.EmailField(required=False)
     partner_phone1 = forms.CharField(
         max_length=12,
         validators=[phone_validator],
@@ -413,6 +441,8 @@ class NewContractForm(forms.ModelForm):
         validators=[phone_validator],
         required=False
     )
+    alt_contact = forms.CharField(max_length=255, required=False)
+    alt_email = forms.EmailField(required=False)
     alt_phone = forms.CharField(
         max_length=12,
         validators=[phone_validator],
@@ -438,9 +468,11 @@ class NewContractForm(forms.ModelForm):
         contract = super().save(commit=False)
         contract.location = self.cleaned_data.get('location')
         contract.is_code_92 = self.cleaned_data.get('is_code_92', False)
+
         if commit:
             contract.save()
             self.save_m2m()
+
         return contract
 
 class ContractForm(forms.ModelForm):
