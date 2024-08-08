@@ -31,8 +31,6 @@
     </style>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <!-- Include Bootstrap Datepicker JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
 </head>
 {% endblock head %}
 
@@ -51,7 +49,7 @@
                     <ul id="errorList"></ul>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn-close data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -65,56 +63,137 @@
                     <!-- Contract Fields -->
                     <div>
                         <h5>New Contract</h5>
-                        <p>{{ contract_form.is_code_92.label_tag }} {{ contract_form.is_code_92 }}</p>
-                        <p>{{ contract_form.event_date.label_tag }} {{ contract_form.event_date }}</p>
-                        {% if contract_form.event_date.errors %}
-                            <div class="error">{{ contract_form.event_date.errors }}</div>
-                        {% endif %}
-                        <p>{{ contract_form.location.label_tag }} {{ contract_form.location }}</p>
-                        {% if contract_form.location.errors %}
-                            <div class="error">{{ contract_form.location.errors }}</div>
-                        {% endif %}
-                        <p>{{ contract_form.status.label_tag }} {{ contract_form.status }}</div>
-                        {% if contract_form.status.errors %}
-                            <div class="error">{{ contract_form.status.errors }}</div>
-                        {% endif %}
-                        <p>{{ contract_form.coordinator.label_tag }} {{ contract_form.coordinator }}</p>
-                        {% if contract_form.coordinator.errors %}
-                            <div class="error">{{ contract_form.coordinator.errors }}</div>
-                        {% endif %}
-                        <p>{{ contract_form.csr.label_tag }} {{ contract_form.csr }}</p>
-                        {% if contract_form.csr.errors %}
-                            <div class="error">{{ contract_form.csr.errors }}</div>
-                        {% endif %}
-                        <p>{{ contract_form.lead_source_category.label_tag }} {{ contract_form.lead_source_category }}</p>
-                        <p>{{ contract_form.lead_source_details.label_tag }} {{ contract_form.lead_source_details }}</p>
-                        <p>{{ client_form.primary_contact.label_tag }} {{ client_form.primary_contact }}</p>
-                        {% if client_form.primary_contact.errors %}
-                            <div class="error">{{ client_form.primary_contact.errors }}</div>
-                        {% endif %}
-                        <p>{{ client_form.partner_contact.label_tag }} {{ client_form.partner_contact }}</p>
-                        <p>{{ client_form.primary_email.label_tag }} {{ client_form.primary_email }}</p>
-                        {% if client_form.primary_email.errors %}
-                            <div class="error">{{ client_form.primary_email.errors }}</div>
-                        {% endif %}
-                        <p>{{ client_form.primary_phone1.label_tag }} {{ client_form.primary_phone1 }}</p>
-                        {% if client_form.primary_phone1.errors %}
-                            <div class="error">{{ client_form.primary_phone1.errors }}</div>
-                        {% endif %}
+                        <div>
+                            {{ contract_form.is_code_92.label_tag }} {{ contract_form.is_code_92 }}
+                            {% if contract_form.is_code_92.errors %}
+                                <div class="error">{{ contract_form.is_code_92.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ contract_form.event_date.label_tag }} {{ contract_form.event_date }}
+                            {% if contract_form.event_date.errors %}
+                                <div class="error">{{ contract_form.event_date.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ contract_form.location.label_tag }} {{ contract_form.location }}
+                            {% if contract_form.location.errors %}
+                                <div class="error">{{ contract_form.location.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ contract_form.status.label_tag }} {{ contract_form.status }}
+                            {% if contract_form.status.errors %}
+                                <div class="error">{{ contract_form.status.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ contract_form.coordinator.label_tag }} {{ contract_form.coordinator }}
+                            {% if contract_form.coordinator.errors %}
+                                <div class="error">{{ contract_form.coordinator.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ contract_form.csr.label_tag }} {{ contract_form.csr }}
+                            {% if contract_form.csr.errors %}
+                                <div class="error">{{ contract_form.csr.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ contract_form.lead_source_category.label_tag }} {{ contract_form.lead_source_category }}
+                            {% if contract_form.lead_source_category.errors %}
+                                <div class="error">{{ contract_form.lead_source_category.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ contract_form.lead_source_details.label_tag }} {{ contract_form.lead_source_details }}
+                            {% if contract_form.lead_source_details.errors %}
+                                <div class="error">{{ contract_form.lead_source_details.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ client_form.primary_contact.label_tag }} {{ client_form.primary_contact }}
+                            {% if client_form.primary_contact.errors %}
+                                <div class="error">{{ client_form.primary_contact.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ client_form.partner_contact.label_tag }} {{ client_form.partner_contact }}
+                            {% if client_form.partner_contact.errors %}
+                                <div class="error">{{ client_form.partner_contact.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ client_form.primary_email.label_tag }} {{ client_form.primary_email }}
+                            {% if client_form.primary_email.errors %}
+                                <div class="error">{{ client_form.primary_email.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ client_form.primary_phone1.label_tag }} {{ client_form.primary_phone1 }}
+                            {% if client_form.primary_phone1.errors %}
+                                <div class="error">{{ client_form.primary_phone1.errors }}</div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
                 <div class="right-column">
                     <!-- Contract Fields -->
                     <div>
-                        <p>{{ contract_form.bridal_party_qty.label_tag }} {{ contract_form.bridal_party_qty }}</p>
-                        <p>{{ contract_form.guests_qty.label_tag }} {{ contract_form.guests_qty }}</p>
-                        <p>{{ contract_form.ceremony_site.label_tag }} {{ contract_form.ceremony_site }}</p>
-                        <p>{{ contract_form.ceremony_city.label_tag }} {{ contract_form.ceremony_city }}</p>
-                        <p>{{ contract_form.ceremony_state.label_tag }} {{ contract_form.ceremony_state }}</p>
-                        <p>{{ contract_form.reception_site.label_tag }} {{ contract_form.reception_site }}</p>
-                        <p>{{ contract_form.reception_city.label_tag }} {{ contract_form.reception_city }}</p>
-                        <p>{{ contract_form.reception_state.label_tag }} {{ contract_form.reception_state }}</p>
-                        <p>{{ contract_form.old_contract_number.label_tag }} {{ contract_form.old_contract_number }}</p>
+                        <div>
+                            {{ contract_form.bridal_party_qty.label_tag }} {{ contract_form.bridal_party_qty }}
+                            {% if contract_form.bridal_party_qty.errors %}
+                                <div class="error">{{ contract_form.bridal_party_qty.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ contract_form.guests_qty.label_tag }} {{ contract_form.guests_qty }}
+                            {% if contract_form.guests_qty.errors %}
+                                <div class="error">{{ contract_form.guests_qty.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ contract_form.ceremony_site.label_tag }} {{ contract_form.ceremony_site }}
+                            {% if contract_form.ceremony_site.errors %}
+                                <div class="error">{{ contract_form.ceremony_site.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ contract_form.ceremony_city.label_tag }} {{ contract_form.ceremony_city }}
+                            {% if contract_form.ceremony_city.errors %}
+                                <div class="error">{{ contract_form.ceremony_city.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ contract_form.ceremony_state.label_tag }} {{ contract_form.ceremony_state }}
+                            {% if contract_form.ceremony_state.errors %}
+                                <div class="error">{{ contract_form.ceremony_state.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ contract_form.reception_site.label_tag }} {{ contract_form.reception_site }}
+                            {% if contract_form.reception_site.errors %}
+                                <div class="error">{{ contract_form.reception_site.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ contract_form.reception_city.label_tag }} {{ contract_form.reception_city }}
+                            {% if contract_form.reception_city.errors %}
+                                <div class="error">{{ contract_form.reception_city.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ contract_form.reception_state.label_tag }} {{ contract_form.reception_state }}
+                            {% if contract_form.reception_state.errors %}
+                                <div class="error">{{ contract_form.reception_state.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {{ contract_form.old_contract_number.label_tag }} {{ contract_form.old_contract_number }}
+                            {% if contract_form.old_contract_number.errors %}
+                                <div class="error">{{ contract_form.old_contract_number.errors }}</div>
+                            {% endif %}
+                        </div>
                     </div>
                     <input type="submit" value="Submit" class="btn btn-primary">
                 </div>
@@ -124,13 +203,6 @@
 
     <script>
         $(document).ready(function() {
-            // Initialize the date picker
-            $('#id_event_date').datepicker({
-                format: 'yyyy-mm-dd',
-                autoclose: true,
-                todayHighlight: true
-            });
-
             $('#contractForm').on('submit', function(event) {
                 event.preventDefault(); // Prevent the form from submitting normally
 
@@ -152,10 +224,8 @@
                         let errorList = $('#errorList');
                         errorList.empty();
 
-                        $.each(errors, function(field, messages) {
-                            $.each(messages, function(index, message) {
-                                errorList.append('<li>' + field + ': ' + message + '</li>');
-                            });
+                        $.each(errors, function(key, value) {
+                            errorList.append('<li>' + key + ': ' + value.join(', ') + '</li>');
                         });
 
                         $('#errorModal').modal('show');
