@@ -225,7 +225,6 @@ def booking_search(request):
     })
 
 
-@login_required
 def new_contract(request):
     contract_form = NewContractForm(request.POST or None)
     client_form = ClientForm(request.POST or None)
@@ -233,41 +232,17 @@ def new_contract(request):
 
     if request.method == 'POST':
         if client_form.is_valid() and contract_form.is_valid():
-            primary_email = client_form.cleaned_data['primary_email']
-            User = get_user_model()
-
-            # Check if the user already exists before creating
-            try:
-                user = User.objects.get(email=primary_email)
-                if user.username != primary_email:
-                    return JsonResponse({'errors': {'primary_email': ['A user with this email already exists.']}}, status=400)
-            except User.DoesNotExist:
-                user = User(username=primary_email, email=primary_email, user_type='client')
-                user.set_unusable_password()  # Or set a default password if needed
-                user.save()
-
             with transaction.atomic():
-                client, client_created = Client.objects.get_or_create(
-                    user=user,
-                    defaults={
-                        'primary_contact': client_form.cleaned_data['primary_contact'],
-                        'primary_email': primary_email,
-                        'primary_phone1': client_form.cleaned_data['primary_phone1'],
-                        'primary_phone2': client_form.cleaned_data['primary_phone2'],
-                        'primary_address1': client_form.cleaned_data['primary_address1'],
-                        'primary_address2': client_form.cleaned_data['primary_address2'],
-                        'city': client_form.cleaned_data['city'],
-                        'state': client_form.cleaned_data['state'],
-                        'postal_code': client_form.cleaned_data['postal_code'],
-                        'partner_contact': client_form.cleaned_data['partner_contact'],
-                        'partner_email': client_form.cleaned_data['partner_email'],
-                        'partner_phone1': client_form.cleaned_data['partner_phone1'],
-                        'partner_phone2': client_form.cleaned_data['partner_phone2'],
-                        'alt_contact': client_form.cleaned_data['alt_contact'],
-                        'alt_email': client_form.cleaned_data['alt_email'],
-                        'alt_phone': client_form.cleaned_data['alt_phone']
-                    }
+                primary_email = client_form.cleaned_data['primary_email']
+                User = get_user_model()
+                user, created = User.objects.get_or_create(
+                    username=primary_email,
+                    defaults={'email': primary_email, 'user_type': 'client'}
                 )
+
+                client = client_form.save(commit=False)
+                client.user = user
+                client.save()
 
                 contract = contract_form.save(commit=False)
                 contract.client = client
@@ -280,7 +255,6 @@ def new_contract(request):
                 return JsonResponse({'redirect': reverse('contracts:contract_detail', kwargs={'id': contract.contract_id})})
 
         else:
-            # Combine form errors and return them in JSON response
             errors = {**contract_form.errors, **client_form.errors}
             return JsonResponse({'errors': errors}, status=400)
 
