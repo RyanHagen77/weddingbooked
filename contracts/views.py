@@ -225,7 +225,6 @@ def booking_search(request):
     })
 
 
-
 @login_required
 def new_contract(request):
     contract_form = NewContractForm(request.POST or None)
@@ -238,11 +237,18 @@ def new_contract(request):
                 primary_email = client_form.cleaned_data['primary_email']
                 User = get_user_model()
 
-                # Try to get an existing user and client
+                # Check if the user already exists
                 user, user_created = User.objects.get_or_create(
                     username=primary_email,
                     defaults={'email': primary_email, 'user_type': 'client'}
                 )
+
+                if not user_created:
+                    # Ensure the email matches
+                    if user.email != primary_email:
+                        return JsonResponse({'errors': {'primary_email': ['A user with this email already exists.']}},
+                                            status=400)
+
                 client, client_created = Client.objects.get_or_create(
                     user=user,
                     defaults={
@@ -273,13 +279,13 @@ def new_contract(request):
                 contract.status = 'pipeline'
                 contract.save()
 
-                return JsonResponse({'redirect': reverse('contracts:contract_detail', kwargs={'id': contract.contract_id})})
+                return JsonResponse(
+                    {'redirect': reverse('contracts:contract_detail', kwargs={'id': contract.contract_id})})
 
         else:
             # Combine form errors and return them in JSON response
             errors = {**contract_form.errors, **client_form.errors}
-            error_dict = {field: error for form in [contract_form, client_form] for field, error in form.errors.items()}
-            return JsonResponse({'errors': error_dict}, status=400)
+            return JsonResponse({'errors': errors}, status=400)
 
     return render(request, 'contracts/contract_new.html', {
         'contract_form': contract_form,
