@@ -275,8 +275,10 @@ def new_contract(request):
                 return JsonResponse({'redirect': reverse('contracts:contract_detail', kwargs={'id': contract.contract_id})})
 
         else:
+            # Combine form errors and return them in JSON response
             errors = {**contract_form.errors, **client_form.errors}
-            return JsonResponse({'errors': errors}, status=400)
+            error_dict = {field: error for form in [contract_form, client_form] for field, error in form.errors.items()}
+            return JsonResponse({'errors': error_dict}, status=400)
 
     return render(request, 'contracts/contract_new.html', {
         'contract_form': contract_form,
