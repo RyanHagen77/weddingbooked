@@ -55,7 +55,7 @@ class ServiceType(models.Model):
 class Client(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     primary_contact = models.CharField(max_length=255)
-    primary_email = models.EmailField(unique=True)
+    primary_email = models.EmailField()
     primary_phone1 = models.CharField(
         max_length=12,  # Increase max_length to accommodate dashes
         validators=[phone_validator],
