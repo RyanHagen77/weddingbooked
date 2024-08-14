@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface AuthContextProps {
   isAuthenticated: boolean;
@@ -22,6 +22,7 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [contractId, setContractId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // Add a loading state
 
   useEffect(() => {
     console.log("AuthProvider useEffect triggered");
@@ -48,6 +49,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.log("No valid token found, setting isAuthenticated to false");
       setIsAuthenticated(false);
     }
+
+    setIsLoading(false); // Set loading to false once the check is done
   }, []);
 
   const login = (accessToken: string, contractId: string) => {
@@ -74,6 +77,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsAuthenticated(false);
     setContractId(null);
   };
+
+  // Render a loading state until the authentication check is complete
+  if (isLoading) {
+    return <div>Loading...</div>; // You can customize this loading state as needed
+  }
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, contractId, login, logout }}>
