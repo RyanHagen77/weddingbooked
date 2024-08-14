@@ -1193,6 +1193,8 @@ class WeddingDayGuide(models.Model):
 
     version_number = models.IntegerField(default=1)  # Version control
 
+    dj_booth_placement = models.TextField(max_length=255, null=True, blank=True)
+
     submitted = models.BooleanField(default=False)
 
     def __str__(self):
