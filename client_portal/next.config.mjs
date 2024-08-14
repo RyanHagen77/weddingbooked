@@ -2,14 +2,7 @@
 const nextConfig = {
   basePath: '/client_portal',
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'www.enet2.com',
-        port: '',
-        pathname: '/public/**',
-      },
-    ],
+    domains: ['www.enet2.com'], // Allow images from the enet2.com domain
   },
 };
 
