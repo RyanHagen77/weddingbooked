@@ -27,6 +27,7 @@
     "**/*.ts",
     "**/*.tsx",
     "**/*.d.ts",
+    "src/declarations.d.ts", // Ensure this is included
     ".next/types/**/*.ts"
   ],
   "exclude": ["node_modules"]
