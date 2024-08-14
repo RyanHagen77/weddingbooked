@@ -342,7 +342,7 @@ export default function Home() {
             ))}
           </div>
         </section>
-      
+
       <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
         <div className="flex-1">
           <div className="border-t-4 border-lightpink"></div>
