@@ -38,7 +38,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     <main className="min-h-screen flex flex-col items-center justify-center bg-lightpink">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
         <div className="flex justify-center mb-6">
-          <Image src="/Final_Logo.png" alt="Essence Logo" width={100} height={100} layout="fixed" />
+          <Image src="/client_portal/Final_Logo.png" alt="Essence Logo" width={100} height={100} layout="fixed" />
         </div>
         <h2 className="text-2xl font-bold text-center mb-6 text-black">Login</h2>
         {error && <p className="text-red-500 text-center">{error}</p>}

@@ -24,38 +24,53 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [contractId, setContractId] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log("AuthProvider useEffect triggered");
+
     const accessToken = localStorage.getItem('access_token');
     const savedContractId = localStorage.getItem('contract_id');
     const tokenExpiration = localStorage.getItem('token_expiration');
 
+    console.log("Access Token:", accessToken);
+    console.log("Saved Contract ID:", savedContractId);
+    console.log("Token Expiration:", tokenExpiration);
+
     if (accessToken && savedContractId && tokenExpiration) {
       const now = new Date().getTime();
       if (now < parseInt(tokenExpiration)) {
+        console.log("Token is valid");
         setIsAuthenticated(true);
         setContractId(savedContractId);
       } else {
-        console.log('Token has expired');
+        console.log("Token has expired");
         logout(); // Automatically log out if the token has expired
       }
     } else {
-      console.log('No valid token found, setting isAuthenticated to false');
+      console.log("No valid token found, setting isAuthenticated to false");
       setIsAuthenticated(false);
     }
   }, []);
 
   const login = (accessToken: string, contractId: string) => {
+    console.log("Logging in with token and contract ID:", accessToken, contractId);
+
     const expirationTime = new Date().getTime() + 60 * 60 * 1000; // Token expires in 1 hour
     localStorage.setItem('access_token', accessToken);
     localStorage.setItem('contract_id', contractId);
     localStorage.setItem('token_expiration', expirationTime.toString());
+
+    console.log("Token expiration set to:", expirationTime);
+
     setIsAuthenticated(true);
     setContractId(contractId);
   };
 
   const logout = () => {
+    console.log("Logging out");
+
     localStorage.removeItem('access_token');
     localStorage.removeItem('contract_id');
     localStorage.removeItem('token_expiration');
+
     setIsAuthenticated(false);
     setContractId(null);
   };
