@@ -1,8 +1,9 @@
 from django.contrib import admin
 
-from .models import (Client, ServiceType, LeadSourceCategory, EventStaffBooking, Contract, AdditionalProduct, TaxRate, DiscountRule, Package,
-                     AdditionalEventStaffOption, EngagementSessionOption, Location, OvertimeOption, ContractOvertime,
-                     ContractProduct, Payment, ServiceFeeType, PaymentPurpose, PaymentSchedule, SchedulePayment, ServiceFee, ChangeLog, ContractAgreement, RiderAgreement)
+from .models import (Client, ServiceType, LeadSourceCategory, EventStaffBooking, Contract, AdditionalProduct, TaxRate,
+                     DiscountRule, Package, AdditionalEventStaffOption, EngagementSessionOption, Location, OvertimeOption,
+                     ContractOvertime, ContractProduct, Payment, ServiceFeeType, PaymentPurpose, PaymentSchedule,
+                     SchedulePayment, ServiceFee, ChangeLog, ContractAgreement, RiderAgreement, WeddingDayGuide)
 
 
 admin.site.register(TaxRate)
@@ -213,3 +214,26 @@ class ChangeLogAdmin(admin.ModelAdmin):
     @admin.register(RiderAgreement)
     class RiderAgreementAdmin(admin.ModelAdmin):
         list_display = ('contract', 'rider_type', 'client_name', 'agreement_date', 'notes', 'created_at', 'updated_at')
+
+
+class WeddingDayGuideAdmin(admin.ModelAdmin):
+    list_display = ('contract', 'event_date', 'primary_contact', 'primary_email', 'ceremony_site', 'reception_site', 'submitted')
+    search_fields = ('primary_contact', 'primary_email', 'ceremony_site', 'reception_site', 'submitted')
+    list_filter = ('event_date', 'ceremony_site', 'reception_site', 'submitted')
+    ordering = ('-event_date',)
+
+    fieldsets = (
+        (None, {
+            'fields': ('contract', 'event_date', 'primary_contact', 'primary_email', 'submitted')
+        }),
+        ('Ceremony Details', {
+            'fields': ('ceremony_site', 'ceremony_address', 'ceremony_start', 'ceremony_end')
+        }),
+        ('Reception Details', {
+            'fields': ('reception_site', 'reception_address', 'reception_start', 'reception_end')
+        }),
+        # Add other sections as needed
+    )
+
+admin.site.register(WeddingDayGuide, WeddingDayGuideAdmin)
+(WeddingDayGuide, WeddingDayGuideAdmin)
