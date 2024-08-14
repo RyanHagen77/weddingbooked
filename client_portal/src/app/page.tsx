@@ -149,7 +149,7 @@ export default function Home() {
           <div className="flex justify-center w-full">
             <div className="relative w-full sm:w-1/2">
               <Image
-                  src="/Final_Logo.png"  // Correct path for public folder
+                  src="/client_portal/Final_Logo.png"  // Correct path for public folder
                   alt="Essense Logo"
                   width={100}
                   height={100}
