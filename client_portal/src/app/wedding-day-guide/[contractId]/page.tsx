@@ -1,7 +1,7 @@
 'use client'; // Mark this as a Client Component
 
 import { useParams } from 'next/navigation';
-import WeddingDayGuideForm from '../../../components/WeddingDayGuideForm';
+import WeddingDayGuideForm from '../../../../client_***REMOVED***m';
 import styles from '../../../../client_portal/src/components/WeddingDayGuide.module.css';
 
 const WeddingDayGuidePage = () => {
