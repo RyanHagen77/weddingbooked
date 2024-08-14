@@ -149,13 +149,13 @@ export default function Home() {
           <div className="flex justify-center w-full">
             <div className="relative w-full sm:w-1/2">
               <Image
-                src="/Final_Logo.png"  // Includes basePath
-                alt="Essense Logo"
-                width={100}
-                height={100}
-                layout="responsive"
-                objectFit="contain"
-                className="sm:w-[400px] sm:h-[400px]"
+                  src="/client_portal/Final_Logo.png"  // Includes basePath
+                  alt="Essense Logo"
+                  width={100}
+                  height={100}
+                  layout="responsive"
+                  objectFit="contain"
+                  className="sm:w-[400px] sm:h-[400px]"
               />
             </div>
           </div>
@@ -301,55 +301,48 @@ export default function Home() {
           </div>
         </div>
 
-        <section id="photographers" className="py-6 px-6 bg-pistachio">
-          <div className="py-20 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
-            {photographers.map(photographer => (
-                <div key={photographer.id}>
-                  <div className="text-center bg-white rounded-t-lg shadow-lg block">
-                    <a href={photographer.website} target="_blank" rel="noopener noreferrer"
-                      className="transition-transform duration-300 ease-in-out hover:scale-105 block">
-                      {photographer.profile_picture && (
-                        <Image
-                          src={`https://www.enet2.com${photographer.profile_picture}`}
-                          alt={photographer.name}
-                          width={500} // Specify a width
-                          height={500} // Specify a height
-                          className="w-full h-auto object-cover"
-                        />
-                      )}
-                    </a>
-                  </div>
-                  <div className="flex justify-center">
-                    <button
-                        className="w-[50%] bg-white text-dark-pistachio border-dark-pistachio py-2 my-4 flex justify-center items-center">
-                      <a href={photographer.website} target="_blank" rel="noopener noreferrer"
-                         className="flex items-center">
-                        View My Demo <span className="ml-2 text-lg">&rsaquo;</span>
-                      </a>
-                    </button>
-                  </div>
+      <section id="photographers" className="py-6 px-6 bg-pistachio">
+        <div className="py-20 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
+          {photographers.map(photographer => (
+              <div key={photographer.id}>
+                <div className="text-center bg-white rounded-t-lg shadow-lg block">
+                  <a href={photographer.website} target="_blank" rel="noopener noreferrer"
+                     className="transition-transform duration-300 ease-in-out hover:scale-105 block">
+                    {photographer.profile_picture && (
+                        <img src={`https://www.enet2.com${photographer.profile_picture}`} alt={photographer.name}
+                             className="w-full h-auto object-cover"/>
+                    )}
+                  </a>
                 </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Additional sections... */}
-
-        <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
-          <div className="flex-1">
-            <div className="border-t-4 border-lightpink"></div>
-            <div className="border-t-2 border-lightpink mt-[6px]"></div>
-          </div>
-          <h2 className="px-16 text-5xl font-brittany">Wedding Planning Guide</h2>
-          <div className="flex-1">
-            <div className="border-t-4 border-lightpink"></div>
-            <div className="border-t-2 border-lightpink mt-[6px]"></div>
-          </div>
+                <div className="flex justify-center">
+                  <button
+                      className="w-[50%] bg-white text-dark-pistachio border-dark-pistachio py-2 my-4 flex justify-center items-center">
+                    <a href={photographer.website} target="_blank" rel="noopener noreferrer"
+                       className="flex items-center">
+                      View My Demo <span className="ml-2 text-lg">&rsaquo;</span>
+                    </a>
+                  </button>
+                </div>
+              </div>
+          ))}
         </div>
-        <section id='wedding-planning-guide' className="text-center py-8 mb-[200px]">
-          {contractId ? (
+      </section>
+
+      <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
+        <div className="flex-1">
+          <div className="border-t-4 border-lightpink"></div>
+          <div className="border-t-2 border-lightpink mt-[6px]"></div>
+        </div>
+        <h2 className="px-16 text-5xl font-brittany">Wedding Planning Guide</h2>
+        <div className="flex-1">
+          <div className="border-t-4 border-lightpink"></div>
+          <div className="border-t-2 border-lightpink mt-[6px]"></div>
+        </div>
+      </div>
+      <section id='wedding-planning-guide' className="text-center py-8 mb-[200px]">
+        {contractId ? (
             formSubmitted ? (
-              <p className="text-lg text-red-500 font-semibold">
+                <p className="text-lg text-red-500 font-semibold">
                 The Wedding Day Guide has been submitted and can no longer be edited.
               </p>
             ) : (
