@@ -149,7 +149,7 @@ export default function Home() {
           <div className="flex justify-center w-full">
             <div className="relative w-full sm:w-1/2">
               <Image
-                  src="/client_portal/Final_Logo.png"  // Includes basePath
+                  src="/Final_Logo.png"  // Correct path for public folder
                   alt="Essense Logo"
                   width={100}
                   height={100}
@@ -301,33 +301,48 @@ export default function Home() {
           </div>
         </div>
 
-      <section id="photographers" className="py-6 px-6 bg-pistachio">
-        <div className="py-20 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
-          {photographers.map(photographer => (
+        <section id="photographers" className="py-6 px-6 bg-pistachio">
+          <div className="py-20 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
+            {photographers.map(photographer => (
               <div key={photographer.id}>
                 <div className="text-center bg-white rounded-t-lg shadow-lg block">
-                  <a href={photographer.website} target="_blank" rel="noopener noreferrer"
-                     className="transition-transform duration-300 ease-in-out hover:scale-105 block">
+                  <a
+                    href={photographer.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transition-transform duration-300 ease-in-out hover:scale-105 block"
+                  >
                     {photographer.profile_picture && (
-                        <img src={`https://www.enet2.com${photographer.profile_picture}`} alt={photographer.name}
-                             className="w-full h-auto object-cover"/>
+                      <Image
+                        src={`https://www.enet2.com${photographer.profile_picture}`}
+                        alt={photographer.name}
+                        width={500} // Adjust this to the actual width of your image
+                        height={500} // Adjust this to the actual height of your image
+                        layout="responsive"
+                        objectFit="cover"
+                        className="w-full h-auto object-cover"
+                      />
                     )}
                   </a>
                 </div>
                 <div className="flex justify-center">
                   <button
                       className="w-[50%] bg-white text-dark-pistachio border-dark-pistachio py-2 my-4 flex justify-center items-center">
-                    <a href={photographer.website} target="_blank" rel="noopener noreferrer"
-                       className="flex items-center">
+                    <a
+                        href={photographer.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center"
+                    >
                       View My Demo <span className="ml-2 text-lg">&rsaquo;</span>
                     </a>
                   </button>
                 </div>
               </div>
-          ))}
-        </div>
-      </section>
-
+            ))}
+          </div>
+        </section>
+      
       <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
         <div className="flex-1">
           <div className="border-t-4 border-lightpink"></div>
@@ -343,25 +358,25 @@ export default function Home() {
         {contractId ? (
             formSubmitted ? (
                 <p className="text-lg text-red-500 font-semibold">
-                The Wedding Day Guide has been submitted and can no longer be edited.
-              </p>
+                  The Wedding Day Guide has been submitted and can no longer be edited.
+                </p>
             ) : (
-              <a
-                href={`/wedding-day-guide/${contractId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-lg text-black font-semibold underline"
-              >
-                Please click here to fill out your wedding day guide for your team!
-              </a>
+                <a
+                    href={`/wedding-day-guide/${contractId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-lg text-black font-semibold underline"
+                >
+                  Please click here to fill out your wedding day guide for your team!
+                </a>
             )
-          ) : (
+        ) : (
             <p className="text-lg text-black font-semibold">
               Contract ID not available. Please make sure you are logged in.
             </p>
-          )}
-        </section>
-        <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
+        )}
+      </section>
+      <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
           <div className="flex-1">
             <div className="border-t-4 border-lightpink"></div>
             <div className="border-t-2 border-lightpink mt-[6px]"></div>
