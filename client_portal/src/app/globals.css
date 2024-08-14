@@ -1,0 +1,79 @@
+/* src/global.css */
+@import url('https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,100..900;1,100..900&family=Dancing+Script:wght@400..700&family=Limelight&family=Parisienne&display=swap');
+
+@font-face {
+  font-family: 'Brittany Signature';
+  src: url('/client_portal/fonts/BrittanySignature.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+.embla {
+  overflow: hidden;
+}
+
+.embla__viewport {
+  margin: auto;
+}
+
+.embla__container {
+  display: flex;
+}
+
+/* Commented out since it's not used */
+/* .embla__slide {
+  margin: 0;
+  padding: 0;
+} */
+
+.embla__slide__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.is-active {
+  flex-grow: 1;
+}
+
+.bg-dot-grid {
+  background-image: radial-gradient(circle, #1b254a30 1px, transparent 1px),
+                    radial-gradient(circle, #1b254a30 1px, transparent 1px);
+  background-size: 50px 50px;
+  background-position: 0 0, 25px 25px;
+}

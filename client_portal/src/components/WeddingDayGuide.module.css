@@ -1,0 +1,22 @@
+.bgPistachio {
+  background-color: #f0f9f0; /* Pistachio background color */
+}
+
+.sectionBox {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.fieldTitle {
+  font-weight: bold;
+}
+
