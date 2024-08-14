@@ -2,38 +2,304 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Wedding Day Guide PDF</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wedding Day Guide</title>
     <style>
-        /* Add styles for PDF layout */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .header, .section-box {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        .field-title {
+            font-weight: bold;
+            color: #34495e;
+        }
+        .logo img {
+            max-width: 200px;
+            max-height: 100px;
+            margin-bottom: 20px;
+        }
+        h4, h5 {
+            color: #2c3e50;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
-    <h1>Wedding Day Guide for {{ guide.primary_contact }} and {{ guide.partner_contact }}</h1>
-    <p>Event Date: {{ guide.event_date }}</p>
-    <h2>General Info</h2>
-    <p>Primary Contact: {{ guide.primary_contact }}</p>
-    <p>Primary Email: {{ guide.primary_email }}</p>
-    <p>Primary Phone: {{ guide.primary_phone }}</p>
-    <p>Partner Contact: {{ guide.partner_contact }}</p>
-    <p>Partner Email: {{ guide.partner_email }}</p>
-    <p>Partner Phone: {{ guide.partner_phone }}</p>
-    <h2>Wedding Day Locations</h2>
-    <h3>Bride's Dressing Location</h3>
-    <p>Location: {{ guide.dressing_location }}</p>
-    <p>Address: {{ guide.dressing_address }}</p>
-    <p>Start Time: {{ guide.dressing_start_time }}</p>
-    <h3>Ceremony Location</h3>
-    <p>Location: {{ guide.ceremony_location }}</p>
-    <p>Address: {{ guide.ceremony_address }}</p>
-    <p>Phone: {{ guide.ceremony_phone }}</p>
-    <p>Start Time: {{ guide.ceremony_start }}</p>
-    <p>End Time: {{ guide.ceremony_end }}</p>
-    <h3>Reception Location</h3>
-    <p>Location: {{ guide.reception_location }}</p>
-    <p>Address: {{ guide.reception_address }}</p>
-    <p>Phone: {{ guide.reception_phone }}</p>
-    <p>Start Time: {{ guide.reception_start }}</p>
-    <p>End Time: {{ guide.reception_end }}</p>
-    <!-- Add other sections similarly -->
+
+    <div class="header" style="text-align: center; margin-bottom: 20px;">
+        <div class="logo" style="display: inline-block;">
+            <img src="{{ logo_url }}" alt="Logo" style="max-width: 200px; display: block; margin: 0 auto;">
+        </div>
+        <h3 style="font-size: 1.5rem; font-weight: bold; text-align: center;">Wedding Day Guide</h3>
+    </div>
+
+    <div class="content">
+
+        <!-- Emergency Contact Section -->
+        <div class="section-box">
+            <div class="section-title">Emergency Contact</div>
+            <p><strong>(847) 780-7092:</strong> Contact Essence with this number in case of any emergency on your wedding day.</p>
+        </div>
+
+        <!-- General Info Section -->
+        <div class="section-box">
+            <div class="section-title">General Info</div>
+            <div>
+                <p><strong>Wedding Date:</strong> {{ guide.event_date }}</p>
+                <p><strong>Primary Full Name:</strong> {{ guide.primary_contact }}</p>
+                <p><strong>Primary Email:</strong> {{ guide.primary_email }}</p>
+                <p><strong>Primary Cell #:</strong> {{ guide.primary_phone }}</p>
+                <p><strong>Partner Full Name:</strong> {{ guide.partner_contact }}</p>
+                <p><strong>Partner Email:</strong> {{ guide.partner_email }}</p>
+                <p><strong>Partner Cell #:</strong> {{ guide.partner_phone }}</p>
+            </div>
+        </div>
+
+        <!-- Wedding Day Locations Section -->
+        <div class="section-box">
+            <div class="section-title">Wedding Day Locations</div>
+
+            <h4>Primary Dressing Location</h4>
+            <p>The photographer typically comes to the bride's dressing location 3 hours before the ceremony.</p>
+            <div>
+                <p><strong>Dressing Location:</strong> {{ guide.dressing_location }}</p>
+                <p><strong>Start Time:</strong> {{ guide.dressing_start_time }}</p>
+                <p><strong>Dressing Address:</strong> {{ guide.dressing_address }}</p>
+            </div>
+
+            <h3>Ceremony Info</h3>
+            <div>
+                <p><strong>Ceremony Location:</strong> {{ guide.ceremony_site }}</p>
+                <p><strong>Ceremony Times:</strong> {{ guide.ceremony_start }} to {{ guide.ceremony_end }}</p>
+                <p><strong>Ceremony Address:</strong> {{ guide.ceremony_address }}</p>
+                <p><strong>Ceremony Phone #:</strong> {{ guide.ceremony_phone }}</p>
+            </div>
+
+            <h3>Reception Info</h3>
+            <div>
+                <p><strong>Reception Location:</strong> {{ guide.reception_site }}</p>
+                <p><strong>Cocktail Start Time:</strong> {{ guide.reception_start }}</p>
+                <p><strong>Reception Phone #:</strong> {{ guide.reception_phone }}</p>
+                <p><strong>Reception Address:</strong> {{ guide.reception_address }}</p>
+                <p><strong>Dinner Start Time:</strong> {{ guide.dinner_start }}</p>
+                <p><strong>Reception Ends:</strong> {{ guide.reception_end }}</p>
+                <p><strong>Staff Table #:</strong> {{ guide.staff_table }}</p>
+            </div>
+
+            <h3>Location Photo Stops</h3>
+            <p>It is recommended that you only have 1-2 photo location stops, and that you accurately factor in transportation time.</p>
+            <div>
+                <p><strong>Stop 1:</strong> {{ guide.photo_stop1 }}</p>
+                <p><strong>Stop 2:</strong> {{ guide.photo_stop2 }}</p>
+                <p><strong>Stop 3:</strong> {{ guide.photo_stop3 }}</p>
+                <p><strong>Stop 4:</strong> {{ guide.photo_stop4 }}</p>
+            </div>
+
+            <h4>For The 2nd Photographer</h4>
+            <div>
+                <p><strong>Starting Location:</strong> {{ guide.photographer2_start_location }}</p>
+                <p><strong>Starting Location Address:</strong> {{ guide.photographer2_start_location_address }}</p>
+                <p><strong>Starting Time:</strong> {{ guide.photographer2_start }}</p>
+            </div>
+        </div>
+
+        <!-- Shot List Section -->
+        <div class="section-box">
+            <div class="section-title">Shot List</div>
+            <p>What follows are the photos Essence photographers take at a typical wedding depending on time and organization. Additional photo requests can be added in the next section.</p>
+
+            <div>
+                <h4>Partner 1 Details</h4>
+                <ul>
+                    <li>Dress/Suit</li>
+                    <li>Shoes</li>
+                    <li>Bouquet/Boutonniere</li>
+                    <li>Putting Dress On or Fixing Tie</li>
+                </ul>
+            </div>
+
+            <div>
+                <h4>Before Ceremony - Partner 1 (P1)</h4>
+                <ul>
+                    <li>Alone</li>
+                    <li>P1 w/ Attendants</li>
+                    <li>P1 w/ Flower Attendants</li>
+                    <li>P1 w/ Mom</li>
+                    <li>P1 w/ Dad</li>
+                    <li>P1 w/ Mom & Dad</li>
+                    <li>P1 w/ Siblings</li>
+                    <li>P1 w/ Immediate Family</li>
+                </ul>
+            </div>
+
+            <div>
+                <h4>On Location</h4>
+                <ul>
+                    <li>Partner 1 Alone</li>
+                    <li>Partner 2 Alone</li>
+                    <li>P1 w/ P2 Attendants</li>
+                    <li>P2 w/ P1 Attendants</li>
+                    <li>Couple Photos</li>
+                    <li>Fun Wedding Party Photos</li>
+                </ul>
+            </div>
+
+            <div>
+                <h4>Before Ceremony - Partner 2 (P2)</h4>
+                <ul>
+                    <li>Alone</li>
+                    <li>P2 w/ Attendants</li>
+                    <li>P2 w/ Ring Bearers</li>
+                    <li>P2 w/ Ushers</li>
+                    <li>P2 w/ Mom</li>
+                    <li>P2 w/ Dad</li>
+                    <li>P2 w/ Mom & Dad</li>
+                    <li>P2 w/ Siblings</li>
+                    <li>P2 w/ Immediate Family</li>
+                </ul>
+            </div>
+
+            <div>
+                <h4>Post-Ceremony</h4>
+                <ul>
+                    <li>P1 at Altar</li>
+                    <li>P2 at Altar</li>
+                    <li>Couple at Altar</li>
+                    <li>Couple w/ Wedding Party</li>
+                    <li>Couple w/ P1's Parents</li>
+                    <li>Couple w/ P1's Immediate Family</li>
+                    <li>Couple w/ P1's Grandparents</li>
+                    <li>Couple w/ P1's Extended Family</li>
+                    <li>Couple w/ Both Sets of Parents</li>
+                    <li>Couple w/ P2's Parents</li>
+                    <li>Couple w/ P2's Immediate Family</li>
+                    <li>Couple w/ P2's Grandparents</li>
+                    <li>Couple w/ P2's Extended Family</li>
+                    <li>Church Exit</li>
+                </ul>
+            </div>
+
+            <div>
+                <h4>Ceremony</h4>
+                <ul>
+                    <li>Processional</li>
+                    <li>Vows</li>
+                    <li>Ring Exchange</li>
+                    <li>First Kiss</li>
+                    <li>Flowers to Mothers</li>
+                    <li>Presentation of Couple</li>
+                    <li>Recessional</li>
+                </ul>
+            </div>
+
+            <div>
+                <h4>Reception</h4>
+                <ul>
+                    <li>Reception Details</li>
+                    <li>Cocktail Hour Mingling</li>
+                    <li>Introductions</li>
+                    <li>Cake Cutting</li>
+                    <li>Toasts</li>
+                    <li>First Dance</li>
+                    <li>Special Dances</li>
+                    <li>Bouquet Toss</li>
+                    <li>Garter Toss</li>
+                    <li>General Dancing</li>
+                    <li>Goodbye Shot</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Family & Wedding Party Info Section -->
+        <div class="section-box">
+            <div class="section-title">Family & Wedding Party Info</div>
+            <div>
+                <h4>Wedding Party</h4>
+                <p><strong>Attendant of Honor P1:</strong> {{ guide.p1_attendant_of_honor }}</p>
+                <p><strong>Attendant of Honor P2:</strong> {{ guide.p2_attendant_of_honor }}</p>
+                <p><strong># of Attendants P1:</strong> {{ guide.p1_attendant_qty }}</p>
+                <p><strong># of Attendants P2:</strong> {{ guide.p2_attendant_qty }}</p>
+                <p><strong># of Flower Attendants:</strong> {{ guide.flower_attendant_qty }}</p>
+                <p><strong># of Ring Bearers:</strong> {{ guide.ring_bearer_qty }}</p>
+                <p><strong># of Ushers:</strong> {{ guide.usher_qty }}</p>
+            </div>
+
+            <div>
+                <h4>Family</h4>
+                <p><strong>Partner 1's Side</strong></p>
+                <p><strong>P1's Parents:</strong> {{ guide.p1_parent_names }}</p>
+                <p><strong>P1's Siblings:</strong> {{ guide.p1_sibling_names }}</p>
+                <p><strong>P1's Grandparents:</strong> {{ guide.p1_grandparent_names }}</p>
+
+                <p><strong>Partner 2's Side</strong></p>
+                <p><strong>P2's Parents:</strong> {{ guide.p2_parent_names }}</p>
+                <p><strong>P2's Siblings:</strong> {{ guide.p2_sibling_names }}</p>
+                <p><strong>P2's Grandparents:</strong> {{ guide.p2_grandparent_names }}</p>
+            </div>
+        </div>
+
+        <!-- Additional Photography Requests Section -->
+        <div class="section-box">
+            <div class="section-title">Additional Photography Requests</div>
+            <p>Please add your photo requests below. We will do our best to get to all of them, time and weather permitting.</p>
+            <p><strong>Formal/Posed Photo Requests:</strong> {{ guide.additional_photo_request1 }}</p>
+            <p><strong>Formal/Posed Photo Requests (2):</strong> {{ guide.additional_photo_request2 }}</p>
+            <p><strong>Formal/Posed Photo Requests (3):</strong> {{ guide.additional_photo_request3 }}</p>
+            <p><strong>Other Photo Requests:</strong> {{ guide.additional_photo_request4 }}</p>
+            <p><strong>Other Photo Requests (2):</strong> {{ guide.additional_photo_request5 }}</p>
+        </div>
+
+        <!-- Videography Customers Only Section -->
+        <div class="section-box">
+            <div class="section-title">Videography Customers Only</div>
+            <p>Essence cannot process your video until you have provided us with the following information.</p>
+            <p>Please type your names below EXACTLY as you would like them to appear in the final video.</p>
+            <p><strong>Names:</strong> {{ guide.video_client_names }}</p>
+
+            <h4>Wedding Story</h4>
+            <p>Your wedding story will be a collection of highlights from your full wedding day.</p>
+            <p><strong>WS Song Title:</strong> {{ guide.wedding_story_song_title }}</p>
+            <p><strong>WS Song Artist:</strong> {{ guide.wedding_story_song_artist }}</p>
+
+            <h4>Dance Montage</h4>
+            <p>Your dance montage will be an upbeat collection of footage shot during the general dancing portion of your evening paired with one song.</p>
+            <p><strong>DM Song Title:</strong> {{ guide.dance_montage_song_title }}</p>
+            <p><strong>DM Song Artist:</strong> {{ guide.dance_montage_song_artist }}</p>
+
+            <h4>Additional Editing Notes</h4>
+            <p><strong>Other Special Dances to be Included:</strong> {{ guide.video_special_dances }}</p>
+        </div>
+
+        <!-- Photo Booth Customers Only Section -->
+        <div class="section-box">
+            <div class="section-title">Photo Booth Customers Only</div>
+            <p>Your open-air photo booth, with a sparkly, silver backdrop and props, opens during the last 3 hours of the open dance time at your wedding.</p>
+            <p><strong>Text Line 1 (up to 15 characters):</strong> {{ guide.photo_booth_text_line1 }}</p>
+            <p><strong>Text Line 2 (up to 15 characters):</strong> {{ guide.photo_booth_text_line2 }}</p>
+            <p><strong>Placement:</strong> {{ guide.photo_booth_placement }}</p>
+        </div>
+
+    </div>
+
 </body>
 </html>
