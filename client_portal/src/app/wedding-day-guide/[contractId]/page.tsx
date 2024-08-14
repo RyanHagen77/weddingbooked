@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import WeddingDayGuideForm from '../../../components/WeddingDayGuideForm';
-import styles from '../../../components/WeddingDayGuide.module.css';
+import styles from '../../../../client_portal/src/components/WeddingDayGuide.module.css';
 
 const WeddingDayGuidePage = () => {
   const params = useParams();
