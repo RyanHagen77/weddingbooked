@@ -1026,7 +1026,24 @@
                             </div>
                         </div>
                     </div>
-                </div> <!-- Closes the tab-pane fade for the Docs tab -->
+                    <!-- Office Staff Link to Wedding Day Guide -->
+                    {% if is_office_staff %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h6>Wedding Day Guide</h6>
+                                </div>
+                                <div class="card-body">
+                                    <a href="{% url 'contracts:wedding_day_guide' contract.contract_id %}" class="btn btn-dusty-pink">
+                                        View/Edit Wedding Day Guide
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
                 <div class="tab-pane container fade" id="financial">
                     <input type="hidden" class="form-control" id="id_location" name="location">
                     <!-- Tab Navigation -->
