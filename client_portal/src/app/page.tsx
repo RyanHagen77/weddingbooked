@@ -362,7 +362,7 @@ export default function Home() {
                 </p>
             ) : (
                 <a
-                    href={`/wedding-day-guide/${contractId}`}
+                    href={`/client_portal/wedding-day-guide/${contractId}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-lg text-black font-semibold underline"
