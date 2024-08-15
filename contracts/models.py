@@ -55,7 +55,7 @@ class ServiceType(models.Model):
 class Client(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     primary_contact = models.CharField(max_length=255)
-    primary_email = models.EmailField()
+    primary_email = models.EmailField(unique=False)
     primary_phone1 = models.CharField(
         max_length=12,  # Increase max_length to accommodate dashes
         validators=[phone_validator],
@@ -1132,14 +1132,14 @@ class RiderAgreement(models.Model):
 
 class WeddingDayGuide(models.Model):
     contract = models.OneToOneField('Contract', on_delete=models.CASCADE, related_name='wedding_day_guide')
-    event_date = models.DateField(null=True, blank=True)
-    primary_contact = models.CharField(max_length=255, null=True, blank=True)
-    primary_email = models.EmailField(null=True, blank=True)
-    primary_phone = models.CharField(max_length=15, null=True, blank=True)
+    event_date = models.DateField()
+    primary_contact = models.CharField(max_length=255)
+    primary_email = models.EmailField()
+    primary_phone = models.CharField(max_length=15)
     partner_contact = models.CharField(max_length=255, null=True, blank=True)
     partner_email = models.EmailField(null=True, blank=True)
     partner_phone = models.CharField(max_length=15, null=True, blank=True)
-    dressing_location = models.CharField(max_length=255, null=True, blank=True)
+    dressing_location = models.CharField(max_length=255)
     dressing_address = models.CharField(max_length=255, null=True, blank=True)
     dressing_start_time = models.TimeField(null=True, blank=True)
     ceremony_site = models.CharField(max_length=255, null=True, blank=True)
@@ -1161,19 +1161,19 @@ class WeddingDayGuide(models.Model):
     photographer2_start_location = models.CharField(max_length=255, null=True, blank=True)
     photographer2_start_location_address = models.CharField(max_length=255, null=True, blank=True)
     photographer2_start = models.TimeField(null=True, blank=True)
-    p1_attendant_of_honor = models.CharField(max_length=255, null=True, blank=True)
-    p1_attendant_qty = models.IntegerField(null=True, blank=True)
-    flower_attendant_qty = models.IntegerField(null=True, blank=True)
+    maid_of_honor = models.CharField(max_length=255, null=True, blank=True)
+    bridesmaids_qty = models.IntegerField(null=True, blank=True)
+    flower_girl_qty = models.IntegerField(null=True, blank=True)
     usher_qty = models.IntegerField(null=True, blank=True)
-    p2_attendant_of_honor = models.CharField(max_length=255, null=True, blank=True)
-    p2_attendant_qty = models.IntegerField(null=True, blank=True)
+    best_man = models.CharField(max_length=255, null=True, blank=True)
+    groomsmen_qty = models.IntegerField(null=True, blank=True)
     ring_bearer_qty = models.IntegerField(null=True, blank=True)
-    p1_parent_names = models.TextField(max_length=255, null=True, blank=True)
-    p1_sibling_names = models.TextField(max_length=255, null=True, blank=True)
-    p1_grandparent_names = models.TextField(max_length=255, null=True, blank=True)
-    p2_parent_names = models.TextField(max_length=255, null=True, blank=True)
-    p2_sibling_names = models.TextField(max_length=255, null=True, blank=True)
-    p2_grandparent_names = models.TextField(max_length=255, null=True, blank=True)
+    bride_parents_names = models.TextField(max_length=255, null=True, blank=True)
+    bride_sibling_names = models.TextField(max_length=255, null=True, blank=True)
+    bride_grandparents_names = models.TextField(max_length=255, null=True, blank=True)
+    groom_parents_names = models.TextField(max_length=255, null=True, blank=True)
+    groom_siblings_names = models.TextField(max_length=255, null=True, blank=True)
+    groom_grandparents_names = models.TextField(max_length=255, null=True, blank=True)
     additional_photo_request1 = models.TextField(max_length=255, null=True, blank=True)
     additional_photo_request2 = models.TextField(max_length=255, null=True, blank=True)
     additional_photo_request3 = models.TextField(max_length=255, null=True, blank=True)
@@ -1190,10 +1190,6 @@ class WeddingDayGuide(models.Model):
     photo_booth_text_line1 = models.TextField(max_length=255, null=True, blank=True)
     photo_booth_text_line2 = models.TextField(max_length=255, null=True, blank=True)
     photo_booth_placement = models.TextField(max_length=255, null=True, blank=True)
-
-    version_number = models.IntegerField(default=1)  # Version control
-
-    dj_booth_placement = models.TextField(max_length=255, null=True, blank=True)
 
     submitted = models.BooleanField(default=False)
 
