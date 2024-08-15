@@ -461,6 +461,10 @@ def send_email_to_client(request, message, contract):
 def contract_detail(request, id):
     contract = get_object_or_404(Contract, pk=id)
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
+    # Check if the user is in the "Office Staff" group
+    is_office_staff = request.user.groups.filter(name='Office Staff').exists()
+
     form = ContractForm(request.POST or None, instance=contract)
     client = contract.client  # Assuming there's a ForeignKey relationship to the Client model
     booking_form = EventStaffBookingForm()
@@ -646,9 +650,11 @@ def contract_detail(request, id):
         'discounts': discounts,
         'service_types': service_types,
         'changelogs': changelogs,
+        'is_office_staff': is_office_staff,  # Pass to the template
     }
 
     return render(request, 'contracts/contract_detail.html', context)
+
 
 @login_required
 def edit_contract(request, id):
