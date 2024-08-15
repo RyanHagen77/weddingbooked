@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('contracts', '0089_remove_weddingdayguide_ceremony_location_and_more'),
+      #  ('contracts', '0089_remove_weddingdayguide_ceremony_location_and_more'),
     ]
 
     operations = [
