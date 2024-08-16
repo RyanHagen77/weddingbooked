@@ -24,7 +24,7 @@ from .serializers import UnifiedCommunicationSerializer
 @permission_classes([IsAuthenticated])
 def get_contract_messages(request, contract_id):
     contract = get_object_or_404(Contract, contract_id=contract_id)
-    messages = UnifiedCommunication.objects.filter(contract=contract, note_type=UnifiedCommunication.CONTRACT).order_by('-created_at')
+    messages = UnifiedCommunication.objects.filter(contract=contract, note_type=UnifiedCommunication.PORTAL).order_by('-created_at')
     serializer = UnifiedCommunicationSerializer(messages, many=True)
     return Response(serializer.data)
 
@@ -36,7 +36,7 @@ def post_contract_message(request, contract_id):
     if content:
         message = UnifiedCommunication.objects.create(
             content=content,
-            note_type=UnifiedCommunication.CONTRACT,
+            note_type=UnifiedCommunication.PORTAL,
             created_by=request.user,
             contract=contract
         )
