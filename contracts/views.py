@@ -460,7 +460,6 @@ def send_email_to_client(request, message, contract):
 @login_required
 def contract_detail(request, id):
     contract = get_object_or_404(Contract, pk=id)
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     # Check if the user is in the "Office Staff" group
     is_office_staff = request.user.groups.filter(name='Office Staff').exists()
@@ -598,7 +597,6 @@ def contract_detail(request, id):
     context = {
         'contract': contract,
         'form': form,
-        'logo_url': logo_url,
         'packages': photography_packages,
         'photography_packages': photography_packages,
         'prospect_photographer1': contract.prospect_photographer1,
@@ -2972,8 +2970,6 @@ def get_current_booking(request):
 
 @login_required
 def wedding_day_guide(request, contract_id):
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
-
     # Check if the user is part of the "Office Staff" group
     is_office_staff = request.user.groups.filter(name='Office Staff').exists()
 
@@ -3040,7 +3036,6 @@ def wedding_day_guide(request, contract_id):
     return render(request, 'contracts/wedding_day_guide.html', {
         'form': form,
         'submitted': guide.submitted if guide else False,
-        'logo_url': logo_url
     })
 
 
