@@ -212,7 +212,6 @@ def event_staff_dashboard(request, pk):
     context = {
         'staff_member': staff_member,
         'bookings': bookings,
-        'logo_url': logo_url
     }
 
     return render(request, 'users/event_staff_dashboard.html', context)
@@ -245,8 +244,8 @@ def event_staff(request):
         'staff_list': staff_with_days_off,
         'roles': roles,
         'current_role': role_name,
-        'logo_url': logo_url
     })
+
 @login_required
 @require_http_methods(["POST"])
 def update_event_staff_ranking(request):
