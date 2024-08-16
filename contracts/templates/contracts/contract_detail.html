@@ -1026,24 +1026,23 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Office Staff Link to Wedding Day Guide -->
-                    {% if is_office_staff %}
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <h6>Wedding Day Guide</h6>
-                                </div>
-                                <div class="card-body">
-                                    <a href="{% url 'contracts:wedding_day_guide' contract.contract_id %}" class="btn btn-dusty-pink">
-                                        View/Edit Wedding Day Guide
-                                    </a>
-                                </div>
+                <!-- Office Staff Link to Wedding Day Guide -->
+                {% if is_office_staff %}
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h6>Wedding Day Guide</h6>
+                            </div>
+                            <div class="card-body">
+                                <a href="{% url 'contracts:wedding_day_guide' contract.contract_id %}" class="btn btn-dusty-pink" target="_blank" rel="noopener noreferrer">
+                                    View/Edit Wedding Day Guide
+                                </a>
                             </div>
                         </div>
                     </div>
-                    {% endif %}
                 </div>
+                {% endif %}
                 <div class="tab-pane container fade" id="financial">
                     <input type="hidden" class="form-control" id="id_location" name="location">
                     <!-- Tab Navigation -->
