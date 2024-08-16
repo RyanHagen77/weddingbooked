@@ -202,11 +202,11 @@ def event_staff_dashboard(request, pk):
     staff_member = get_object_or_404(CustomUser, pk=pk)
 
 
-    # Fetch bookings for the staff member that are either approved or confirmed
+    # Fetch bookings for the staff member that are either booked or confirmed
     bookings = EventStaffBooking.objects.filter(
         staff=staff_member
     ).filter(
-        Q(status='APPROVED') | Q(confirmed=True)
+        Q(status='BOOKED') | Q(confirmed=True)
     )
 
     context = {

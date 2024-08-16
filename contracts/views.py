@@ -2804,7 +2804,7 @@ def manage_staff_assignments(request, id):
             booking_id = form.cleaned_data.get('booking_id')
             role = form.cleaned_data.get('role')
             staff = form.cleaned_data.get('staff')
-            status = form.cleaned_data.get('status', 'APPROVED')  # Default to 'APPROVED' if not specified
+            status = form.cleaned_data.get('status', 'BOOKED')  # Default to 'BOOKED' if not specified
             confirmed = form.cleaned_data.get('confirmed', False)
             hours_booked = form.cleaned_data.get('hours_booked', 0)
             is_update = bool(booking_id)
@@ -2843,7 +2843,7 @@ def manage_staff_assignments(request, id):
             booking.update_contract_role()
 
             # Update availability based on the booking status
-            if status in ['APPROVED', 'PENDING']:
+            if status in ['BOOKED', 'PENDING']:
                 Availability.objects.update_or_create(
                     staff=staff,
                     date=contract.event_date,

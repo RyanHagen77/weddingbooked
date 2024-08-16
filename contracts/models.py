@@ -859,7 +859,7 @@ class EventStaffBooking(models.Model):
     STATUS_CHOICES = (
         ('PROSPECT', 'Prospect'),
         ('PENDING', 'Pending'),
-        ('APPROVED', 'Approved'),
+        ('BOOKED', 'Booked'),
         ('CLEARED', 'Cleared'),  # Assuming 'Cleared' status is needed as referenced in the clear method
     )
 
@@ -916,15 +916,15 @@ class EventStaffBooking(models.Model):
         self.update_contract_role()
 
     def handle_status_change(self, old_status, new_status):
-        if old_status not in ['PENDING', 'APPROVED'] and new_status in ['PENDING', 'APPROVED']:
-            # Remove staff from availability when status is set to PENDING or APPROVED
+        if old_status not in ['PENDING', 'BOOKED'] and new_status in ['PENDING', 'BOOKED']:
+            # Remove staff from availability when status is set to PENDING or BOOKED
             Availability.objects.update_or_create(
                 staff=self.staff,
                 date=self.contract.event_date,
                 defaults={'available': False}
             )
-        elif old_status in ['PENDING', 'APPROVED'] and new_status not in ['PENDING', 'APPROVED']:
-            # Add staff back to availability when status is changed from PENDING or APPROVED
+        elif old_status in ['PENDING', 'BOOKED'] and new_status not in ['PENDING', 'BOOKED']:
+            # Add staff back to availability when status is changed from PENDING or BOOKED
             Availability.objects.update_or_create(
                 staff=self.staff,
                 date=self.contract.event_date,
@@ -938,8 +938,8 @@ class EventStaffBooking(models.Model):
                 defaults={'available': True}
             )
 
-        if old_status != 'APPROVED' and new_status == 'APPROVED':
-            # Send email to the staff when booking is marked as 'Approved'
+        if old_status != 'BOOKED' and new_status == 'BOOKED':
+            # Send email to the staff when booking is marked as 'Booked'
             self.send_booking_email(self._request, self.staff, self.contract, self.get_role_display(), is_update=False)
 
     def send_booking_email(self, request, staff, contract, role, is_update):
@@ -1068,7 +1068,7 @@ class Availability(models.Model):
         # Find staff who are booked and confirmed or pending on the specific date
         booked_staff_ids = EventStaffBooking.objects.filter(
             contract__event_date=date,
-            status__in=['APPROVED', 'PENDING']
+            status__in=['BOOKED', 'PENDING']
         ).values_list('staff_id', flat=True)
 
         # Combine both unavailable and booked staff IDs
