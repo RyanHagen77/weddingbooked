@@ -1,18 +1,16 @@
 from django.db import models
 from contracts.models import Contract
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 
 
 class UnifiedCommunication(models.Model):
     INTERNAL = 'internal'
-    CONTRACT = 'contract'
+    PORTAL = 'portal'
     BOOKING = 'booking'
 
     NOTE_TYPES = [
         (INTERNAL, 'Internal Note'),
-        (CONTRACT, 'Contract Note'),
+        (PORTAL, 'Portal Note'),
         (BOOKING, 'Booking Note'),
     ]
 

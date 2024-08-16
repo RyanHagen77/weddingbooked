@@ -403,7 +403,7 @@ export default function Home() {
             </button>
           </form>
 
-          <h3 className="mt-4 text-xl font-bold">Contract Messages</h3>
+          <h3 className="mt-4 text-xl font-bold">Messages</h3>
           {messages.length > 0 ? (
               messages.map(note => (
                   <div key={note.id} className="message mt-2 p-2 border border-gray-300 rounded">
