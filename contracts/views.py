@@ -84,7 +84,6 @@ def success_view(request):
 def contract_search(request):
     form = ContractSearchForm(request.GET)
     contracts = Contract.objects.all().order_by('-event_date')
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     order = request.GET.get('order', 'desc')
     if order == 'asc':
@@ -166,14 +165,12 @@ def contract_search(request):
     return render(request, 'contracts/contract_search.html', {
         'form': form,
         'contracts': contracts,
-        'logo_url': logo_url
     })
 
 @login_required
 def booking_search(request):
     booking_search_query = request.GET.get('booking_q')
     bookings = EventStaffBooking.objects.all()
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     if booking_search_query:
         bookings = bookings.filter(
@@ -224,7 +221,6 @@ def booking_search(request):
 
     return render(request, 'contracts/booking_search.html', {
         'bookings': bookings,
-        'logo_url': logo_url
     })
 
 
@@ -232,7 +228,6 @@ def booking_search(request):
 def new_contract(request):
     contract_form = NewContractForm(request.POST or None)
     client_form = ClientForm(request.POST or None)
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     if request.method == 'POST':
         if client_form.is_valid() and contract_form.is_valid():  # Ensure both forms are validated
@@ -281,7 +276,6 @@ def new_contract(request):
     return render(request, 'contracts/contract_new.html', {
         'contract_form': contract_form,
         'client_form': client_form,
-        'logo_url': logo_url
     })
 
 
@@ -460,7 +454,6 @@ def send_email_to_client(request, message, contract):
 @login_required
 def contract_detail(request, id):
     contract = get_object_or_404(Contract, pk=id)
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     # Check if the user is in the "Office Staff" group
     is_office_staff = request.user.groups.filter(name='Office Staff').exists()
@@ -598,7 +591,6 @@ def contract_detail(request, id):
     context = {
         'contract': contract,
         'form': form,
-        'logo_url': logo_url,
         'packages': photography_packages,
         'photography_packages': photography_packages,
         'prospect_photographer1': contract.prospect_photographer1,
@@ -2812,7 +2804,7 @@ def manage_staff_assignments(request, id):
             booking_id = form.cleaned_data.get('booking_id')
             role = form.cleaned_data.get('role')
             staff = form.cleaned_data.get('staff')
-            status = form.cleaned_data.get('status', 'APPROVED')  # Default to 'APPROVED' if not specified
+            status = form.cleaned_data.get('status', 'BOOKED')  # Default to 'BOOKED' if not specified
             confirmed = form.cleaned_data.get('confirmed', False)
             hours_booked = form.cleaned_data.get('hours_booked', 0)
             is_update = bool(booking_id)
@@ -2851,7 +2843,7 @@ def manage_staff_assignments(request, id):
             booking.update_contract_role()
 
             # Update availability based on the booking status
-            if status in ['APPROVED', 'PENDING']:
+            if status in ['BOOKED', 'PENDING']:
                 Availability.objects.update_or_create(
                     staff=staff,
                     date=contract.event_date,
@@ -2972,8 +2964,6 @@ def get_current_booking(request):
 
 @login_required
 def wedding_day_guide(request, contract_id):
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
-
     # Check if the user is part of the "Office Staff" group
     is_office_staff = request.user.groups.filter(name='Office Staff').exists()
 
@@ -3040,7 +3030,6 @@ def wedding_day_guide(request, contract_id):
     return render(request, 'contracts/wedding_day_guide.html', {
         'form': form,
         'submitted': guide.submitted if guide else False,
-        'logo_url': logo_url
     })
 
 
