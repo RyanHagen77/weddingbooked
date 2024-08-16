@@ -1,85 +1,91 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Essence Staff Login</title>
+    <title>Reset Password</title>
     <style>
         body {
-            background-color: #a1c9a5; /* Pistachio background */
+            background-color: #a1c9a5; /* Pistachio background color */
             color: #3C1414; /* Dark dusty pink text */
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #ffffff; /* White box background */
+            padding: 32px; /* Padding around the content */
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Consistent shadow */
+            max-width: 100%; /* Full width */
+            width: 300px; /* Match the width to the Login form */
+            box-sizing: border-box; /* Include padding and border in width */
+        }
+        .logo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 24px; /* Space below logo */
+        }
+        .logo img {
+            width: 100px; /* Logo width */
+            height: auto; /* Maintain aspect ratio */
         }
         h2 {
             color: #b55f66; /* Darker shade of dusty pink */
-        }
-        form {
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 300px;
-            margin: auto;
+            font-size: 24px; /* Font size for heading */
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 24px; /* Space below heading */
         }
         label {
             display: block;
-            margin-bottom: 8px;
+            color: #4b4b4b; /* Grey text for labels */
+            font-size: 16px; /* Font size for labels */
+            margin-bottom: 8px; /* Space below label */
         }
-        input[type="text"],
-        input[type="password"] {
+        input[type="text"] {
             width: calc(100% - 20px); /* Adjusted width to account for padding */
             padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            margin-bottom: 16px; /* Space below input fields */
+            border: 1px solid #ccc; /* Consistent border color */
+            border-radius: 4px; /* Rounded corners */
             padding-right: 15px; /* Added padding to the right */
         }
         button {
-            background-color: #c67c85; /* Dusty pink button */
+            background-color: #c67c85; /* Dusty pink button background */
             color: white;
             padding: 10px;
             border: none;
-            border-radius: 4px;
+            border-radius: 4px; /* Rounded corners */
             cursor: pointer;
+            width: 100%; /* Full width button */
+            box-sizing: border-box; /* Include padding and border in width */
         }
         button:hover {
             background-color: #b55f66; /* Darker shade of dusty pink */
         }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            background-color: white;
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 4px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-        }
-        .forgot-password {
-            display: block;
-            margin-top: 10px;
+        .error {
+            color: #ff0000; /* Red text for errors */
+            font-size: 14px; /* Font size for error text */
             text-align: center;
-            color: #b55f66; /* Darker shade of dusty pink */
+            margin-bottom: 16px; /* Space below error message */
         }
     </style>
 </head>
 <body>
-    <h2>Essence Staff Login</h2>
-    <form method="post" action="">
-        {% csrf_token %}
-        <input type="hidden" name="next" value="{{ next }}">
-        <label for="username">Username:</label>
-        <input type="text" name="username" id="username" required>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-        <button type="submit">Login</button>
-        <a href="{% url 'password_reset' %}" class="forgot-password">Forgot Password?</a>
-    </form>
-    {% if messages %}
-        <ul>
-            {% for message in messages %}
-                <li>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+    <div class="container">
+        <div class="logo">
+            <img src="/client_portal/Final_Logo.png" alt="Essence Logo">
+        </div>
+        <h2>Reset Password</h2>
+        <form method="post">
+            {% csrf_token %}
+            <label for="id_email">Email:</label>
+            <input type="text" id="id_email" name="email" required>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
 </body>
 </html>
