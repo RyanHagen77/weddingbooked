@@ -11,7 +11,7 @@ class CommunicationForm(forms.Form):
     message_type = forms.ChoiceField(
         choices=[
             (UnifiedCommunication.INTERNAL, 'Internal Note'),
-            (UnifiedCommunication.BOOKING, 'Portal Note')
+            (UnifiedCommunication.CONTRACT, 'Contract Note')
         ],
         required=True,
         label='Message Type',
@@ -63,7 +63,7 @@ class TaskForm(forms.ModelForm):
 
         # Setting the queryset for 'note' field
         self.fields['note'].queryset = UnifiedCommunication.objects.filter(
-            note_type__in=[UnifiedCommunication.INTERNAL, UnifiedCommunication.BOOKING]
+            note_type__in=[UnifiedCommunication.INTERNAL, UnifiedCommunication.CONTRACT]
         )
         self.fields['note'].label_from_instance = lambda obj: "{} - {}".format(obj.note_type, obj.description[:30])
 
