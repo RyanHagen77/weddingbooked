@@ -2,15 +2,10 @@
 const nextConfig = {
   basePath: '/client_portal',
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'www.enet2.com',
-        port: '',
-        pathname: '/media/**', // Adjust this path to match where your images are served from
-      },
-    ],
+    domains: ['www.enet2.com'],
   },
+  reactStrictMode: true,
+  swcMinify: true,
 };
 
-export default nextConfig;
+module.exports = nextConfig;
