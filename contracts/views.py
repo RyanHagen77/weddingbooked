@@ -84,7 +84,6 @@ def success_view(request):
 def contract_search(request):
     form = ContractSearchForm(request.GET)
     contracts = Contract.objects.all().order_by('-event_date')
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     order = request.GET.get('order', 'desc')
     if order == 'asc':
@@ -166,14 +165,12 @@ def contract_search(request):
     return render(request, 'contracts/contract_search.html', {
         'form': form,
         'contracts': contracts,
-        'logo_url': logo_url
     })
 
 @login_required
 def booking_search(request):
     booking_search_query = request.GET.get('booking_q')
     bookings = EventStaffBooking.objects.all()
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     if booking_search_query:
         bookings = bookings.filter(
@@ -224,7 +221,6 @@ def booking_search(request):
 
     return render(request, 'contracts/booking_search.html', {
         'bookings': bookings,
-        'logo_url': logo_url
     })
 
 
@@ -232,7 +228,6 @@ def booking_search(request):
 def new_contract(request):
     contract_form = NewContractForm(request.POST or None)
     client_form = ClientForm(request.POST or None)
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     if request.method == 'POST':
         if client_form.is_valid() and contract_form.is_valid():  # Ensure both forms are validated
@@ -281,7 +276,6 @@ def new_contract(request):
     return render(request, 'contracts/contract_new.html', {
         'contract_form': contract_form,
         'client_form': client_form,
-        'logo_url': logo_url
     })
 
 

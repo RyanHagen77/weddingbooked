@@ -138,13 +138,11 @@ def task_list(request):
     incomplete_tasks = Task.objects.filter(assigned_to=request.user, is_completed=False).order_by('due_date')
     completed_tasks = Task.objects.filter(assigned_to=request.user, is_completed=True).order_by('due_date')
     task_form = TaskForm()
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     return render(request, 'users/task_list.html', {
         'incomplete_tasks': incomplete_tasks,
         'completed_tasks': completed_tasks,
         'task_form': task_form,
-        'logo_url': logo_url
     })
 
 @login_required
@@ -202,7 +200,6 @@ class OfficeStaffUpdateView(UpdateView):
 def event_staff_dashboard(request, pk):
     # Retrieve the staff member
     staff_member = get_object_or_404(CustomUser, pk=pk)
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
 
     # Fetch bookings for the staff member that are either approved or confirmed
@@ -224,7 +221,6 @@ def event_staff_dashboard(request, pk):
 def event_staff(request):
     # Get role from request parameters or default to 'PHOTOGRAPHER'
     role_name = request.GET.get('role', 'PHOTOGRAPHER')
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
 
     # Fetch staff members sorted by their 'rank' attribute for the selected role
