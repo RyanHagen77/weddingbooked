@@ -19,3 +19,11 @@ package-lock.json
 # Miscellaneous
 .DS_Store
 
+# Ignore nohup output file
+nohup.out
+
+# Ignore media files
+/media/contract_documents/
+
+# Ignore temp migrations directory
+temp_migrations/
