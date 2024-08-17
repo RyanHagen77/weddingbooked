@@ -2983,7 +2983,6 @@ def wedding_day_guide(request, contract_id):
         # If the guide has been submitted and the user is not Office Staff, show a message
         return render(request, 'contracts/wedding_day_guide_submitted.html', {
             'message': 'This Wedding Day Guide has already been submitted and cannot be edited.',
-            'logo_url': logo_url
         })
 
     if request.method == 'POST':
