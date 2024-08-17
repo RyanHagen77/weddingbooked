@@ -387,7 +387,7 @@ def client_portal(request, contract_id):
     # Fetch 'contract' type notes related to this contract
     contract_notes = UnifiedCommunication.objects.filter(
         contract=contract,
-        note_type=UnifiedCommunication.CONTRACT
+        note_type=UnifiedCommunication.PORTAL
     ).order_by('-created_at')
 
     # Fetch documents visible to the client
@@ -402,7 +402,7 @@ def client_portal(request, contract_id):
         if form.is_valid():
             message = UnifiedCommunication.objects.create(
                 content=form.cleaned_data['message'],
-                note_type=UnifiedCommunication.CONTRACT,
+                note_type=UnifiedCommunication.PORTAL,
                 created_by=request.user,
                 contract=contract
             )

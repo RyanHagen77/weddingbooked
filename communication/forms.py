@@ -63,7 +63,7 @@ class TaskForm(forms.ModelForm):
 
         # Setting the queryset for 'note' field
         self.fields['note'].queryset = UnifiedCommunication.objects.filter(
-            note_type__in=[UnifiedCommunication.INTERNAL, UnifiedCommunication.BOOKING]
+            note_type__in=[UnifiedCommunication.INTERNAL, UnifiedCommunication.PORTAL]
         )
         self.fields['note'].label_from_instance = lambda obj: "{} - {}".format(obj.note_type, obj.description[:30])
 
