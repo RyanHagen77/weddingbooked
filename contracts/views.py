@@ -3004,7 +3004,6 @@ def wedding_day_guide(request, contract_id):
                 # Generate the PDF
                 context = {
                     'guide': guide,
-                    'logo_url': logo_url,
                 }
                 html_string = render_to_string('contracts/wedding_day_guide_pdf.html', context)
                 pdf_file = HTML(string=html_string).write_pdf()
