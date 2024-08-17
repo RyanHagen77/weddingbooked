@@ -11,7 +11,7 @@ class CommunicationForm(forms.Form):
     message_type = forms.ChoiceField(
         choices=[
             (UnifiedCommunication.INTERNAL, 'Internal Note'),
-            (UnifiedCommunication.BOOKING, 'Portal Note')
+            (UnifiedCommunication.PORTAL, 'Portal Note')
         ],
         required=True,
         label='Message Type',
