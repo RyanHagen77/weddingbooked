@@ -1385,7 +1385,7 @@ def view_submitted_contract(request, contract_id, version_number):
 def client_contract_and_rider_agreement(request, contract_id):
     contract = get_object_or_404(Contract, pk=contract_id)
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
-    company_signature_url = f"http://{request.get_host()}{settings.MEDIA_URL}signatures/company_signature.png"
+    company_signature_url = f"http://{request.get_host()}{settings.MEDIA_URL}essences_signature/EssenceSignature.png"
 
     if request.method == 'POST':
         form = ContractAgreementForm(request.POST)
