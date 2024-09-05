@@ -10,37 +10,42 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f4f4f4;
+            background-color: #EBCFC3; /* Light pink background to match login */
+            color: #000000; /* Black text */
         }
         .status-container {
             text-align: center;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
+            padding: 32px; /* Padding around the content */
+            background-color: #ffffff; /* White box background */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            border-radius: 8px; /* Rounded corners */
+            width: 450px; /* Fixed width */
+            box-sizing: border-box; /* Include padding and border in width */
         }
         .status-container h1 {
             font-size: 24px;
-            color: #4CAF50;
+            color: #000000; /* Black text */
             margin-bottom: 10px;
         }
         .status-container p {
             font-size: 18px;
-            color: #333;
+            color: #4b4b4b; /* Grey text to match the label in the login form */
             margin-bottom: 20px;
         }
         .status-container .button {
-            padding: 10px 20px;
+            padding: 12px; /* Match the button padding */
             font-size: 16px;
-            background-color: #4CAF50;
+            background-color: #000000; /* Black button background to match login */
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px; /* Rounded corners to match login button */
             cursor: pointer;
             text-decoration: none;
+            width: 100%; /* Full width button */
+            box-sizing: border-box; /* Include padding and border in width */
         }
         .status-container .button:hover {
-            background-color: #45a049;
+            background-color: #333333; /* Darker black on hover to match login */
         }
     </style>
 </head>
@@ -48,7 +53,7 @@
     <div class="status-container">
         <h1>You're all set, thank you!</h1>
         <p>{{ message }}</p>
-        <a href="{{ portal_url }}" class="button">Go to Your Portal</a>
+        <a href="https://enet2.com/client_portal" class="button">Go to Your Portal</a>
     </div>
 </body>
 </html>
