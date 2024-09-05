@@ -92,7 +92,7 @@
         <div class="logo">
             <img src="/media/Final_Logo.png" alt="Essence Logo">
         </div>
-        <h2>Client Portal Login</h2>
+        <h2>Login</h2>
         <form method="post" action="{% url 'contracts:client_portal_login' %}">
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ next }}">
