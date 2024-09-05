@@ -2463,7 +2463,6 @@ def get_existing_payments(request, contract_id):
 @login_required
 def booking_detail(request, booking_id):
     # Retrieve the booking instance
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
     contract = booking.contract
 
@@ -2471,7 +2470,7 @@ def booking_detail(request, booking_id):
     booking_notes = UnifiedCommunication.objects.filter(note_type='BOOKING', contract=contract)
 
     # Fetch contract messages related to this contract
-    contract_messages = UnifiedCommunication.objects.filter(note_type='CONTRACT', contract=contract)
+    contract_messages = UnifiedCommunication.objects.filter(note_type=UnifiedCommunication.PORTAL, contract_id=contract.contract_id)
 
     # Categorize notes by type
     notes_by_type = defaultdict(list)
@@ -2509,7 +2508,6 @@ def booking_detail(request, booking_id):
     event_documents = contract.documents.filter(is_event_staff_visible=True)
 
     return render(request, 'contracts/booking_detail_office.html', {
-        'logo_url': logo_url,
         'contract': contract,
         'booking': booking,
         'bookings': EventStaffBooking.objects.filter(contract=contract),
