@@ -2521,7 +2521,6 @@ def booking_detail(request, booking_id):
 def booking_detail_staff(request, booking_id):
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
     contract = booking.contract
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     # Fetch all booking notes related to this booking
     booking_notes = UnifiedCommunication.objects.filter(note_type='BOOKING', contract=contract)
@@ -2560,6 +2559,9 @@ def booking_detail_staff(request, booking_id):
         for overtime in contract.overtimes.all()
     ]
 
+    # Filter documents that are visible to event staff only
+    event_documents = contract.documents.filter(is_event_staff_visible=True)
+
     return render(request, 'contracts/booking_detail_staff.html', {
         'contract': contract,
         'booking': booking,
@@ -2568,8 +2570,8 @@ def booking_detail_staff(request, booking_id):
         'contract_notes': notes_by_type[UnifiedCommunication.PORTAL],
         'communication_form': communication_form,
         'staff_member': request.user,
-        'logo_url': logo_url,
         'overtime_entries': overtime_entries,
+        'event_documents': event_documents,  # Pass the filtered documents
     })
 
 
