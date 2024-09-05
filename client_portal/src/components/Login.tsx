@@ -44,7 +44,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         {error && <p className="text-red-500 text-center">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="username" className="block text-gray-700">Username:</label>
+            <label htmlFor="username" className="block text-gray-700">Email:</label>
             <input
               type="text"
               id="username"
