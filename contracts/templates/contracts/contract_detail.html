@@ -948,17 +948,22 @@
                                 <div class="card-body">
                                     {% if documents %}
                                         <ul class="list-group">
-                                        {% for document in documents %}
-                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <a href="{{ document.document.url }}">{{ document.document.name }}</a>
-                                                <span class="badge {{ document.badge_class }}">{{ document.badge_label }}</span>
-                                                <!-- Form for deleting the document with confirmation -->
-                                                <form action="{% url 'contracts:delete_document' document.id %}" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this document?');">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="btn btn-danger p-1 ml-2" style="font-size: 12px;">Delete</button>
-                                                </form>
-                                            </li>
-                                        {% endfor %}
+                                            {% for document in documents %}
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <a href="{{ document.document.url }}">{{ document.document.name }}</a>
+                                                    <!-- Loop through the badge classes and labels -->
+                                                    <span>
+                                                        {% for badge_class, badge_label in document.badge_classes|zip:document.badge_labels %}
+                                                            <span class="badge {{ badge_class }}">{{ badge_label }}</span>
+                                                        {% endfor %}
+                                                    </span>
+                                                    <!-- Form for deleting the document with confirmation -->
+                                                    <form action="{% url 'contracts:delete_document' document.id %}" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this document?');">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-danger p-1 ml-2" style="font-size: 12px;">Delete</button>
+                                                    </form>
+                                                </li>
+                                            {% endfor %}
                                         </ul>
                                     {% else %}
                                         <p>No contract documents available.</p>
