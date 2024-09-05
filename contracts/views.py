@@ -2557,7 +2557,7 @@ def booking_detail_staff(request, booking_id):
         'booking': booking,
         'bookings': EventStaffBooking.objects.filter(contract=contract),
         'booking_notes': notes_by_type[UnifiedCommunication.BOOKING],
-        'contract_notes': notes_by_type[UnifiedCommunication.CONTRACT],
+        'contract_notes': notes_by_type[UnifiedCommunication.PORTAL],
         'communication_form': communication_form,
         'staff_member': request.user,
         'logo_url': logo_url,
