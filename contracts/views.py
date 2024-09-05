@@ -2505,6 +2505,9 @@ def booking_detail(request, booking_id):
         for overtime in contract.overtimes.all()
     ]
 
+    # Filter documents that are visible to event staff only
+    event_documents = contract.documents.filter(is_event_staff_visible=True)
+
     return render(request, 'contracts/booking_detail_office.html', {
         'logo_url': logo_url,
         'contract': contract,
@@ -2514,6 +2517,7 @@ def booking_detail(request, booking_id):
         'contract_notes': notes_by_type['CONTRACT'],  # Render contract notes
         'communication_form': communication_form,
         'overtime_entries': overtime_entries,  # Pass overtime entries to the template
+        'event_documents': event_documents,  # Pass filtered event documents
     })
 
 

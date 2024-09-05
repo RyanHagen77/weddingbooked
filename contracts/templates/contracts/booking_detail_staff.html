@@ -402,11 +402,6 @@
                                 {% for document in event_documents %}
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <a href="{{ document.document.url }}">{{ document.document.name }}</a>
-                                    <!-- Form for deleting the document -->
-                                    <form action="{% url 'contracts:delete_document' document.id %}" method="post" style="display: inline;">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-link text-danger p-0 ml-2">Remove</button>
-                                    </form>
                                 </li>
                                 {% endfor %}
                             </ul>
