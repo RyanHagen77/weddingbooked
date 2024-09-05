@@ -586,8 +586,8 @@ body {
 
 .badge-container {
     display: flex;
-    justify-content: flex-end; /* Justify the badges to the right */
-    gap: 5px; /* Optional: Add some spacing between the badges */
+    flex-direction: column; /* Stack badges vertically */
+    align-items: flex-end; /* Align badges to the right */
 }
 
 
