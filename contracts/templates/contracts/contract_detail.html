@@ -951,9 +951,9 @@
                                             {% for document in documents %}
                                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                                     <a href="{{ document.document.url }}">{{ document.document.name }}</a>
-                                                    <!-- Loop through the badge classes and labels -->
                                                     <span>
-                                                        {% for badge_class, badge_label in document.badge_classes|zip:document.badge_labels %}
+                                                        <!-- Loop through the badges (class, label) pairs -->
+                                                        {% for badge_class, badge_label in document.badges %}
                                                             <span class="badge {{ badge_class }}">{{ badge_label }}</span>
                                                         {% endfor %}
                                                     </span>
