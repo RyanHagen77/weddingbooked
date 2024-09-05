@@ -491,8 +491,15 @@ def contract_detail(request, id):
 
     documents = contract.documents.all()
     for document in documents:
-        document.badge_class = 'badge-success' if document.is_client_visible else 'badge-secondary'
-        document.badge_label = 'Visible to Client' if document.is_client_visible else 'Internal Use'
+        if document.is_client_visible:
+            document.badge_class = 'badge-success'
+            document.badge_label = 'Visible to Client'
+        elif document.is_event_staff_visible:
+            document.badge_class = 'badge-warning'
+            document.badge_label = 'Visible to Event Staff'
+        else:
+            document.badge_class = 'badge-secondary'
+            document.badge_label = 'Internal Use'
 
     document_form = ContractDocumentForm(request.POST or None, request.FILES or None)
     if request.method == 'POST' and document_form.is_valid():

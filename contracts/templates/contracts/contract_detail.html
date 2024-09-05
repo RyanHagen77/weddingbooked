@@ -1009,6 +1009,7 @@
                             </div>
                         </div>
                     </div>
+
                     <!-- Document Upload Section -->
                     <div class="row">
                         <div class="col-md-12">
@@ -1020,29 +1021,39 @@
                                     <form method="post" action="" enctype="multipart/form-data">
                                         {% csrf_token %}
                                         {{ document_form.as_p }}
+                                        <!-- Add checkboxes for visibility options -->
+                                        <div class="form-group">
+                                            <label for="is_client_visible">Visible to Client</label>
+                                            {{ document_form.is_client_visible }}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="is_event_staff_visible">Visible to Event Staff</label>
+                                            {{ document_form.is_event_staff_visible }}
+                                        </div>
                                         <button type="submit" name="upload_document" class="btn btn-dusty-pink">Upload Document</button>
                                     </form>
                                 </div>
                             </div>
                         </div>
                     </div>
-                <!-- Office Staff Link to Wedding Day Guide -->
-                {% if is_office_staff %}
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h6>Wedding Day Guide</h6>
-                            </div>
-                            <div class="card-body">
-                                <a href="{% url 'contracts:wedding_day_guide' contract.contract_id %}" class="btn btn-dusty-pink" target="_blank" rel="noopener noreferrer">
-                                    View/Edit Wedding Day Guide
-                                </a>
+
+                    <!-- Office Staff Link to Wedding Day Guide -->
+                    {% if is_office_staff %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h6>Wedding Day Guide</h6>
+                                </div>
+                                <div class="card-body">
+                                    <a href="{% url 'contracts:wedding_day_guide' contract.contract_id %}" class="btn btn-dusty-pink" target="_blank" rel="noopener noreferrer">
+                                        View/Edit Wedding Day Guide
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                {% endif %}
+                    {% endif %}
                 </div>
                 <div class="tab-pane container fade" id="financial">
                     <input type="hidden" class="form-control" id="id_location" name="location">

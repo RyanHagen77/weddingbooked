@@ -721,9 +721,15 @@ class ContractDocumentForm(forms.ModelForm):
         required=False,
         widget=forms.CheckboxInput(attrs={'style': 'font-size: 11pt;'})
     )
+    is_event_staff_visible = forms.BooleanField(
+        initial=False,
+        required=False,
+        widget=forms.CheckboxInput(attrs={'style': 'font-size: 11pt;'})
+    )
+
     class Meta:
         model = ContractDocument
-        fields = ['document', 'is_client_visible']
+        fields = ['document', 'is_client_visible', 'is_event_staff_visible']
 
 
 class EventStaffBookingForm(forms.ModelForm):
