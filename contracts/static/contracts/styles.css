@@ -583,6 +583,14 @@ body {
     font-size: 11pt; /* Adjust the font size as needed */
 
 }
+
+.badge-container {
+    display: flex;
+    justify-content: flex-end; /* Justify the badges to the right */
+    gap: 5px; /* Optional: Add some spacing between the badges */
+}
+
+
 /* Communication Tab Styles */
 .communication-tab {
     background-color: #f9f9f9;
@@ -979,3 +987,4 @@ body {
 .fc-event:hover {
     background-color: #9aac9a; /* Darken event color on hover */
 }
+
