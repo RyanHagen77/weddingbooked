@@ -767,6 +767,8 @@ class ContractDocument(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
     is_client_visible = models.BooleanField(default=True,
                                             help_text="Check if this document should be visible to clients.")
+    is_event_staff_visible = models.BooleanField(default=False,
+                                                 help_text="Check if this document should be visible to event staff.")
 
     def __str__(self):
         return f"Document for {self.contract}"
