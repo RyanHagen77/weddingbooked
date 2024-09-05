@@ -2519,7 +2519,7 @@ def booking_detail_staff(request, booking_id):
     booking_notes = UnifiedCommunication.objects.filter(note_type='BOOKING', contract=contract)
 
     # Fetch contract messages related to this contract
-    contract_messages = UnifiedCommunication.objects.filter(note_type=UnifiedCommunication.CONTRACT, contract_id=contract.contract_id)
+    contract_messages = UnifiedCommunication.objects.filter(note_type=UnifiedCommunication.PORTAL, contract_id=contract.contract_id)
 
     # Categorize notes by type
     notes_by_type = defaultdict(list)
