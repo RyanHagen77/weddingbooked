@@ -52,11 +52,11 @@ class Task(models.Model):
     description = models.TextField(verbose_name="Description")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At", db_index=True)
     is_completed = models.BooleanField(default=False, verbose_name="Is Completed")
-    task_type = models.CharField(max_length=10, choices=TASK_TYPES, default='internal', verbose_name="Task Type")
+    type = models.CharField(max_length=10, choices=TASK_TYPES, default='internal', verbose_name="Task Type")
 
     def clean(self):
         super(Task, self).clean()
-        if self.task_type == 'contract' and not self.contract:
+        if self.type == 'contract' and not self.contract:
             raise ValidationError("Contract-related tasks must have a contract assigned.")
 
     def __str__(self):
