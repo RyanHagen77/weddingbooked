@@ -21,9 +21,10 @@ class UnifiedCommunication(models.Model):
     contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name='communications', null=True,
                                  blank=True, verbose_name="Contract")
 
+    # Custom validation can be added if needed
     def clean(self):
         super(UnifiedCommunication, self).clean()
-        # Add custom validation logic here if needed
+        # Add custom validation logic here
 
     def __str__(self):
         return f"Note {self.id} - {self.get_note_type_display()} - {self.created_at.strftime('%Y-%m-%d')} by {self.created_by}"
@@ -32,7 +33,7 @@ class UnifiedCommunication(models.Model):
         verbose_name = "Unified Communication"
         verbose_name_plural = "Unified Communications"
         indexes = [
-            models.Index(fields=['created_at', 'note_type']),  # Correct indexing fields
+            models.Index(fields=['created_at', 'note_type']),
         ]
 
 
@@ -52,11 +53,11 @@ class Task(models.Model):
     description = models.TextField(verbose_name="Description")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At", db_index=True)
     is_completed = models.BooleanField(default=False, verbose_name="Is Completed")
-    type = models.CharField(max_length=10, choices=TASK_TYPES, default='internal', verbose_name="Task Type")
+    task_type = models.CharField(max_length=10, choices=TASK_TYPES, default='internal', verbose_name="Task Type")
 
     def clean(self):
         super(Task, self).clean()
-        if self.type == 'contract' and not self.contract:
+        if self.task_type == 'contract' and not self.contract:
             raise ValidationError("Contract-related tasks must have a contract assigned.")
 
     def __str__(self):
