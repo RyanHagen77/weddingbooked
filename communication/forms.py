@@ -1,7 +1,6 @@
 from django import forms
 from .models import UnifiedCommunication, Task  # Import your model
 from users.models import CustomUser, Role
-from django.core.exceptions import ValidationError
 
 
 class CommunicationForm(forms.Form):
@@ -38,14 +37,14 @@ class BookingCommunicationForm(forms.Form):
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['sender', 'assigned_to', 'contract', 'note', 'due_date', 'description', 'task_type']
+        fields = ['sender', 'assigned_to', 'contract', 'note', 'due_date', 'description', 'type']
         widgets = {
             'contract': forms.HiddenInput(),
             'sender': forms.HiddenInput(),
             'note': forms.HiddenInput(),
-            'task_type': forms.HiddenInput(),  # Update `type` to `task_type`
+            'type': forms.HiddenInput(),
             'due_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'width: 100%;'}),
-            'description': forms.Textarea(attrs={'rows': 4, 'class': 'form-control', 'style': 'width: 100%;'}),
+            'description': forms.Textarea(attrs={'rows': 4, 'class': 'form-control', 'style': 'width: 100%;'})
         }
 
     def __init__(self, *args, **kwargs):
@@ -71,11 +70,3 @@ class TaskForm(forms.ModelForm):
         # Setting field requirements
         self.fields['contract'].required = False
         self.fields['note'].required = False
-
-    def clean(self):
-        cleaned_data = super().clean()
-        task_type = cleaned_data.get('task_type')
-        contract = cleaned_data.get('contract')
-
-        if task_type == 'contract' and not contract:
-            raise ValidationError("Contract-related tasks must have a contract assigned.")
