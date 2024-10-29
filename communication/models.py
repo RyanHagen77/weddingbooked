@@ -15,15 +15,15 @@ class UnifiedCommunication(models.Model):
     ]
 
     content = models.TextField(verbose_name="Content")
-    note_type = models.CharField(max_length=10, choices=NOTE_TYPES, verbose_name="Note Type")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+    note_type = models.CharField(max_length=10, choices=NOTE_TYPES, verbose_name="Note Type", db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At", db_index=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Created By")
+    contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name='communications', null=True,
+                                 blank=True, verbose_name="Contract")
 
-    contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name='communications', null=True, blank=True, verbose_name="Contract")
-    # Remove generic relation if not needed anymore
-    # content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    # object_id = models.PositiveIntegerField()
-    # content_object = GenericForeignKey('content_type', 'object_id')
+    def clean(self):
+        super(UnifiedCommunication, self).clean()
+        # Add custom validation logic here if needed
 
     def __str__(self):
         return f"Note {self.id} - {self.get_note_type_display()} - {self.created_at.strftime('%Y-%m-%d')} by {self.created_by}"
@@ -31,6 +31,9 @@ class UnifiedCommunication(models.Model):
     class Meta:
         verbose_name = "Unified Communication"
         verbose_name_plural = "Unified Communications"
+        indexes = [
+            models.Index(fields=['created_at', 'note_type']),  # Correct indexing fields
+        ]
 
 
 
