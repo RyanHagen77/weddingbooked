@@ -2646,44 +2646,6 @@ def open_task_form(request, contract_id, note_id):
     form = TaskForm(initial=initial_data)
     return render(request, 'task_form.html', {'form': form})
 
-@require_POST
-@login_required
-def create_contract_task(request, contract_id=None, note_id=None):
-    form = TaskForm(request.POST)
-    if form.is_valid():
-        task = form.save(commit=False)
-        task.sender = request.user
-        task.type = 'contract'
-
-        if contract_id:
-            task.contract = get_object_or_404(Contract, id=contract_id)
-        if note_id:
-            task.note = get_object_or_404(UnifiedCommunication, id=note_id)
-
-        task.save()
-
-        if hasattr(task.assigned_to, 'email') and task.assigned_to.email:
-            send_task_assignment_email(request, task)
-
-        tasks = Task.objects.filter(
-            contract=task.contract, type='contract', is_completed=False
-        ).distinct().order_by('due_date')
-
-        task_list_html = render_to_string('contracts/task_list_snippet.html', {'tasks': tasks}, request=request)
-        return JsonResponse({'success': True, 'task_id': task.id, 'task_list_html': task_list_html})
-    else:
-        return JsonResponse({'success': False, 'errors': form.errors.as_json()})
-
-@login_required
-def get_contract_tasks(request, contract_id):
-    tasks = Task.objects.filter(
-        assigned_to=request.user, contract_id=contract_id, type='contract', is_completed=False
-    ).order_by('due_date')
-    task_list_html = render_to_string('contracts/internal_task_list_snippet.html', {'tasks': tasks}, request=request)
-    return JsonResponse({'task_list_html': task_list_html})
-
-
-
 @require_http_methods(["POST"])
 def clear_booking(request, booking_id):
     booking = get_object_or_404(EventStaffBooking, id=booking_id)

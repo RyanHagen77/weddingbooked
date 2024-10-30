@@ -33,7 +33,7 @@
     </div>
     <div class="menu-container">
         <ul class="menu">
-            <li class="menu-item"><a href="{% url 'users:tasks' %}">Tasks</a></li>
+            <li class="menu-item"><a href="{% url 'communication:tasks' %}">Tasks</a></li>
             <li class="menu-item"><a href="{% url 'contracts:contract_new' %}">New Contract</a></li>
             {% if request.user|in_group:"EventStaffPayrollReportViewer" or request.user|in_group:"AllReportViewer" %}
                 <li class="menu-item"><a href="{% url 'contracts:reports' %}">Reports</a></li>

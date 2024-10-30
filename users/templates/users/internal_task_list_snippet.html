@@ -20,9 +20,9 @@
     <td>{{ task.due_date|date:"Y-m-d" }}</td>
     <td>{{ task.description }}</td>
     <td>
-        <form action="{% url 'users:mark_complete' task.id %}" method="post" class="mark-complete-form" data-task-id="{{ task.id }}">
+        <form action="{% url 'communication:mark_complete' task.id %}" method="post" class="mark-complete-form" data-task-id="{{ task.id }}">
             {% csrf_token %}
-            <input type="checkbox" name="is_completed" class="mark-complete-checkbox" data-mark-complete-url="{% url 'users:mark_complete' task.id %}" {% if task.is_completed %}checked{% endif %}>
+            <input type="checkbox" name="is_completed" class="mark-complete-checkbox" data-mark-complete-url="{% url 'communication:mark_complete' task.id %}" {% if task.is_completed %}checked{% endif %}>
         </form>
         <button type="button" class="btn-dusty-pink edit-task-btn" data-toggle="modal" data-target="#editTaskModal"
                 data-task-id="{{ task.id }}"
@@ -55,9 +55,9 @@
     <td>{{ task.due_date|date:"Y-m-d" }}</td>
     <td>{{ task.description }}</td>
     <td>
-        <form action="{% url 'users:mark_complete' task.id %}" method="post" class="mark-complete-form" data-task-id="{{ task.id }}">
+        <form action="{% url 'communication:mark_complete' task.id %}" method="post" class="mark-complete-form" data-task-id="{{ task.id }}">
             {% csrf_token %}
-            <input type="checkbox" name="is_completed" class="mark-complete-checkbox" data-mark-complete-url="{% url 'users:mark_complete' task.id %}" {% if task.is_completed %}checked{% endif %}>
+            <input type="checkbox" name="is_completed" class="mark-complete-checkbox" data-mark-complete-url="{% url 'communication:mark_complete' task.id %}" {% if task.is_completed %}checked{% endif %}>
         </form>
         <button type="button" class="btn-dusty-pink edit-task-btn" data-toggle="modal" data-target="#editTaskModal"
                 data-task-id="{{ task.id }}"

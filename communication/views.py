@@ -1,14 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
+from django.conf import settings
 from django.urls import reverse
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.utils.http import urlsafe_base64_encode, urlencode
 from django.utils.encoding import force_bytes
-from django.contrib.contenttypes.models import ContentType
-from .models import UnifiedCommunication
 from contracts.models import Contract
-from .forms import CommunicationForm  # Assuming you have a form for message input
+from .forms import CommunicationForm, TaskForm  # Assuming you have a form for message input
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
@@ -17,7 +17,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .models import Contract, UnifiedCommunication
+from .models import UnifiedCommunication, Task
 from .serializers import UnifiedCommunicationSerializer
 
 @api_view(['GET'])
@@ -161,3 +161,156 @@ def send_contract_and_rider_email_to_client(request, contract, rider_type=None, 
         )
     except Exception as e:
         print(f"Failed to send email to client: {e}")
+
+@login_required
+def task_list(request):
+    # Fetch both completed and incomplete tasks
+    incomplete_tasks = Task.objects.filter(assigned_to=request.user, is_completed=False).order_by('due_date')
+    completed_tasks = Task.objects.filter(assigned_to=request.user, is_completed=True).order_by('due_date')
+
+    task_form = TaskForm()
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+
+    return render(request, 'users/task_list.html', {
+        'incomplete_tasks': incomplete_tasks,
+        'completed_tasks': completed_tasks,
+        'task_form': task_form,
+        'logo_url': logo_url
+    })
+
+@login_required
+def open_task_form(request, contract_id=None, note_id=None):
+    initial_data = {
+        'sender': request.user.id,
+        'contract': contract_id,
+        'note': note_id,
+    }
+    form = TaskForm(initial=initial_data)
+    return render(request, 'task_form.html', {'form': form})
+
+
+@login_required
+@require_POST
+def create_internal_task(request):
+    form = TaskForm(request.POST)
+    if form.is_valid():
+        task = form.save(commit=False)
+        task.sender = request.user
+        task.task_type = 'internal'
+        task.save()
+
+        if hasattr(task.assigned_to, 'email') and task.assigned_to.email:
+            send_task_assignment_email(request, task)
+
+        incomplete_tasks = Task.objects.filter(
+            assigned_to=request.user, task_type='internal', is_completed=False
+        ).order_by('due_date')
+
+        completed_tasks = Task.objects.filter(
+            assigned_to=request.user, task_type='internal', is_completed=True
+        ).order_by('due_date')
+
+        task_list_html = render_to_string(
+            'users/internal_task_list_snippet.html',
+            {'incomplete_tasks': incomplete_tasks, 'completed_tasks': completed_tasks},
+            request=request
+        )
+        return JsonResponse({'success': True, 'task_id': task.id, 'task_list_html': task_list_html})
+    else:
+        return JsonResponse({'success': False, 'errors': form.errors.as_json()})
+
+@login_required
+def get_internal_tasks(request):
+    tasks = Task.objects.filter(
+        assigned_to=request.user, type='internal', is_completed=False
+    ).order_by('due_date')
+    task_list_html = render_to_string('users/internal_task_list_snippet.html', {'tasks': tasks}, request=request)
+    return JsonResponse({'task_list_html': task_list_html})
+
+@require_POST
+@login_required
+def create_contract_task(request, contract_id=None, note_id=None):
+    form = TaskForm(request.POST)
+    if form.is_valid():
+        task = form.save(commit=False)
+        task.sender = request.user
+        task.task_type = 'contract'
+
+        if contract_id:
+            task.contract = get_object_or_404(Contract, id=contract_id)
+        if note_id:
+            task.note = get_object_or_404(UnifiedCommunication, id=note_id)
+
+        task.save()
+
+        if hasattr(task.assigned_to, 'email') and task.assigned_to.email:
+            send_task_assignment_email(request, task)
+
+        tasks = Task.objects.filter(
+            contract=task.contract, task_type='contract', is_completed=False
+        ).distinct().order_by('due_date')
+
+        task_list_html = render_to_string('contracts/task_list_snippet.html', {'tasks': tasks}, request=request)
+        return JsonResponse({'success': True, 'task_id': task.id, 'task_list_html': task_list_html})
+    else:
+        return JsonResponse({'success': False, 'errors': form.errors.as_json()})
+
+@login_required
+def get_contract_tasks(request, contract_id):
+    tasks = Task.objects.filter(
+        assigned_to=request.user, contract_id=contract_id, task_type='contract', is_completed=False
+    ).order_by('due_date')
+    task_list_html = render_to_string('contracts/internal_task_list_snippet.html', {'tasks': tasks}, request=request)
+    return JsonResponse({'task_list_html': task_list_html})
+
+
+@login_required
+def task_list(request):
+    incomplete_tasks = Task.objects.filter(assigned_to=request.user, is_completed=False).order_by('due_date')
+    completed_tasks = Task.objects.filter(assigned_to=request.user, is_completed=True).order_by('due_date')
+    task_form = TaskForm()
+
+    return render(request, 'users/task_list.html', {
+        'incomplete_tasks': incomplete_tasks,
+        'completed_tasks': completed_tasks,
+        'task_form': task_form,
+    })
+
+@login_required
+@require_POST
+def update_task(request, task_id):
+    task = get_object_or_404(Task, pk=task_id)
+    form = TaskForm(request.POST, instance=task)
+    if form.is_valid():
+        task = form.save(commit=False)  # Save the form data to the task object but don't commit to the database yet
+        task.sender = request.user  # Explicitly set the sender to the current user
+        task.save()  # Now save the task to the database with all fields including sender
+
+        # After saving the task, fetch the updated list of tasks and render it to HTML
+        incomplete_tasks = Task.objects.filter(assigned_to=request.user, is_completed=False).order_by('due_date')
+        completed_tasks = Task.objects.filter(assigned_to=request.user, is_completed=True).order_by('due_date')
+        task_list_html = render_to_string('users/internal_task_list_snippet.html', {
+            'incomplete_tasks': incomplete_tasks,
+            'completed_tasks': completed_tasks
+        }, request=request)
+
+        return JsonResponse({'success': True, 'task_list_html': task_list_html})
+    else:
+        # If the form is not valid, return the form errors
+        return JsonResponse({'success': False, 'errors': form.errors.as_json()})
+
+@login_required
+@require_POST
+def mark_complete(request, task_id):
+    task = get_object_or_404(Task, pk=task_id)
+    task.is_completed = not task.is_completed
+    task.save()
+
+    incomplete_tasks = Task.objects.filter(assigned_to=request.user, is_completed=False).order_by('due_date')
+    completed_tasks = Task.objects.filter(assigned_to=request.user, is_completed=True).order_by('due_date')
+    task_list_html = render_to_string('users/internal_task_list_snippet.html', {
+        'incomplete_tasks': incomplete_tasks,
+        'completed_tasks': completed_tasks
+    }, request=request)
+
+    return JsonResponse({'success': True, 'task_list_html': task_list_html})

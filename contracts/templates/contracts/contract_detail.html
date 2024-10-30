@@ -1573,7 +1573,7 @@
       </div>
       <div class="modal-body">
         <!-- Task Form -->
-        <form method="post" id="addTaskForm" data-create-task-url="{% url 'contracts:create_contract_task' %}">
+        <form method="post" id="addTaskForm" data-create-task-url="{% url 'communication:create_contract_task' %}">
             {% csrf_token %}
             {{ task_form.as_p }}
             <input type="hidden" id="id_type" name="type" value="contract">

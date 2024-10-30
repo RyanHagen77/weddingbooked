@@ -58,7 +58,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form method="post" id="addTaskForm" data-create-task-url="{% url 'users:create_internal_task' %}">
+                    <form method="post" id="addTaskForm" data-create-task-url="{% url 'communication:create_internal_task' %}">
                         {% csrf_token %}
                         {{ task_form.as_p }}
                         <input type="hidden" id="id_sender" name="sender" value="{{ request.user.id }}">

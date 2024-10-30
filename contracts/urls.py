@@ -97,8 +97,7 @@ urlpatterns = [
     path('add_note/', views.add_note, name='add_note'),
     path('edit_note/<int:note_id>/', views.edit_note, name='edit_note'),
     path('delete_note/<int:note_id>/', views.delete_note, name='delete_note'),
-    path('tasks/create/', views.create_contract_task, name='create_contract_task'),
-    path('tasks/get/<int:contract_id>/', views.get_contract_tasks, name='get_contract_tasks'),
+
     path('reports/', reports_views.reports, name='reports'),
     path('lead_source_report/', reports_views.lead_source_report, name='lead_source_report'),
     path('appointments/', reports_views.appointments_report, name='appointments_report'),
