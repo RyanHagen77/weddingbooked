@@ -10,7 +10,8 @@ from django.http import HttpResponseNotAllowed, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from .models import CustomUser, Role
-from .forms import OfficeStaffForm, TaskForm
+from .forms import OfficeStaffForm
+from communication.forms import TaskForm
 from contracts.models import EventStaffBooking, Availability
 from communication.views import send_task_assignment_email
 from communication.models import Task
