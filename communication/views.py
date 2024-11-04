@@ -1,13 +1,13 @@
 # communication/views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
-from django.conf import settings
 from django.urls import reverse
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
+
 from django.utils.http import urlsafe_base64_encode, urlencode
 from django.utils.encoding import force_bytes
+from .models import UnifiedCommunication, Task
 from contracts.models import Contract
 from .forms import TaskForm  # Assuming you have a form for message input
 from django.core.mail import send_mail
@@ -17,11 +17,12 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .models import UnifiedCommunication, Task
+
 from bookings.models import EventStaffBooking
 from .serializers import UnifiedCommunicationSerializer
 from django.contrib.contenttypes.models import ContentType
-
+from django.conf import settings
+from django.views.decorators.http import require_POST
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
