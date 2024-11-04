@@ -1,0 +1,52 @@
+<div class="tab-pane" id="videography">
+    <div class="service-category">
+        <h3>Videography</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th>Hours</th>
+                    <th>Assigned Staff</th>
+                    <th>Role</th> <!-- New Role Column -->
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Videography Package -->
+                <tr>
+                    <td>{{ contract.videography_package.name }}</td>
+                    <td>{{ contract.videography_package.hours }}</td>
+                    <td id="assigned-videographer1">{{ videographer1.staff.get_full_name }}</td>
+                    <td>{{ videographer1.get_role_display }}</td> <!-- Shows "Videographer 1" -->
+                </tr>
+                <!-- Additional Videographer -->
+                <tr>
+                    <td>{{ contract.videography_additional.name }}</td>
+                    <td>{{ contract.videography_additional.hours }}</td>
+                    <td id="assigned-videographer2">{{ videographer2.staff.get_full_name }}</td>
+                    <td>{{ videographer2.get_role_display }}</td> <!-- Shows "Videographer 2" -->
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Overtime Details Section for Videography -->
+        <h4>Videography Overtime Details</h4>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Role</th>
+                    <th>Hours</th>
+                </tr>
+            </thead>
+            <tbody id="videographyOvertimeEntriesDisplay" class="overtime-entries-display">
+                {% for overtime in overtime_entries %}
+                    {% if overtime.service_type == 'Videography' %}
+                        <tr>
+                            <td>{{ overtime.role }}</td>
+                            <td>{{ overtime.hours }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

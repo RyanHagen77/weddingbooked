@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="outer-container">
-    <form method="GET" action="{% url 'contracts:booking_search' %}" class="search-form">
+    <form method="GET" action="{% url 'bookings:booking_search' %}" class="search-form">
         {% csrf_token %}
         <div class="quick-search-group">
             <div class="form-group">
@@ -60,7 +60,7 @@
                     <select name="status_filter">
                         <option value="">All Statuses</option>
                         <option value="PROSPECT">Prospect</option>
-                        <option value="APPROVED">Approved</option>
+                        <option value="BOOKED">Booked</option>
                         <!-- Add other statuses as needed -->
                     </select>
                 </div>
@@ -110,7 +110,7 @@
             </thead>
             <tbody>
                 {% for booking in bookings %}
-                <tr onclick="window.location='{% url 'contracts:booking_detail' booking.id %}';">
+                <tr onclick="window.location='{% url 'bookings:booking_detail' booking.id %}';">
                     <td>{{ booking.staff.get_full_name }}</td>
                     <td>{{ booking.contract.event_date|date:"Y-m-d" }}</td>
                     <td>{{ booking.contract.client.primary_contact }}</td>
@@ -138,7 +138,7 @@
 <script>
         function clearForm(form) {
             form.reset();
-            window.location.href = "{% url 'contracts:booking_search' %}";
+            window.location.href = "{% url 'bookings:booking_search' %}";
         }
 </script>
 {% endblock %}

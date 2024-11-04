@@ -1,0 +1,52 @@
+<div class="tab-pane" id="photobooth">
+    <div class="service-category">
+        <h3>Photobooth</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th>Hours</th>
+                    <th>Assigned Staff</th>
+                    <th>Role</th> <!-- New Role Column -->
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Photobooth Package -->
+                <tr>
+                    <td>{{ contract.photobooth_package.name }}</td>
+                    <td>{{ contract.photobooth_package.hours }}</td>
+                    <td id="assigned-photobooth-staff">{{ photobooth_op1.staff.get_full_name }}</td>
+                    <td>{{ photobooth_op1.get_role_display }}</td> <!-- Shows "Photobooth Operator 1" -->
+                </tr>
+                <!-- Additional Photobooth -->
+                <tr>
+                    <td>{{ contract.photobooth_additional.name }}</td>
+                    <td>{{ contract.photobooth_additional.hours }}</td>
+                    <td id="assigned-photobooth">{{ photobooth_op2.staff.get_full_name }}</td>
+                    <td>{{ photobooth_op2.get_role_display }}</td> <!-- Shows "Photobooth Operator 2" -->
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Overtime Details Section for Photobooth -->
+        <h4>Photobooth Overtime Details</h4>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Role</th>
+                    <th>Hours</th>
+                </tr>
+            </thead>
+            <tbody id="photoboothOvertimeEntriesDisplay" class="overtime-entries-display">
+                {% for overtime in overtime_entries %}
+                    {% if overtime.service_type == 'Photobooth' %}
+                        <tr>
+                            <td>{{ overtime.role }}</td>
+                            <td>{{ overtime.hours }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

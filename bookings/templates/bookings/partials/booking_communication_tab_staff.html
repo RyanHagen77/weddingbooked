@@ -1,0 +1,32 @@
+<!-- Communication Tab for Booking -->
+<div class="tab-pane fade" id="communication" role="tabpanel" aria-labelledby="communication-tab">
+    <!-- Booking Notes Section -->
+    <h3>Booking Notes</h3>
+    {% if booking_notes %}
+        {% for note in booking_notes %}
+            <div class="message">
+                <p><strong>ID:</strong> {{ note.id }}</p>
+                <p><strong>From:</strong> {{ note.created_by.username }}</p>
+                <p><strong>Date:</strong> {{ note.created_at }}</p>
+                <p>{{ note.content }}</p>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No booking notes found.</p>
+    {% endif %}
+
+    <!-- Portal Messages Section -->
+    <h3>Portal Messages</h3>
+    {% if portal_messages %}
+        {% for message in portal_messages %}
+            <div class="message">
+                <p><strong>ID:</strong> {{ message.id }}</p>
+                <p><strong>From:</strong> {{ message.created_by.username }}</p>
+                <p><strong>Date:</strong> {{ message.created_at }}</p>
+                <p>{{ message.content }}</p>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No portal messages found.</p>
+    {% endif %}
+</div>

@@ -71,8 +71,8 @@ $(document).ready(function () {
         submitButton.prop('disabled', true);
 
         let formData = form.serializeArray();
-        formData = formData.filter(field => field.name !== 'type' || field.value !== '');
-        formData.push({ name: 'type', value: 'internal' }); // Default type value
+        formData = formData.filter(field => field.name !== 'task_type' || field.value !== '');
+        formData.push({ name: 'task_type', value: 'internal' }); // Default type value
 
         $.ajax({
             type: 'POST',
@@ -109,7 +109,7 @@ $(document).ready(function () {
         $('#editTaskForm #id_description').val(description);
         $('#editTaskForm #id_type').val(type); // Set the task type
 
-        let updateUrl = `/users/tasks/update/${taskId}/`;
+        let updateUrl = `/communication/tasks/update/${taskId}/`;
         $('#editTaskForm').attr('action', updateUrl);
     });
 

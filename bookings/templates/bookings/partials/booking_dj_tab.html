@@ -1,0 +1,52 @@
+<div class="tab-pane" id="dj">
+    <div class="service-category">
+        <h3>DJ</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th>Hours</th>
+                    <th>Assigned Staff</th>
+                    <th>Role</th> <!-- New Role Column -->
+                </tr>
+            </thead>
+            <tbody>
+                <!-- DJ Package -->
+                <tr>
+                    <td>{{ contract.dj_package.name }}</td>
+                    <td>{{ contract.dj_package.hours }}</td>
+                    <td id="assigned-dj1">{{ dj1.staff.get_full_name }}</td>
+                    <td>{{ dj1.get_role_display }}</td> <!-- Shows "DJ 1" -->
+                </tr>
+                <!-- Additional DJ -->
+                <tr>
+                    <td>{{ contract.dj_additional.name }}</td>
+                    <td>{{ contract.dj_additional.hours }}</td>
+                    <td id="assigned-dj2">{{ dj2.staff.get_full_name }}</td>
+                    <td>{{ dj2.get_role_display }}</td> <!-- Shows "DJ 2" -->
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Overtime Details Section for DJ -->
+        <h4>DJ Overtime Details</h4>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Role</th>
+                    <th>Hours</th>
+                </tr>
+            </thead>
+            <tbody id="djOvertimeEntriesDisplay" class="overtime-entries-display">
+                {% for overtime in overtime_entries %}
+                    {% if overtime.service_type == 'DJ' %}
+                        <tr>
+                            <td>{{ overtime.role }}</td>
+                            <td>{{ overtime.hours }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

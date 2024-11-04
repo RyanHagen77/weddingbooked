@@ -1365,7 +1365,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form method="post" action="{% url 'contracts:manage_staff_assignments' id=contract.contract_id %}" id="bookingForm">
+                <form method="post" action="{% url 'bookings:manage_staff_assignments' id=contract.contract_id %}" id="bookingForm">
                     {% csrf_token %}
                     <input type="hidden" id="id_booking_id" name="booking_id" value="">
                     <input type="hidden" name="next" value="{{ request.path }}#services">
@@ -1638,7 +1638,7 @@
     <!-- Include your script here -->
 <script type="module" src="{% static '***REMOVED***.js' %}"></script>
 <script type="module" src="{% static 'contracts/js/PhotographyMgmt.js' %}"></script>
-<script type="module" src="{% static 'contracts/js/eventStaffManagement.js' %}"></script>
+<script type="module" src="{% static 'bookings/js/eventStaffManagement.js' %}"></script>
 <script src="{% static 'contracts/js/ContractEdit.js' %}"></script>
 <script src="{% static 'contracts/js/moneyMgmt.js' %}" defer></script>
 

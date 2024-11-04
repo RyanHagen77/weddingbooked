@@ -4,9 +4,9 @@ from django.conf import settings
 from django.core.exceptions import ValidationError  # For custom validation
 
 class UnifiedCommunication(models.Model):
-    INTERNAL = 'internal'
-    PORTAL = 'portal'
-    BOOKING = 'booking'
+    INTERNAL = 'INTERNAL'
+    PORTAL = 'PORTAL'
+    BOOKING = 'BOOKING'
 
     NOTE_TYPES = [
         (INTERNAL, 'Internal Note'),

@@ -2,19 +2,17 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.db.models import Q
 from django.conf import settings
-from django.template.loader import render_to_string
 from django.views.generic import ListView, CreateView, UpdateView
 from contracts.forms import ContractForm  # Import your contract form
 
-from django.http import HttpResponseNotAllowed, JsonResponse
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from .models import CustomUser, Role
 from .forms import OfficeStaffForm
 from communication.forms import TaskForm
-from contracts.models import EventStaffBooking, Availability
+from bookings.models import EventStaffBooking, Availability
 from communication.models import Task
-from django.contrib.sites.shortcuts import get_current_site
 from django.db import transaction
 from datetime import datetime, timedelta
 from django.views.decorators.http import require_http_methods
@@ -54,7 +52,7 @@ def office_staff_dashboard(request, pk):
     completed_tasks = Task.objects.filter(assigned_to=request.user, is_completed=True).order_by('due_date')
 
     task_form = TaskForm()  # Instantiate your task form
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+    logo_url = f"https://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     context = {
         'staff_member': staff_member,
@@ -148,7 +146,7 @@ def update_event_staff_ranking(request):
 @login_required
 def event_staff_schedule(request, user_id):
     staff_member = CustomUser.objects.get(id=user_id)
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+    logo_url = f"https://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     # Assume we have a model or method to fetch scheduled days off or events
     days_off = Availability.objects.filter(staff=staff_member, available=False).values_list('date', flat=True)
@@ -264,8 +262,6 @@ def update_specific_date_availability(request, user_id):
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
-
-
 @require_http_methods(["POST"])
 def update_always_off_days(request, user_id):
     try:
@@ -285,13 +281,10 @@ def update_always_off_days(request, user_id):
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
-
-
-
 @login_required
 def event_staff_schedule_read_only(request, user_id):
     staff_member = CustomUser.objects.get(id=user_id)
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+    logo_url = f"https://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     # Fetch scheduled days off
     days_off = Availability.objects.filter(staff=staff_member, available=False).values_list('date', flat=True)

@@ -1,4 +1,4 @@
-# appname/urls.py
+# contracts/urls.py
 from django.urls import path
 from django.shortcuts import redirect
 from . import views, reports_views
@@ -15,7 +15,6 @@ def redirect_to_next_login(request):
 
 urlpatterns = [
     path('new/', views.new_contract, name='contract_new'),
-    path('get_available_staff/', views.get_available_staff, name='get_available_staff'),
 
     path('api/package_options/', views.get_package_options, name='package_options'),
     path('api/engagement_session_options/', views.get_engagement_session_options, name='engagement_session_options'),
@@ -70,15 +69,9 @@ urlpatterns = [
     path('<int:id>/data/', views.get_contract_data, name='get_contract_data'),
     path('document/delete/<int:document_id>/', views.delete_document, name='delete_document'),
     path('api/client-documents/<int:contract_id>/', views.client_documents, name='client_documents'),
-    path('<int:id>/manage_staff/', views.manage_staff_assignments, name='manage_staff_assignments'),
-    path('get_current_booking/', views.get_current_booking, name='get_current_booking'),
+
     path('search/', views.contract_search, name='contract_search'),
-    path('booking_search/', views.booking_search, name='booking_search'),
-    path('bookings/', views.booking_list, name='booking_list'),
-    path('booking/<int:booking_id>/', views.booking_detail, name='booking_detail'),
-    path('booking_staff/<int:booking_id>/', views.booking_detail_staff, name='booking_detail_staff'),
-    path('confirm_booking/<int:booking_id>/', views.confirm_booking, name='confirm_booking'),
-    path('booking/<int:booking_id>/clear/', views.clear_booking, name='clear_booking'),  # Added this line
+
     path('<int:contract_id>/schedule/', views.create_or_update_schedule, name='create_or_update_schedule'),
     path('add_payment/<int:schedule_id>/', views.add_payment, name='add_payment'),
     path('<int:contract_id>/schedule_payments_due/', views.get_schedule_payments_due,
@@ -93,10 +86,7 @@ urlpatterns = [
     path('<int:contract_id>/get_service_fees/', views.get_service_fees, name='get_service_fees'),
     path('<int:contract_id>/discounts/remove/<int:discount_id>/', views.remove_discount, name='remove_discount'),
     path('<int:contract_id>/discounts/', views.discounts_view, name='discounts_view'),
-    path('booking_notes/<int:booking_id>/', views.booking_notes, name='booking_notes'),
-    path('add_note/', views.add_note, name='add_note'),
-    path('edit_note/<int:note_id>/', views.edit_note, name='edit_note'),
-    path('delete_note/<int:note_id>/', views.delete_note, name='delete_note'),
+
 
     path('reports/', reports_views.reports, name='reports'),
     path('lead_source_report/', reports_views.lead_source_report, name='lead_source_report'),

@@ -1,7 +1,7 @@
 const eventStaffManagement = {
     fetchAvailableStaff(date) {
         console.log(`Fetching available staff for date: ${date}`);
-        return fetch(`/contracts/get_available_staff/?event_date=${date}`)
+        return fetch(`/bookings/get_available_staff/?event_date=${date}`)
             .then(response => response.json())
             .then(data => {
                 console.log('Available staff data:', data);
@@ -173,7 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const roles = ['PHOTOGRAPHER1', 'PHOTOGRAPHER2', 'VIDEOGRAPHER1', 'VIDEOGRAPHER2', 'DJ1', 'DJ2', 'PHOTOBOOTH_OP1',
         'PHOTOBOOTH_OP2', 'PROSPECT1', 'PROSPECT2', 'PROSPECT3'];
     roles.forEach(role => {
-        fetch(`/contracts/get_current_booking/?contract_id=${contractId}&role=${role}`)
+        fetch(`/bookings/get_current_booking/?contract_id=${contractId}&role=${role}`)
             .then(response => response.json())
             .then(data => {
                 const assignedStaffField = document.getElementById(`assigned-${role.toLowerCase()}`);
@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
         staffSelect.appendChild(placeholderOption);
         staffSelect.value = '';
 
-        fetch(`/contracts/get_current_booking/?contract_id=${contractId}&role=${role}`)
+        fetch(`/bookings/get_current_booking/?contract_id=${contractId}&role=${role}`)
             .then(response => response.json())
             .then(data => {
                 if (data.current_booking && data.current_booking.staff_id) {
@@ -234,7 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .catch(error => console.error('Error fetching current booking:', error));
 
-        fetch(`/contracts/get_available_staff/?event_date=${eventDate}&service_type=${serviceType}`)
+        fetch(`/bookings/get_available_staff/?event_date=${eventDate}&service_type=${serviceType}`)
             .then(response => response.json())
             .then(data => {
                 const staffKey = `${serviceType.toLowerCase()}_staff`;
@@ -271,7 +271,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (confirm('Are you sure you want to delete this booking?')) {
-            fetch(`/contracts/booking/${bookingId}/clear/`, {
+            fetch(`/bookings/booking/${bookingId}/clear/`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,

@@ -40,7 +40,7 @@
             {% endif %}
             <li class="menu-item"><a href="{% url 'users:event_staff' %}">Event Staff</a></li>
             <li class="menu-item"><a href="{% url 'contracts:contract_search' %}">Contract Search</a></li>
-            <li class="menu-item"><a href="{% url 'contracts:booking_search' %}">Booking Search</a></li>
+            <li class="menu-item"><a href="{% url 'bookings:booking_search' %}">Booking Search</a></li>
             {% if request.user|in_group:"IT-Admin" %}
                 <li class="menu-item"><a href="/admin" target="_blank">Admin</a></li>
             {% endif %}

@@ -1,0 +1,32 @@
+<div class="tab-pane container fade" id="event">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="row">
+                <!-- Column 1 -->
+                <div class="col-md-6">
+                    <label for="{{ event_edit_form.bridal_party_qty.id_for_label }}">Bridal Party Quantity:</label>
+                    <input type="text" class="form-control" value="{{ contract.bridal_party_qty }}" readonly>
+                    <label for="{{ event_edit_form.ceremony_site.id_for_label }}">Ceremony Site:</label>
+                    <input type="text" class="form-control" value="{{ contract.ceremony_site }}" readonly>
+                    <label for="{{ event_edit_form.ceremony_city.id_for_label }}">Ceremony City:</label>
+                    <input type="text" class="form-control" value="{{ contract.ceremony_city }}" readonly>
+                    <label for="{{ event_edit_form.ceremony_state.id_for_label }}">Ceremony State:</label>
+                    <input type="text" class="form-control" value="{{ contract.ceremony_state }}" readonly>
+                    <!-- ... other read-only fields for the first column ... -->
+                </div>
+                <!-- Column 2 -->
+                <div class="col-md-6">
+                    <label for="{{ event_edit_form.guests_qty.id_for_label }}">Guests Quantity:</label>
+                    <input type="text" class="form-control" value="{{ contract.guests_qty }}" readonly>
+                    <label for="{{ event_edit_form.reception_site.id_for_label }}">Reception Site:</label>
+                    <input type="text" class="form-control" value="{{ contract.reception_site }}" readonly>
+                    <label for="{{ event_edit_form.reception_city.id_for_label }}">Reception City:</label>
+                    <input type="text" class="form-control" value="{{ contract.reception_city }}" readonly>
+                    <label for="{{ event_edit_form.reception_state.id_for_label }}">Reception State:</label>
+                    <input type="text" class="form-control" value="{{ contract.reception_state }}" readonly>
+                    <!-- ... other read-only fields for the second column ... -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

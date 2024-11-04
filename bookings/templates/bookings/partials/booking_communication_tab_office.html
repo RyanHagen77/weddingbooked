@@ -1,0 +1,64 @@
+<!-- Communication Tab Content -->
+<div class="tab-pane fade" id="communication" role="tabpanel" aria-labelledby="communication-tab">
+    <h3>Booking Notes</h3>
+
+    <!-- Display Existing Booking Notes -->
+    {% if booking_notes %}
+        {% for note in booking_notes %}
+            <div class="message">
+                <p><strong>ID:</strong> {{ note.id }}</p>
+                <p><strong>From:</strong> {{ note.created_by.username }}</p>
+                <p><strong>Date:</strong> {{ note.created_at }}</p>
+                <p>{{ note.content }}</p>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No booking notes found.</p>
+    {% endif %}
+
+    <!-- Button to Open Modal for Adding a New Note -->
+    <button type="button" class="btn-dusty-pink mt-3" data-toggle="modal" data-target="#addNoteModal">
+        Add Note
+    </button>
+
+    <!-- Portal Messages Section -->
+    <h3 class="mt-4">Portal Messages</h3>
+    {% if portal_messages %}
+        {% for message in portal_messages %}
+            <div class="message">
+                <p><strong>ID:</strong> {{ message.id }}</p>
+                <p><strong>From:</strong> {{ message.created_by.username }}</p>
+                <p><strong>Date:</strong> {{ message.created_at }}</p>
+                <p>{{ message.content }}</p>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No portal messages found.</p>
+    {% endif %}
+</div>
+
+<!-- Modal for Adding Notes -->
+<div class="modal fade" id="addNoteModal" tabindex="-1" role="dialog" aria-labelledby="addNoteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addNoteModalLabel">Add Note</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ communication_form.as_p }}
+                    <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                    <input type="hidden" name="note_type" value="booking">
+                    <button type="submit" class="btn-dusty-pink">Add Note</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

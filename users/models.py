@@ -119,7 +119,7 @@ class CustomUser(AbstractUser):
 
     # Method to calculate booking totals dynamically
     def current_year_bookings(self):
-        from contracts.models import EventStaffBooking  # Adjust the import path based on your project structure
+        from bookings.models import EventStaffBooking  # Adjust the import path based on your project structure
 
         current_year = timezone.now().year
         return EventStaffBooking.objects.filter(
@@ -128,7 +128,7 @@ class CustomUser(AbstractUser):
         ).count()
 
     def next_year_bookings(self):
-        from contracts.models import EventStaffBooking  # Adjust the import path based on your project structure
+        from bookings.models import EventStaffBooking  # Adjust the import path based on your project structure
 
         next_year = timezone.now().year + 1
         return EventStaffBooking.objects.filter(

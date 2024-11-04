@@ -1,0 +1,120 @@
+{% extends "event_staff_base.html" %}
+{% load static %}
+
+{% block head %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <meta charset="UTF-8">
+    <title>Contract Detail</title>
+
+    <!-- Bootstrap CSS and Custom CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'contracts/styles.css' %}">
+
+    <!-- Custom JavaScript -->
+    <script src="{% static 'contracts/js/booking_notes.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<body data-contract-id="{{ contract.contract_id }}" data-payment-schedule-id="{{ contract.payment_schedule.id }}">
+
+    <!-- Top Grey Bar -->
+    <div class="bg-light text-dark py-2">
+        <div class="container">
+            <div class="row justify-content-between">
+                <div class="col-auto">
+                    <h4>Booking ID: {{ booking.id }}</h4>
+                    <h4>Booked Staff: {{ booking.staff.get_full_name }}</h4>
+                </div>
+                <div class="col-auto">
+                    <h4>Contract ID: {{ contract.custom_contract_number }}</h4>
+                    {% if booking.confirmed %}
+                        <div class="confirmed">Confirmed</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Button -->
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col">
+                <form method="POST" action="{% url 'bookings:confirm_booking' booking.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-dusty-pink" aria-label="Confirm Attendance">Confirm Attendance</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header Section -->
+    <header class="{% if contract.is_code_92 %}bg-dark-sienna{% else %}bg-cool-grey{% endif %} text-white py-3">
+        <div class="container">
+            <div class="row">
+                <!-- Contract Date, Location, Lead Source, CSR, Status -->
+                <div class="col-lg-4">
+                    <p>Event Date: {{ contract.event_date }}</p>
+                    <p id="header-csr">Sales Person: {{ contract.csr.get_full_name }}</p>
+                    <p id="header-coordinator">Coordinator: {{ contract.coordinator.get_full_name }}</p>
+                </div>
+                <!-- Primary Contact Information -->
+                <div class="col-lg-4">
+                    <p id="header-primary-contact">Primary Contact: {{ contract.client.primary_contact }}</p>
+                    <p id="header-partner-contact">Partner Contact: {{ contract.client.partner_contact }}</p>
+                    <p id="header-primary-email">Primary Email: {{ contract.client.primary_email }}</p>
+                    <p id="header-primary-phone">Primary Phone 1: {{ contract.client.primary_phone1 }}</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mt-3">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link text-dark-sienna" href="#client" data-toggle="tab" id="clientTabLink" role="tab" aria-controls="client" aria-selected="true">Client</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark-sienna" href="#event" data-toggle="tab" role="tab" aria-controls="event" aria-selected="false">Event</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark-sienna" href="#services" data-toggle="tab" role="tab" aria-controls="services" aria-selected="false">Services</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark-sienna" href="#docs" data-toggle="tab" role="tab" aria-controls="docs" aria-selected="false">Docs</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark-sienna" href="#communication" data-toggle="tab" role="tab" aria-controls="communication" aria-selected="false">Communication</a>
+            </li>
+        </ul>
+
+        <!-- Tab content -->
+        <div class="tab-content field-box mt-3">
+            {% include 'bookings/partials/booking_client_tab.html' %}
+            {% include 'bookings/partials/booking_event_tab.html' %}
+            {% include 'bookings/partials/booking_services_tab.html' %}
+            {% include 'bookings/partials/booking_docs_tab.html' %}
+            {% include 'bookings/partials/booking_communication_tab_staff.html' %}
+        </div>
+    </div>
+
+    <!-- JavaScript Includes -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <!-- Tab Navigation and Initialization Script -->
+    <script>
+        $(document).ready(function() {
+            // Activate tab based on URL hash or default to "Client" tab
+            let hash = window.location.hash || '#client';
+            $('.nav-tabs a[href="' + hash + '"]').tab('show');
+
+            // Update URL hash when switching tabs
+            $('.nav-tabs a').on('click', function() {
+                history.replaceState(null, null, this.hash);
+            });
+        });
+    </script>
+</body>
+{% endblock %}

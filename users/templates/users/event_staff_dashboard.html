@@ -28,7 +28,7 @@
                 </thead>
                 <tbody>
                     {% for booking in bookings %}
-                    <tr onclick="window.location='{% url 'contracts:booking_detail_staff' booking.id %}';" class="hoverable-row">
+                    <tr onclick="window.location='{% url 'bookings:booking_detail_staff' booking.id %}';" class="hoverable-row">
                         <td>{{ booking.contract.event_date }}</td>
                         <td>{{ booking.get_role_display }}</td>
                         <td>{{ booking.contract.client.primary_contact }}</td>

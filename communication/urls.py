@@ -6,6 +6,12 @@ app_name = 'communication'
 
 urlpatterns = [
     path('send_portal_access/<int:contract_id>/', views.send_portal_access, name='send_portal_access'),
+
+    path('booking_notes/<int:booking_id>/', views.booking_notes, name='booking_notes'),
+    path('add_note/', views.add_note, name='add_note'),
+    path('edit_note/<int:note_id>/', views.edit_note, name='edit_note'),
+    path('delete_note/<int:note_id>/', views.delete_note, name='delete_note'),
+
     path('api/contract-messages/<int:contract_id>/', views.get_contract_messages, name='get_contract_messages'),
     path('api/post-contract-message/<int:contract_id>/', views.post_contract_message, name='post_contract_message'),
     path('tasks/', views.task_list, name='tasks'),

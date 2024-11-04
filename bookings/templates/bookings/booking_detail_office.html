@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <meta charset="UTF-8">
+    <title>Booking Detail</title>
+
+    <!-- Bootstrap CSS and Custom CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'contracts/styles.css' %}">
+
+    <!-- Custom JavaScript -->
+    <script src="{% static 'communication/js/booking_notes.js' %}"></script>
+
+    <style>
+        .confirmed {
+            background-color: green;
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<body data-contract-id="{{ contract.contract_id }}" data-payment-schedule-id="{{ contract.payment_schedule.id }}">
+
+    <!-- Top Grey Bar -->
+    <div class="bg-light text-dark py-2">
+        <div class="container">
+            <div class="row justify-content-between">
+                <div class="col-auto">
+                    <h4>Booking ID: {{ booking.id }}</h4>
+                    <h4>Booked Staff: {{ booking.staff.get_full_name }}</h4>
+                </div>
+                <div class="col-auto">
+                    <h4>Contract ID: {{ contract.custom_contract_number }}</h4>
+                    {% if booking.confirmed %}
+                        <div class="confirmed">Confirmed</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header Section -->
+    <header class="{% if contract.is_code_92 %}bg-dark-sienna{% else %}bg-cool-grey{% endif %} text-white py-3">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <p>Event Date: {{ contract.event_date }}</p>
+                    <p>Sales Person: {{ contract.csr.get_full_name }}</p>
+                    <p>Coordinator: {{ contract.coordinator.get_full_name }}</p>
+                </div>
+                <div class="col-lg-4">
+                    <p>Primary Contact: {{ contract.client.primary_contact }}</p>
+                    <p>Partner Contact: {{ contract.client.partner_contact }}</p>
+                    <p>Primary Email: {{ contract.client.primary_email }}</p>
+                    <p>Primary Phone 1: {{ contract.client.primary_phone1 }}</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mt-3">
+        <!-- Nav Tabs -->
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link text-dark-sienna" href="#client" data-toggle="tab" id="clientTabLink" role="tab" aria-controls="client" aria-selected="true">Client</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark-sienna" href="#event" data-toggle="tab" role="tab" aria-controls="event" aria-selected="false">Event</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark-sienna" href="#services" data-toggle="tab" role="tab" aria-controls="services" aria-selected="false">Services</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark-sienna" href="#docs" data-toggle="tab" role="tab" aria-controls="docs" aria-selected="false">Docs</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark-sienna" href="#communication" data-toggle="tab" role="tab" aria-controls="communication" aria-selected="false">Communication</a>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content field-box mt-3">
+            {% include 'bookings/partials/booking_client_tab.html' %}
+            {% include 'bookings/partials/booking_event_tab.html' %}
+            {% include 'bookings/partials/booking_services_tab.html' %}
+            {% include 'bookings/partials/booking_docs_tab.html' %}
+            {% include 'bookings/partials/booking_communication_tab_office.html' %}
+        </div>
+    </div>
+
+                <!-- Modal for Adding Notes -->
+                <div class="modal fade" id="addNoteModal" tabindex="-1" role="dialog" aria-labelledby="addNoteModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addNoteModalLabel">Add Note</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="post">
+                                    {% csrf_token %}
+                                    {{ communication_form.as_p }}
+                                    <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                                    <input type="hidden" name="note_type" value="booking">
+                                    <button type="submit" class="btn-dusty-pink">Add Note</button>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn-close" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- JavaScript and Libraries -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+    <!-- Tab Initialization Script -->
+    <script>
+        $(document).ready(function() {
+            // Activate tab based on URL hash or default to "client" tab
+            let hash = window.location.hash || '#client';
+            $('.nav-tabs a[href="' + hash + '"]').tab('show');
+
+            // Update URL hash when switching tabs
+            $('.nav-tabs a').on('click', function() {
+                history.replaceState(null, null, this.hash);
+            });
+        });
+
+        // DjangoFilters Object and Date Subtraction Function
+        let DjangoFilters = DjangoFilters || {};
+        DjangoFilters['subtract_days'] = function(dateString, days) {
+            let date = new Date(dateString);
+            date.setDate(date.getDate() - days);
+            return date.toISOString().split('T')[0];
+        };
+    </script>
+</body>
+{% endblock %}

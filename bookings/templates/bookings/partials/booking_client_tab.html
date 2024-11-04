@@ -1,0 +1,31 @@
+<div class="tab-pane container fade" id="client">
+    <div class="row">
+        <div class="col-md-6">
+            <form id="edit-client-form" method="post" action="{% url 'contracts:edit_contract' id=contract.contract_id %}">
+                {% csrf_token %}
+                <div class="row">
+                    <!-- Column 1 -->
+                    <div class="col-md-6">
+                        <label for="{{ client_edit_form.primary_contact.id_for_label }}">Primary Contact:</label>
+                        <input type="text" class="form-control" value="{{ contract.client.primary_contact }}" readonly>
+                        <label for="{{ client_edit_form.primary_email.id_for_label }}">Primary Email:</label>
+                        <input type="email" class="form-control" value="{{ contract.client.primary_email }}" readonly>
+                        <label for="{{ client_edit_form.primary_phone1.id_for_label }}">Primary Phone 1:</label>
+                        <input type="text" class="form-control" value="{{ contract.client.primary_phone1 }}" readonly>
+                        <!-- ... more read-only fields for the first column ... -->
+                    </div>
+                    <!-- Column 2 -->
+                    <div class="col-md-6">
+                        <label for="{{ client_edit_form.partner_contact.id_for_label }}">Partner Contact:</label>
+                        <input type="text" class="form-control" value="{{ contract.client.partner_contact }}" readonly>
+                        <label for="{{ client_edit_form.partner_email.id_for_label }}">Partner Email:</label>
+                        <input type="email" class="form-control" value="{{ contract.client.partner_email }}" readonly>
+                        <label for="{{ client_edit_form.partner_phone1.id_for_label }}">Partner Phone 1:</label>
+                        <input type="text" class="form-control" value="{{ contract.client.partner_phone1 }}" readonly>
+                        <!-- ... more read-only fields for the second column ... -->
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

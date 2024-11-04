@@ -1,5 +1,6 @@
 from django import forms
-from contracts.models import (Contract, LeadSourceCategory, Client, Payment, EventStaffBooking, Package, Discount, Location,
+from bookings.models import EventStaffBooking
+from contracts.models import (Contract, LeadSourceCategory, Client, Payment, Package, Discount, Location,
                               ContractDocument, PaymentSchedule, SchedulePayment,
                               AdditionalEventStaffOption, EngagementSessionOption, AdditionalProduct, ContractProduct,
                               ServiceFee, ContractAgreement, RiderAgreement, WeddingDayGuide)
@@ -265,6 +266,8 @@ class ContractServicesForm(forms.ModelForm):
         # Optionally, add an empty label for each field to show a default choice like "Select an option"
         for field_name in self.fields:
             self.fields[field_name].empty_label = "Select an option"
+
+
 class ContractProductForm(forms.ModelForm):
     class Meta:
         model = ContractProduct
@@ -364,6 +367,7 @@ class ClientForm(forms.ModelForm):
         primary_email = self.cleaned_data.get('primary_email')
         # Skip uniqueness validation here
         return primary_email
+
 class NewContractForm(forms.ModelForm):
     is_code_92 = forms.BooleanField(required=False)
     old_contract_number = forms.CharField(max_length=255, required=False)
@@ -731,13 +735,6 @@ class ContractDocumentForm(forms.ModelForm):
         model = ContractDocument
         fields = ['document', 'is_client_visible', 'is_event_staff_visible']
 
-
-class EventStaffBookingForm(forms.ModelForm):
-    booking_id = forms.CharField(widget=forms.HiddenInput(), required=False)
-
-    class Meta:
-        model = EventStaffBooking
-        fields = ['role', 'staff', 'status', 'confirmed', 'hours_booked', 'booking_id']
 
 class ContractAgreementForm(forms.ModelForm):
     main_signature = forms.CharField(widget=forms.HiddenInput(), required=True)

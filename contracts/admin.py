@@ -1,10 +1,11 @@
 from django.contrib import admin
 
-from .models import (Client, ServiceType, LeadSourceCategory, EventStaffBooking, Contract, AdditionalProduct, TaxRate,
+from contracts.models import (Client, ServiceType, LeadSourceCategory, Contract, AdditionalProduct, TaxRate,
                      DiscountRule, Package, AdditionalEventStaffOption, EngagementSessionOption, Location, OvertimeOption,
                      ContractOvertime, ContractProduct, Payment, ServiceFeeType, PaymentPurpose, PaymentSchedule,
                      SchedulePayment, ServiceFee, ChangeLog, ContractAgreement, RiderAgreement, WeddingDayGuide)
 
+from bookings.models import EventStaffBooking
 
 admin.site.register(TaxRate)
 
