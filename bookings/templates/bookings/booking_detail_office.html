@@ -143,13 +143,6 @@
             });
         });
 
-        // DjangoFilters Object and Date Subtraction Function
-        let DjangoFilters = DjangoFilters || {};
-        DjangoFilters['subtract_days'] = function(dateString, days) {
-            let date = new Date(dateString);
-            date.setDate(date.getDate() - days);
-            return date.toISOString().split('T')[0];
-        };
     </script>
 </body>
 {% endblock %}
