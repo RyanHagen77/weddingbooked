@@ -72,7 +72,7 @@ def booking_notes(request, booking_id):
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
     notes = Note.objects.filter(booking=booking)
     print("Notes for booking:", booking_id, "->", notes)  # Debug output to check notes
-    return render(request, 'contracts/booking_notes.html', {'object': booking, 'notes': notes})
+    return render(request, 'communication/booking_notes.html', {'object': booking, 'notes': notes})
 
 
 @login_required

@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from bookings.constants import SERVICE_ROLE_MAPPING
 from contracts.models import Contract, ChangeLog
+from contracts.forms import ContractClientEditForm, ContractEventEditForm
 from communication.forms import BookingCommunicationForm
 from communication.models import UnifiedCommunication
 from communication.views import send_booking_email
@@ -340,6 +341,9 @@ def booking_detail(request, booking_id):
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
     contract = booking.contract
 
+    client_edit_form = ContractClientEditForm(instance=contract.client)
+    event_edit_form = ContractEventEditForm(instance=contract)
+
     # Fetch specific bookings by role for each section
     photographer1 = EventStaffBooking.objects.filter(contract=contract, role='PHOTOGRAPHER1').first()
     photographer2 = EventStaffBooking.objects.filter(contract=contract, role='PHOTOGRAPHER2').first()
@@ -410,7 +414,9 @@ def booking_detail(request, booking_id):
         'staff_member': request.user,
         'overtime_entries': overtime_entries,
         'event_documents': event_documents,
-        'communication_form': communication_form
+        'communication_form': communication_form,
+        'client_edit_form': client_edit_form,
+        'event_edit_form': event_edit_form,
 
     })
 
@@ -419,6 +425,9 @@ def booking_detail(request, booking_id):
 def booking_detail_staff(request, booking_id):
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
     contract = booking.contract
+
+    client_edit_form = ContractClientEditForm(instance=contract.client)
+    event_edit_form = ContractEventEditForm(instance=contract)
 
     # Fetch specific bookings by role for each section
     photographer1 = EventStaffBooking.objects.filter(contract=contract, role='PHOTOGRAPHER1').first()
@@ -476,6 +485,8 @@ def booking_detail_staff(request, booking_id):
         'staff_member': request.user,
         'overtime_entries': overtime_entries,
         'event_documents': event_documents,
+        'client_edit_form': client_edit_form,
+        'event_edit_form': event_edit_form
     })
 
 
