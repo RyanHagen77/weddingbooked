@@ -64,10 +64,7 @@ class TaskForm(forms.ModelForm):
         self.fields['assigned_to'].label_from_instance = lambda obj: "{} {}".format(obj.first_name, obj.last_name)
 
         # Setting the queryset for 'note' field
-        self.fields['note'].queryset = UnifiedCommunication.objects.filter(
-            note_type__in=[UnifiedCommunication.INTERNAL, UnifiedCommunication.PORTAL]
-        )
-        self.fields['note'].label_from_instance = lambda obj: "{} - {}".format(obj.note_type, obj.description[:30])
+        self.fields['note'].queryset = UnifiedCommunication.objects.all()
 
         # Setting field requirements
         self.fields['contract'].required = False

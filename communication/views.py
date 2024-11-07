@@ -351,23 +351,28 @@ def get_contract_tasks(request, contract_id):
 def update_task(request, task_id):
     task = get_object_or_404(Task, pk=task_id)
     form = TaskForm(request.POST, instance=task)
-    if form.is_valid():
-        task = form.save(commit=False)  # Save the form data to the task object but don't commit to the database yet
-        task.sender = request.user  # Explicitly set the sender to the current user
-        task.save()  # Now save the task to the database with all fields including sender
 
-        # After saving the task, fetch the updated list of tasks and render it to HTML
-        incomplete_tasks = Task.objects.filter(assigned_to=request.user, is_completed=False).order_by('due_date')
-        completed_tasks = Task.objects.filter(assigned_to=request.user, is_completed=True).order_by('due_date')
+    if form.is_valid():
+        task = form.save(commit=False)
+        task.sender = request.user  # Set the sender explicitly
+
+        # Ensure contract and note fields are set if they exist in the form data
+        task.contract = form.cleaned_data.get('contract') or task.contract
+        task.note = form.cleaned_data.get('note') or task.note
+        task.task_type = form.cleaned_data.get('task_type') or task.task_type
+
+        task.save()
+
+        # Return the updated task list HTML if needed
         task_list_html = render_to_string('users/internal_task_list_snippet.html', {
-            'incomplete_tasks': incomplete_tasks,
-            'completed_tasks': completed_tasks
+            'incomplete_tasks': Task.objects.filter(assigned_to=request.user, is_completed=False).order_by('due_date'),
+            'completed_tasks': Task.objects.filter(assigned_to=request.user, is_completed=True).order_by('due_date'),
         }, request=request)
 
         return JsonResponse({'success': True, 'task_list_html': task_list_html})
     else:
-        # If the form is not valid, return the form errors
         return JsonResponse({'success': False, 'errors': form.errors.as_json()})
+
 
 @login_required
 @require_POST

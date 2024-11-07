@@ -1272,7 +1272,7 @@
                                                 data-sender-id="{{ request.user.id }}"
                                                 data-contract-id="{{ contract.contract_id }}"
                                                 data-note-id="{{ message.id }}"
-                                                data-type="internal">Add Task</button>
+                                                data-type="contract">Add Task</button>
                                     </div>
                                 {% endfor %}
                             {% endfor %}
@@ -1576,7 +1576,7 @@
         <form method="post" id="addTaskForm" data-create-task-url="{% url 'communication:create_contract_task' %}">
             {% csrf_token %}
             {{ task_form.as_p }}
-            <input type="hidden" id="id_type" name="type" value="contract">
+            <input type="hidden" id="id_type" name="task_type" value="contract">
         </form>
       </div>
       <div class="modal-footer">

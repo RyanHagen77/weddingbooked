@@ -30,7 +30,9 @@
                 data-assigned-to-id="{{ task.assigned_to.id }}"
                 data-due-date="{{ task.due_date|date:'Y-m-d' }}"
                 data-description="{{ task.description }}"
-                data-type="{{ task.type }}">Edit</button>
+                data-contract-id="{{ task.contract_id|default:'' }}"
+                data-note-id="{{ task.note.id|default:'' }}"
+                data-type="{{ task.task_type }}">Edit</button>
     </td>
 </tr>
 {% endfor %}
@@ -65,7 +67,9 @@
                 data-assigned-to-id="{{ task.assigned_to.id }}"
                 data-due-date="{{ task.due_date|date:'Y-m-d' }}"
                 data-description="{{ task.description }}"
-                data-type="{{ task.type }}">Edit</button>
+                data-contract-id="{{ task.contract_id|default:'' }}"
+                data-note-id="{{ task.note.id|default:'' }}"
+                data-type="{{ task.task_type }}">Edit</button>
     </td>
 </tr>
 {% endfor %}

@@ -3,7 +3,7 @@ from .models import UnifiedCommunication, Task
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ('sender', 'assigned_to', 'contract', 'note', 'due_date', 'description', 'is_completed')
+    list_display = ('sender', 'assigned_to', 'contract', 'note', 'task_type', 'due_date', 'description', 'is_completed')
     list_filter = ('is_completed', 'due_date')
     search_fields = ('description',)
 
