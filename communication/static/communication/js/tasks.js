@@ -70,7 +70,7 @@ $(document).ready(function () {
         let senderId = button.data('sender-id');
         let contractId = button.data('contract-id') || ''; // Ensure empty string if undefined
         let noteId = button.data('note-id') || ''; // Ensure empty string if undefined
-        let taskType = button.data('type') || '';// Default to 'internal'
+        let taskType = button.data('type') || ''// Default to 'internal'
 
         let modal = $(this);
         modal.find('#id_sender').val(senderId);
