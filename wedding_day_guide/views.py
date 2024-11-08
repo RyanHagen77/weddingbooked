@@ -81,7 +81,7 @@ def wedding_day_guide(request, contract_id):
                 # Redirect to the contract page with the documents section
                 return redirect(f'/contracts/{contract.contract_id}/#docs')
 
-            return redirect('contracts:wedding_day_guide', contract_id=contract.contract_id)
+            return redirect('wedding_day_guide:wedding_day_guide', contract_id=contract.contract_id)
     else:
         form = WeddingDayGuideForm(instance=guide, strict_validation=False, contract=contract)
 
