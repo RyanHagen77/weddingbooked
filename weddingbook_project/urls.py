@@ -29,4 +29,5 @@ urlpatterns = [
     path('contracts/', include('contracts.urls', namespace='contracts')),
     path('users/', include('users.urls', namespace='users')),
     path('communication/', include('communication.urls', namespace='communication')),
+    path('wedding_day_guide/', include('wedding_day_guide.urls', namespace='wedding_day_guide')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

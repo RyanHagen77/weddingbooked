@@ -102,10 +102,7 @@ urlpatterns = [
     path('payments_due_report/', reports_views.payments_due_report, name='payments_due_report'),
     path('formal_wear_deposit_report/', reports_views.formal_wear_deposit_report, name='formal_wear_deposit_report'),
     path('contacts_report/', reports_views.contacts_report, name='contacts_report'),
-    path('wedding-day-guide/<int:contract_id>/', views.wedding_day_guide, name='wedding_day_guide'),
-    path('wedding-day-guide/view/<int:pk>/', views.wedding_day_guide_view, name='wedding_day_guide_view'),
-    path('wedding_day_guide/pdf/<int:pk>/', views.wedding_day_guide_pdf, name='wedding_day_guide_pdf'),
-    path('api/wedding_day_guide/<int:contract_id>/', views.wedding_day_guide_api, name='wedding_day_guide_api'),
+
 
     # Other URLs for this app...
 ]

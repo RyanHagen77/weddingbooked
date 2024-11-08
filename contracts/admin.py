@@ -3,10 +3,10 @@ from django.contrib import admin
 from contracts.models import (Client, ServiceType, LeadSourceCategory, Contract, AdditionalProduct, TaxRate,
                      DiscountRule, Package, AdditionalEventStaffOption, EngagementSessionOption, Location, OvertimeOption,
                      ContractOvertime, ContractProduct, Payment, ServiceFeeType, PaymentPurpose, PaymentSchedule,
-                     SchedulePayment, ServiceFee, ChangeLog, ContractAgreement, RiderAgreement, WeddingDayGuide)
+                     SchedulePayment, ServiceFee, ChangeLog, ContractAgreement, RiderAgreement)
 
 from bookings.models import EventStaffBooking
-
+from wedding_day_guide.models import WeddingDayGuide
 admin.site.register(TaxRate)
 
 
@@ -237,4 +237,3 @@ class WeddingDayGuideAdmin(admin.ModelAdmin):
     )
 
 admin.site.register(WeddingDayGuide, WeddingDayGuideAdmin)
-(WeddingDayGuide, WeddingDayGuideAdmin)

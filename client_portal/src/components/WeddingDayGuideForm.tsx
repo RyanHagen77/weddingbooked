@@ -81,7 +81,7 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   useEffect(() => {
     if (contractId) {
       const accessToken = localStorage.getItem('access_token');
-      fetch(`https://www.enet2.com/contracts/api/wedding_day_guide/${contractId}/`, {
+      fetch(`https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -106,7 +106,7 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
     const payload = { ...data, contract: contractId, strict_validation: false };
 
     try {
-      const response = await fetch(`https://www.enet2.com/contracts/api/wedding_day_guide/${contractId}/`, {
+      const response = await fetch(`https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -135,7 +135,7 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
     const payload = { ...data, contract: contractId, strict_validation: true };
 
     try {
-      const response = await fetch(`https://www.enet2.com/contracts/api/wedding_day_guide/${contractId}/`, {
+      const response = await fetch(`https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
