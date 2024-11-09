@@ -126,6 +126,7 @@ export default function Home() {
       });
   };
 
+
   if (!isAuthenticated) {
     console.log('User not authenticated, rendering Login component');
     return <Login onLogin={() => window.location.reload()} />;

@@ -113,6 +113,9 @@ def wedding_day_guide_pdf(request, pk):
     return response
 
 
+import logging
+logger = logging.getLogger(__name__)
+
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def wedding_day_guide_api(request, contract_id):
