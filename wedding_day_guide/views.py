@@ -151,6 +151,37 @@ def wedding_day_guide_api(request, contract_id):
                     guide.submitted = True
                     guide.save()
 
+                    # Generate PDF if submitted
+                    try:
+                        # Determine the version number
+                        existing_versions = ContractDocument.objects.filter(
+                            contract=contract,
+                            document__icontains=f"wedding_day_guide_{guide.pk}_v"
+                        ).count()
+                        version_number = existing_versions + 1
+
+                        # Generate the PDF content
+                        context = {'guide': guide}
+                        html_string = render_to_string('wedding_day_guide/wedding_day_guide_pdf.html', context)
+                        pdf_file = HTML(string=html_string).write_pdf()
+
+                        # Save the PDF with versioned filename
+                        pdf_name = f"wedding_day_guide_{guide.pk}_v{version_number}.pdf"
+                        path = default_storage.save(f"contract_documents/{pdf_name}", ContentFile(pdf_file))
+
+                        # Create a ContractDocument entry for the PDF
+                        ContractDocument.objects.create(
+                            contract=contract,
+                            document=path,
+                            is_client_visible=True,
+                        )
+
+                        logger.info("PDF generated and saved successfully for contract ID: %s", contract.contract_id)
+
+                    except Exception as e:
+                        logger.error("Error generating PDF for guide %s: %s", guide.pk, e)
+                        return Response({"error": "Error generating PDF"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
                 return Response(WeddingDayGuideSerializer(guide).data, status=status.HTTP_201_CREATED)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -158,4 +189,7 @@ def wedding_day_guide_api(request, contract_id):
     except Contract.DoesNotExist:
         return Response({"error": "Contract not found."}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
+        logger.error("Error processing request: %s", e)
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
