@@ -129,35 +129,36 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   };
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    setIsSubmitting(true);
-    setMessage(null);
-    const accessToken = localStorage.getItem('access_token');
-    const payload = { ...data, contract: contractId, strict_validation: true };
+      setIsSubmitting(true);
+      setMessage(null);
+      const accessToken = localStorage.getItem('access_token');
+      // Add 'submit: true' to indicate this is a form submission
+      const payload = { ...data, contract: contractId, strict_validation: true, submit: true };
 
-    try {
-      const response = await fetch(`https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      try {
+        const response = await fetch(`https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
 
-      if (response.ok) {
-        setFormSubmitted(true);
-        setIsSubmitted(true); // Ensure the guide is marked as submitted
-        setMessage('Form submitted successfully.');
-      } else {
-        setMessage('Failed to submit form. Please try again.');
+        if (response.ok) {
+          setFormSubmitted(true);
+          setIsSubmitted(true); // Ensure the guide is marked as submitted
+          setMessage('Form submitted successfully.');
+        } else {
+          setMessage('Failed to submit form. Please try again.');
+        }
+      } catch (error) {
+        setMessage('An error occurred while submitting the form.');
+        console.error('Error submitting form:', error);
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (error) {
-      setMessage('An error occurred while submitting the form.');
-      console.error('Error submitting form:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    };
 
 return (
     <div className="bg-pistachio min-h-screen flex items-center justify-center py-8">
