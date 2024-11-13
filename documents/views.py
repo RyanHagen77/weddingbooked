@@ -365,7 +365,7 @@ def client_contract_agreement(request, contract_id):
         'form': form,
     }
 
-    return render(request, 'contracts/client_contract_agreement.html', context)
+    return render(request, 'documents/client_contract_agreement.html', context)
 
 @login_required
 def view_submitted_contract(request, contract_id, version_number):
@@ -440,7 +440,7 @@ def view_submitted_contract(request, contract_id, version_number):
         'ROLE_DISPLAY_NAMES': ROLE_DISPLAY_NAMES,  # Add role display names to context
     }
 
-    return render(request, 'contracts/view_submitted_contract.html', context)
+    return render(request, 'documents/view_submitted_contract.html', context)
 
 @login_required
 def client_contract_and_rider_agreement(request, contract_id):
@@ -561,7 +561,7 @@ def client_contract_and_rider_agreement(request, contract_id):
             }
 
             # Generate PDF
-            html_string = render_to_string('contracts/client_contract_and_rider_agreement_pdf.html', context)
+            html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
             pdf_file = HTML(string=html_string).write_pdf()
 
             # Save PDF to the documents section of the contract
@@ -682,7 +682,7 @@ def client_contract_and_rider_agreement(request, contract_id):
             'form': form,
         }
 
-        return render(request, 'contracts/client_contract_and_rider_agreement.html', context)
+        return render(request, 'documents/client_contract_and_rider_agreement.html', context)
 
 
 @login_required
@@ -808,7 +808,7 @@ def client_rider_agreement(request, contract_id, rider_type):
                 'total_cost_after_discounts': total_cost_after_discounts,
             })
 
-            html_string = render_to_string('contracts/client_contract_and_rider_agreement_pdf.html', context)
+            html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
             pdf_file = HTML(string=html_string).write_pdf()
 
             # Save PDF to the documents section of the contract
@@ -933,7 +933,7 @@ def client_rider_agreement(request, contract_id, rider_type):
         'rider_type': rider_type,
     }
 
-    return render(request, 'contracts/client_rider_agreement.html', context)
+    return render(request, 'documents/client_rider_agreement.html', context)
 
 
 def view_rider_agreements(request, contract_id):
