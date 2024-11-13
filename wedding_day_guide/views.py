@@ -13,7 +13,8 @@ from django.template.loader import render_to_string
 from weasyprint import HTML
 from .forms import WeddingDayGuideForm
 from .models import WeddingDayGuide
-from contracts.models import Contract, ContractDocument
+from contracts.models import Contract
+from documents.models import ContractDocument
 from .serializers import WeddingDayGuideSerializer
 from rest_framework.permissions import IsAuthenticated
 

@@ -68,6 +68,30 @@ def send_contract_message_email(request, message, contract):
     else:
         print("No coordinator assigned, or missing email.")
 
+def send_email_to_client(request, message, contract):
+    client_user = contract.client.user
+    if client_user and client_user.email:
+        subject = f'New Message from Coordinator for Contract {contract.custom_contract_number}'
+        message_body = render_to_string('communication/contract_message_email.html', {
+            'user': request.user,
+            'message': message,
+            'contract': contract,
+            'domain': get_current_site(request).domain,
+        })
+        send_mail(
+            subject,
+            message_body,
+            'enetadmin@enet2.com',
+            [client_user.email],
+            fail_silently=False,
+        )
+        print("Email sent to client:", client_user.email)
+    else:
+        print("Client does not have a valid email.")
+
+
+
+
 def booking_notes(request, booking_id):
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
     notes = Note.objects.filter(booking=booking)
@@ -220,15 +244,15 @@ def send_contract_and_rider_email_to_client(request, contract, rider_type=None, 
     client_email = contract.client.primary_email
 
     if only_contract:
-        agreement_url = reverse('contracts:client_contract_agreement', args=[contract.contract_id])
+        agreement_url = reverse('documents:client_contract_agreement', args=[contract.contract_id])
         subject = 'Sign Your Contract Agreement'
         message = f'Please sign your contract agreement at the following link: {agreement_url}'
     elif rider_type:
-        agreement_url = reverse('contracts:client_rider_agreement', args=[contract.contract_id, rider_type])
+        agreement_url = reverse('documents:client_rider_agreement', args=[contract.contract_id, rider_type])
         subject = f'Sign Your {rider_type.replace("_", " ").capitalize()} Agreement'
         message = f'Please sign your {rider_type.replace("_", " ").capitalize()} agreement at the following link: {agreement_url}'
     else:
-        agreement_url = reverse('contracts:client_contract_and_rider_agreement', args=[contract.contract_id])
+        agreement_url = reverse('documents:client_contract_and_rider_agreement', args=[contract.contract_id])
         subject = 'Sign Your Contract and Rider Agreements'
         message = f'Please sign your contract and rider agreements at the following link: {agreement_url}'
 

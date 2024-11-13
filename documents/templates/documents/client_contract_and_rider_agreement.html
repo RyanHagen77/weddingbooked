@@ -251,7 +251,7 @@
     </style>
 </head>
 <body>
-<form id="contract-form" method="post" action="{% url 'contracts:client_contract_and_rider_agreement' contract.contract_id %}">
+<form id="contract-form" method="post" action="{% url 'documents:client_contract_and_rider_agreement' contract.contract_id %}">
     {% csrf_token %}
     <div class="contract-header">
         <div class="logo">

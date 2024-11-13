@@ -85,7 +85,7 @@ export default function Home() {
         .catch(error => console.error('Error fetching messages:', error));
 
       // Fetching documents
-      fetch(`https://www.enet2.com/contracts/api/client-documents/${contractId}/`, {
+      fetch(`https://www.enet2.com/documents/api/client-documents/${contractId}/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },

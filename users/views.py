@@ -18,6 +18,18 @@ from datetime import datetime, timedelta
 from django.views.decorators.http import require_http_methods
 import json
 
+ROLE_DISPLAY_NAMES = {
+    'PHOTOGRAPHER1': 'Photographer 1',
+    'PHOTOGRAPHER2': 'Photographer 2',
+    'VIDEOGRAPHER1': 'Videographer 1',
+    'VIDEOGRAPHER2': 'Videographer 2',
+    'DJ1': 'DJ 1',
+    'DJ2': 'DJ 2',
+    'PHOTOBOOTH_OP1': 'Photobooth Operator 1',
+    'PHOTOBOOTH_OP2': 'Photobooth Operator 2'
+}
+
+
 def user_login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')

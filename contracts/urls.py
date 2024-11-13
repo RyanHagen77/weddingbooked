@@ -32,8 +32,7 @@ urlpatterns = [
     path('client_portal_login/', views.custom_login, name='client_portal_login'),
     path('client_portal_logout/', views.custom_logout, name='client_portal_logout'),
     path('client_portal/contract/<int:contract_id>/', views.client_portal, name='client_portal'),
-    path('client_contract_and_rider_agreement/<int:contract_id>/', views.client_contract_and_rider_agreement,
-         name='client_contract_and_rider_agreement'),
+
 
     # Password Reset URLs
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
@@ -52,23 +51,12 @@ urlpatterns = [
     path('<int:id>/save_products/', views.save_products, name='save_products'),
     path('success/', views.success_view, name='success'),
     path('contract_view/', views.contract_view, name='contract_view'),
-    path('contract/<int:contract_id>/pdf/', views.generate_contract_pdf, name='generate_contract_pdf'),
-    path('contract_agreement/<int:contract_id>/', views.contract_agreement, name='contract_agreement'),
-    path('client_contract_agreement/<int:contract_id>/', views.client_contract_agreement,
-         name='client_contract_agreement'),
-    path('view_submitted_contract/<int:contract_id>/', views.view_submitted_contract, name='view_submitted_contract'),
-    path('client_rider_agreement/<int:contract_id>/<str:rider_type>/', views.client_rider_agreement,
-         name='client_rider_agreement'),
-    path('contract/<int:contract_id>/view/', views.view_submitted_contract, name='view_submitted_contract'),
-    path('contract/<int:contract_id>/version/<int:version_number>/', views.view_submitted_contract,
-         name='view_submitted_contract'),
-    path('contract/<int:contract_id>/riders/', views.view_rider_agreements, name='view_rider_agreements'),
+
     path('<int:id>/', views.contract_detail, name='contract_detail'),
     path('<int:id>/edit/', views.edit_contract, name='edit_contract'),
     path('<int:id>/edit_services/', views.edit_services, name='edit_services'),
     path('<int:id>/data/', views.get_contract_data, name='get_contract_data'),
-    path('document/delete/<int:document_id>/', views.delete_document, name='delete_document'),
-    path('api/client-documents/<int:contract_id>/', views.client_documents, name='client_documents'),
+
 
     path('search/', views.contract_search, name='contract_search'),
 

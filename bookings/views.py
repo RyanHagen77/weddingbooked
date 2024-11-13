@@ -10,6 +10,7 @@ from communication.forms import BookingCommunicationForm
 from communication.models import UnifiedCommunication
 from communication.views import send_booking_email
 from users.models import Role
+from users.views import ROLE_DISPLAY_NAMES
 from bookings.forms import EventStaffBookingForm
 from bookings.models import Availability, EventStaffBooking
 from collections import defaultdict
@@ -22,18 +23,6 @@ from django.utils.dateparse import parse_date
 import logging
 
 logger = logging.getLogger(__name__)
-
-
-ROLE_DISPLAY_NAMES = {
-    'PHOTOGRAPHER1': 'Photographer 1',
-    'PHOTOGRAPHER2': 'Photographer 2',
-    'VIDEOGRAPHER1': 'Videographer 1',
-    'VIDEOGRAPHER2': 'Videographer 2',
-    'DJ1': 'DJ 1',
-    'DJ2': 'DJ 2',
-    'PHOTOBOOTH_OP1': 'Photobooth Operator 1',
-    'PHOTOBOOTH_OP2': 'Photobooth Operator 2'
-}
 
 @login_required
 def booking_search(request):

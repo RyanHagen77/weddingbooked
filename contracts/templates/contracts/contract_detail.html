@@ -29,9 +29,9 @@
                     <p class="mb-0 small-text">Event Date: {{ contract.event_date|date:"Y-m-d" }}</p>
                 </div>
                 <div class="d-flex align-items-center">
-                    <a href="{% url 'contracts:generate_contract_pdf' contract_id=contract.contract_id %}" class="section-link small-text" target="_blank">Print Contract</a>
+                    <a href="{% url 'documents:generate_contract_pdf' contract_id=contract.contract_id %}" class="section-link small-text" target="_blank">Print Contract</a>
                     <span class="mx-2 section-divider">|</span>
-                    <a href="{% url 'contracts:contract_agreement' contract_id=contract.contract_id %}" class="section-link small-text" target="_blank">View Contract</a>
+                    <a href="{% url 'documents:contract_agreement' contract_id=contract.contract_id %}" class="section-link small-text" target="_blank">View Contract</a>
                     <span class="mx-2 section-divider">|</span>
                     <a href="{% url 'communication:send_portal_access' contract_id=contract.contract_id %}" class="section-link small-text" id="give-portal-access-btn">Give Portal Access</a>
                 </div>
@@ -958,7 +958,7 @@
                                                         {% endfor %}
                                                     </div>
                                                     <!-- Form for deleting the document with confirmation -->
-                                                    <form action="{% url 'contracts:delete_document' document.id %}" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this document?');">
+                                                    <form action="{% url 'documents:delete_document' document.id %}" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this document?');">
                                                         {% csrf_token %}
                                                         <button type="submit" class="btn btn-danger p-1 ml-2" style="font-size: 12px;">Delete</button>
                                                     </form>
@@ -995,7 +995,7 @@
                                                 <td>{{ agreement.version_number }}</td>
                                                 <td>{{ agreement.created_at|date:"Y-m-d" }}</td>
                                                 <td>
-                                                    <a href="{% url 'contracts:view_submitted_contract' contract.contract_id agreement.version_number %}">View Version {{ agreement.version_number }}</a>
+                                                    <a href="{% url 'documents:view_submitted_contract' contract.contract_id agreement.version_number %}">View Version {{ agreement.version_number }}</a>
                                                 </td>
                                             </tr>
                                             {% endfor %}
@@ -1004,7 +1004,7 @@
                                                 <td>-</td>
                                                 <td>-</td>
                                                 <td>
-                                                    <a href="{% url 'contracts:view_rider_agreements' contract.contract_id %}">View Riders</a>
+                                                    <a href="{% url 'documents:view_rider_agreements' contract.contract_id %}">View Riders</a>
                                                 </td>
                                             </tr>
                                         </tbody>
