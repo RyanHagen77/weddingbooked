@@ -528,231 +528,32 @@
     <input type="hidden" id="main_signature" name="main_signature">
 
     <!-- Rider Agreement -->
-    <!-- Photography Package Rider Agreement -->
-    {% if contract.photography_package %}
     <div class="page-break"></div>
     <div>
-        <h2 style="text-align: center;">Photography Package Rider Agreement</h2>
-        <div class="rider-text">{{ rider_texts.photography|safe }}</div>
-        <input type="hidden" name="rider_text_photography" value="{{ rider_texts.photography }}">
+        <h2 style="text-align: center;">{{ rider_type|title }} Rider Agreement</h2>
+        <div class="rider-text">{{ rider_text|safe }}</div>
+        <input type="hidden" name="rider_text_{{ rider_type }}" value="{{ rider_text }}">
         <div class="rider-inputs">
-            <label for="client_name_photography">Client Name (Print):</label>
-            <input type="text" id="client_name_photography" name="client_name_photography" required>
-            <label for="agreement_date_photography">Date:</label>
-            <input type="date" id="agreement_date_photography" name="agreement_date_photography" required>
+            <label for="client_name_{{ rider_type }}">Client Name (Print):</label>
+            <input type="text" id="client_name_{{ rider_type }}" name="client_name_{{ rider_type }}" required>
+            <label for="agreement_date_{{ rider_type }}">Date:</label>
+            <input type="date" id="agreement_date_{{ rider_type }}" name="agreement_date_{{ rider_type }}" required>
         </div>
         <div class="signature-wrapper">
             <div class="signature-section">
-                <label for="signature-pad-photography">Signature for Photography Package:</label>
-                <canvas id="signature-pad-photography" width="400" height="100"></canvas>
-                <button type="button" onclick="clearSignaturePad('photography')">Clear</button>
+                <label for="signature-pad-{{ rider_type }}">Signature for {{ rider_type|title }} Package:</label>
+                <canvas id="signature-pad-{{ rider_type }}" width="400" height="100"></canvas>
+                <button type="button" onclick="clearSignaturePad('{{ rider_type }}')">Clear</button>
             </div>
             <div class="signature-section">
-                <label for="essence-rep-signature-photography">Essence Rep Signature:</label>
-                <div id="essence-rep-signature-photography" class="signature-placeholder"></div>
+                <label for="essence-rep-signature-{{ rider_type }}">Essence Rep Signature:</label>
+                <div id="essence-rep-signature-{{ rider_type }}" class="signature-placeholder"></div>
             </div>
         </div>
     </div>
-    {% endif %}
-
-    <!-- Additional Photography Rider Agreement -->
-    {% if contract.photography_additional %}
-    <div class="page-break"></div>
-    <div>
-        <h2 style="text-align: center;">Additional Photography Rider Agreement</h2>
-        <div class="rider-text">{{ rider_texts.photography_additional|safe }}</div>
-        <input type="hidden" name="rider_text_photography_additional" value="{{ rider_texts.photography_additional }}">
-        <div class="rider-inputs">
-            <label for="client_name_photography_additional">Client Name (Print):</label>
-            <input type="text" id="client_name_photography_additional" name="client_name_photography_additional" required>
-            <label for="agreement_date_photography_additional">Date:</label>
-            <input type="date" id="agreement_date_photography_additional" name="agreement_date_photography_additional" required>
-        </div>
-        <div class="signature-wrapper">
-            <div class="signature-section">
-                <label for="signature-pad-photography-additional">Signature for Additional Photography:</label>
-                <canvas id="signature-pad-photography-additional" width="400" height="100"></canvas>
-                <button type="button" onclick="clearSignaturePad('photography_additional')">Clear</button>
-            </div>
-            <div class="signature-section">
-                <label for="essence-rep-signature-photography-additional">Essence Rep Signature:</label>
-                <div id="essence-rep-signature-photography-additional" class="signature-placeholder"></div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Videography Package Rider Agreement -->
-    {% if contract.videography_package %}
-    <div class="page-break"></div>
-    <div>
-        <h2 style="text-align: center;">Videography Package Rider Agreement</h2>
-        <div class="rider-text">{{ rider_texts.videography|safe }}</div>
-        <input type="hidden" name="rider_text_videography" value="{{ rider_texts.videography }}">
-        <div class="rider-inputs">
-            <label for="client_name_videography">Client Name (Print):</label>
-            <input type="text" id="client_name_videography" name="client_name_videography" required>
-            <label for="agreement_date_videography">Date:</label>
-            <input type="date" id="agreement_date_videography" name="agreement_date_videography" required>
-        </div>
-        <div class="signature-wrapper">
-            <div class="signature-section">
-                <label for="signature-pad-videography">Signature for Videography Package:</label>
-                <canvas id="signature-pad-videography" width="400" height="100"></canvas>
-                <button type="button" onclick="clearSignaturePad('videography')">Clear</button>
-            </div>
-            <div class="signature-section">
-                <label for="essence-rep-signature-videography">Essence Rep Signature:</label>
-                <div id="essence-rep-signature-videography" class="signature-placeholder"></div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Additional Videography Rider Agreement -->
-    {% if contract.videography_additional %}
-    <div class="page-break"></div>
-    <div>
-        <h2 style="text-align: center;">Additional Videography Rider Agreement</h2>
-        <div class="rider-text">{{ rider_texts.videography_additional|safe }}</div>
-        <input type="hidden" name="rider_text_videography_additional" value="{{ rider_texts.videography_additional }}">
-        <div class="rider-inputs">
-            <label for="client_name_videography_additional">Client Name (Print):</label>
-            <input type="text" id="client_name_videography_additional" name="client_name_videography_additional" required>
-            <label for="agreement_date_videography_additional">Date:</label>
-            <input type="date" id="agreement_date_videography_additional" name="agreement_date_videography_additional" required>
-        </div>
-        <div class="signature-wrapper">
-            <div class="signature-section">
-                <label for="signature-pad-videography-additional">Signature for Additional Videography:</label>
-                <canvas id="signature-pad-videography-additional" width="400" height="100"></canvas>
-                <button type="button" onclick="clearSignaturePad('videography_additional')">Clear</button>
-            </div>
-            <div class="signature-section">
-                <label for="essence-rep-signature-videography-additional">Essence Rep Signature:</label>
-                <div id="essence-rep-signature-videography-additional" class="signature-placeholder"></div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- DJ Package Rider Agreement -->
-    {% if contract.dj_package %}
-    <div class="page-break"></div>
-    <div>
-        <h2 style="text-align: center;">DJ Package Rider Agreement</h2>
-        <div class="rider-text">{{ rider_texts.dj|safe }}</div>
-        <input type="hidden" name="rider_text_dj" value="{{ rider_texts.dj }}">
-        <div class="rider-inputs">
-            <label for="client_name_dj">Client Name (Print):</label>
-            <input type="text" id="client_name_dj" name="client_name_dj" required>
-            <label for="agreement_date_dj">Date:</label>
-            <input type="date" id="agreement_date_dj" name="agreement_date_dj" required>
-        </div>
-        <div class="signature-wrapper">
-            <div class="signature-section">
-                <label for="signature-pad-dj">Signature for DJ Package:</label>
-                <canvas id="signature-pad-dj" width="400" height="100"></canvas>
-                <button type="button" onclick="clearSignaturePad('dj')">Clear</button>
-            </div>
-            <div class="signature-section">
-                <label for="essence-rep-signature-dj">Essence Rep Signature:</label>
-                <div id="essence-rep-signature-dj" class="signature-placeholder"></div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Additional DJ Rider Agreement -->
-    {% if contract.dj_additional %}
-    <div class="page-break"></div>
-    <div>
-        <h2 style="text-align: center;">Additional DJ Rider Agreement</h2>
-        <div class="rider-text">{{ rider_texts.dj_additional|safe }}</div>
-        <input type="hidden" name="rider_text_dj_additional" value="{{ rider_texts.dj_additional }}">
-        <div class="rider-inputs">
-            <label for="client_name_dj_additional">Client Name (Print):</label>
-            <input type="text" id="client_name_dj_additional" name="client_name_dj_additional" required>
-            <label for="agreement_date_dj_additional">Date:</label>
-            <input type="date" id="agreement_date_dj_additional" name="agreement_date_dj_additional" required>
-        </div>
-        <div class="signature-wrapper">
-            <div class="signature-section">
-                <label for="signature-pad-dj-additional">Signature for Additional DJ:</label>
-                <canvas id="signature-pad-dj-additional" width="400" height="100"></canvas>
-                <button type="button" onclick="clearSignaturePad('dj_additional')">Clear</button>
-            </div>
-            <div class="signature-section">
-                <label for="essence-rep-signature-dj-additional">Essence Rep Signature:</label>
-                <div id="essence-rep-signature-dj-additional" class="signature-placeholder"></div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Photobooth Package Rider Agreement -->
-    {% if contract.photobooth_package %}
-    <div class="page-break"></div>
-    <div>
-        <h2 style="text-align: center;">Photobooth Package Rider Agreement</h2>
-        <div class="rider-text">{{ rider_texts.photobooth|safe }}</div>
-        <input type="hidden" name="rider_text_photobooth" value="{{ rider_texts.photobooth }}">
-        <div class="rider-inputs">
-            <label for="client_name_photobooth">Client Name (Print):</label>
-            <input type="text" id="client_name_photobooth" name="client_name_photobooth" required>
-            <label for="agreement_date_photobooth">Date:</label>
-            <input type="date" id="agreement_date_photobooth" name="agreement_date_photobooth" required>
-        </div>
-        <div class="signature-wrapper">
-            <div class="signature-section">
-                <label for="signature-pad-photobooth">Signature for Photobooth Package:</label>
-                <canvas id="signature-pad-photobooth" width="400" height="100"></canvas>
-                <button type="button" onclick="clearSignaturePad('photobooth')">Clear</button>
-            </div>
-            <div class="signature-section">
-                <label for="essence-rep-signature-photobooth">Essence Rep Signature:</label>
-                <div id="essence-rep-signature-photobooth" class="signature-placeholder"></div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Additional Photobooth Rider Agreement -->
-    {% if contract.photobooth_additional %}
-    <div class="page-break"></div>
-    <div>
-        <h2 style="text-align: center;">Additional Photobooth Rider Agreement</h2>
-        <div class="rider-text">{{ rider_texts.photobooth_additional|safe }}</div>
-        <input type="hidden" name="rider_text_photobooth_additional" value="{{ rider_texts.photobooth_additional }}">
-        <div class="rider-inputs">
-            <label for="client_name_photobooth_additional">Client Name (Print):</label>
-            <input type="text" id="client_name_photobooth_additional" name="client_name_photobooth_additional" required>
-            <label for="agreement_date_photobooth_additional">Date:</label>
-            <input type="date" id="agreement_date_photobooth_additional" name="agreement_date_photobooth_additional" required>
-        </div>
-        <div class="signature-wrapper">
-            <div class="signature-section">
-                <label for="signature-pad-photobooth-additional">Signature for Additional Photobooth:</label>
-                <canvas id="signature-pad-photobooth-additional" width="400" height="100"></canvas>
-                <button type="button" onclick="clearSignaturePad('photobooth_additional')">Clear</button>
-            </div>
-            <div class="signature-section">
-                <label for="essence-rep-signature-photobooth-additional">Essence Rep Signature:</label>
-                <div id="essence-rep-signature-photobooth-additional" class="signature-placeholder"></div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
 
     <!-- Hidden input for main signature -->
-    <input type="hidden" name="signature_photography" id="signature_photography">
-    <input type="hidden" name="signature_photography_additional" id="signature_photography_additional">
-    <input type="hidden" name="signature_videography" id="signature_videography">
-    <input type="hidden" name="signature_videography_additional" id="signature_videography_additional">
-    <input type="hidden" name="signature_dj" id="signature_dj">
-    <input type="hidden" name="signature_dj_additional" id="signature_dj_additional">
-    <input type="hidden" name="signature_photobooth" id="signature_photobooth">
-    <input type="hidden" name="signature_photobooth_additional" id="signature_photobooth_additional">
+    <input type="hidden" name="signature_{{ rider_type }}" id="signature_{{ rider_type }}">
 
     <!-- Submit Button -->
     <div style="text-align: center; margin-top: 20px;">

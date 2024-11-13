@@ -52,6 +52,7 @@ def client_documents(request, contract_id):
         return JsonResponse({'error': 'Contract not found'}, status=404)
 
 
+
 @login_required
 def generate_contract_pdf(request, contract_id):
     contract = get_object_or_404(Contract, pk=contract_id)
