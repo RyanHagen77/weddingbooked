@@ -810,7 +810,7 @@ def client_rider_agreement(request, contract_id, rider_type):
                 'total_cost_after_discounts': total_cost_after_discounts,
             })
 
-            html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
+            html_string = render_to_string('documents/contract_template.html', context)
             pdf_file = HTML(string=html_string).write_pdf()
 
             # Save PDF to the documents section of the contract
