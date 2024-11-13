@@ -835,29 +835,6 @@ def get_contract_data(request, id):
     return JsonResponse(data)
 
 
-def contract_view(request):
-    # Prepare your context data
-    context = {
-        'contract': {
-            'event_date': '2023-01-01',
-            'primary_contact': 'John Doe',
-            'partner_contact': 'Jane Smith',
-            'guests_qty': 100,
-            'bridal_party_qty': 10,
-            'primary_phone': '123-456-7890',
-            'primary_email': 'john@example.com',
-            'address': '123 Main St',
-            'city': 'Anytown',
-            'state': 'Anystate',
-            'ceremony_site': 'Lovely Venue',
-            'reception_site': 'Elegant Hall',
-            'package': {'default_text': 'Package details here...'}
-            # ... other fields as needed ...
-        }
-    }
-
-    return render(request, 'contracts/contract_template.html', context)
-
 
 
 

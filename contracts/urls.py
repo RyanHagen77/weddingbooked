@@ -50,7 +50,7 @@ urlpatterns = [
     path('api/additional_products/', views.get_additional_products, name='get_additional_products'),
     path('<int:id>/save_products/', views.save_products, name='save_products'),
     path('success/', views.success_view, name='success'),
-    path('contract_view/', views.contract_view, name='contract_view'),
+
 
     path('<int:id>/', views.contract_detail, name='contract_detail'),
     path('<int:id>/edit/', views.edit_contract, name='edit_contract'),

@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+# Printable Contract Template for manual signing
 <html>
 <head>
     <title>Contract Agreement</title>
@@ -140,6 +141,13 @@
         tr:hover {
             background-color: #ddd;
         }
+
+        .signature-box {
+            width: 200px;          /* Adjust width as needed */
+            height: 50px;          /* Adjust height as needed */
+            margin-top: 10px;      /* Space above the box */
+        }
+
 
         .default-text {
             font-size: 9pt;
@@ -499,35 +507,33 @@
         {{ contract.custom_text }}
     </div>
 
-    <!-- Main Contract Signature -->
-    <div class="contract-details">
-        <div style="text-align: left;">
-            <p><strong>Signature:</strong> {{ latest_agreement.initials }}</p>
-            <img src="{{ latest_agreement.signature }}" alt="Contract Signature" class="signature-img">
-            <p><strong>Date Created:</strong> {{ latest_agreement.created_at|date:"Y-m-d H:i:s" }}</p>
-        </div>
+<!-- Main Contract Signature -->
+<div class="contract-details">
+    <div style="text-align: left;">
+        <p><strong>Signature:</strong></p>
+        <div class="signature-box"></div> <!-- Empty box for signature -->
+        <p><strong>Date:</strong></p>
     </div>
+</div>
 
-    <!-- Rider Agreements -->
-    {% for rider in rider_agreements %}
-    <div class="page-break"></div>
-    <div class="contract-details">
-        <h2>{{ rider.rider_type|title }} Rider Agreement</h2>
-        <div class="rider-text">{{ rider.rider_text|safe }}</div>
-        <p><strong>Client Name:</strong> {{ rider.client_name }}</p>
-        <p><strong>Date:</strong> {{ rider.agreement_date }}</p>
-        <div style="display: flex; flex-direction: column; align-items: flex-start;">
-            <div style="text-align: left; margin-bottom: 20px;">
-                <label>Client Signature:</label>
-                <img src="{{ rider.signature }}" alt="{{ rider.rider_type|title }} Signature" class="signature-img">
-            </div>
-            <div style="text-align: left;">
-                <label>Essence Rep Signature (Placeholder):</label>
-                <img src="{{ rider.signature }}" alt="{{ rider.rider_type|title }} Signature" class="signature-img">
-            </div>
+<!-- Rider Agreements -->
+{% for rider in rider_agreements %}
+<div class="page-break"></div>
+<div class="contract-details">
+    <h2>{{ rider.rider_type|title }} Rider Agreement</h2>
+    <div class="rider-text">{{ rider.rider_text|safe }}</div>
+    <p><strong>Client Name:</strong> {{ rider.client_name }}</p>
+    <p><strong>Date:</strong> {{ rider.agreement_date }}</p>
+    <div style="display: flex; flex-direction: column; align-items: flex-start;">
+        <div style="text-align: left; margin-bottom: 20px;">
+            <label>Client Signature:</label>
+            <div class="signature-box"></div> <!-- Empty box for client signature -->
+        </div>
+        <div style="text-align: left;">
+            <label>Essence Rep Signature (Placeholder):</label>
+            <div class="signature-box"></div> <!-- Empty box for essence rep signature -->
         </div>
     </div>
-    <div class="divider"></div>
-    {% endfor %}
-<body>
-<html>
+</div>
+<div class="divider"></div>
+{% endfor %}
