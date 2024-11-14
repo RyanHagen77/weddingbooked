@@ -515,24 +515,5 @@
     </div>
 </div>
 
-<!-- Rider Agreements -->
-{% for rider in rider_agreements %}
-<div class="page-break"></div>
-<div class="contract-details">
-    <h2>{{ rider.rider_type|title }} Rider Agreement</h2>
-    <div class="rider-text">{{ rider.rider_text|safe }}</div>
-    <p><strong>Client Name:</strong> {{ rider.client_name }}</p>
-    <p><strong>Date:</strong> {{ rider.agreement_date }}</p>
-    <div style="display: flex; flex-direction: column; align-items: flex-start;">
-        <div style="text-align: left; margin-bottom: 20px;">
-            <label>Client Signature:</label>
-            <div class="signature-box"></div> <!-- Empty box for client signature -->
-        </div>
-        <div style="text-align: left;">
-            <label>Essence Rep Signature (Placeholder):</label>
-            <div class="signature-box"></div> <!-- Empty box for essence rep signature -->
-        </div>
-    </div>
-</div>
 <div class="divider"></div>
 {% endfor %}
