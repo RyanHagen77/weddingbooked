@@ -2,7 +2,8 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import user_passes_test
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from .models import Contract, LeadSourceCategory, Location, Payment, ServiceFee, ContractOvertime, SchedulePayment
+from .models import Contract, LeadSourceCategory, Location, ServiceFee, ContractOvertime
+from payments.models import Payment, SchedulePayment
 from django.db.models import Sum, F, Q
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime, timedelta, date

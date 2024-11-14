@@ -144,7 +144,7 @@ function populateScheduleA(tbody) {
 // Populate custom schedule
 function populateCustomSchedule(tbody) {
     let contractId = document.body.getAttribute('data-contract-id');
-    fetch(`/contracts/${contractId}/get_custom_schedule/`)
+    fetch(`/payments/${contractId}/get_custom_schedule/`)
         .then(response => response.json())
         .then(data => {
             let totalPayments = getTotalPayments();
@@ -277,7 +277,7 @@ function confirmPayment() {
     let paymentReference = document.getElementById('payment_reference').value;
     let paymentId = document.getElementById('payment-id').value;
     let paymentAction = document.getElementById('payment-action').value;
-    let url = (paymentAction === 'edit') ? `/contracts/edit_payment/${paymentId}/` : `/contracts/add_payment/${contractData.paymentScheduleId}/`;
+    let url = (paymentAction === 'edit') ? `/payments/edit_payment/${paymentId}/` : `/payments/add_payment/${contractData.paymentScheduleId}/`;
 
     let originalAmount = parseFloat(document.getElementById('original-amount').value) || 0;
     let amountDifference = paymentAmount - originalAmount;
@@ -391,7 +391,7 @@ function updatePaymentsTable(paymentAmount, paymentMethod, paymentPurpose, payme
         let actionCell = newRow.insertCell();
         actionCell.innerHTML = `
             <button type="button" class="btn btn-info btn-sm" onclick="editPayment('${paymentId}', '${paymentAmount}', '${paymentMethod}', '${paymentReference}', '${paymentMemo}', '${paymentPurpose}')">Edit</button>
-            <button type="button" class="btn btn-danger btn-sm" onclick="if(confirm('Are you sure?')){ window.location.href='/contracts/delete_payment/${paymentId}/'; }">Delete</button>
+            <button type="button" class="btn btn-danger btn-sm" onclick="if(confirm('Are you sure?')){ window.location.href='/payments/delete_payment/${paymentId}/'; }">Delete</button>
         `;
     }
 
@@ -434,7 +434,7 @@ function updateDepositStatus() {
 // Load existing payments
 function loadExistingPayments() {
     let contractId = document.body.getAttribute('data-contract-id');
-    fetch(`/contracts/${contractId}/get_existing_payments/`)
+    fetch(`/payments/${contractId}/get_existing_payments/`)
         .then(response => response.json())
         .then(data => {
             let paymentsTableBody = document.querySelector('.existing-payments-table tbody');
@@ -456,7 +456,7 @@ function loadExistingPayments() {
                 let actionCell = newRow.insertCell();
                 actionCell.innerHTML = `
                     <button type="button" class="btn btn-info btn-sm" onclick="editPayment('${payment.id}', '${payment.amount}', '${payment.method}', '${payment.reference}', '${payment.memo}', '${payment.purpose}')">Edit</button>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="if(confirm('Are you sure?')){ window.location.href='/contracts/delete_payment/${payment.id}/'; }">Delete</button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="if(confirm('Are you sure?')){ window.location.href='/payments/delete_payment/${payment.id}/'; }">Delete</button>
                 `;
             });
         })

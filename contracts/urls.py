@@ -60,15 +60,7 @@ urlpatterns = [
 
     path('search/', views.contract_search, name='contract_search'),
 
-    path('<int:contract_id>/schedule/', views.create_or_update_schedule, name='create_or_update_schedule'),
-    path('add_payment/<int:schedule_id>/', views.add_payment, name='add_payment'),
-    path('<int:contract_id>/schedule_payments_due/', views.get_schedule_payments_due,
-         name='get_schedule_payments_due'),
-    path('<int:contract_id>/get_custom_schedule/', views.get_custom_schedule, name='get_custom_schedule'),
-    path('edit_payment/<int:payment_id>/', views.edit_payment, name='edit_payment'),
-    path('delete_payment/<int:payment_id>/', views.delete_payment, name='delete_payment'),
-    path('<int:contract_id>/get_existing_payments/', views.get_existing_payments,
-         name='get_existing_payments'),
+
     path('add_service_fee/<int:contract_id>/', views.add_service_fees, name='add_service_fee'),
     path('delete_service_fee/<int:fee_id>/', views.delete_service_fee, name='delete_service_fee'),
     path('<int:contract_id>/get_service_fees/', views.get_service_fees, name='get_service_fees'),

@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Fetch and update payment details
     const contractId = document.body.getAttribute('data-contract-id');
-    fetch(`/contracts/${contractId}/schedule_payments_due/`)
+    fetch(`/payments/${contractId}/schedule_payments_due/`)
     .then(response => response.json())
     .then(paymentData => {
         console.log('Payment data:', paymentData);  // Log payment data
