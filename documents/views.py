@@ -691,7 +691,8 @@ def client_contract_and_rider_agreement(request, contract_id):
 def client_rider_agreement(request, contract_id, rider_type):
     contract = get_object_or_404(Contract, pk=contract_id)
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
-    company_signature_url = f"http://{request.get_host()}{settings.MEDIA_URL}signatures/company_signature.png"
+    company_signature_url = f"http://{request.get_host()}{settings.MEDIA_URL}essence_signature/EssenceSignature.png"
+
 
     if request.method == 'POST':
         form = ContractAgreementForm(request.POST)
@@ -810,7 +811,7 @@ def client_rider_agreement(request, contract_id, rider_type):
                 'total_cost_after_discounts': total_cost_after_discounts,
             })
 
-            html_string = render_to_string('documents/contract_template.html', context)
+            html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
             pdf_file = HTML(string=html_string).write_pdf()
 
             # Save PDF to the documents section of the contract
