@@ -123,11 +123,10 @@ function populateScheduleTable(scheduleType) {
     updateDepositStatus();
 }
 
-// Populate Schedule A
 function populateScheduleA(tbody) {
-    let depositAmount = Math.ceil((contractData.servicesTotalAfterDiscounts * 0.50) / 100) * 100;
     let totalContractAmount = parseFloat(document.querySelector('.contract-total').getAttribute('data-contract-total'));
-    let balanceAmount = totalContractAmount - depositAmount;
+    let depositAmount = parseFloat((totalContractAmount / 2).toFixed(2));
+    let balanceAmount = parseFloat((totalContractAmount - depositAmount).toFixed(2));
     let balanceDueDate = new Date(contractData.eventDate);
     balanceDueDate.setDate(balanceDueDate.getDate() - 60);
 
@@ -140,6 +139,7 @@ function populateScheduleA(tbody) {
 
     fetchServiceFees();
 }
+
 
 // Populate custom schedule
 function populateCustomSchedule(tbody) {

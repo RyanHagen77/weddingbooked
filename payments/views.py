@@ -12,6 +12,7 @@ from contracts.models import ChangeLog
 from contracts.models import Contract
 from django.urls import reverse
 from django.db.models import Sum
+from math import ceil
 
 
 def add_schedule_a(request, contract_id):
@@ -29,13 +30,16 @@ def create_schedule_a_payments(contract_id):
     # Clear existing Schedule A payments
     SchedulePayment.objects.filter(schedule=schedule).delete()
 
-    # Change the purpose name from 'Down Payment' to 'Deposit'
+    # Define payment purposes
     deposit_purpose, _ = PaymentPurpose.objects.get_or_create(name='Deposit')
     balance_payment_purpose, _ = PaymentPurpose.objects.get_or_create(name='Balance Payment')
 
     # Calculate the deposit amount (50% of the total contract cost, rounded up to the nearest 100)
     raw_deposit_amount = contract.final_total * Decimal('0.50')
-    deposit_amount = (raw_deposit_amount / Decimal('100')).quantize(Decimal('1'), rounding=ROUND_HALF_UP) * Decimal('100')
+    deposit_amount = (raw_deposit_amount.quantize(Decimal('1.'), rounding=ROUND_HALF_UP) / Decimal('100')).quantize(Decimal('1'), rounding=ROUND_UP) * Decimal('100')
+
+    # Calculate the balance amount
+    balance_amount = contract.final_total - deposit_amount
 
     # Calculate the balance due date (60 days before the event date)
     balance_due_date = contract.event_date - timedelta(days=60)
@@ -44,13 +48,12 @@ def create_schedule_a_payments(contract_id):
     SchedulePayment.objects.create(
         schedule=schedule,
         purpose=deposit_purpose,
-        due_date=now(),  # Use the current date
+        due_date=now(),
         amount=deposit_amount,
         paid=contract.amount_paid >= deposit_amount
     )
 
     # Create the balance payment
-    balance_amount = contract.final_total - deposit_amount
     SchedulePayment.objects.create(
         schedule=schedule,
         purpose=balance_payment_purpose,
@@ -60,6 +63,7 @@ def create_schedule_a_payments(contract_id):
     )
 
     return schedule
+
 
 def check_payment_schedule_for_contract(contract_id):
     contract = get_object_or_404(Contract, contract_id=contract_id)
@@ -74,41 +78,84 @@ def create_or_update_schedule(request, contract_id):
     contract = get_object_or_404(Contract, contract_id=contract_id)
     schedule, created = PaymentSchedule.objects.get_or_create(contract=contract)
 
+    def update_schedule_a_payments(schedule, contract):
+        # Remove existing payments
+        schedule.schedule_payments.all().delete()
+
+        try:
+            # Access the balance due correctly
+            balance_due = contract.balance_due
+            if not isinstance(balance_due, Decimal):
+                balance_due = Decimal(str(balance_due))  # Ensure balance_due is a valid Decimal
+        except Exception as e:
+            print(f"Error accessing balance_due: {e}")
+            raise
+
+        if balance_due > 0:
+            try:
+                # Calculate the deposit amount (rounding up)
+                first_payment_amount = Decimal(ceil(balance_due / Decimal('2')))
+                # Calculate the remaining balance
+                second_payment_amount = balance_due - first_payment_amount
+
+                # Set due dates
+                first_payment_due_date = contract.event_date - timedelta(days=60)
+                second_payment_due_date = contract.event_date
+            except Exception as e:
+                print(f"Error calculating payment amounts or dates: {e}")
+                raise
+
+            try:
+                # Create payments with due dates
+                SchedulePayment.objects.create(
+                    schedule=schedule,
+                    purpose=PaymentPurpose.objects.get_or_create(name='Deposit')[0],
+                    due_date=first_payment_due_date,
+                    amount=first_payment_amount
+                )
+                SchedulePayment.objects.create(
+                    schedule=schedule,
+                    purpose=PaymentPurpose.objects.get_or_create(name='Balance Payment')[0],
+                    due_date=second_payment_due_date,
+                    amount=second_payment_amount
+                )
+            except Exception as e:
+                print(f"Error creating payments: {e}")
+                raise
+
+
     if request.method == 'POST':
         schedule_form = PaymentScheduleForm(request.POST, instance=schedule)
         schedule_payment_formset = SchedulePaymentFormSet(request.POST, instance=schedule)
 
         if schedule_form.is_valid() and schedule_payment_formset.is_valid():
             saved_schedule = schedule_form.save(commit=False)
-            saved_schedule.schedule_type = request.POST.get('schedule_type', 'schedule_a')
-            saved_schedule.save()
-            schedule_payment_formset.save()
+            new_schedule_type = request.POST.get('schedule_type', 'schedule_a')
 
-            # Create or update service fees in the custom schedule
-            service_fees = request.POST.getlist('service_fees')
-            if service_fees:
-                for fee in service_fees:
-                    fee_data = fee.split(',')
-                    fee_purpose, _ = PaymentPurpose.objects.get_or_create(name=fee_data[0])
-                    SchedulePayment.objects.create(
-                        schedule=schedule,
-                        purpose=fee_purpose,
-                        due_date=contract.event_date,
-                        amount=Decimal(fee_data[1])
-                    )
+            # Handle transition to schedule_a
+            if new_schedule_type == 'schedule_a':
+                update_schedule_a_payments(schedule, contract)
+
+            saved_schedule.schedule_type = new_schedule_type
+            saved_schedule.save()
+
+            # Save custom schedule payments
+            if new_schedule_type == 'custom':
+                schedule_payment_formset.save()
 
             return HttpResponseRedirect(reverse('contracts:contract_detail', kwargs={'id': contract_id}) + '#financial')
-
     else:
+        if schedule.schedule_type == 'schedule_a':
+            update_schedule_a_payments(schedule, contract)
+
         schedule_form = PaymentScheduleForm(instance=schedule)
         schedule_payment_formset = SchedulePaymentFormSet(instance=schedule)
 
-    return render(request, 'contracts/schedule_form.html', {
+    return render(request, 'payments/payment_schedule_form.html', {
         'contract': contract,
         'schedule_form': schedule_form,
         'schedule_payment_formset': schedule_payment_formset,
     })
-
 
 
 def get_schedule_payments_due(request, contract_id):
@@ -119,9 +166,19 @@ def get_schedule_payments_due(request, contract_id):
         return JsonResponse({'next_payment_amount': '0.00', 'next_payment_due_date': 'N/A'})
 
     if schedule.schedule_type == 'schedule_a':
-        next_payment_due_date = contract.event_date - timedelta(days=60)
-        next_payment_amount = contract.balance_due
+        # Retrieve all schedule_a payments ordered by due date
+        schedule_payments = schedule.schedule_payments.filter(paid=False).order_by('due_date')
+
+        if schedule_payments.exists():
+            # Get the next unpaid payment
+            next_payment = schedule_payments.first()
+            next_payment_due_date = next_payment.due_date
+            next_payment_amount = next_payment.amount
+        else:
+            next_payment_due_date = 'N/A'
+            next_payment_amount = '0.00'
     else:
+        # For custom schedules, use the same logic
         schedule_payments = schedule.schedule_payments.filter(paid=False).order_by('due_date')
         if schedule_payments.exists():
             next_payment = schedule_payments.first()
@@ -137,6 +194,7 @@ def get_schedule_payments_due(request, contract_id):
     }
 
     return JsonResponse(payment_details)
+
 
 
 def get_custom_schedule(request, contract_id):
