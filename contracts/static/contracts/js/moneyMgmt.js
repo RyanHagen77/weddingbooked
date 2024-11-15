@@ -124,29 +124,30 @@ function populateScheduleTable(scheduleType) {
 }
 
 function populateScheduleA(tbody) {
-    // Calculate deposit and balance amounts
-    let depositAmount = Math.round((contractData.servicesTotalAfterDiscounts * 0.50) / 100) * 100; // Match backend rounding logic
     let totalContractAmount = parseFloat(document.querySelector('.contract-total').getAttribute('data-contract-total'));
-    let balanceAmount = totalContractAmount - depositAmount;
 
-    // Calculate balance due date (60 days before event)
+    // Round up deposit amount to the nearest dollar
+    let depositAmount = Math.ceil(totalContractAmount / 2);
+
+    // Calculate balance amount (subtract the rounded deposit from the total contract amount)
+    let balanceAmount = Math.ceil(totalContractAmount - depositAmount);
+
+    // Calculate balance due date (60 days before event date)
     let balanceDueDate = new Date(contractData.eventDate);
     balanceDueDate.setDate(balanceDueDate.getDate() - 60);
 
-    // Get total payments made
     let totalPayments = getTotalPayments();
-
-    // Determine the status of deposit and balance
     let depositStatus = (totalPayments >= depositAmount - 0.01) ? 'Paid' : 'Unpaid';
     let balanceStatus = (totalPayments >= totalContractAmount) ? 'Paid' : 'Unpaid';
 
     // Add rows for deposit and balance due
-    addScheduleRow(tbody, 'Deposit', 'Upon Booking', depositAmount, depositStatus);
-    addScheduleRow(tbody, 'Balance Due', balanceDueDate.toISOString().slice(0, 10), balanceAmount, balanceStatus);
+    addScheduleRow(tbody, 'Deposit', 'Upon Booking', depositAmount.toFixed(2), depositStatus);
+    addScheduleRow(tbody, 'Balance Due', balanceDueDate.toISOString().slice(0, 10), balanceAmount.toFixed(2), balanceStatus);
 
     // Fetch service fees if applicable
     fetchServiceFees();
 }
+
 
 
 // Populate custom schedule
