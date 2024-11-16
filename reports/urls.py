@@ -20,3 +20,5 @@ path('payments_due_report/', views.payments_due_report, name='payments_due_repor
 path('formal_wear_deposit_report/', views.formal_wear_deposit_report, name='formal_wear_deposit_report'),
 path('contacts_report/', views.contacts_report, name='contacts_report'),
 ]
+
+handler403 = 'reports.views.custom_403_view'

@@ -66,4 +66,3 @@ urlpatterns = [
 
     # Other URLs for this app...
 ]
-handler403 = 'contracts.reports_views.custom_403_view'
