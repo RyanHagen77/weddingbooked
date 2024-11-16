@@ -3,7 +3,8 @@ from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
 from django.template.loader import render_to_string
 from django.utils.timezone import now
-from contracts.models import EventStaffBooking, Contract
+from contracts.models import Contract
+from bookings.models import EventStaffBooking
 from django.contrib.sites.models import Site
 
 #class Command(BaseCommand):

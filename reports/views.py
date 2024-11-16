@@ -2,8 +2,8 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import user_passes_test
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from .models import Contract, LeadSourceCategory, Location, ServiceFee, ContractOvertime
-from payments.models import Payment, PaymentSchedule, SchedulePayment
+from contracts.models import Contract, LeadSourceCategory, Location, ServiceFee, ContractOvertime
+from payments.models import Payment, SchedulePayment
 from django.db.models import Sum, F, Q
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime, timedelta, date
@@ -32,7 +32,9 @@ def reports(request):
         ],
     }
 
-    return render(request, 'contracts/reports.html', context)
+    return render(request, 'reports/reports.html', context)
+
+
 @login_required
 def lead_source_report(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
@@ -129,7 +131,7 @@ def lead_source_report(request):
         'selected_period': period,
     }
 
-    return render(request, 'contracts/lead_source_report.html', context)
+    return render(request, 'reports/lead_source_report.html', context)
 
 
 @login_required
@@ -301,7 +303,7 @@ def appointments_report(request):
         'selected_period': period,
     }
 
-    return render(request, 'contracts/appointments_report.html', context)
+    return render(request, 'reports/appointments_report.html', context)
 
 
 @login_required
@@ -416,7 +418,7 @@ def reception_venue_report(request):
         'selected_period': period,
     }
 
-    return render(request, 'contracts/reception_venue_report.html', context)
+    return render(request, 'reports/reception_venue_report.html', context)
 
 @login_required
 def revenue_report(request):
@@ -532,7 +534,7 @@ def revenue_report(request):
         'group_by': group_by
     }
 
-    return render(request, 'contracts/revenue_report.html', context)
+    return render(request, 'reports/revenue_report.html', context)
 
 @login_required
 def revenue_by_contract(request):
@@ -607,7 +609,7 @@ def revenue_by_contract(request):
         'group_by': group_by,
         'locations': locations,
     }
-    return render(request, 'contracts/revenue_by_contract.html', context)
+    return render(request, 'reports/revenue_by_contract.html', context)
 
 def deferred_revenue_report(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
@@ -666,7 +668,7 @@ def deferred_revenue_report(request):
         'report_data': report_data
     }
 
-    return render(request, 'contracts/deferred_revenue_report.html', context)
+    return render(request, 'reports/deferred_revenue_report.html', context)
 
 
 SERVICE_ROLE_MAPPING = {
@@ -706,6 +708,7 @@ ROLE_DISPLAY_NAMES = {
     'PHOTOBOOTH_OP2': 'Photobooth Operator 2'
 }
 
+@login_required
 def event_staff_payroll_report(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
     start_date = request.GET.get('start_date')
@@ -733,7 +736,12 @@ def event_staff_payroll_report(request):
             travel_fee_amount = ServiceFee.objects.filter(contract=contract, fee_type__name='Travel Charge').aggregate(Sum('amount'))['amount__sum'] or 0
             print(f"Contract: {contract.custom_contract_number}, Travel Fee Exists: {travel_fee_exists}, Travel Fee Amount: {travel_fee_amount}")
 
+            # Exclude PROSPECT roles from the report
+            excluded_roles = {'PROSPECT1', 'PROSPECT2', 'PROSPECT3'}
             for role_key, field_name in SERVICE_ROLE_MAPPING.items():
+                if role_key in excluded_roles:
+                    continue  # Skip excluded roles
+
                 staff_member = getattr(contract, field_name, None)
                 if staff_member:
                     regular_hours = 0
@@ -799,7 +807,8 @@ def event_staff_payroll_report(request):
         'grouped_report_data': grouped_report_data
     }
 
-    return render(request, 'contracts/event_staff_payroll_report.html', context)
+    return render(request, 'reports/event_staff_payroll_report.html', context)
+
 
 
 @login_required
@@ -890,7 +899,7 @@ def sales_detail_report(request):
         'group_by': group_by
     }
 
-    return render(request, 'contracts/sales_detail_report.html', context)
+    return render(request, 'reports/sales_detail_report.html', context)
 
 
 @login_required
@@ -985,7 +994,7 @@ def sales_detail_by_contract(request):
         'total_revenue': total_revenue,
     }
 
-    return render(request, 'contracts/sales_detail_by_contract.html', context)
+    return render(request, 'reports/sales_detail_by_contract.html', context)
 
 DATE_RANGE_DISPLAY = {
     'current_quarter': 'Current Quarter',
@@ -1090,7 +1099,7 @@ def sales_tax_report(request):
         'locations': locations,
     }
 
-    return render(request, 'contracts/sales_tax_report.html', context)
+    return render(request, 'reports/sales_tax_report.html', context)
 
 def payments_due_report(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
@@ -1168,7 +1177,7 @@ def payments_due_report(request):
         'selected_location': location_id,
     }
 
-    return render(request, 'contracts/payments_due_report.html', context)
+    return render(request, 'reports/payments_due_report.html', context)
 
 @login_required
 def formal_wear_deposit_report(request):
@@ -1220,7 +1229,7 @@ def formal_wear_deposit_report(request):
         'locations': locations,
     }
 
-    return render(request, 'contracts/formal_wear_deposit_report.html', context)
+    return render(request, 'reports/formal_wear_deposit_report.html', context)
 
 
 @login_required
@@ -1274,4 +1283,4 @@ def contacts_report(request):
         'report_data': report_data,
     }
 
-    return render(request, 'contracts/contacts_report.html', context)
+    return render(request, 'reports/contacts_report.html', context)

@@ -5,8 +5,8 @@
 {% block content %}
 <div class="outer-container">
     <div class="search-results">
-        <h4>Revenue Report</h4>
-        <button onclick="history.back()" class="btn btn-dusty-pink">Go Back</button>
+        <h4>Sales Detail Report</h4>
+        <button onclick="history.back()" class="btn-dusty-pink">Go Back</button>
 
         <form method="get" class="report-form">
             <label for="start_date">Start Date:</label>
@@ -28,16 +28,18 @@
             <button type="submit" class="btn-dusty-pink">Generate Report</button>
         </form>
         <div class="search-results">
-            <h6>{{ group_by|capfirst }}ly Revenue between {{ start_date }} and {{ end_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
+            <h6>Sales Detail from {{ start_date }} to {{ end_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
             <table>
                 <thead>
                     <tr>
                         <th>Period Start</th>
                         <th>Period End</th>
-                        <th>Deposits Received</th>
-                        <th>Other Payments</th>
-                        <th>Tax Collected</th>
-                        <th>Total Revenue</th>
+                        <th>Service Sales</th>
+                        <th>Products Sales</th>
+                        <th>Taxable Products Sold</th>
+                        <th>Sales Tax Collected</th>
+                        <th>Other Revenue</th>
+                        <th>Total Sales w/ Tax</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -45,7 +47,7 @@
                     <tr>
                         <td>
                             {% if data.period_start != 'Totals' %}
-                            <a href="{% url 'contracts:revenue_by_contract' %}?start_date={{ data.period_start }}&end_date={{ data.period_end }}&original_start_date={{ start_date }}&original_end_date={{ end_date }}&location={{ selected_location }}&group_by={{ group_by }}">
+                            <a href="{% url 'reports:sales_detail_by_contract' %}?start_date={{ data.period_start }}&end_date={{ data.period_end }}&original_start_date={{ start_date }}&original_end_date={{ end_date }}&location={{ selected_location }}&group_by={{ group_by }}">
                                 {{ data.period_start }}
                             </a>
                             {% else %}
@@ -53,10 +55,12 @@
                             {% endif %}
                         </td>
                         <td>{{ data.period_end }}</td>
-                        <td>${{ data.deposits_received }}</td>
-                        <td>${{ data.other_payments }}</td>
-                        <td>${{ data.tax_collected }}</td>
-                        <td>${{ data.total_revenue }}</td>
+                        <td>${{ data.service_revenue|floatformat:2 }}</td>
+                        <td>${{ data.products_revenue|floatformat:2 }}</td>
+                        <td>${{ data.taxable_products_revenue|floatformat:2 }}</td>
+                        <td>${{ data.tax_collected|floatformat:2 }}</td>
+                        <td>${{ data.other_revenue|floatformat:2 }}</td>
+                        <td>${{ data.total_revenue|floatformat:2 }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -65,3 +69,4 @@
     </div>
 </div>
 {% endblock %}
+

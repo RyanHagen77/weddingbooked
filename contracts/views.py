@@ -1,54 +1,63 @@
 # contracts/views.py
+# Standard Library Imports
+import json
+import logging
+from datetime import timedelta
+from decimal import Decimal, InvalidOperation
+from collections import defaultdict
+
+# Django Imports
 from django.shortcuts import render, get_object_or_404, redirect
-from users.models import CustomUser  # Import CustomUser
-from django.db.models import Q
+from django.urls import reverse
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model, login, logout
+from django.http import JsonResponse, HttpRequest
+from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
+from django.db import transaction
+from django.db.models import Q, Sum
+
+# Django Form Imports
+from django.contrib.auth.forms import PasswordResetForm
+
+# DRF Imports
 from rest_framework import viewsets
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from django.urls import reverse
 
+# Models
+from users.models import CustomUser
 from bookings.models import EventStaffBooking
-from bookings.forms import EventStaffBookingForm
 from communication.models import UnifiedCommunication, Task
-from communication.views import send_contract_message_email, send_email_to_client
-from documents.forms import ContractDocumentForm
 from documents.models import ContractAgreement, RiderAgreement
-from .forms import (ContractSearchForm, ClientForm, NewContractForm, ContractForm, ContractInfoEditForm,
-                    ContractClientEditForm, ContractEventEditForm, ContractServicesForm,
-                    ContractProductFormset, ServiceFeeFormSet, ServiceFeeForm)
-
-from payments.forms import PaymentForm, PaymentScheduleForm, SchedulePaymentFormSet
-from communication.forms import CommunicationForm, TaskForm  # Importing from the communication app
-from .models import (Client, Contract, ServiceType, Package,
-                     AdditionalEventStaffOption, EngagementSessionOption, Discount, ContractOvertime, AdditionalProduct,
-                     OvertimeOption,
-                     TaxRate, ChangeLog, ServiceFee)
-
+from .models import (
+    Client, Contract, ServiceType, Package, AdditionalEventStaffOption,
+    EngagementSessionOption, Discount, ContractOvertime, AdditionalProduct,
+    OvertimeOption, TaxRate, ChangeLog, ServiceFee
+)
 from payments.models import Payment, PaymentPurpose, PaymentSchedule
+from wedding_day_guide.models import WeddingDayGuide
+
+# Forms
+from bookings.forms import EventStaffBookingForm
+from communication.forms import CommunicationForm, TaskForm
+from documents.forms import ContractDocumentForm
+from payments.forms import PaymentForm, PaymentScheduleForm, SchedulePaymentFormSet
+from .forms import (
+    ContractSearchForm, ClientForm, NewContractForm, ContractForm,
+    ContractInfoEditForm, ContractClientEditForm, ContractEventEditForm,
+    ContractServicesForm, ContractProductFormset, ServiceFeeFormSet, ServiceFeeForm
+)
+
+# Serializers
+from .serializers import ContractSerializer
+
+# Views from other apps
+from communication.views import send_contract_message_email, send_email_to_client
 from payments.views import create_schedule_a_payments
 
-from wedding_day_guide.models import WeddingDayGuide
-from django.db import transaction
-from django.views.decorators.http import require_POST
-from django.contrib import messages
-from decimal import Decimal, InvalidOperation
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import get_user_model, login
-
-from .serializers import ContractSerializer
-from datetime import timedelta
-import json
-
-
-from django.http import JsonResponse
-import logging
-from django.contrib.auth.forms import PasswordResetForm
-from django.http import HttpRequest
-from django.contrib.auth import logout
-from collections import defaultdict
-
+# Logging setup
 logger = logging.getLogger(__name__)
 
 
@@ -152,8 +161,6 @@ def contract_search(request):
         'contracts': contracts,
     })
 
-
-
 @login_required
 def new_contract(request):
     contract_form = NewContractForm(request.POST or None)
@@ -207,7 +214,6 @@ def new_contract(request):
         'contract_form': contract_form,
         'client_form': client_form,
     })
-
 
 def send_password_reset_email(user_email):
     print(f"Starting to send password reset email to: {user_email}")

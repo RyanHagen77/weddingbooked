@@ -1,17 +1,14 @@
 # contracts/urls.py
 from django.urls import path
 from django.shortcuts import redirect
-from . import views, reports_views
+from . import views
 from django.contrib.auth import views as auth_views
 from .views import CustomTokenObtainPairView
 
-
 app_name = 'contracts'
-
 
 def redirect_to_next_login(request):
     return redirect('https://www.enet2.com/client_portal')
-
 
 urlpatterns = [
     path('new/', views.new_contract, name='contract_new'),
@@ -66,23 +63,6 @@ urlpatterns = [
     path('<int:contract_id>/get_service_fees/', views.get_service_fees, name='get_service_fees'),
     path('<int:contract_id>/discounts/remove/<int:discount_id>/', views.remove_discount, name='remove_discount'),
     path('<int:contract_id>/discounts/', views.discounts_view, name='discounts_view'),
-
-
-    path('reports/', reports_views.reports, name='reports'),
-    path('lead_source_report/', reports_views.lead_source_report, name='lead_source_report'),
-    path('appointments/', reports_views.appointments_report, name='appointments_report'),
-    path('reception_venue_report/', reports_views.reception_venue_report, name='reception_venue_report'),
-    path('revenue_report/', reports_views.revenue_report, name='revenue_report'),
-    path('revenue_by_contract/', reports_views.revenue_by_contract, name='revenue_by_contract'),
-    path('deferred_revenue_report/', reports_views.deferred_revenue_report, name='deferred_revenue_report'),
-    path('sales_detail_report/', reports_views.sales_detail_report, name='sales_detail_report'),
-    path('sales_detail_by_contract/', reports_views.sales_detail_by_contract, name='sales_detail_by_contract'),
-    path('sales_taxes_report/', reports_views.sales_tax_report, name='sales_tax_report'),
-    path('event_staff_payroll/', reports_views.event_staff_payroll_report, name='event_staff_payroll_report'),
-    path('payments_due_report/', reports_views.payments_due_report, name='payments_due_report'),
-    path('formal_wear_deposit_report/', reports_views.formal_wear_deposit_report, name='formal_wear_deposit_report'),
-    path('contacts_report/', reports_views.contacts_report, name='contacts_report'),
-
 
     # Other URLs for this app...
 ]

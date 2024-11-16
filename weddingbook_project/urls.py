@@ -29,6 +29,7 @@ urlpatterns = [
     path('contracts/', include('contracts.urls', namespace='contracts')),
     path('documents/', include('documents.urls', namespace='documents')),
     path('payments/', include('payments.urls', namespace='payments')),
+    path('reports/', include('reports.urls', namespace='reports')),
     path('users/', include('users.urls', namespace='users')),
     path('communication/', include('communication.urls', namespace='communication')),
     path('wedding_day_guide/', include('wedding_day_guide.urls', namespace='wedding_day_guide')),
