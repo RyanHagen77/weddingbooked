@@ -72,7 +72,7 @@ def custom_login(request):
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             messages.error(request, "Invalid email or password.")
-            return render(request, 'contracts/client_portal_login.html', {'next': request.POST.get('next')})
+            return render(request, 'users/client_portal_login.html', {'next': request.POST.get('next')})
         except User.MultipleObjectsReturned:
             users = User.objects.filter(email=email)
             user = None
@@ -82,7 +82,7 @@ def custom_login(request):
                     break
             if user is None:
                 messages.error(request, "Invalid email or password.")
-                return render(request, 'contracts/client_portal_login.html', {'next': request.POST.get('next')})
+                return render(request, 'users/client_portal_login.html', {'next': request.POST.get('next')})
 
         if user is not None and user.check_password(password):
             login(request, user)
