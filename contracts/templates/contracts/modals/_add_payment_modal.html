@@ -1,0 +1,63 @@
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" role="dialog" aria-labelledby="paymentModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="paymentModalLabel">Add/Edit Payment</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="payment-form" method="post">
+          {% csrf_token %}
+          <input type="hidden" id="payment-id" name="payment_id">
+          <input type="hidden" id="payment-action" name="payment_action" value="add">
+          <input type="hidden" id="original-amount" value="">
+
+          <div class="form-group">
+            <label for="amount">Amount:</label>
+            <input type="number" class="form-control" id="amount" name="amount" step="0.01" required>
+          </div>
+
+          <div class="form-group">
+            <label for="payment_method">Payment Method:</label>
+            <select class="form-control" id="payment_method" name="payment_method" required>
+              <option value="" disabled selected>Select Payment Method</option>
+              <option value="CASH">Cash</option>
+              <option value="CHECK">Check</option>
+              <option value="CREDIT_CARD">Credit Card</option>
+              <option value="ZELLE">Zelle</option>
+              <option value="VENMO">Venmo</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="payment_purpose">Payment Purpose:</label>
+            <select class="form-control" id="payment_purpose" name="payment_purpose" required>
+              <option value="" disabled selected>Select Payment Purpose</option>
+              {% for purpose in payment_purposes %}
+              <option value="{{ purpose.id }}">{{ purpose.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="memo">Memo:</label>
+            <input type="text" class="form-control" id="memo" name="memo" placeholder="Enter a note or memo">
+          </div>
+
+          <div class="form-group">
+            <label for="payment_reference">Reference:</label>
+            <input type="text" class="form-control" id="payment_reference" name="payment_reference" placeholder="Enter a reference number">
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-close" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-dusty-pink" onclick="confirmPayment()">Confirm Payment</button>
+      </div>
+    </div>
+  </div>
+</div>

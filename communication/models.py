@@ -1,3 +1,5 @@
+#communication/models.py
+
 from django.db import models
 from contracts.models import Contract
 from django.conf import settings

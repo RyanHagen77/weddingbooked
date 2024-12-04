@@ -1,4 +1,4 @@
-
+#bookings/models.py
 
 from django.conf import settings
 from django.db import models
@@ -34,26 +34,32 @@ class Availability(models.Model):
 
     @classmethod
     def get_available_staff_for_date(cls, date):
+        """
+        Returns staff who are available for the given date.
+        Staff with 'BOOKED' or 'PENDING' status are excluded from availability.
+        Staff with 'PROSPECT' status remain available.
+        """
+
         weekday = date.weekday()
 
-        # Find staff who are unavailable on the specific date
+        # Find staff who are unavailable on the specific date or have always-off days matching the weekday
         unavailable_staff_ids = cls.objects.filter(
-            Q(date=date, available=False) |
-            Q(always_off_days__contains=[weekday])
+            Q(date=date, available=False) | Q(always_off_days__contains=[weekday])
         ).values_list('staff_id', flat=True)
 
-        # Find staff who are booked and confirmed or pending on the specific date
-        booked_staff_ids = EventStaffBooking.objects.filter(
+        # Find staff who are booked or pending on the specific date (PROSPECT is ignored)
+        booked_or_pending_staff_ids = EventStaffBooking.objects.filter(
             contract__event_date=date,
-            status__in=['BOOKED', 'PENDING']
+            status__in=['BOOKED', 'PENDING']  # Only BOOKED and PENDING block availability
         ).values_list('staff_id', flat=True)
 
-        # Combine both unavailable and booked staff IDs
-        all_unavailable_ids = set(unavailable_staff_ids) | set(booked_staff_ids)
+        # Combine both unavailable and booked/pending staff IDs
+        all_unavailable_ids = set(unavailable_staff_ids) | set(booked_or_pending_staff_ids)
 
         # Use CustomUser to exclude staff who are unavailable or booked
         CustomUser = get_user_model()
         return CustomUser.objects.exclude(id__in=all_unavailable_ids)
+
 
 class Service(models.Model):
     role_identifier = models.CharField(max_length=30)  # Match this with ROLE_CHOICES in EventStaffBooking
@@ -92,6 +98,7 @@ class EventStaffBooking(models.Model):
     HOURS_CHOICES = (
         (2, '2 Hours'),
         (4, '4 Hours'),
+        (6, '6 Hours'),
         (8, '8 Hours'),
     )
 

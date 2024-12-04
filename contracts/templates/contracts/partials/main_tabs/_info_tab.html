@@ -1,0 +1,32 @@
+<div class="tab-pane container fade show active" id="info">
+    <!-- Static Contract Info -->
+    <div id="contract-info" class="row">
+        <!-- Static details -->
+        <div class="col-md-6">
+            <p id="contract-location" data-location-id="{{ contract.location.id }}">Location: {{ contract.location.name }}</p>
+            <p id="contract-event-date">Event Date: {{ contract.event_date }}</p>
+            <p id="contract-status">Status: {{ contract.get_status_display }}</p>
+            <p id="contract-csr">Sales Person: {{ contract.csr.get_full_name }}</p>
+            <p id="contract-coordinator">Coordinator: {{ contract.coordinator.get_full_name }}</p>
+        </div>
+        <div class="col-md-6">
+            <p id="contract-lead-source">Lead Source: {{ contract.get_lead_source_display }}</p>
+            <p id="contract-code-92-status">Code 92: {{ contract.is_code_92|yesno:"Yes,No" }}</p>
+            <p id="contract-old-number">Old Contract Number: {{ contract.old_contract_number }}</p>
+        </div>
+        <!-- Edit Button -->
+        <button id="edit-contract-info-button" class="btn-dusty-pink" onclick="toggleEditForm(true)">Edit Contract Info</button>
+        <!-- Add Special Terms Button -->
+        <button type="button" class="btn-dusty-pink" data-toggle="modal" data-target="#customTextModal">
+            Add/Edit Special Terms
+        </button>
+    </div>
+    <div id="edit-contract-info" class="col-md-6" style="display:none;">
+        <form id="edit-contract-info-form" method="post" action="{% url 'contracts:edit_contract' id=contract.contract_id %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ contract_info_edit_form.as_p }}
+            <button type="submit">Save Changes</button>
+            <button type="button" class="btn-close" onclick="toggleEditForm(false)">Close</button>
+        </form>
+    </div>
+</div>

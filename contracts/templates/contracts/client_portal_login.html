@@ -94,7 +94,7 @@
             <img src="/media/Final_Logo.png" alt="Essence Logo">
         </div>
         <h2>Login</h2>
-        <form method="post" action="{% url 'contracts:client_portal_login' %}">
+        <form method="post" action="{% url 'users:client_portal_login' %}">
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ next }}">
             <label for="email">Email:</label>

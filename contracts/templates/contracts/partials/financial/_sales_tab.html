@@ -1,0 +1,54 @@
+<div class="financial-content">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th class="text-right">Totals</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Photography</td>
+                <td class="text-right">${{ photography_cost }}</td>
+            </tr>
+            <tr>
+                <td>Videography</td>
+                <td class="text-right">${{ videography_cost }}</td>
+            </tr>
+            <tr>
+                <td>DJ</td>
+                <td class="text-right">${{ dj_cost }}</td>
+            </tr>
+            <tr>
+                <td>Photobooth</td>
+                <td class="text-right">${{ photobooth_cost }}</td>
+            </tr>
+            <tr style="background-color: #f2f2f2;">
+                <td colspan="2"><strong>Discounts</strong></td>
+            </tr>
+            <tr>
+                <td>Package Discount: ${{ contract.calculate_package_discount }}</td>
+                <td class="text-right">Subtotal: ${{ contract.calculate_total_service_cost }}</td>
+            </tr>
+            <tr>
+                <td>Sunday Discount: ${{ contract.calculate_sunday_discount }}</td>
+                <td class="text-right">Service Discounts: -${{ contract.calculate_discount }}</td>
+            </tr>
+            <tr>
+                <td>Other Discount: ${{ contract.other_discounts_total }}</td>
+                <td class="text-right">Service Total after Discounts: ${{ contract.calculate_total_service_cost_after_discounts }}</td>
+            </tr>
+            <tr style="background-color: #f2f2f2;">
+                <td colspan="2"><strong>Products</strong></td>
+            </tr>
+            <tr>
+                <td>Products Total: ${{ contract.calculate_product_subtotal|floatformat:2 }}</td>
+                <td class="text-right">Tax: ${{ contract.calculate_tax|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td>Service Fees: ${{ contract.calculate_total_service_fees|floatformat:2 }}</td>
+                <td class="text-right"><strong>Contract Total: ${{ contract.calculate_total_cost|floatformat:2 }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
+</div>

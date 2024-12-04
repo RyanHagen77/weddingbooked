@@ -1,0 +1,27 @@
+<div class="card mb-4">
+    <div class="card-header">
+        <h6>Documents</h6>
+    </div>
+    <div class="card-body">
+        {% if documents %}
+            <ul class="list-group">
+                {% for document in documents %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <a href="{{ document.document.url }}">{{ document.document.name }}</a>
+                        <div class="badge-container">
+                            {% for badge_class, badge_label in document.badges %}
+                                <span class="badge {{ badge_class }}">{{ badge_label }}</span>
+                            {% endfor %}
+                        </div>
+                        <form action="{% url 'documents:delete_document' document.id %}" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this document?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger p-1 ml-2" style="font-size: 12px;">Delete</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No contract documents available.</p>
+        {% endif %}
+    </div>
+</div>

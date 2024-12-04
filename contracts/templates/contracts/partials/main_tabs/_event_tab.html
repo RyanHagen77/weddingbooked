@@ -1,0 +1,65 @@
+<div class="tab-pane container fade" id="event">
+    <div class="row">
+        <!-- Editable Event Details Form -->
+        <div class="col-md-6">
+            <form id="edit-event-form" method="post" action="{% url 'contracts:edit_contract' id=contract.contract_id %}">
+                {% csrf_token %}
+                <div class="row">
+                    <!-- Column 1 -->
+                    <div class="col-md-6">
+                        <label for="{{ event_edit_form.bridal_party_qty.id_for_label }}">Bridal Party Quantity:</label>
+                        {{ event_edit_form.bridal_party_qty }}
+                        <label for="{{ event_edit_form.ceremony_site.id_for_label }}">Ceremony Site:</label>
+                        {{ event_edit_form.ceremony_site }}
+                        <label for="{{ event_edit_form.ceremony_city.id_for_label }}">Ceremony City:</label>
+                        {{ event_edit_form.ceremony_city }}
+                        <label for="{{ event_edit_form.ceremony_state.id_for_label }}">Ceremony State:</label>
+                        {{ event_edit_form.ceremony_state }}
+                        <!-- ... other fields for the first column ... -->
+                    </div>
+
+                    <!-- Column 2 -->
+                    <div class="col-md-6">
+                        <label for="{{ event_edit_form.guests_qty.id_for_label }}">Guests Quantity:</label>
+                        {{ event_edit_form.guests_qty }}
+                        <label for="{{ event_edit_form.reception_site.id_for_label }}">Reception Site:</label>
+                        {{ event_edit_form.reception_site }}
+                        <label for="{{ event_edit_form.reception_city.id_for_label }}">Reception City:</label>
+                        {{ event_edit_form.reception_city }}
+                        <label for="{{ event_edit_form.reception_state.id_for_label }}">Reception State:</label>
+                        {{ event_edit_form.reception_state }}
+                        <!-- ... other fields for the second column ... -->
+                    </div>
+                </div>
+
+                <!-- Toggle Button for Additional Event Fields -->
+                <button type="button" id="toggleEventDetails" class="btn-dusty-pink mt-3 mb-3">Show More Event Details</button>
+
+                <!-- Additional Event Fields (Initially Hidden) -->
+                <div id="additionalEventDetails" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="{{ event_edit_form.ceremony_contact.id_for_label }}">Ceremony Contact:</label>
+                            {{ event_edit_form.ceremony_contact }}
+                            <label for="{{ event_edit_form.ceremony_phone.id_for_label }}">Ceremony Phone:</label>
+                            {{ event_edit_form.ceremony_phone }}
+                            <label for="{{ event_edit_form.ceremony_email.id_for_label }}">Ceremony Email:</label>
+                            {{ event_edit_form.ceremony_email }}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ event_edit_form.reception_contact.id_for_label }}">Reception Contact:</label>
+                            {{ event_edit_form.reception_contact }}
+                            <label for="{{ event_edit_form.reception_phone.id_for_label }}">Reception Phone:</label>
+                            {{ event_edit_form.reception_phone }}
+                            <label for="{{ event_edit_form.reception_email.id_for_label }}">Reception Email:</label>
+                            {{ event_edit_form.reception_email }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Submit Button -->
+                <button type="submit" class="btn btn-dusty-pink mt-3 mb-3">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</div>

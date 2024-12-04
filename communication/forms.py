@@ -1,5 +1,5 @@
 from django import forms
-from .models import UnifiedCommunication, Task  # Import your model
+from .models import UnifiedCommunication, Task
 from users.models import CustomUser, Role
 from django.core.exceptions import ValidationError
 
@@ -44,7 +44,7 @@ class TaskForm(forms.ModelForm):
             'contract': forms.HiddenInput(),
             'sender': forms.HiddenInput(),
             'note': forms.HiddenInput(),
-            'task_type': forms.HiddenInput(),  # Update `type` to `task_type`
+            'task_type': forms.HiddenInput(),
             'due_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'width: 100%;'}),
             'description': forms.Textarea(attrs={'rows': 4, 'class': 'form-control', 'style': 'width: 100%;'}),
         }
@@ -55,18 +55,12 @@ class TaskForm(forms.ModelForm):
         office_roles = Role.objects.filter(name__in=office_role_names)
         office_staff_queryset = CustomUser.objects.filter(role__in=office_roles, status='ACTIVE')
 
-        # Setting the queryset for 'sender' and 'assigned_to' fields
         self.fields['sender'].queryset = office_staff_queryset
         self.fields['assigned_to'].queryset = office_staff_queryset
-
-        # Setting the label from instance method to display full names
-        self.fields['sender'].label_from_instance = lambda obj: "{} {}".format(obj.first_name, obj.last_name)
-        self.fields['assigned_to'].label_from_instance = lambda obj: "{} {}".format(obj.first_name, obj.last_name)
-
-        # Setting the queryset for 'note' field
+        self.fields['sender'].label_from_instance = lambda obj: f"{obj.first_name} {obj.last_name}"
+        self.fields['assigned_to'].label_from_instance = lambda obj: f"{obj.first_name} {obj.last_name}"
         self.fields['note'].queryset = UnifiedCommunication.objects.all()
 
-        # Setting field requirements
         self.fields['contract'].required = False
         self.fields['note'].required = False
 

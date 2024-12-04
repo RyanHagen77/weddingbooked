@@ -1,10 +1,10 @@
 from django import forms
 from bookings.models import EventStaffBooking
-from contracts.models import (Contract, LeadSourceCategory, Client, Package, Discount, Location,
-                              AdditionalEventStaffOption, EngagementSessionOption, AdditionalProduct, ContractProduct,
-                              ServiceFee)
+from contracts.models import (Contract, LeadSourceCategory, Client, Discount, Location,
+                             ServiceFee)
+from services.models import AdditionalEventStaffOption, EngagementSessionOption, Package
 from django.core.validators import RegexValidator
-from users.models import Role, CustomUser
+from users.models import CustomUser
 from django.forms.widgets import DateInput
 from django.forms import inlineformset_factory
 from django.contrib.auth import get_user_model
@@ -18,7 +18,6 @@ phone_validator = RegexValidator(
 class UserModelChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
         return obj.get_full_name()  # Assumes your CustomUser model has a get_full_name() method
-
 
 
 class ContractSearchForm(forms.Form):
@@ -89,6 +88,103 @@ class ContractSearchForm(forms.Form):
         self.fields['photobooth_operator'].queryset = CustomUser.objects.filter(
             id__in=photobooth_operator_ids).distinct()
 
+class NewContractForm(forms.ModelForm):
+    # Client Fields
+    primary_contact = forms.CharField(max_length=255, required=True, label="Primary Contact")
+    partner_contact = forms.CharField(max_length=255, required=False, label="Partner Contact")
+    primary_email = forms.EmailField(required=True, label="Primary Email")
+    primary_phone1 = forms.CharField(
+        max_length=12,
+        validators=[phone_validator],
+        required=False,
+        label="Primary Phone 1"
+    )
+
+    # Contract Fields
+    is_code_92 = forms.BooleanField(required=False, label="Code 92")
+    event_date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        required=True,
+        label="Event Date"
+    )
+    location = forms.ModelChoiceField(
+        queryset=Location.objects.all(),
+        required=True,
+        label="Event Location"
+    )
+    status = forms.ChoiceField(
+        choices=Contract.STATUS_CHOICES,  # Ensure `STATUS_CHOICES` exists in your Contract model
+        required=True,
+        label="Status"
+    )
+    csr = forms.ModelChoiceField(
+        queryset=CustomUser.objects.filter(groups__name="Sales", is_active=True),
+        required=True,
+        label="Sales Representative"
+    )
+    coordinator = forms.ModelChoiceField(
+        queryset=CustomUser.objects.filter(role__name="COORDINATOR", groups__name="Office Staff", is_active=True),
+        required=True,
+        label="Coordinator"
+    )
+    lead_source_category = forms.ModelChoiceField(
+        queryset=LeadSourceCategory.objects.all(),
+        required=False,
+        label="Lead Source Category"
+    )
+    lead_source_details = forms.CharField(
+        max_length=255,
+        required=False,
+        label="Lead Source Details"
+    )
+    bridal_party_qty = forms.IntegerField(required=False, label="Bridal Party Quantity")
+    guests_qty = forms.IntegerField(required=False, label="Guest Quantity")
+    ceremony_site = forms.CharField(max_length=255, required=False, label="Ceremony Site")
+    ceremony_city = forms.CharField(max_length=255, required=False, label="Ceremony City")
+    ceremony_state = forms.CharField(max_length=255, required=False, label="Ceremony State")
+    reception_site = forms.CharField(max_length=255, required=False, label="Reception Site")
+    reception_city = forms.CharField(max_length=255, required=False, label="Reception City")
+    reception_state = forms.CharField(max_length=255, required=False, label="Reception State")
+    old_contract_number = forms.CharField(max_length=255, required=False, label="Old Contract Number")
+
+    class Meta:
+        model = Contract
+        fields = [
+            'is_code_92', 'event_date', 'location', 'status', 'csr', 'coordinator',
+            'lead_source_category', 'lead_source_details',
+            'primary_contact', 'partner_contact', 'primary_email', 'primary_phone1',
+            'bridal_party_qty', 'guests_qty', 'ceremony_site', 'ceremony_city',
+            'ceremony_state', 'reception_site', 'reception_city', 'reception_state',
+            'old_contract_number',
+        ]
+
+    def save(self, commit=True):
+        # Save or update the client instance
+        client_data = {
+            'primary_contact': self.cleaned_data.get('primary_contact'),
+            'primary_email': self.cleaned_data.get('primary_email'),
+            'primary_phone1': self.cleaned_data.get('primary_phone1'),
+            'partner_contact': self.cleaned_data.get('partner_contact'),
+        }
+
+        # Check if a related client already exists
+        User = get_user_model()
+        primary_email = client_data['primary_email']
+        user, created = User.objects.get_or_create(
+            email=primary_email,
+            defaults={'username': primary_email, 'user_type': 'client'}
+        )
+        client, created = Client.objects.update_or_create(user=user, defaults=client_data)
+
+        # Save the contract with the associated client
+        contract = super().save(commit=False)
+        contract.client = client
+
+        if commit:
+            contract.save()
+            self.save_m2m()
+
+        return contract
 
 
 class ContractInfoEditForm(forms.ModelForm):
@@ -131,53 +227,40 @@ class ContractClientEditForm(forms.ModelForm):
     user = forms.ModelChoiceField(
         queryset=get_user_model().objects.all(),
         required=True,
-        disabled=True,  # Disable the field to make it read-only
-        widget=forms.HiddenInput()  # Optionally hide the field if it doesn't need to be visible
+        disabled=True,  # Keep this read-only in most cases
+        widget=forms.HiddenInput()  # Optionally hide it if not necessary for standalone editing
     )
-
-    # ... other fields ...
 
     class Meta:
         model = Client
-        fields = '__all__'  # or specify fields
+        fields = '__all__'
 
     def __init__(self, *args, **kwargs):
-        super(ContractClientEditForm, self).__init__(*args, **kwargs)
-        # Disable the user field
-        self.fields['user'].disabled = True
-        self.fields['primary_contact'].widget.attrs.update({'id': 'client-primary-contact'})
-        self.fields['primary_email'].widget.attrs.update({'id': 'client-primary-email'})
-        self.fields['primary_phone1'].widget.attrs.update({'id': 'client-primary-phone1'})
+        contract_context = kwargs.pop('contract_context', False)  # Flag for contract context
+        super().__init__(*args, **kwargs)
 
-        self.fields['partner_contact'].widget.attrs.update({'id': 'client-partner-contact'})
-        self.fields['partner_email'].widget.attrs.update({'id': 'client-partner-email'})
-        self.fields['partner_phone1'].widget.attrs.update({'id': 'client-partner-phone1'})
+        # Dynamically disable the user field based on context
+        if contract_context:
+            self.fields['user'].disabled = True
 
-        self.fields['primary_address1'].widget.attrs.update({'id': 'client-primary-address1'})
-        self.fields['primary_address2'].widget.attrs.update({'id': 'client-primary-address2'})
-        self.fields['city'].widget.attrs.update({'id': 'client-city'})
-        self.fields['state'].widget.attrs.update({'id': 'client-state'})
-        self.fields['postal_code'].widget.attrs.update({'id': 'client-postal-code'})
-
-        self.fields['alt_contact'].widget.attrs.update({'id': 'client-alt-contact'})
-        self.fields['alt_email'].widget.attrs.update({'id': 'client-alt-email'})
-        self.fields['alt_phone'].widget.attrs.update({'id': 'client-alt-phone'})
-
-    def save(self, commit=True):
-        client = super(ContractClientEditForm, self).save(commit=False)
-
-        # Update the associated user email if the primary_email has changed
-        if self.changed_data and 'primary_email' in self.changed_data:
-            user = client.user
-            if user.email != client.primary_email:
-                user.email = client.primary_email
-                if commit:
-                    user.save()
-
-        if commit:
-            client.save()
-
-        return client
+        # Add custom attributes for client fields
+        for field_name, attrs in {
+            'primary_contact': {'id': 'client-primary-contact'},
+            'primary_email': {'id': 'client-primary-email'},
+            'primary_phone1': {'id': 'client-primary-phone1'},
+            'partner_contact': {'id': 'client-partner-contact'},
+            'partner_email': {'id': 'client-partner-email'},
+            'partner_phone1': {'id': 'client-partner-phone1'},
+            'primary_address1': {'id': 'client-primary-address1'},
+            'primary_address2': {'id': 'client-primary-address2'},
+            'city': {'id': 'client-city'},
+            'state': {'id': 'client-state'},
+            'postal_code': {'id': 'client-postal-code'},
+            'alt_contact': {'id': 'client-alt-contact'},
+            'alt_email': {'id': 'client-alt-email'},
+            'alt_phone': {'id': 'client-alt-phone'},
+        }.items():
+            self.fields[field_name].widget.attrs.update(attrs)
 
 
 # Django form for Event Details
@@ -267,25 +350,6 @@ class ContractServicesForm(forms.ModelForm):
             self.fields[field_name].empty_label = "Select an option"
 
 
-class ContractProductForm(forms.ModelForm):
-    class Meta:
-        model = ContractProduct
-        fields = ['product', 'quantity', 'special_notes']
-        widgets = {
-            'product': forms.Select(attrs={'class': 'form-control'}),
-            'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
-            'special_notes': forms.Textarea(attrs={'class': 'form-control'}),
-        }
-
-ContractProductFormset = inlineformset_factory(
-    Contract,
-    ContractProduct,
-    fields=('product', 'quantity', 'special_notes'),
-    extra=0,
-    can_delete=True
-)
-
-
 class ServiceFeeForm(forms.ModelForm):
     applied_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))  # Date input widget
 
@@ -315,365 +379,3 @@ class DiscountForm(forms.ModelForm):
         fields = ['memo', 'amount', 'service_type']
 
 
-class ClientForm(forms.ModelForm):
-    class Meta:
-        model = Client
-        fields = [
-            'primary_contact', 'primary_email', 'primary_phone1', 'primary_phone2',
-            'primary_address1', 'primary_address2', 'city', 'state', 'postal_code',
-            'partner_contact', 'partner_email', 'partner_phone1', 'partner_phone2',
-            'alt_contact', 'alt_email', 'alt_phone',
-        ]
-
-    def clean_primary_email(self):
-        primary_email = self.cleaned_data.get('primary_email')
-        # Skip uniqueness validation here
-        return primary_email
-
-class NewContractForm(forms.ModelForm):
-    is_code_92 = forms.BooleanField(required=False)
-    old_contract_number = forms.CharField(max_length=255, required=False)
-    location = forms.ModelChoiceField(queryset=Location.objects.all())
-    primary_contact = forms.CharField(max_length=255, required=True)
-    partner_contact = forms.CharField(max_length=255)
-    primary_email = forms.EmailField(required=True)
-    primary_phone1 = forms.CharField(
-        max_length=12,  # Adjusted to accommodate dashes
-        validators=[phone_validator],
-        required=False  # Instead of blank=True, null=True
-    )
-    lead_source_category = forms.ModelChoiceField(queryset=LeadSourceCategory.objects.all(), required=False, label="Lead Source Category")
-    lead_source_details = forms.CharField(max_length=255, required=False, label="Lead Source Details")
-
-    event_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
-    csr = UserModelChoiceField(
-        queryset=CustomUser.objects.filter(groups__name='Sales', is_active=True),
-        required=True,
-        label="Sales Person"
-    )
-    coordinator = UserModelChoiceField(
-        queryset=CustomUser.objects.filter(role__name='COORDINATOR', groups__name='Office Staff', is_active=True),
-        required=True,
-        label="Coordinator"
-    )
-
-    # Optional fields
-    primary_phone2 = forms.CharField(
-        max_length=12,  # Adjusted to accommodate dashes
-        validators=[phone_validator],
-        required=False  # Instead of blank=True, null=True
-    )
-    primary_address1 = forms.CharField(max_length=255, required=False)
-    primary_address2 = forms.CharField(max_length=255, required=False)
-    city = forms.CharField(max_length=255, required=False)
-    state = forms.CharField(max_length=255, required=False)
-    postal_code = forms.CharField(max_length=255, required=False)
-    partner_email = forms.EmailField(required=False)
-    partner_phone1 = forms.CharField(
-        max_length=12,  # Adjusted to accommodate dashes
-        validators=[phone_validator],
-        required=False  # Instead of blank=True, null=True
-    )
-    partner_phone2 = forms.CharField(
-        max_length=12,  # Adjusted to accommodate dashes
-        validators=[phone_validator],
-        required=False  # Instead of blank=True, null=True
-    )
-    alt_contact = forms.CharField(max_length=255, required=False)
-    alt_email = forms.EmailField(required=False)
-    alt_phone = forms.CharField(
-        max_length=12,  # Adjusted to accommodate dashes
-        validators=[phone_validator],
-        required=False  # Instead of blank=True, null=True
-    )
-
-    class Meta:
-        model = Contract
-        fields = [
-            'event_date', 'csr', 'coordinator', 'old_contract_number', 'is_code_92',
-            'bridal_party_qty', 'guests_qty', 'lead_source_category', 'lead_source_details',
-            'ceremony_site', 'ceremony_city', 'ceremony_state', 'ceremony_contact', 'ceremony_phone', 'ceremony_email',
-            'reception_site', 'reception_city', 'reception_state', 'reception_contact', 'reception_phone', 'reception_email',
-            'status'
-        ]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['csr'].queryset = CustomUser.objects.filter(is_active=True, groups__name='Sales')
-        self.fields['coordinator'].queryset = CustomUser.objects.filter(role__name='COORDINATOR', groups__name='Office Staff')
-
-    def save(self, commit=True):
-        # Save the contract instance
-        contract = super().save(commit=False)
-        # Add the location to the contract
-        contract.location = self.cleaned_data.get('location')
-
-        # Set is_code_92
-        contract.is_code_92 = self.cleaned_data.get('is_code_92', False)
-
-        if commit:
-            contract.save()
-            self.save_m2m()
-
-        return contract
-
-class ContractForm(forms.ModelForm):
-    # Required fields
-    is_code_92 = forms.BooleanField(required=False)
-    old_contract_number = forms.CharField(max_length=255, required=False)
-    location = forms.ModelChoiceField(queryset=Location.objects.all())
-    primary_contact = forms.CharField(max_length=255, required=True)
-    primary_email = forms.EmailField(required=True)
-    primary_phone1 = forms.CharField(
-        max_length=12,  # Adjusted to accommodate dashes
-        validators=[phone_validator],
-        required=False  # Instead of blank=True, null=True
-    )
-    event_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
-    csr = forms.ModelChoiceField(
-        queryset=CustomUser.objects.none(),
-        required=True,
-        label="Sales Person"
-    )
-    coordinator = UserModelChoiceField(
-        queryset=CustomUser.objects.filter(role__name='coordinator', is_active=True),
-        required=False,
-        label="Coordinator"
-    )
-
-    # Additional fields for Contract set as optional
-    bridal_party_qty = forms.IntegerField(min_value=1, required=False)
-    guests_qty = forms.IntegerField(min_value=1, required=False)
-    lead_source_category = forms.ModelChoiceField(queryset=LeadSourceCategory.objects.all(), required=False, label="Lead Source Category")
-    lead_source_details = forms.CharField(max_length=255, required=False, label="Lead Source Details")
-    ceremony_site = forms.CharField(max_length=255, required=False)
-    ceremony_city = forms.CharField(max_length=255, required=False)
-    ceremony_state = forms.CharField(max_length=255, required=False)
-    ceremony_contact = forms.CharField(max_length=255, required=False)
-    ceremony_phone = forms.CharField(
-        max_length=12,  # Adjusted to accommodate dashes
-        validators=[phone_validator],
-        required=False  # Instead of blank=True, null=True
-    )
-    ceremony_email = forms.EmailField(required=False)
-    reception_site = forms.CharField(max_length=255, required=False)
-    reception_city = forms.CharField(max_length=255, required=False)
-    reception_state = forms.CharField(max_length=255, required=False)
-    reception_contact = forms.CharField(max_length=255, required=False)
-    reception_phone = forms.CharField(
-        max_length=12,  # Adjusted to accommodate dashes
-        validators=[phone_validator],
-        required=False  # Instead of blank=True, null=True
-    )
-    reception_email = forms.EmailField(required=False)
-
-    photography_package = forms.ModelChoiceField(queryset=Package.objects.none(), required=False)
-    photography_additional = forms.ModelChoiceField(queryset=AdditionalEventStaffOption.objects.none(), required=False)
-    engagement_session = forms.ModelChoiceField(
-        queryset=EngagementSessionOption.objects.filter(is_active=True),
-        required=False,
-        label='Engagement Session'
-    )
-    videography_package = forms.ModelChoiceField(queryset=Package.objects.none(), required=False)
-    videography_additional = forms.ModelChoiceField(queryset=AdditionalEventStaffOption.objects.none(), required=False)
-    dj_package = forms.ModelChoiceField(queryset=Package.objects.none(), required=False)
-    dj_additional = forms.ModelChoiceField(queryset=AdditionalEventStaffOption.objects.none(), required=False)
-    photobooth_package = forms.ModelChoiceField(queryset=Package.objects.none(), required=False)
-    photobooth_additional = forms.ModelChoiceField(queryset=Package.objects.none(), required=False)
-
-    prospect_photographer1 = forms.ModelChoiceField(
-        queryset=CustomUser.objects.filter(role__name='PHOTOGRAPHER'),
-        required=False,
-        label="Prospect Photographer 1",
-        widget=forms.Select(attrs={'class': 'form-control'})
-    )
-    prospect_photographer2 = forms.ModelChoiceField(
-        queryset=CustomUser.objects.filter(role__name='PHOTOGRAPHER'),
-        required=False,
-        label="Prospect Photographer 2",
-        widget=forms.Select(attrs={'class': 'form-control'})
-    )
-    prospect_photographer3 = forms.ModelChoiceField(
-        queryset=CustomUser.objects.filter(role__name='PHOTOGRAPHER'),
-        required=False,
-        label="Prospect Photographer 3",
-        widget=forms.Select(attrs={'class': 'form-control'})
-    )
-
-    # Fields for discounts
-    class Meta:
-        model = Contract
-        fields = [
-            'event_date', 'csr', 'coordinator', 'custom_text', 'old_contract_number',# These fields are now at the top
-            # Client fields
-            'is_code_92', 'primary_contact', 'primary_email', 'primary_phone1', 'primary_phone2',
-            'primary_address1', 'primary_address2', 'city', 'state', 'postal_code',
-            'partner_contact', 'partner_email', 'partner_phone1', 'partner_phone2',
-            'alt_contact', 'alt_email', 'alt_phone',
-
-            # Contract fields
-            'bridal_party_qty', 'guests_qty', 'lead_source_category', 'lead_source_details',
-            'ceremony_site', 'ceremony_city', 'ceremony_state', 'ceremony_contact', 'ceremony_phone', 'ceremony_email',
-            'reception_site', 'reception_city', 'reception_state', 'reception_contact', 'reception_phone', 'reception_email',
-            'status',
-
-            # Service package fields
-            'photography_package', 'photography_additional', 'engagement_session',
-            'videography_package', 'videography_additional',
-            'dj_package', 'dj_additional', 'photobooth_package', 'photobooth_additional', 'custom_text',
-            'total_cost',
-
-            # Discount Fields
-
-            # Prospect photographer fields
-            'prospect_photographer1', 'prospect_photographer2', 'prospect_photographer3'
-        ]
-
-        widgets = {
-            'custom_text': forms.Textarea(attrs={'rows': 4}),
-
-        }
-
-    primary_phone2 = forms.CharField(
-        max_length=12,  # Adjusted to accommodate dashes
-        validators=[phone_validator],
-        required=False  # Instead of blank=True, null=True
-    )
-    primary_address1 = forms.CharField(max_length=255, required=False)
-    primary_address2 = forms.CharField(max_length=255, required=False)
-    city = forms.CharField(max_length=255, required=False)
-    state = forms.CharField(max_length=255, required=False)
-    postal_code = forms.CharField(max_length=255, required=False)
-    partner_contact = forms.CharField(max_length=255, required=False)
-    partner_email = forms.EmailField(required=False)
-    partner_phone1 = forms.CharField(
-        max_length=12,  # Adjusted to accommodate dashes
-        validators=[phone_validator],
-        required=False  # Instead of blank=True, null=True
-    )
-    partner_phone2 = forms.CharField(
-        max_length=12,  # Adjusted to accommodate dashes
-        validators=[phone_validator],
-        required=False  # Instead of blank=True, null=True
-    )
-    alt_contact = forms.CharField(max_length=255, required=False)
-    alt_email = forms.EmailField(required=False)
-    alt_phone = forms.CharField(
-        max_length=12,  # Adjusted to accommodate dashes
-        validators=[phone_validator],
-        required=False  # Instead of blank=True, null=True
-    )
-
-    additional_products = forms.ModelMultipleChoiceField(
-        queryset=AdditionalProduct.objects.all(),
-        widget=forms.SelectMultiple(attrs={'size': 5}),  # Use SelectMultiple with size attribute
-        required=False,  # Adjust as needed
-    )
-
-    # Field for displaying tax rate
-    current_tax_rate = forms.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        required=False,
-        disabled=True,
-        label='Current Tax Rate (%)'
-    )
-
-    def __init__(self, *args, **kwargs):
-        super(ContractForm, self).__init__(*args, **kwargs)
-        contract = kwargs.get('instance')
-
-        # Initialize the formset
-        self.product_formset = ContractProductFormset(instance=self.instance if self.instance else None)
-
-        # Set the queryset for the CSR and coordinator fields
-        self.fields['csr'].queryset = CustomUser.objects.filter(role__name='SALES PERSON')
-        self.fields['coordinator'].queryset = CustomUser.objects.filter(groups__name='Office Staff')
-
-        # Fetch the photographer role object and initialize photographer dropdowns
-        photographer_role = Role.objects.filter(name='PHOTOGRAPHER').first()
-        photographer_queryset = CustomUser.objects.filter(
-            role=photographer_role) if photographer_role else CustomUser.objects.none()
-        photographer_fields = ['prospect_photographer1', 'prospect_photographer2', 'prospect_photographer3']
-        for field_name in photographer_fields:
-            self.fields[field_name].queryset = photographer_queryset
-
-        # Set initial value for the current tax rate
-        self.fields['current_tax_rate'].initial = 0.00  # You can set it based on your logic
-
-    def clean_old_contract_number(self):
-        old_contract_number = self.cleaned_data.get('old_contract_number')
-        return old_contract_number
-
-    def clean(self):
-        cleaned_data = super().clean()  # Call the base class's clean method
-        print("Cleaned data:", cleaned_data)
-
-        print("Prospect Photographer 1:", cleaned_data.get('prospect_photographer1'))
-        print("Prospect Photographer 2:", cleaned_data.get('prospect_photographer2'))
-        print("Prospect Photographer 3:", cleaned_data.get('prospect_photographer3'))
-
-        # You can inspect individual fields as well
-        photography_package = cleaned_data.get('photography_package')
-        print("Photography package ID:", photography_package)
-
-        # Always return the full collection of cleaned data
-        return cleaned_data
-
-    def save(self, user, commit=True):
-        # Save the contract instance
-        contract = super().save(commit=False)
-
-        # Add the location to the contract
-        contract.location = self.cleaned_data.get('location')
-
-        # Set the prospect photographers for the contract
-        contract.prospect_photographer1 = self.cleaned_data.get('prospect_photographer1')
-        contract.prospect_photographer2 = self.cleaned_data.get('prospect_photographer2')
-        contract.prospect_photographer3 = self.cleaned_data.get('prospect_photographer3')
-
-        print("Saving Prospect Photographer 1:", contract.prospect_photographer1)
-        print("Saving Prospect Photographer 2:", contract.prospect_photographer2)
-        print("Saving Prospect Photographer 3:", contract.prospect_photographer3)
-
-        # Prepare client data
-        client_data = {field: self.cleaned_data[field] for field in [
-            'primary_contact', 'primary_email', 'primary_phone1', 'primary_phone2',
-            'primary_address1', 'primary_address2', 'city', 'state', 'postal_code',
-            'partner_contact', 'partner_email', 'partner_phone1', 'partner_phone2',
-            'alt_contact', 'alt_email', 'alt_phone']}
-
-        # Create or update the client instance
-        if contract.client_id:
-            # Update existing client
-            Client.objects.filter(id=contract.client_id).update(**client_data)
-            client = Client.objects.get(id=contract.client_id)
-        else:
-            # Create new client and associate with user
-            client = Client.objects.create(user=user, **client_data)
-
-        contract.client = client
-
-        if commit:
-            contract.save()  # Save the contract instance
-            self.save_m2m()  # Save many-to-many data for the form
-
-            # Handle additional products
-            selected_product_ids = set(self.cleaned_data.get('additional_products', []))
-            existing_product_ids = set(contract.contract_products.values_list('product_id', flat=True))
-
-            # Create or update products
-            for product_id in selected_product_ids:
-                ContractProduct.objects.update_or_create(
-                    contract=contract,
-                    product_id=product_id,
-                    defaults={'quantity': 1}  # Modify as needed
-                )
-
-            # Remove any unselected products
-            for product_id in existing_product_ids - selected_product_ids:
-                ContractProduct.objects.filter(contract=contract, product_id=product_id).delete()
-
-            # Save the contract again to update related fields
-            contract.save()
-            self.save_m2m()  # Save many-to-many data for the form

@@ -2,7 +2,6 @@ from django.contrib.auth.models import AbstractUser, UserManager, Group, Permiss
 from django.db import models
 from django.core.validators import RegexValidator
 from django import forms
-from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 
@@ -41,7 +40,7 @@ class Role(models.Model):
     )
 
     name = models.CharField(max_length=50, choices=ROLE_CHOICES, unique=True)
-    service_type = models.ForeignKey('contracts.ServiceType', on_delete=models.CASCADE, related_name='roles')
+    service_type = models.ForeignKey('services.ServiceType', on_delete=models.CASCADE, related_name='roles')
     objects = models.Manager()  # Explicitly added default manager
 
     def __str__(self):
@@ -124,7 +123,8 @@ class CustomUser(AbstractUser):
         current_year = timezone.now().year
         return EventStaffBooking.objects.filter(
             staff=self,
-            contract__event_date__year=current_year
+            contract__event_date__year=current_year,
+            status__in=['PENDING', 'BOOKED']  # Exclude PROSPECT bookings
         ).count()
 
     def next_year_bookings(self):
@@ -133,7 +133,8 @@ class CustomUser(AbstractUser):
         next_year = timezone.now().year + 1
         return EventStaffBooking.objects.filter(
             staff=self,
-            contract__event_date__year=next_year
+            contract__event_date__year=next_year,
+            status__in=['PENDING', 'BOOKED']  # Exclude PROSPECT bookings
         ).count()
 
 

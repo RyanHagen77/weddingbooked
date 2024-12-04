@@ -1,0 +1,21 @@
+<div class="tab-pane container fade" id="financial">
+    <input type="hidden" class="form-control" id="id_location" name="location">
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active text-dark-sienna" id="payments-tab" data-toggle="tab" href="#payments" role="tab" aria-controls="payments" aria-selected="true">Payments</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark-sienna" id="sales-tab" data-toggle="tab" href="#sales" role="tab" aria-controls="sales" aria-selected="false">Sales</a>
+        </li>
+    </ul>
+    <!-- Tab Content -->
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="payments" role="tabpanel" aria-labelledby="payments-tab">
+            {% include 'contracts/partials/financial/_payments_tab.html' %}
+        </div>
+        <div class="tab-pane fade" id="sales" role="tabpanel" aria-labelledby="sales-tab">
+            {% include 'contracts/partials/financial/_sales_tab.html' %}
+        </div>
+    </div>
+</div>

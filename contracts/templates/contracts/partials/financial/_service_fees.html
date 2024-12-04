@@ -1,0 +1,22 @@
+<h6>Service Fees:</h6>
+<input type="hidden" id="contractId" name="contractId" value="{{ contract.contract_id }}">
+<table id="service-fee-table" class="table service-fees-table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Fee Type</th>
+            <th>Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for fee in contract.servicefees.all %}
+            <tr>
+                <td>{{ fee.name }}</td>
+                <td>{{ fee.description }}</td>
+                <td>{{ fee.fee_type }}</td>
+                <td>${{ fee.amount|floatformat:2 }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

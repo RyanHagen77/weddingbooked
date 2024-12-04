@@ -1,0 +1,12 @@
+<div class="card mb-4">
+    <div class="card-header">
+        <h6>Upload Documents</h6>
+    </div>
+    <div class="card-body">
+        <form method="post" action="" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ document_form.as_p }}
+            <button type="submit" name="upload_document" class="btn btn-dusty-pink">Upload Document</button>
+        </form>
+    </div>
+</div>

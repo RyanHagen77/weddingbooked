@@ -118,27 +118,27 @@
                             {% endif %}
                         </div>
                         <div>
-                            {{ client_form.primary_contact.label_tag }} {{ client_form.primary_contact }}
-                            {% if client_form.primary_contact.errors %}
-                                <div class="error">{{ client_form.primary_contact.errors }}</div>
+                            {{ contract_form.primary_contact.label_tag }} {{ contract_form.primary_contact }}
+                            {% if contract_form.primary_contact.errors %}
+                                <div class="error">{{ contract_form.primary_contact.errors }}</div>
                             {% endif %}
                         </div>
                         <div>
-                            {{ client_form.partner_contact.label_tag }} {{ client_form.partner_contact }}
-                            {% if client_form.partner_contact.errors %}
-                                <div class="error">{{ client_form.partner_contact.errors }}</div>
+                            {{ contract_form.partner_contact.label_tag }} {{ contract_form.partner_contact }}
+                            {% if contract_form.partner_contact.errors %}
+                                <div class="error">{{ contract_form.partner_contact.errors }}</div>
                             {% endif %}
                         </div>
                         <div>
-                            {{ client_form.primary_email.label_tag }} {{ client_form.primary_email }}
-                            {% if client_form.primary_email.errors %}
-                                <div class="error">{{ client_form.primary_email.errors }}</div>
+                            {{ contract_form.primary_email.label_tag }} {{ contract_form.primary_email }}
+                            {% if contract_form.primary_email.errors %}
+                                <div class="error">{{ contract_form.primary_email.errors }}</div>
                             {% endif %}
                         </div>
                         <div>
-                            {{ client_form.primary_phone1.label_tag }} {{ client_form.primary_phone1 }}
-                            {% if client_form.primary_phone1.errors %}
-                                <div class="error">{{ client_form.primary_phone1.errors }}</div>
+                            {{ contract_form.primary_phone1.label_tag }} {{ contract_form.primary_phone1 }}
+                            {% if contract_form.primary_phone1.errors %}
+                                <div class="error">{{ contract_form.primary_phone1.errors }}</div>
                             {% endif %}
                         </div>
                     </div>
@@ -210,7 +210,7 @@
     <script>
         $(document).ready(function() {
             $('#contractForm').on('submit', function(event) {
-                event.preventDefault(); // Prevent the form from submitting normally
+                event.preventDefault();
 
                 let form = $(this);
                 let data = form.serialize();
@@ -221,7 +221,6 @@
                     type: 'POST',
                     data: data,
                     success: function(response) {
-                        // If successful, redirect to the contract detail page or handle success logic
                         if (response.redirect_url) {
                             window.location.href = response.redirect_url;
                         } else {
@@ -229,7 +228,6 @@
                         }
                     },
                     error: function(response) {
-                        // Display errors in the modal
                         if (response.responseJSON && response.responseJSON.errors) {
                             let errors = response.responseJSON.errors;
                             let errorList = $('#errorList');

@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "office_staff_base.html" %}
 {% load static %}
 {% block extra_head %}
 <!-- Load the static files template tag library -->
@@ -48,72 +48,10 @@
     </div>
 </div>
  <!-- Modal for adding a new task -->
-<div class="modal fade" id="addTaskModal" tabindex="-1" role="dialog" aria-labelledby="addTaskModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addTaskModalLabel">Add New Task</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form method="post" id="addTaskForm" data-create-task-url="{% url 'communication:create_internal_task' %}">
-                    {% csrf_token %}
-                    {{ task_form.as_p }}
-                    <input type="hidden" id="id_sender" name="sender" value="{{ request.user.id }}">
-                    <input type="hidden" id="id_type" name="type" value="">
-                    <input type="hidden" id="id_contract" name="contract" value="">
-                    <input type="hidden" id="id_note" name="note" value="">
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-close" data-dismiss="modal">Close</button>
-                <button type="submit" class="btn-dusty-pink" form="addTaskForm">Save Task</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Edit Task Modal -->
-<div class="modal fade" id="editTaskModal" tabindex="-1" role="dialog" aria-labelledby="editTaskModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editTaskModalLabel">Edit Task</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form method="post" id="editTaskForm">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <label for="id_assigned_to">Assigned To:</label>
-                        {{ task_form.assigned_to }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_due_date">Due Date:</label>
-                        <input type="date" id="id_due_date" name="due_date" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="id_description">Description:</label>
-                        <textarea id="id_description" name="description" class="form-control"></textarea>
-                    </div>
-                    <input type="hidden" id="id_sender" name="sender" value="{{ request.user.id }}">
-                    <input type="hidden" id="id_type" name="type" value="">
-                    <input type="hidden" id="id_contract" name="contract" value="">
-                    <input type="hidden" id="id_note" name="note" value="">
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-close" data-dismiss="modal">Close</button>
-                <button type="submit" class="btn-dusty-pink" form="editTaskForm">Save Changes</button>
-            </div>
-        </div>
-    </div>
-</div>
+        {% include 'communication/modals/_add_task_modal.html' %}
+        {% include 'communication/modals/_edit_task_modal.html' %}
 {% endblock %}
+
 
 {% block extra_scripts %}
  <!-- Bootstrap JS -->

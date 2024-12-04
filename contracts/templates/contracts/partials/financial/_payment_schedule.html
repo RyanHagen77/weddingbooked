@@ -1,0 +1,17 @@
+<div class="payment-schedule-selection">
+    <label for="payment-schedule">Payment Schedule:</label>
+    <select id="payment-schedule" name="payment_schedule" onchange="handleScheduleChange(this.value)" disabled>
+        <option value="schedule_a" {% if contract.payment_schedule and contract.payment_schedule.schedule_type == 'schedule_a' %}selected{% endif %}>Schedule A</option>
+        <option value="custom" {% if contract.payment_schedule and contract.payment_schedule.schedule_type == 'custom' %}selected{% endif %}>Custom</option>
+    </select>
+    <button type="button" class="btn btn-dusty-pink" data-toggle="modal" data-target="#scheduleModal">
+        Add or Update Schedule
+    </button>
+    <button type="button" id="receive-payment-button" class="btn btn-dusty-pink" onclick="receivePayment()">Receive Payment</button>
+    <button type="button" class="btn btn-dusty-pink" data-toggle="modal" data-target="#serviceFeeModal">
+        Add or Update Service Fees
+    </button>
+</div>
+<div id="payment-schedule-table">
+    <!-- Dynamic Table for Payment Schedule -->
+</div>

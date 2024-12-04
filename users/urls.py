@@ -1,11 +1,20 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
+from .views import CustomTokenObtainPairView
 
 
 app_name = 'users'  # replace 'users' with your actual app name
 
 urlpatterns = [
+
+    # JWT Authentication URLs
+    path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+
+    # Client Portal URLs
+    path('client_portal_login/', views.custom_login, name='client_portal_login'),
+    path('client_portal_logout/', views.custom_logout, name='client_portal_logout'),
+    path('client_portal/contract/<int:contract_id>/', views.client_portal, name='client_portal'),
 
     path('login/', views.user_login_view, name='login'),
     path('logout/', views.user_logout_view, name='logout'),

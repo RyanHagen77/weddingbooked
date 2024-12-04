@@ -1,0 +1,33 @@
+<tr>
+    <td>
+        <select id="id_{{ service|lower }}_package" name="{{ service|lower }}_package">
+            <option value="">Select a {{ service }} Package</option>
+            {% for package in package_list %}
+                <option value="{{ package.id }}" data-price="{{ package.price|floatformat:2 }}"
+                    {% if package_id == package.id %}selected="selected"{% endif %}>
+                    {{ package.name }} - ${{ package.price|floatformat:2 }}
+                </option>
+            {% endfor %}
+        </select>
+    </td>
+    <td id="{{ service|lower }}-package-hours"></td>
+    <td id="{{ service|lower }}-package-price"></td>
+    <td id="assigned-{{ role|lower }}"></td>
+        <td>
+        <button type="button" class="btn btn-dusty-pink book-button"
+                data-role="{{ role }}"
+                data-service-type="{{ service }}">
+            Assign
+        </button>
+        <button type="button" class="btn btn-dusty-pink edit-button"
+                data-role="{{ role }}"
+                data-service-type="{{ service }}"
+                {% if booking %}
+                    data-booking-id="{{ booking.id }}"
+                {% else %}
+                    data-booking-id=""
+                {% endif %}>
+            Edit
+        </button>
+        </td>
+</tr>

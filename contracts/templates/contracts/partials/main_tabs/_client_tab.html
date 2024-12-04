@@ -1,0 +1,65 @@
+<div class="tab-pane container fade" id="client">
+    <div class="row">
+        <!-- Left Column for Editable Client Fields -->
+        <div class="col-md-6">
+            <form id="edit-client-form" method="post" action="{% url 'contracts:edit_contract' id=contract.contract_id %}">
+                {% csrf_token %}
+                <div class="row">
+                    <!-- Column 1 -->
+                    <div class="col-md-6">
+                        <label for="{{ client_edit_form.primary_contact.id_for_label }}">Primary Contact:</label>
+                        {{ client_edit_form.primary_contact }}
+                        <label for="{{ client_edit_form.primary_email.id_for_label }}">Primary Email:</label>
+                        {{ client_edit_form.primary_email }}
+                        <label for="{{ client_edit_form.primary_phone1.id_for_label }}">Primary Phone 1:</label>
+                        {{ client_edit_form.primary_phone1 }}
+                        <!-- ... more fields for the first column ... -->
+                    </div>
+
+                    <!-- Column 2 -->
+                    <div class="col-md-6">
+                        <label for="{{ client_edit_form.partner_contact.id_for_label }}">Partner Contact:</label>
+                        {{ client_edit_form.partner_contact }}
+                        <label for="{{ client_edit_form.partner_email.id_for_label }}">Partner Email:</label>
+                        {{ client_edit_form.partner_email }}
+                        <label for="{{ client_edit_form.partner_phone1.id_for_label }}">Partner Phone 1:</label>
+                        {{ client_edit_form.partner_phone1 }}
+                        <!-- ... more fields for the second column ... -->
+                    </div>
+                </div>
+
+                <!-- Button to Show/Hide Additional Client Fields -->
+                <button type="button" id="toggleClientInfo" class="btn btn-dusty-pink">Show More Client Info</button>
+                <!-- Additional Client Fields (Initially Hidden) -->
+                <div id="additionalClientInfo" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="{{ client_edit_form.primary_address1.id_for_label }}">Primary Address 1:</label>
+                            {{ client_edit_form.primary_address1 }}
+                            <label for="{{ client_edit_form.primary_address2.id_for_label }}">Primary Address 2:</label>
+                            {{ client_edit_form.primary_address2 }}
+                            <label for="{{ client_edit_form.city.id_for_label }}">City :</label>
+                            {{ client_edit_form.city }}
+                            <label for="{{ client_edit_form.state.id_for_label }}">State:</label>
+                            {{ client_edit_form.state }}
+                            <label for="{{ client_edit_form.postal_code.id_for_label }}">Postal Code:</label>
+                            {{ client_edit_form.postal_code }}
+                            <!-- ... additional fields for the first column ... -->
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ client_edit_form.alt_contact.id_for_label }}">Alternative Contact:</label>
+                            {{ client_edit_form.alt_contact }}
+                            <label for="{{ client_edit_form.alt_email.id_for_label }}">Alternative Email:</label>
+                            {{ client_edit_form.alt_email }}
+                            <label for="{{ client_edit_form.alt_phone.id_for_label }}">Alternative Phone:</label>
+                            {{ client_edit_form.alt_phone }}
+                            <!-- ... additional fields for the second column ... -->
+                        </div>
+                    </div>
+                </div>
+                <!-- Form Submit Button -->
+                <button type="submit" class="btn btn-dusty-pink">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</div>

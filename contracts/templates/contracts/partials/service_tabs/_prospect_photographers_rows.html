@@ -1,0 +1,18 @@
+<tr>
+    <td colspan="5"><strong>Prospect Photographers</strong></td>
+</tr>
+{% for photographer in prospect_photographers %}
+<tr>
+    <td>{{ photographer.label }}</td>
+    <td colspan="3">{{ photographer.name|default:"None" }}</td>
+    <td>
+        <button type="button" class="btn btn-dusty-pink book-button"
+                data-toggle="modal" data-target="#bookingModal"
+                data-role="{{ photographer.key }}"
+                data-service-type="Photography"
+                data-staff-id="{{ photographer.staff_id|default:'' }}">
+            Assign
+        </button>
+    </td>
+</tr>
+{% endfor %}

@@ -1,0 +1,72 @@
+<div class="tab-pane fade" id="discounts">
+    <!-- Form for entering discounts -->
+    <form method="post" action="{% url 'contracts:discounts_view' contract_id=contract.contract_id %}">
+        {% csrf_token %}
+        <div class="form-row">
+            <div class="form-group col-md-4">
+                <label for="discountMemo">Discount Memo</label>
+                <textarea
+                    class="form-control"
+                    id="discountMemo"
+                    name="memo"
+                    placeholder="Enter discount memo"
+                    style="max-height: 38px;"></textarea>
+            </div>
+            <div class="form-group col-md-3">
+                <label for="discountAmount">Amount</label>
+                <input
+                    type="number"
+                    class="form-control"
+                    id="discountAmount"
+                    name="amount"
+                    placeholder="Amount">
+            </div>
+            <div class="form-group col-md-5">
+                <label for="discountServiceType">Service Type (Optional)</label>
+                <select
+                    class="form-control"
+                    id="discountServiceType"
+                    name="service_type">
+                    <option value="">None</option>
+                    {% for service_type in service_types %}
+                        <option value="{{ service_type.id }}">{{ service_type.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group col-md-3 align-self-end">
+                <button type="submit" class="btn btn-dusty-pink">Submit</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Discounts Table -->
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Memo</th>
+                <th>Amount</th>
+                <th>Service Type</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for discount in discounts %}
+                <tr>
+                    <td>{{ discount.memo }}</td>
+                    <td>${{ discount.amount|floatformat:2 }}</td>
+                    <td>{{ discount.service_type }}</td>
+                    <td>
+                        <a
+                            href="{% url 'contracts:remove_discount' contract_id=contract.contract_id discount_id=discount.id %}"
+                            onclick="return confirm('Are you sure?');"
+                            class="btn-sm btn-danger">Delete</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">No discounts added yet.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

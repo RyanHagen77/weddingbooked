@@ -1,0 +1,30 @@
+<!-- Booking Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1" role="dialog" aria-labelledby="bookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="bookingModalLabel">Book Staff</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <!-- Modal Body -->
+            <div class="modal-body">
+                <form method="post" action="{% url 'bookings:manage_staff_assignments' contract_id=contract.contract_id %}" id="bookingForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="id_booking_id" name="booking_id" value="">
+                    <input type="hidden" name="next" value="{{ request.path }}#services">
+                    {{ booking_form.as_p }}
+                </form>
+            </div>
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-close" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-dusty-pink" id="submitBooking">Book</button>
+                <button type="button" class="btn btn-dusty-pink" id="updateBooking">Update</button>
+                <button type="button" class="btn btn-danger btn-sm" id="deleteBooking">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>

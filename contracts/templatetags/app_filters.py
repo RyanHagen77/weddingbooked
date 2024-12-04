@@ -31,3 +31,12 @@ def in_group(user, group_name):
 @register.filter(is_safe=True)
 def to_json(value):
     return mark_safe(json.dumps(value))
+
+@register.filter
+def get_item(dictionary, key):
+    """Safely retrieves an item from a dictionary by key."""
+    if isinstance(dictionary, dict):
+        return dictionary.get(key, None)
+    return None
+
+

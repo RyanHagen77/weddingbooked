@@ -1,151 +1,173 @@
-# bookings/views.py
+import logging
+from datetime import datetime
+
 from django.shortcuts import get_object_or_404, redirect, render, reverse
-from django.db.models import F, Q, CharField, Value
+from django.db.models import Q, F, Value, CharField
+from django.db.models.functions import Concat
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
+from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
+
+from bookings.forms import EventStaffBookingForm
+from bookings.models import EventStaffBooking, Availability
 from bookings.constants import SERVICE_ROLE_MAPPING
+from communication.models import UnifiedCommunication
+from communication.forms import BookingCommunicationForm
+from communication.views import send_booking_email
 from contracts.models import Contract, ChangeLog
 from contracts.forms import ContractClientEditForm, ContractEventEditForm
-from communication.forms import BookingCommunicationForm
-from communication.models import UnifiedCommunication
-from communication.views import send_booking_email
 from users.models import Role
 from users.views import ROLE_DISPLAY_NAMES
-from bookings.forms import EventStaffBookingForm
-from bookings.models import Availability, EventStaffBooking
-from collections import defaultdict
-from django.db.models.functions import Concat
-from datetime import datetime
-from django.http import JsonResponse
-from django.contrib import messages
-from django.core.exceptions import ValidationError
-from django.utils.dateparse import parse_date
-import logging
 
 logger = logging.getLogger(__name__)
 
+# Helper Functions
+def parse_date_safe(date_str, field_name="date"):
+    """
+    Safely parses a date string into a date object.
+    Returns None if parsing fails.
+    """
+    try:
+        return datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else None
+    except ValueError:
+        logger.error("Invalid %s format: %s", field_name, date_str)
+        return None
+
+def validate_date_range(start_date, end_date):
+    """
+    Validates and returns a date range tuple.
+    Returns None if either date is invalid or the range is logically incorrect.
+    """
+    start = parse_date_safe(start_date, "start_date")
+    end = parse_date_safe(end_date, "end_date")
+    if start and end and start <= end:
+        return start, end
+    logger.error("Invalid date range: %s to %s", start_date, end_date)
+    return None
+
 @login_required
 def booking_search(request):
-    booking_search_query = request.GET.get('booking_q')
-    event_date_start = request.GET.get('event_date_start')
-    event_date_end = request.GET.get('event_date_end')
-    service_type = request.GET.get('service_type')
-    role_filter = request.GET.get('role_filter')
-    status_filter = request.GET.get('status_filter')
-    sort_by = request.GET.get('sort_by')
-    order = request.GET.get('order')
+    """
+    Search for event staff bookings based on various filters like date range,
+    service type, role, and status.
+    """
+    query = request.GET.get("booking_q")
+    start_date = request.GET.get("event_date_start")
+    end_date = request.GET.get("event_date_end")
+    service_type = request.GET.get("service_type")
+    role_filter = request.GET.get("role_filter")
+    status_filter = request.GET.get("status_filter")
+    sort_by = request.GET.get("sort_by")
+    order = request.GET.get("order", "asc")
 
     bookings = EventStaffBooking.objects.all()
 
-    if booking_search_query:
+    # Apply text-based search
+    if query:
         bookings = bookings.filter(
-            Q(staff__username__icontains=booking_search_query) |
-            Q(staff__first_name__icontains=booking_search_query) |
-            Q(staff__last_name__icontains=booking_search_query) |
-            Q(contract__custom_contract_number__icontains=booking_search_query) |
-            Q(contract__client__primary_contact__icontains=booking_search_query) |
-            Q(contract__client__partner_contact__icontains=booking_search_query) |
-            Q(contract__old_contract_number__icontains=booking_search_query) |
-            Q(contract__client__primary_email__icontains=booking_search_query) |
-            Q(contract__client__primary_phone1__icontains=booking_search_query)
+            Q(staff__username__icontains=query) |
+            Q(staff__first_name__icontains=query) |
+            Q(staff__last_name__icontains=query) |
+            Q(contract__custom_contract_number__icontains=query) |
+            Q(contract__client__primary_contact__icontains=query) |
+            Q(contract__client__partner_contact__icontains=query) |
+            Q(contract__old_contract_number__icontains=query) |
+            Q(contract__client__primary_email__icontains=query) |
+            Q(contract__client__primary_phone1__icontains=query)
         )
 
-    if event_date_start and event_date_end:
-        try:
-            start_date = parse_date(event_date_start)
-            end_date = parse_date(event_date_end)
-            if start_date and end_date:
-                bookings = bookings.filter(contract__event_date__range=[start_date, end_date])
-            else:
-                raise ValidationError('Invalid date format')
-        except ValidationError as e:
-            # Handle error: log it or provide feedback to the user
-            pass
+    # Filter by event date range
+    date_range = validate_date_range(start_date, end_date)
+    if date_range:
+        bookings = bookings.filter(contract__event_date__range=date_range)
+    elif start_date or end_date:
+        messages.error(request, "Invalid date range. Please check your input.")
 
+    # Filter by service type
     if service_type:
-        service_role_map = {
-            "PHOTOGRAPHER": ['PHOTOGRAPHER1', 'PHOTOGRAPHER2'],
-            "VIDEOGRAPHER": ['VIDEOGRAPHER1', 'VIDEOGRAPHER2'],
-            "DJ": ['DJ1', 'DJ2'],
-            "PHOTOBOOTH": ['PHOTOBOOTH_OP1', 'PHOTOBOOTH_OP2'],
-        }
-        roles = service_role_map.get(service_type, [])
+        roles = SERVICE_ROLE_MAPPING.get(service_type.upper(), [])
         if roles:
             bookings = bookings.filter(role__in=roles)
 
+    # Filter by role
     if role_filter:
         bookings = bookings.filter(role=role_filter)
 
+    # Filter by status
     if status_filter:
-        bookings = bookings.filter(status=status_filter)
+        # Allow multiple statuses, separated by commas
+        status_list = status_filter.split(",")
+        bookings = bookings.filter(status__in=status_list)
 
-    allowed_sort_fields = ['staff__username', 'contract__event_date', 'role', 'status']
-    if sort_by in allowed_sort_fields and order in ['asc', 'desc']:
-        sort_expression = sort_by if order == 'asc' else '-' + sort_by
+    # Sort results
+    allowed_sort_fields = ["staff__username", "contract__event_date", "role", "status"]
+    if sort_by in allowed_sort_fields:
+        sort_expression = sort_by if order == "asc" else f"-{sort_by}"
         bookings = bookings.order_by(sort_expression)
 
-    return render(request, 'bookings/booking_search.html', {'bookings': bookings})
-
+    logger.info("Booking search completed with %d results.", bookings.count())
+    return render(request, "bookings/booking_search.html", {"bookings": bookings})
 
 def get_available_staff(request):
     """
-    Fetches available staff for a given event date and service type.
-
-    Args:
-        request (HttpRequest): The request object containing GET parameters 'event_date' and 'service_type'.
-
-    Returns:
-        JsonResponse: A JSON response containing lists of available staff for specified roles.
+    Fetch available staff for a given event date and service type.
+    Returns a JSON response with lists of available staff for specified roles.
     """
-    event_date_str = request.GET.get('event_date')
-    service_type = request.GET.get('service_type')
-    logger.debug("Service Type: %s", service_type)
+    event_date_str = request.GET.get("event_date")
+    service_type = request.GET.get("service_type")
+    logger.debug("Fetching available staff for service type: %s", service_type)
 
-    try:
-        event_date = datetime.strptime(event_date_str, '%Y-%m-%d').date() if event_date_str else None
-    except ValueError:
-        logger.error("Invalid date format: %s", event_date_str)
-        return JsonResponse({'error': 'Invalid date format'}, status=400)
-
+    event_date = parse_date_safe(event_date_str, "event_date")
     if not event_date:
-        logger.error("Event date is required but not provided.")
-        return JsonResponse({'error': 'Event date is required'}, status=400)
+        return JsonResponse({"error": "Invalid or missing event date"}, status=400)
 
     available_staff = Availability.get_available_staff_for_date(event_date).distinct()
-    combined_name = Concat(F('first_name'), Value(' '), F('last_name'), output_field=CharField())
+    combined_name = Concat(F("first_name"), Value(" "), F("last_name"), output_field=CharField())
 
-    def get_staff_by_role(role_name):
-        return list(available_staff.filter(
-            Q(role__name=role_name) | Q(additional_roles__name=role_name)
-        ).annotate(name=combined_name).values('id', 'name', 'rank').order_by('rank'))
+    def staff_by_role(role_name):
+        return list(
+            available_staff.filter(
+                Q(role__name=role_name) | Q(additional_roles__name=role_name)
+            ).annotate(name=combined_name)
+            .values("id", "name", "rank")
+            .order_by("rank")
+        )
 
     roles_dict = {
-        'photographers': 'PHOTOGRAPHER',
-        'videographers': 'VIDEOGRAPHER',
-        'djs': 'DJ',
-        'photobooth_operators': 'PHOTOBOOTH_OPERATOR',
-        # Add any other event staff roles as needed...
+        "photographers": "PHOTOGRAPHER",
+        "videographers": "VIDEOGRAPHER",
+        "djs": "DJ",
+        "photobooth_operators": "PHOTOBOOTH_OPERATOR",
     }
 
-    data = {role_key: get_staff_by_role(role_name) for role_key, role_name in roles_dict.items()}
+    data = {role_key: staff_by_role(role_name) for role_key, role_name in roles_dict.items()}
 
+    # Add specific service type data
     if service_type:
-        roles = Role.objects.filter(service_type__name=service_type).values_list('name', flat=True)
-        staff_data = list(available_staff.filter(
-            Q(role__name__in=roles) | Q(additional_roles__name__in=roles)
-        ).annotate(name=combined_name).values('id', 'name', 'rank').order_by('rank'))
-        data[f'{service_type.lower()}_staff'] = staff_data
+        service_roles = Role.objects.filter(service_type__name=service_type).values_list("name", flat=True)
+        data[f"{service_type.lower()}_staff"] = list(
+            available_staff.filter(Q(role__name__in=service_roles) | Q(additional_roles__name__in=service_roles))
+            .annotate(name=combined_name)
+            .values("id", "name", "rank")
+            .order_by("rank")
+        )
 
+    logger.info("Available staff fetched for event date: %s", event_date)
     return JsonResponse(data)
 
+@login_required
 def get_current_booking(request):
+    """
+    Retrieves the current booking for a specific contract and role, as well as available staff for the event date.
+    """
     contract_id = request.GET.get('contract_id')
     role = request.GET.get('role')
     event_date_str = request.GET.get('event_date')
 
-    try:
-        event_date = datetime.strptime(event_date_str, '%Y-%m-%d').date() if event_date_str else None
-    except ValueError:
+    event_date = parse_date_safe(event_date_str, 'event_date')
+    if event_date_str and not event_date:
         return JsonResponse({'error': 'Invalid date format'}, status=400)
 
     current_booking_data = {}
@@ -172,109 +194,143 @@ def get_current_booking(request):
         'current_booking': current_booking_data,
         'available_staff': available_staff_data,
     })
+@csrf_exempt
+def get_prospect_photographers(request):
+    contract_id = request.GET.get('contract_id')
+    if contract_id:
+        try:
+            contract = Contract.objects.get(contract_id=contract_id)
+            data = {
+                'prospect_photographer1': {
+                    'id': contract.prospect_photographer1.id,
+                    'name': f"{contract.prospect_photographer1.first_name} {contract.prospect_photographer1.last_name}",
+                    'profile_picture': contract.prospect_photographer1.profile_picture.url if contract.prospect_photographer1.profile_picture else None,
+                    'website': contract.prospect_photographer1.website
+                } if contract.prospect_photographer1 else None,
+                'prospect_photographer2': {
+                    'id': contract.prospect_photographer2.id,
+                    'name': f"{contract.prospect_photographer2.first_name} {contract.prospect_photographer2.last_name}",
+                    'profile_picture': contract.prospect_photographer2.profile_picture.url if contract.prospect_photographer2.profile_picture else None,
+                    'website': contract.prospect_photographer2.website
+                } if contract.prospect_photographer2 else None,
+                'prospect_photographer3': {
+                    'id': contract.prospect_photographer3.id,
+                    'name': f"{contract.prospect_photographer3.first_name} {contract.prospect_photographer3.last_name}",
+                    'profile_picture': contract.prospect_photographer3.profile_picture.url if contract.prospect_photographer3.profile_picture else None,
+                    'website': contract.prospect_photographer3.website
+                } if contract.prospect_photographer3 else None,
+            }
+            return JsonResponse(data)
+        except Contract.DoesNotExist:
+            return JsonResponse({'error': 'Contract not found'}, status=404)
+    return JsonResponse({'error': 'Contract ID is required'}, status=400)
 
-def manage_staff_assignments(request, id):
-    contract = get_object_or_404(Contract, contract_id=id)
+
+@login_required
+def manage_staff_assignments(request, contract_id):
+    """
+    Handles staff assignments to roles within a specific contract.
+    Supports the creation and updating of bookings.
+    """
+    contract = get_object_or_404(Contract, contract_id=contract_id)
     form = EventStaffBookingForm(request.POST or None)
 
-    if request.method == "POST":
-        if form.is_valid():
-            booking_id = form.cleaned_data.get('booking_id')
-            role = form.cleaned_data.get('role')
-            staff = form.cleaned_data.get('staff')
-            status = form.cleaned_data.get('status', 'BOOKED')  # Default to 'BOOKED' if not specified
-            confirmed = form.cleaned_data.get('confirmed', False)
-            hours_booked = form.cleaned_data.get('hours_booked', 0)
-            is_update = bool(booking_id)
+    if form.is_valid():
+        # Handle empty booking_id
+        booking_id = form.cleaned_data.get('booking_id')
+        booking_id = int(booking_id) if booking_id else None
 
-            print(f"Form valid. Booking ID: {booking_id}, Role: {role}, Staff: {staff}, Status: {status}, Confirmed: {confirmed}, Hours Booked: {hours_booked}")
+        role = form.cleaned_data.get('role')
+        staff = form.cleaned_data.get('staff')
+        status = form.cleaned_data.get('status', 'BOOKED')
+        confirmed = form.cleaned_data.get('confirmed', False)
+        hours_booked = form.cleaned_data.get('hours_booked', 0)
+        is_update = bool(booking_id)
 
-            if booking_id:
-                # Update existing booking
-                booking = get_object_or_404(EventStaffBooking, id=booking_id)
-                original_role = booking.role
-                original_staff_name = booking.staff.get_full_name() if booking.staff else 'None'
-                print(f"Updating existing booking. Original Role: {original_role}, Original Staff: {original_staff_name}")
-                # Check for other bookings with the same role
-                if EventStaffBooking.objects.filter(contract=contract, role=role).exclude(id=booking_id).exists():
-                    print("Booking for this role already exists in this contract (update case).")
-                    return JsonResponse({'success': False, 'message': 'A booking for this role already exists in this contract.'}, status=400)
-            else:
-                # Create new booking
-                print("Creating new booking.")
-                if EventStaffBooking.objects.filter(contract=contract, role=role).exists():
-                    print("Booking for this role already exists in this contract (create case).")
-                    return JsonResponse({'success': False, 'message': 'A booking for this role already exists in this contract.'}, status=400)
-                booking = EventStaffBooking(contract=contract)
+        logger.debug(
+            "Form valid. Booking ID: %s, Role: %s, Staff: %s, Status: %s, Confirmed: %s, Hours Booked: %s",
+            booking_id, role, staff, status, confirmed, hours_booked
+        )
 
-            booking.role = role
-            booking.staff = staff
-            booking.status = status
-            booking.confirmed = confirmed
-            booking.hours_booked = hours_booked
-            booking._request = request  # Set the request as an instance attribute
-            booking.save()
+        original_staff = None
 
-            print("Booking saved successfully.")
-
-            # Update the corresponding field in the Contract model with the staff name
-            booking.update_contract_role()
-
-            # Update availability based on the booking status
-            if status in ['BOOKED', 'PENDING']:
-                Availability.objects.update_or_create(
-                    staff=staff,
-                    date=contract.event_date,
-                    defaults={'available': False}
-                )
-            else:
-                Availability.objects.update_or_create(
-                    staff=staff,
-                    date=contract.event_date,
-                    defaults={'available': True}
-                )
-
-            # Determine change type and log accordingly
-            if booking_id:
-                print(f"Booking updated: {original_role} role from {original_staff_name} to {booking.staff.get_full_name()}")
-                ChangeLog.objects.create(
-                    user=request.user,
-                    description=f"Updated booking: {original_role} role from {original_staff_name} to {booking.staff.get_full_name()}",
-                    contract=contract
-                )
-            else:
-                print(f"New booking created for {role} with {booking.staff.get_full_name()}")
-                ChangeLog.objects.create(
-                    user=request.user,
-                    description=f"Created new booking for {role} with {booking.staff.get_full_name()}",
-                    contract=contract
-                )
-
-            if 'PROSPECT' in role:
-                prospect_field = f'prospect_photographer{role[-1]}'
-                setattr(contract, prospect_field, booking.staff)
-                contract.save()
-
-            else:
-                # Send email notification to the booked staff
-                send_booking_email(request, booking.staff, contract, booking.get_role_display(), is_update)
-
-            return JsonResponse({
-                'success': True,
-                'message': 'Staff booking saved successfully',
-                'role': booking.role,
-                'staff_name': booking.staff.get_full_name() if booking.staff else 'None',
-                'hours_booked': booking.hours_booked
-            })
+        if booking_id:
+            booking = get_object_or_404(EventStaffBooking, id=booking_id)
+            original_staff = booking.staff
+            logger.debug("Updating existing booking. Original Staff: %s", original_staff.get_full_name() if original_staff else "None")
         else:
-            print("Form invalid.")
-            print(form.errors)
-            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+            booking = EventStaffBooking(contract=contract)
 
-    return render(request, 'bookings/manage_staff.html', {'contract': contract, 'form': form})
+        # Restore availability for the previously assigned staff
+        if original_staff and original_staff != staff:
+            Availability.objects.update_or_create(
+                staff=original_staff,
+                date=contract.event_date,
+                defaults={'available': True}
+            )
+            logger.info("Restored availability for previous staff: %s", original_staff.get_full_name())
+
+        # Check if the selected staff is already booked for another role on the same event date
+        existing_booking = EventStaffBooking.objects.filter(
+            staff=staff,
+            contract__event_date=contract.event_date
+        ).exclude(id=booking_id).first()
+
+        if existing_booking:
+            logger.info("Clearing existing booking for staff %s from role %s.", staff.get_full_name(), existing_booking.role)
+            existing_booking.delete()
+
+        booking.role = role
+        booking.staff = staff
+        booking.status = status
+        booking.confirmed = confirmed
+        booking.hours_booked = hours_booked
+        booking._request = request
+        booking.save()
+
+        logger.info("Booking saved successfully.")
+
+        booking.update_contract_role()
+
+        # Update staff availability based on the new booking
+        Availability.objects.update_or_create(
+            staff=staff,
+            date=contract.event_date,
+            defaults={'available': status not in ['BOOKED', 'PENDING']}
+        )
+
+        change_description = (
+            f"Updated booking: {booking.role} from {original_staff.get_full_name() if original_staff else 'None'} to {staff.get_full_name()}"
+            if is_update else
+            f"Created new booking for {role} with {staff.get_full_name()}"
+        )
+        ChangeLog.objects.create(user=request.user, description=change_description, contract=contract)
+
+        # Handle prospect roles
+        if 'PROSPECT' in role:
+            prospect_field = f'prospect_photographer{role[-1]}'
+            setattr(contract, prospect_field, staff)
+            contract.save()
+        else:
+            send_booking_email(request, staff, contract, booking.get_role_display(), is_update)
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Staff booking saved successfully',
+            'role': booking.role,
+            'staff_name': staff.get_full_name() if staff else 'None',
+            'hours_booked': booking.hours_booked
+        })
+    else:
+        logger.error("Form invalid. Errors: %s", form.errors)
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
 
 @login_required
 def confirm_booking(request, booking_id):
+    """
+    Confirms a booking for a specific event staff member.
+    """
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
     if request.method == 'POST':
         booking.confirmed = True
@@ -282,97 +338,60 @@ def confirm_booking(request, booking_id):
         messages.success(request, 'Your attendance has been confirmed.')
     return redirect('bookings:booking_detail_staff', booking_id=booking_id)
 
-
 @require_http_methods(["POST"])
+@login_required
 def clear_booking(request, booking_id):
+    """
+    Deletes a specific booking and updates related data.
+    """
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
     contract = booking.contract
-    role = booking.role
-    staff_name = booking.staff.get_full_name() if booking.staff else "Unknown Staff"
-    status = booking.status
-    hours_booked = booking.hours_booked
 
-    print(f"Attempting to delete booking with ID: {booking_id}")
+    logger.info("Attempting to delete booking with ID: %d", booking_id)
 
-    # Update the staff availability for the date if necessary
     if booking.staff:
-        availability, created = Availability.objects.get_or_create(
+        # Mark the staff as available
+        Availability.objects.update_or_create(
             staff=booking.staff,
-            date=booking.contract.event_date
+            date=contract.event_date,
+            defaults={'available': True}
         )
-        availability.available = True
-        availability.save()
+        logger.info("Restored availability for staff: %s", booking.staff.get_full_name())
 
-    # Clear the associated role in the contract before deleting the booking
-    role_field = SERVICE_ROLE_MAPPING.get(role, None)
+    role_field = SERVICE_ROLE_MAPPING.get(booking.role, None)
     if role_field and hasattr(contract, role_field):
         setattr(contract, role_field, None)
         contract.save()
 
-    # Log the deletion with detailed information
     ChangeLog.objects.create(
         user=request.user,
-        description=f"Deleted booking for {role} ({staff_name}). Status was {status}, with {hours_booked} hours booked.",
+        description=f"Deleted booking for {booking.role} ({booking.staff.get_full_name()}).",
         contract=contract
     )
 
-    # Delete the booking and inform the user
     booking.delete()
-    messages.success(request, f'Booking for {staff_name} has been cleared!')
+    messages.success(request, f'Booking for {booking.staff.get_full_name()} has been cleared!')
 
-    # Redirect to the provided next URL or default to the contract details page
     next_url = request.POST.get('next', reverse('contracts:contract_detail', args=[contract.contract_id]) + "#services")
     return redirect(next_url)
 
-@login_required
-def booking_detail(request, booking_id):
-    # Retrieve the booking instance
+
+def get_booking_context(booking_id):
+    """
+    Gathers context data for displaying booking details.
+    """
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
     contract = booking.contract
 
-    client_edit_form = ContractClientEditForm(instance=contract.client)
-    event_edit_form = ContractEventEditForm(instance=contract)
+    roles = ['PHOTOGRAPHER1', 'PHOTOGRAPHER2', 'ENGAGEMENT', 'VIDEOGRAPHER1', 'VIDEOGRAPHER2', 'DJ1', 'DJ2', 'PHOTOBOOTH_OP1', 'PHOTOBOOTH_OP2']
+    role_bookings = {
+        role: EventStaffBooking.objects.filter(contract=contract, role=role).first()
+        for role in roles
+    }
 
-    # Fetch specific bookings by role for each section
-    photographer1 = EventStaffBooking.objects.filter(contract=contract, role='PHOTOGRAPHER1').first()
-    photographer2 = EventStaffBooking.objects.filter(contract=contract, role='PHOTOGRAPHER2').first()
-    engagement_session = EventStaffBooking.objects.filter(contract=contract, role='ENGAGEMENT').first()
-
-    videographer1 = EventStaffBooking.objects.filter(contract=contract, role='VIDEOGRAPHER1').first()
-    videographer2 = EventStaffBooking.objects.filter(contract=contract, role='VIDEOGRAPHER2').first()
-
-    dj1 = EventStaffBooking.objects.filter(contract=contract, role='DJ1').first()
-    dj2 = EventStaffBooking.objects.filter(contract=contract, role='DJ2').first()
-
-    photobooth_op1 = EventStaffBooking.objects.filter(contract=contract, role='PHOTOBOOTH_OP1').first()
-    photobooth_op2 = EventStaffBooking.objects.filter(contract=contract, role='PHOTOBOOTH_OP2').first()
-
-    # Fetch all booking notes and portal messages using constants
     booking_notes = UnifiedCommunication.objects.filter(note_type=UnifiedCommunication.BOOKING, contract=contract)
     portal_messages = UnifiedCommunication.objects.filter(note_type=UnifiedCommunication.PORTAL, contract=contract)
 
-    # Categorize notes by type
-    notes_by_type = defaultdict(list)
-    for note in booking_notes:
-        notes_by_type[note.note_type].append(note)
-    for message in portal_messages:
-        notes_by_type[message.note_type].append(message)
-
-    # Handle form submission for new notes
-    if request.method == 'POST':
-        communication_form = BookingCommunicationForm(request.POST)
-        if communication_form.is_valid():
-            new_note = UnifiedCommunication.objects.create(
-                content=communication_form.cleaned_data['message'],
-                note_type=UnifiedCommunication.BOOKING,  # Use the constant for booking note type
-                created_by=request.user,
-                contract=contract,
-            )
-            return redirect('bookings:booking_detail', booking_id=booking_id)
-    else:
-        communication_form = BookingCommunicationForm()
-
-    # Prepare the overtime entries with roles mapped
     overtime_entries = [
         {
             'service_type': overtime.overtime_option.service_type.name,
@@ -382,112 +401,87 @@ def booking_detail(request, booking_id):
         for overtime in contract.overtimes.all()
     ]
 
-    # Filter documents that are visible to event staff only
     event_documents = contract.documents.filter(is_event_staff_visible=True)
 
-    return render(request, 'bookings/booking_detail_office.html', {
-        'contract': contract,
+    return {
         'booking': booking,
-        'photographer1': photographer1,
-        'photographer2': photographer2,
-        'engagement_session': engagement_session,
-        'videographer1': videographer1,
-        'videographer2': videographer2,
-        'dj1': dj1,
-        'dj2': dj2,
-        'photobooth_op1': photobooth_op1,
-        'photobooth_op2': photobooth_op2,
-        'bookings': EventStaffBooking.objects.filter(contract=contract),
+        'contract': contract,
+        'role_bookings': role_bookings,
         'booking_notes': booking_notes,
         'portal_messages': portal_messages,
-        'staff_member': request.user,
         'overtime_entries': overtime_entries,
         'event_documents': event_documents,
-        'communication_form': communication_form,
-        'client_edit_form': client_edit_form,
-        'event_edit_form': event_edit_form,
+    }
 
+@login_required
+def booking_detail(request, booking_id):
+    """
+    Displays detailed information about a specific booking.
+    """
+    context = get_booking_context(booking_id)
+
+    context.update({
+        'photographer1': context['role_bookings'].get('PHOTOGRAPHER1'),
+        'photographer2': context['role_bookings'].get('PHOTOGRAPHER2'),
+        'engagement_session': context['role_bookings'].get('ENGAGEMENT'),
+        'videographer1': context['role_bookings'].get('VIDEOGRAPHER1'),
+        'videographer2': context['role_bookings'].get('VIDEOGRAPHER2'),
+        'dj1': context['role_bookings'].get('DJ1'),
+        'dj2': context['role_bookings'].get('DJ2'),
+        'photobooth_op1': context['role_bookings'].get('PHOTOBOOTH_OP1'),
+        'photobooth_op2': context['role_bookings'].get('PHOTOBOOTH_OP2'),
+        'client_edit_form': ContractClientEditForm(instance=context['contract'].client),
+        'event_edit_form': ContractEventEditForm(instance=context['contract']),
+        'communication_form': BookingCommunicationForm(request.POST or None),
     })
 
+    if request.method == 'POST' and context['communication_form'].is_valid():
+        new_note = UnifiedCommunication.objects.create(
+            content=context['communication_form'].cleaned_data['message'],
+            note_type=UnifiedCommunication.BOOKING,
+            created_by=request.user,
+            contract=context['contract'],
+        )
+        logger.info("New note created: %s by %s", new_note.content, new_note.created_by)
+        return redirect('bookings:booking_detail', booking_id=booking_id)
+
+    return render(request, 'bookings/booking_detail_office.html', context)
 
 @login_required
 def booking_detail_staff(request, booking_id):
-    booking = get_object_or_404(EventStaffBooking, id=booking_id)
-    contract = booking.contract
+    """
+    Displays a summary of booking details for staff members.
+    """
+    context = get_booking_context(booking_id)
 
-    client_edit_form = ContractClientEditForm(instance=contract.client)
-    event_edit_form = ContractEventEditForm(instance=contract)
-
-    # Fetch specific bookings by role for each section
-    photographer1 = EventStaffBooking.objects.filter(contract=contract, role='PHOTOGRAPHER1').first()
-    photographer2 = EventStaffBooking.objects.filter(contract=contract, role='PHOTOGRAPHER2').first()
-    engagement_session = EventStaffBooking.objects.filter(contract=contract, role='ENGAGEMENT').first()
-
-    videographer1 = EventStaffBooking.objects.filter(contract=contract, role='VIDEOGRAPHER1').first()
-    videographer2 = EventStaffBooking.objects.filter(contract=contract, role='VIDEOGRAPHER2').first()
-
-    dj1 = EventStaffBooking.objects.filter(contract=contract, role='DJ1').first()
-    dj2 = EventStaffBooking.objects.filter(contract=contract, role='DJ2').first()
-
-    photobooth_op1 = EventStaffBooking.objects.filter(contract=contract, role='PHOTOBOOTH_OP1').first()
-    photobooth_op2 = EventStaffBooking.objects.filter(contract=contract, role='PHOTOBOOTH_OP2').first()
-
-    # Fetch booking notes and portal notes
-    booking_notes = UnifiedCommunication.objects.filter(note_type=UnifiedCommunication.BOOKING, contract=contract)
-    portal_messages = UnifiedCommunication.objects.filter(note_type=UnifiedCommunication.PORTAL, contract=contract)
-
-    # Categorize notes by type
-    notes_by_type = defaultdict(list)
-    for note in booking_notes:
-        notes_by_type[note.note_type].append(note)
-    for message in portal_messages:
-        notes_by_type[message.note_type].append(message)
-
-    # Prepare the overtime entries with roles mapped
-    overtime_entries = [
-        {
-            'service_type': overtime.overtime_option.service_type.name,
-            'role': ROLE_DISPLAY_NAMES.get(overtime.overtime_option.role, overtime.overtime_option.role),
-            'hours': overtime.hours,
-        }
-        for overtime in contract.overtimes.all()
-    ]
-
-    # Filter documents that are visible to event staff only
-    event_documents = contract.documents.filter(is_event_staff_visible=True)
-
-    return render(request, 'bookings/booking_detail_staff.html', {
-        'contract': contract,
-        'booking': booking,
-        'photographer1': photographer1,
-        'photographer2': photographer2,
-        'engagement_session': engagement_session,
-        'videographer1': videographer1,
-        'videographer2': videographer2,
-        'dj1': dj1,
-        'dj2': dj2,
-        'photobooth_op1': photobooth_op1,
-        'photobooth_op2': photobooth_op2,
-        'bookings': EventStaffBooking.objects.filter(contract=contract),
-        'booking_notes': booking_notes,
-        'portal_messages': portal_messages,
-        'staff_member': request.user,
-        'overtime_entries': overtime_entries,
-        'event_documents': event_documents,
-        'client_edit_form': client_edit_form,
-        'event_edit_form': event_edit_form
+    context.update({
+        'photographer1': context['role_bookings'].get('PHOTOGRAPHER1'),
+        'photographer2': context['role_bookings'].get('PHOTOGRAPHER2'),
+        'engagement_session': context['role_bookings'].get('ENGAGEMENT'),
+        'videographer1': context['role_bookings'].get('VIDEOGRAPHER1'),
+        'videographer2': context['role_bookings'].get('VIDEOGRAPHER2'),
+        'dj1': context['role_bookings'].get('DJ1'),
+        'dj2': context['role_bookings'].get('DJ2'),
+        'photobooth_op1': context['role_bookings'].get('PHOTOBOOTH_OP1'),
+        'photobooth_op2': context['role_bookings'].get('PHOTOBOOTH_OP2'),
+        'client_edit_form': ContractClientEditForm(instance=context['contract'].client),
+        'event_edit_form': ContractEventEditForm(instance=context['contract']),
     })
 
+    return render(request, 'bookings/booking_detail_staff.html', context)
 
 @login_required
 def booking_list(request):
+    """
+    Lists all bookings with filtering and sorting options.
+    """
     query = request.GET.get('q')
     event_date_start = request.GET.get('event_date_start')
     event_date_end = request.GET.get('event_date_end')
     service_type = request.GET.get('service_type')
     role_filter = request.GET.get('role_filter')
     status_filter = request.GET.get('status_filter')
-    sort_by = request.GET.get('sort_by', 'contract__event_date')  # Note the change here
+    sort_by = request.GET.get('sort_by', 'contract__event_date')
     order = request.GET.get('order', 'asc')
 
     bookings = EventStaffBooking.objects.all()
@@ -514,6 +508,7 @@ def booking_list(request):
     if order == 'asc':
         bookings = bookings.order_by(sort_by)
     else:
-        bookings = bookings.order_by('-' + sort_by)
+        bookings = bookings.order_by(f"-{sort_by}")
 
-    return render(request, 'bookings/booking_search_results.html', {'bookings': bookings})
+    logger.info("Total bookings found: %d", bookings.count())
+    return render(request, 'bookings/booking_list.html', {'bookings': bookings})

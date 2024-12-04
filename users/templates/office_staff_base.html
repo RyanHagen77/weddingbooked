@@ -25,22 +25,24 @@
         </div>
         <div class="user-info">
             <span>Hello, {{ request.user.first_name }}</span>
-            <form action="{% url 'users:logout' %}" method="post" style="margin-left: 10px;">
+            <form action="{% url 'users:logout' %}" method="post">
                 {% csrf_token %}
-                <input type="submit" value="Logout" class="logout-button">
+                <input type="submit" value="Logout" class="logout-button" style="width:auto;height:auto;font-size:14px;padding:5px 10px;background-color:#A0C49D;color:white;border:none;border-radius:4px;cursor:pointer;margin:0;line-height:normal;">
             </form>
         </div>
     </div>
     <div class="menu-container">
         <ul class="menu">
-            <li class="menu-item"><a href="{% url 'users:tasks' %}">Tasks</a></li>
+            <li class="menu-item"><a href="{% url 'communication:tasks' %}">Tasks</a></li>
             <li class="menu-item"><a href="{% url 'contracts:contract_new' %}">New Contract</a></li>
-            <li class="menu-item"><a href="{% url 'reports:reports' %}">Reports</a></li>
+            {% if request.user|in_group:"EventStaffPayrollReportViewer" or request.user|in_group:"AllReportViewer" %}
+                <li class="menu-item"><a href="{% url 'reports:reports' %}">Reports</a></li>
+            {% endif %}
             <li class="menu-item"><a href="{% url 'users:event_staff' %}">Event Staff</a></li>
             <li class="menu-item"><a href="{% url 'contracts:contract_search' %}">Contract Search</a></li>
             <li class="menu-item"><a href="{% url 'bookings:booking_search' %}">Booking Search</a></li>
             {% if request.user|in_group:"IT-Admin" %}
-            <li class="menu-item"><a href="/admin">Admin</a></li>
+                <li class="menu-item"><a href="/admin" target="_blank">Admin</a></li>
             {% endif %}
         </ul>
     </div>
@@ -50,9 +52,9 @@
         </div>
     </main>
 
-    <footer>
-        <!-- Copyright statement, etc. -->
-    </footer>
+        {% include 'communication/modals/_add_task_modal.html' %}
+        {% include 'communication/modals/_edit_task_modal.html' %}
+
 
     <!-- Bootstrap and other libraries should load after jQuery -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>

@@ -1,0 +1,7 @@
+{% load app_filters %}
+
+<!-- Hidden Fields for {{ service }} -->
+<input type="hidden" id="contractId" value="{{ contract.contract_id }}">
+<input type="hidden" id="id_event_date" value="{{ contract.event_date|date:'Y-m-d' }}">
+<input type="hidden" id="discount" value="{{ initial_discount_value }}">
+<input type="hidden" id="{{ service|lower }}OvertimeServiceType" value="{{ service }}">

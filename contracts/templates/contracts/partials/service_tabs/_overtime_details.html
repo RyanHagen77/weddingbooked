@@ -1,0 +1,31 @@
+<div>
+    <h6><strong>{{ service }} Overtime Details</strong></h6>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th>Hours</th>
+                <th>Cost</th>
+                <th>Staff</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="{{ service|lower }}OvertimeEntriesDisplay" class="overtime-entries-display">
+            <!-- Dynamically added entries -->
+        </tbody>
+    </table>
+
+    <!-- Add Overtime Entry Button -->
+    <button id="add{{ service }}OvertimeEntryButton" type="button" class="btn btn-dusty-pink">Add Overtime Entry</button>
+
+    <!-- Overtime Entry Form -->
+    <div id="{{ service|lower }}OvertimeEntryForm" style="display:none;">
+        <input type="hidden" id="{{ service|lower }}OvertimeEntryId" value="">
+        <select id="{{ service|lower }}OvertimeOptionSelect">
+            <option value="">Select an Overtime Option</option>
+            <!-- Options will be dynamically added -->
+        </select>
+        <input type="number" id="{{ service|lower }}OvertimeHours" placeholder="Hours">
+        <button type="button" id="save{{ service }}OvertimeEntryButton" class="btn btn-dusty-pink">Save Overtime Entry</button>
+    </div>
+</div>

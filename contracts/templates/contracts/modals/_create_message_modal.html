@@ -1,0 +1,32 @@
+<!-- Message Creation Modal -->
+<div class="modal fade" id="createMessageModal" tabindex="-1" role="dialog" aria-labelledby="createMessageModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h5 class="modal-title" id="createMessageModalLabel">Create Message</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <form method="post" id="createMessageForm">
+          {% csrf_token %}
+          {{ communication_form.as_p }}
+
+          <!-- Validation Error Display -->
+          <div id="form-errors" class="text-danger" style="display: none;"></div>
+        </form>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn-close" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-dusty-pink" form="createMessageForm">Send Message</button>
+      </div>
+    </div>
+  </div>
+</div>
+

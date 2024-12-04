@@ -1,0 +1,41 @@
+<div class="tab-pane" id="videography">
+    <form method="post" action="{% url 'contracts:edit_services' id=contract.contract_id %}">
+        {% csrf_token %}
+        <!-- Hidden Fields -->
+        <input type="hidden" name="section" value="videography">
+        <input type="hidden" id="hiddenSavedVideographyPackageId" value="{{ contract.videography_package_id|default:'' }}">
+        <input type="hidden" id="hiddenSavedVideographyAdditionalStaffId" value="{{ contract.videography_additional_id|default:'' }}">
+
+        <!-- Videography Services Section -->
+        <div class="service-category">
+            <h3>Videography Services</h3>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Hours</th>
+                        <th>Price</th>
+                        <th>Staff</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Include Package Row -->
+                    {% include 'contracts/partials/service_tabs/_package_row.html' with package_list=videography_packages package_id=contract.videography_package_id service="Videography" role="VIDEOGRAPHER1" %}
+
+                    <!-- Include Additional Staff Row -->
+                    {% include 'contracts/partials/service_tabs/_additional_row.html' with additional_list=additional_videography_options additional_id=contract.videography_additional_id service="Videography" role="VIDEOGRAPHER2" %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Include Overtime Details -->
+        {% include 'contracts/partials/service_tabs/_overtime_details.html' with service="Videography" %}
+
+        <!-- Include Cost Summary -->
+        {% include 'contracts/partials/service_tabs/_cost_summary.html' with service="Videography" %}
+
+        <!-- Save Changes Button -->
+        <button type="submit" id="saveVideographySection" class="btn btn-dusty-pink float-right">Save Changes</button>
+    </form>
+</div>

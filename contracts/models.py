@@ -1,4 +1,4 @@
-
+#contracts/models.py
 
 from decimal import Decimal, ROUND_HALF_UP
 from django.db.models import Sum
@@ -11,7 +11,7 @@ from django.utils import timezone
 import re
 from django.db import transaction
 from bookings.constants import SERVICE_ROLE_MAPPING  # Adjust the import path as needed
-
+from services.models import ServiceType
 
 phone_validator = RegexValidator(
     regex=r'^\d{3}-\d{3}-\d{4}$',
@@ -41,13 +41,6 @@ class TaxRate(models.Model):
     def __str__(self):
         return f"{self.location.name} - {self.tax_rate}%"
 
-class ServiceType(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    description = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return self.name
-
 
 class Client(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -69,9 +62,9 @@ class Client(models.Model):
     primary_address2 = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=255, blank=True, null=True)
     state = models.CharField(max_length=255, blank=True, null=True)
-    postal_code = models.CharField(max_length=255, blank=True, null=True)
+    postal_code = models.CharField(max_length=10, blank=True, null=True)
     partner_contact = models.CharField(max_length=255, blank=True, null=True)
-    partner_email = models.EmailField(validators=[EmailValidator], blank=True, null=True)
+    partner_email = models.EmailField(validators=[EmailValidator()], blank=True, null=True)
     partner_phone1 = models.CharField(
         max_length=12,  # Increase max_length to accommodate dashes
         validators=[phone_validator],
@@ -85,106 +78,44 @@ class Client(models.Model):
         null=True
     )
     alt_contact = models.CharField(max_length=255, blank=True, null=True)
-    alt_email = models.EmailField(validators=[EmailValidator], blank=True, null=True)
+    alt_email = models.EmailField(validators=[EmailValidator()], blank=True, null=True)
     alt_phone = models.CharField(
         max_length=12,  # Increase max_length to accommodate dashes
         validators=[phone_validator],
         blank=True,
         null=True
     )
-    def get_primary_contact_last_name(self):
-        return self.primary_contact.split()[-1][:3].upper()
+
+    class Meta:
+        verbose_name = "Client"
+        verbose_name_plural = "Clients"
+        ordering = ['primary_contact']
 
     def __str__(self):
         return self.primary_contact
 
+    def get_primary_contact_last_name(self):
+        return self.primary_contact.split()[-1][:3].upper()
 
-class Package(models.Model):
-    name = models.CharField(max_length=100)
-    is_active = models.BooleanField(default=True, verbose_name="Active")
-    price = models.DecimalField(max_digits=8, decimal_places=2)
-    deposit = models.DecimalField(max_digits=8, decimal_places=2, verbose_name="Deposit Amount")
-    service_type = models.ForeignKey('ServiceType', on_delete=models.CASCADE, null=True, blank=True, related_name='packages')
-    hours = models.IntegerField(verbose_name="Hours", default=0)
-    default_text = models.TextField(blank=True, help_text="Default text for the package")
-    rider_text = models.TextField(blank=True, help_text="Rider for the package")
-    package_notes = models.TextField(blank=True, help_text="Additional notes for the package")
+    def save(self, *args, **kwargs):
+        updating_user_email = False
+        if self.pk:
+            # Check if the primary_email field is being changed
+            old_client = Client.objects.get(pk=self.pk)
+            if old_client.primary_email != self.primary_email:
+                updating_user_email = True
 
-    def __str__(self):
-        return f"{self.name} - {self.service_type.name if self.service_type else 'No Type'}"
-
-
-
-class AdditionalEventStaffOption(models.Model):
-    name = models.CharField(max_length=100)
-    is_active = models.BooleanField(default=True, verbose_name="Active")
-    price = models.DecimalField(max_digits=8, decimal_places=2)
-    deposit = models.DecimalField(max_digits=8, decimal_places=2, verbose_name="Deposit Amount")
-    service_type = models.ForeignKey('ServiceType', on_delete=models.CASCADE, null=True, blank=True, related_name='event_staff_options')
-    hours = models.IntegerField(verbose_name="Hours", default=0)
-    default_text = models.TextField(blank=True, help_text="Default text for the staff option")
-    rider_text = models.TextField(blank=True, help_text="Rider for the package")
-    package_notes = models.TextField(blank=True, help_text="Additional notes for the staff option")
-
-    def __str__(self):
-        # Updated to reflect the relationship with ServiceType
-        return f"{self.name} ({self.service_type.name if self.service_type else 'No Type'})"
-
-class EngagementSessionOption(models.Model):
-    name = models.CharField(max_length=100)
-    is_active = models.BooleanField(default=True, verbose_name="Active")
-    price = models.DecimalField(max_digits=8, decimal_places=2)
-    deposit = models.DecimalField(max_digits=8, decimal_places=2, verbose_name="Deposit Amount")
-    default_text = models.TextField(blank=True, help_text="Default text for the package")
-    rider_text = models.TextField(blank=True, help_text="Rider for the package")
-    package_notes = models.TextField(blank=True, help_text="Additional notes for the package")
-    service_type = models.ForeignKey('ServiceType', on_delete=models.CASCADE, null=True, blank=True, related_name='engagement_session_options')
-
-
-
-    def __str__(self):
-        return self.name
-
-class AdditionalProduct(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True, null=True)
-    price = models.DecimalField(max_digits=5, decimal_places=2)  # Price to customer
-    cost = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)  # Internal cost
-    is_taxable = models.BooleanField(default=False)
-    notes = models.TextField(blank=True, null=True)
-    default_text = models.TextField(blank=True, help_text="Default text for products")
-
-
-    def __str__(self):
-        return f"{self.name} - ${self.price}"
-
-
-class OvertimeOption(models.Model):
-    role = models.CharField(max_length=50, choices=ROLE_CHOICES)
-    name = models.CharField(max_length=100)  # For dropdown display
-    is_active = models.BooleanField(default=True, verbose_name="Active")
-    rate_per_hour = models.DecimalField(max_digits=6, decimal_places=2)
-    description = models.TextField(blank=True, null=True)
-    service_type = models.ForeignKey(ServiceType, on_delete=models.CASCADE, related_name='overtime_options')
-
-    def __str__(self):
-        return f"{self.name} - ${self.rate_per_hour}/hr"
-
-class StaffOvertime(models.Model):
-    staff_member = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    contract = models.ForeignKey('Contract', on_delete=models.CASCADE)
-    overtime_option = models.ForeignKey(OvertimeOption, on_delete=models.SET_NULL, null=True)
-    role = models.CharField(max_length=50, choices=ROLE_CHOICES)
-    overtime_hours = models.DecimalField(max_digits=4, decimal_places=2)
-
-    def __str__(self):
-        return f"{self.staff_member.username} - {self.overtime_hours} hours for {self.contract}"
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            if updating_user_email:
+                self.user.email = self.primary_email
+                self.user.save()
 
 
 class Discount(models.Model):
     memo = models.TextField(blank=True, null=True)
     amount = models.DecimalField(max_digits=8, decimal_places=2)
-    service_type = models.ForeignKey(ServiceType, on_delete=models.SET_NULL, null=True, blank=True)
+    service_type = models.ForeignKey('services.ServiceType', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f"{self.memo} - {self.amount} - {self.service_type}"
@@ -215,21 +146,21 @@ class LeadSourceCategory(models.Model):
     def __str__(self):
         return self.name
 
+
 class Contract(models.Model):
-
-    LEAD_SOURCE_CATEGORY_CHOICES = (
-        ('ONLINE', 'Online'),
-        ('REFERRAL', 'Referral'),
-    )
-
-    objects = models.Manager()
+    # Choice Constants
+    ONLINE = 'ONLINE'
+    REFERRAL = 'REFERRAL'
+    LEAD_SOURCE_CATEGORY_CHOICES = [
+        (ONLINE, 'Online'),
+        (REFERRAL, 'Referral'),
+    ]
 
     PIPELINE = 'pipeline'
     FORECAST = 'forecast'
     BOOKED = 'booked'
     COMPLETED = 'completed'
     DEAD = 'dead'
-
     STATUS_CHOICES = [
         (PIPELINE, 'Pipeline'),
         (FORECAST, 'Forecast'),
@@ -238,77 +169,49 @@ class Contract(models.Model):
         (DEAD, 'Dead'),
     ]
 
-    status = models.CharField(
-        max_length=10,
-        choices=STATUS_CHOICES,
-        default=PIPELINE,
-    )
-
+    # Model Fields
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=PIPELINE)
     contract_id = models.AutoField(primary_key=True)
-    old_contract_number = models.CharField(max_length=50, unique=False, blank=True, null=True)
+    old_contract_number = models.CharField(max_length=50, blank=True, null=True)
     custom_contract_number = models.CharField(max_length=50, unique=True, blank=True, null=True)
     contract_date = models.DateField(auto_now_add=True)
     event_date = models.DateField()
     booked_date = models.DateField(null=True, blank=True)
-    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True)
-    csr = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='contracts_managed'
-    )
-    coordinator = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='contracts_coordinated'
-    )
 
-    lead_source_category = models.ForeignKey(LeadSourceCategory, on_delete=models.SET_NULL, null=True, blank=True)
-    lead_source_details = models.CharField(max_length=255, blank=True)
-    # Other fields...
+    # Foreign Keys
+    location = models.ForeignKey('Location', on_delete=models.SET_NULL, null=True)
+    csr = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
+                            related_name='contracts_managed')
+    coordinator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='contracts_coordinated')
+    lead_source_category = models.ForeignKey('LeadSourceCategory', on_delete=models.SET_NULL, null=True, blank=True)
+    client = models.ForeignKey('Client', on_delete=models.CASCADE, null=True)
 
-    def get_lead_source_display(self):
-        if self.lead_source_category and self.lead_source_details:
-            return f"{self.lead_source_category.name}: {self.lead_source_details}"
-        elif self.lead_source_category:
-            return self.lead_source_category.name
-        elif self.lead_source_details:
-            return self.lead_source_details
-        return 'Unknown Source'
-
+    # Contact Information
     is_code_92 = models.BooleanField(default=False, verbose_name="Code 92 Flag")
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True)
+    lead_source_details = models.CharField(max_length=255, blank=True)
     bridal_party_qty = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=True, blank=True)
     guests_qty = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=True, blank=True)
 
+    # Ceremony and Reception Information
     ceremony_site = models.CharField(max_length=255, null=True, blank=True)
     ceremony_city = models.CharField(max_length=255, null=True, blank=True)
     ceremony_state = models.CharField(max_length=255, null=True, blank=True)
     ceremony_contact = models.CharField(max_length=255, null=True, blank=True)
-    ceremony_phone = models.CharField(
-        max_length=12,  # Increase max_length to accommodate dashes
-        validators=[phone_validator],
-        blank=True,
-        null=True
-    )
-    ceremony_email = models.EmailField(validators=[EmailValidator], null=True, blank=True)
+    ceremony_phone = models.CharField(max_length=12, validators=[phone_validator], blank=True, null=True)
+    ceremony_email = models.EmailField(validators=[EmailValidator()], null=True, blank=True)
     reception_site = models.CharField(max_length=255, null=True, blank=True)
     reception_city = models.CharField(max_length=255, null=True, blank=True)
     reception_state = models.CharField(max_length=255, null=True, blank=True)
     reception_contact = models.CharField(max_length=255, null=True, blank=True)
-    reception_phone = models.CharField(
-        max_length=12,  # Increase max_length to accommodate dashes
-        validators=[phone_validator],
-        blank=True,
-        null=True
-    )
-    reception_email = models.EmailField(validators=[EmailValidator], null=True, blank=True)
+    reception_phone = models.CharField(max_length=12, validators=[phone_validator], blank=True, null=True)
+    reception_email = models.EmailField(validators=[EmailValidator()], null=True, blank=True)
+
+    # Miscellaneous Fields
     staff_notes = models.TextField(blank=True, null=True)
     contract_document = models.FileField(upload_to='contracts/', null=True, blank=True)
 
-    # EventStaff
+    # Event Staff Linking
     photographer1 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
                                       related_name='photographer1_contracts')
     photographer2 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
@@ -326,13 +229,7 @@ class Contract(models.Model):
     photobooth_op2 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
                                        related_name='photobooth_op2_contracts')
 
-
-
-
-    # Other fields...
-
-
-    # Prospect photographer fields
+    # Additional Event Staff
     prospect_photographer1 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
                                                related_name='prospect_photographer1_contracts')
     prospect_photographer2 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
@@ -340,163 +237,116 @@ class Contract(models.Model):
     prospect_photographer3 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
                                                related_name='prospect_photographer3_contracts')
 
-    photography_package = models.ForeignKey(
-        Package,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='photography_packages',
-        # Adjust the `limit_choices_to` to filter using the `ServiceType`'s `name` field
-        limit_choices_to={'service_type__name': 'Photography', 'is_active': True}
-    )
-
-    photography_additional = models.ForeignKey(
-        AdditionalEventStaffOption,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='additional_photography_options',
-        limit_choices_to={'service_type__name': 'Photography', 'is_active': True}
-    )
-    
-    engagement_session = models.ForeignKey(
-        EngagementSessionOption,  # Assuming this is your actual model name
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='engagement_session_options',
-        limit_choices_to={'is_active': True}  # Adjust this based on your model's fields
-    )
-
-    videography_package = models.ForeignKey(
-        Package,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='videography_packages',
-        limit_choices_to={'service_type__name': 'Videography', 'is_active': True}
-    )
-
-    videography_additional = models.ForeignKey(AdditionalEventStaffOption, on_delete=models.SET_NULL, null=True,
-                                               blank=True,
-                                               related_name='additional_videography_options',
-                                               limit_choices_to={'service_type__name': 'Videography', 'is_active': True})
-    dj_package = models.ForeignKey(
-        Package,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='dj_packages',
-        limit_choices_to={'service_type__name': 'Dj', 'is_active': True}
-    )
-
-    dj_additional = models.ForeignKey(AdditionalEventStaffOption, on_delete=models.SET_NULL, null=True, blank=True,
+    # Service Packages and Options
+    photography_package = models.ForeignKey('services.Package', on_delete=models.SET_NULL, null=True, blank=True,
+                                            related_name='photography_packages',
+                                            limit_choices_to={'service_type__name': 'Photography', 'is_active': True})
+    photography_additional = models.ForeignKey('services.AdditionalEventStaffOption', on_delete=models.SET_NULL, null=True,
+                                               blank=True, related_name='additional_photography_options',
+                                               limit_choices_to={'service_type__name': 'Photography',
+                                                                 'is_active': True})
+    engagement_session = models.ForeignKey('services.EngagementSessionOption', on_delete=models.SET_NULL, null=True, blank=True,
+                                           related_name='engagement_session_options',
+                                           limit_choices_to={'is_active': True})
+    videography_package = models.ForeignKey('services.Package', on_delete=models.SET_NULL, null=True, blank=True,
+                                            related_name='videography_packages',
+                                            limit_choices_to={'service_type__name': 'Videography', 'is_active': True})
+    videography_additional = models.ForeignKey('services.AdditionalEventStaffOption', on_delete=models.SET_NULL, null=True,
+                                               blank=True, related_name='additional_videography_options',
+                                               limit_choices_to={'service_type__name': 'Videography',
+                                                                 'is_active': True})
+    dj_package = models.ForeignKey('services.Package', on_delete=models.SET_NULL, null=True, blank=True,
+                                   related_name='dj_packages',
+                                   limit_choices_to={'service_type__name': 'Dj', 'is_active': True})
+    dj_additional = models.ForeignKey('services.AdditionalEventStaffOption', on_delete=models.SET_NULL, null=True, blank=True,
                                       related_name='additional_dj_options',
                                       limit_choices_to={'service_type__name': 'Dj', 'is_active': True})
+    photobooth_package = models.ForeignKey('services.Package', on_delete=models.SET_NULL, null=True, blank=True,
+                                           related_name='photobooth_packages',
+                                           limit_choices_to={'service_type__name': 'Photobooth', 'is_active': True})
+    photobooth_additional = models.ForeignKey('services.AdditionalEventStaffOption', on_delete=models.SET_NULL, null=True,
+                                              blank=True,
+                                              related_name='additional_photobooth_options',
+                                              limit_choices_to={'service_type__name': 'Photobooth', 'is_active': True})
 
-    photobooth_package = models.ForeignKey(
-        Package,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='photobooth_packages',
-        limit_choices_to={'service_type__name': 'Photobooth', 'is_active': True}
-    )
-
-    photobooth_additional = models.ForeignKey(AdditionalEventStaffOption, on_delete=models.SET_NULL, null=True, blank=True,
-                                      related_name='additional_photobooth_options',
-                                      limit_choices_to={'service_type__name': 'Photobooth', 'is_active': True})
-
-    overtime_options = models.ManyToManyField(
-        OvertimeOption,
-        through='ContractOvertime',
-        related_name='contracts'
-    )
-
-    # For special terms and conditions.
+    # Additional Fields
+    overtime_options = models.ManyToManyField('services.OvertimeOption', through='services.ContractOvertime', related_name='contracts')
     custom_text = models.TextField(blank=True, null=True)
-
-
     package_discount_version = models.IntegerField(default=1)
     sunday_discount_version = models.IntegerField(default=1)
-    other_discounts = models.ManyToManyField(Discount, related_name='contracts', blank=True)
+    other_discounts = models.ManyToManyField('Discount', related_name='contracts', blank=True)
+    additional_products = models.ManyToManyField('products.AdditionalProduct', through='products.ContractProduct',
+                                                 related_name='contracts')
 
-    additional_products = models.ManyToManyField(AdditionalProduct, through='ContractProduct', related_name='contracts')
-    tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'))
-    tax_amount = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal('0.00'))
+    # Calculated fields
+    tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    tax_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    calculated_discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    amount_paid_field = models.DecimalField(max_digits=10, decimal_places=2, default=0, editable=False)
+    balance_due_field = models.DecimalField(max_digits=10, decimal_places=2, default=0, editable=False)
 
     def __str__(self):
         return self.custom_contract_number or f"Contract {self.contract_id}"
+
+    def get_lead_source_display(self):
+        if self.lead_source_category and self.lead_source_details:
+            return f"{self.lead_source_category.name}: {self.lead_source_details}"
+        elif self.lead_source_category:
+            return self.lead_source_category.name
+        elif self.lead_source_details:
+            return self.lead_source_details
+        return 'Unknown Source'
 
     def calculate_photography_cost(self):
         photography_base_cost = self.photography_package.price if self.photography_package else Decimal('0.00')
         additional_photography_cost = self.photography_additional.price if self.photography_additional else Decimal(
             '0.00')
         engagement_session_cost = self.engagement_session.price if self.engagement_session else Decimal('0.00')
-
-        # Identify the ServiceType for photography
-        photography_service_type = ServiceType.objects.get(name='Photography')  # Adjust the name as needed
-
-        # Calculate overtime cost for photography
+        photography_service_type = ServiceType.objects.get(name='Photography')
         photography_overtime_cost = sum(
             overtime.hours * overtime.overtime_option.rate_per_hour
             for overtime in self.overtimes.filter(overtime_option__service_type=photography_service_type)
         )
-
-        # Sum up all the components of the photography cost
         total_photography_cost = photography_base_cost + additional_photography_cost + engagement_session_cost + photography_overtime_cost
-
         return total_photography_cost.quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
 
     def calculate_videography_cost(self):
         videography_base_cost = self.videography_package.price if self.videography_package else Decimal('0.00')
         additional_videography_cost = self.videography_additional.price if self.videography_additional else Decimal(
             '0.00')
-
-        # Identify the ServiceType for videography
-        videography_service_type = ServiceType.objects.get(name='Videography')  # Adjust the name as needed
-
-        # Calculate overtime cost for videography
+        videography_service_type = ServiceType.objects.get(name='Videography')
         videography_overtime_cost = sum(
             overtime.hours * overtime.overtime_option.rate_per_hour
             for overtime in self.overtimes.filter(overtime_option__service_type=videography_service_type)
         )
-
         return (videography_base_cost + additional_videography_cost + videography_overtime_cost).quantize(
             Decimal('.00'), rounding=ROUND_HALF_UP)
 
     def calculate_dj_cost(self):
         dj_base_cost = self.dj_package.price if self.dj_package else Decimal('0.00')
         additional_dj_cost = self.dj_additional.price if self.dj_additional else Decimal('0.00')
-
-        # Identify the ServiceType for DJ services
-        dj_service_type = ServiceType.objects.get(name='Dj')  # Adjust the name as needed
-
-        # Calculate overtime cost for DJ services
+        dj_service_type = ServiceType.objects.get(name='Dj')
         dj_overtime_cost = sum(
             overtime.hours * overtime.overtime_option.rate_per_hour
             for overtime in self.overtimes.filter(overtime_option__service_type=dj_service_type)
         )
-
         return (dj_base_cost + additional_dj_cost + dj_overtime_cost).quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
 
     def calculate_photobooth_cost(self):
         photobooth_base_cost = self.photobooth_package.price if self.photobooth_package else Decimal('0.00')
         additional_photobooth_cost = self.photobooth_additional.price if self.photobooth_additional else Decimal('0.00')
-        # Identify the ServiceType for photobooth services
-        photobooth_service_type = ServiceType.objects.get(name='Photobooth')  # Adjust the name as needed
-
-        # Calculate overtime cost for photobooth services
+        photobooth_service_type = ServiceType.objects.get(name='Photobooth')
         photobooth_overtime_cost = sum(
             overtime.hours * overtime.overtime_option.rate_per_hour
             for overtime in self.overtimes.filter(overtime_option__service_type=photobooth_service_type)
         )
-
         return (photobooth_base_cost + additional_photobooth_cost + photobooth_overtime_cost).quantize(Decimal('.00'),
                                                                                                        rounding=ROUND_HALF_UP)
 
     def is_sunday_event(self):
-        return self.event_date.weekday() == 6  # 6 is Sunday
+        return self.event_date.weekday() == 6
 
     def calculate_package_discount(self):
         discount_rule = DiscountRule.objects.filter(
@@ -508,12 +358,7 @@ class Contract(models.Model):
         if not discount_rule:
             return Decimal('0.00')
 
-        selected_services = [
-            self.photography_package,
-            self.videography_package,
-            self.dj_package,
-        ]
-
+        selected_services = [self.photography_package, self.videography_package, self.dj_package]
         selected_services = [p for p in selected_services if p is not None]
         is_photobooth_selected = self.photobooth_package is not None
 
@@ -521,26 +366,18 @@ class Contract(models.Model):
         base_amount = discount_rule.base_amount
 
         if len(selected_services) >= 2:
-            # $200 off each non-photobooth service
             discount += base_amount * len(selected_services)
-
-            # If photobooth is also selected, additional $200 off for it
             if is_photobooth_selected:
                 discount += base_amount
         elif is_photobooth_selected and len(selected_services) == 1:
-            # $200 off the single other service when combined with photobooth
             discount += base_amount
 
         return discount.quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
 
     def calculate_sunday_discount(self):
         if self.is_sunday_event():
-            selected_services = [
-                self.photography_package,
-                self.videography_package,
-                self.dj_package,
-                self.photobooth_package
-            ]
+            selected_services = [self.photography_package, self.videography_package, self.dj_package,
+                                 self.photobooth_package]
             selected_services = [p for p in selected_services if p is not None]
             discount = Decimal('100.00') * len(selected_services)
             return discount.quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
@@ -550,134 +387,116 @@ class Contract(models.Model):
     def other_discounts_total(self):
         return self.other_discounts.aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
 
-
-
     def calculate_discount(self):
-            total_discount = Decimal('0.00')
-
-            package_based_discount = self.calculate_package_discount()
-            sunday_discount = self.calculate_sunday_discount()
-            total_discount += package_based_discount + sunday_discount
-
-            other_discounts_total = self.other_discounts.aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
-            total_discount += other_discounts_total
-
-            return total_discount
+        total_discount = Decimal('0.00')
+        total_discount += self.calculate_package_discount() + self.calculate_sunday_discount()
+        total_discount += self.other_discounts_total
+        return total_discount
 
     def calculate_total_service_cost_after_discounts(self):
-        subtotal = self.calculate_photography_cost() + self.calculate_videography_cost() + self.calculate_dj_cost() + self.calculate_photobooth_cost()
+        subtotal = sum([
+            self.calculate_photography_cost(),
+            self.calculate_videography_cost(),
+            self.calculate_dj_cost(),
+            self.calculate_photobooth_cost()
+        ])
         total_discount = self.calculate_discount()
         total_cost_after_discounts = subtotal - total_discount
         return total_cost_after_discounts.quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
 
     def calculate_product_subtotal(self):
-        return sum(contract_product.product.price * contract_product.quantity for contract_product in
-                   self.contract_products.all())
+        """
+        Calculate the subtotal of all products associated with this contract.
+        """
+        return sum(
+            contract_product.product.price * contract_product.quantity
+            for contract_product in self.contract_products.all()
+        )
 
     def calculate_tax(self):
-        """Calculate the tax amount based on the contract's tax rate and taxable products."""
-        taxable_amount = Decimal('0.00')
-        for contract_product in self.contract_products.all():
-            if contract_product.product.is_taxable:
-                taxable_amount += contract_product.product.price * contract_product.quantity
-
-        # Get the tax rate from the location
+        taxable_amount = sum(
+            contract_product.product.price * contract_product.quantity
+            for contract_product in self.contract_products.all()
+            if contract_product.product.is_taxable
+        )
         tax_rate = self.location.tax_rate if self.location else Decimal('0.00')
         return taxable_amount * tax_rate / 100
 
     def calculate_total_service_fees(self):
-        """Calculate the total of all service fees."""
         return sum(fee.amount for fee in self.servicefees.all())
 
-
     def calculate_total_product_cost(self):
-        """Calculate the total cost of products, including tax."""
         product_subtotal = self.calculate_product_subtotal()
         tax_amount = self.calculate_tax()
         total_cost = product_subtotal + tax_amount
         return total_cost.quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
-    def display_calculated_tax(self):
-        """Method to display the calculated tax in the admin interface."""
-        return self.calculate_tax()
-    display_calculated_tax.short_description = "Calculated Tax"
-
-    # Display methods for admin
-    def display_total_service_cost(self):
-        return self.calculate_total_service_cost()
-    display_total_service_cost.short_description = "Total Service Cost"
-
-    def display_product_subtotal(self):
-        return self.calculate_product_subtotal()
-    display_product_subtotal.short_description = "Product Subtotal"
-
-    def display_discounts(self):
-        return self.calculate_discount()
-    display_discounts.short_description = "Total Discounts"
-
-
-    def display_total_cost(self):
-        """Method to display the total cost in the admin interface or other views."""
-        return self.calculate_total_cost()
-
-    display_total_cost.short_description = "Total Cost"
 
     def calculate_total_service_cost(self):
-        total_service_cost = Decimal('0.00')
-        # Assuming methods for each service cost calculation exist
-        total_service_cost += self.calculate_photography_cost()
-        total_service_cost += self.calculate_videography_cost()
-        total_service_cost += self.calculate_dj_cost()
-        total_service_cost += self.calculate_photobooth_cost()
-
-        # Ensure the total is rounded to two decimal places
+        total_service_cost = sum([
+            self.calculate_photography_cost(),
+            self.calculate_videography_cost(),
+            self.calculate_dj_cost(),
+            self.calculate_photobooth_cost()
+        ])
         return total_service_cost.quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
 
-
     def calculate_total_cost(self):
-        """Calculate the total cost including services, products, tax, discounts, and service fees."""
         total_service_cost = self.calculate_total_service_cost()
-        total_service_fees = self.calculate_total_service_fees()  # Calculate total service fees
+        total_service_fees = self.calculate_total_service_fees()
         additional_products_cost = self.calculate_product_subtotal()
-
-        subtotal = total_service_cost + additional_products_cost + total_service_fees  # Include service fees
-
+        subtotal = total_service_cost + additional_products_cost + total_service_fees
         tax = self.calculate_tax()
         discounts = self.calculate_discount()
-
         total_cost = subtotal + tax - discounts
         return total_cost.quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
 
     @property
     def final_total(self):
-        total_cost = self.calculate_total_cost()
-        return total_cost
-
-    total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+        return self.calculate_total_cost()
 
     @property
     def amount_paid(self):
-        """Calculate the total amount paid if the contract has a primary key."""
         if self.pk:
             return sum(payment.amount for payment in self.payments.all()) or Decimal('0.00')
         return Decimal('0.00')
 
     @property
     def balance_due(self):
-        """Calculate the balance due."""
-        # Check if the contract has been saved (i.e., it has a primary key).
         if self.pk:
-            # Calculate balance due by subtracting the amount paid from the final total.
             balance = self.final_total - self.amount_paid
-            # Ensure that the balance due is not negative.
             return max(Decimal('0.00'), balance)
-        # If the contract has not been saved, return the final total as the balance due.
         return self.final_total
+
+    def display_calculated_tax(self):
+        return self.calculate_tax()
+
+    display_calculated_tax.short_description = "Calculated Tax"
+
+    def display_total_service_cost(self):
+        return self.calculate_total_service_cost()
+
+    display_total_service_cost.short_description = "Total Service Cost"
+
+    def display_product_subtotal(self):
+        return self.calculate_product_subtotal()
+
+    display_product_subtotal.short_description = "Product Subtotal"
+
+    def display_discounts(self):
+        return self.calculate_discount()
+
+    display_discounts.short_description = "Total Discounts"
+
+    def display_total_cost(self):
+        return self.calculate_total_cost()
+
+    display_total_cost.short_description = "Total Cost"
 
     def save(self, *args, **kwargs):
         """Custom save method to handle custom contract number generation and tax calculations."""
-
         print("Entering save method")
 
+        # Generate custom contract number if not already set
         if not self.custom_contract_number:
             year, month = timezone.now().strftime("%y"), timezone.now().strftime("%m")
 
@@ -685,76 +504,41 @@ class Contract(models.Model):
             primary_contact_last_name = "UNK"  # Default value
             if self.client and self.client.primary_contact:
                 name_parts = self.client.primary_contact.split()
-                if len(name_parts) > 1:
-                    primary_contact_last_name = name_parts[-1][:3].upper()
-                else:
-                    primary_contact_last_name = name_parts[0][:3].upper()  # In case only one name is provided
+                primary_contact_last_name = name_parts[-1][:3].upper() if len(name_parts) > 1 else name_parts[0][
+                                                                                                   :3].upper()
 
-            # Use a transaction to ensure atomicity
+            # Generate custom contract number
             with transaction.atomic():
-                # Query to retrieve all contracts for the current year and month
                 regex_pattern = rf'^[A-Z]{{3}}-{year}-{month}-(\d+)$'
                 contracts = Contract.objects.filter(custom_contract_number__regex=regex_pattern).order_by(
                     '-custom_contract_number')
-
-                # Find the highest number in the retrieved contracts
-                if contracts:
-                    highest_number = max(int(re.search(r'-(\d+)$', contract.custom_contract_number).group(1)) for contract in contracts)
-                    new_number = highest_number + 1
-                else:
-                    new_number = 1
-
-                # Format the custom contract number with hyphen
+                new_number = max(
+                    (int(re.search(r'-(\d+)$', contract.custom_contract_number).group(1)) for contract in contracts),
+                    default=0
+                ) + 1
                 self.custom_contract_number = f"{primary_contact_last_name}-{year}-{month}-{str(new_number).zfill(2)}"
-                print(f"Generated custom contract number: {self.custom_contract_number}")
 
-                # Save the contract with the new custom contract number
-                super().save(*args, **kwargs)
-                print("Saved contract with custom contract number")
-        else:
-            print("Custom contract number already set.")
+        # Save the instance to generate a primary key
+        if not self.pk:
             super().save(*args, **kwargs)
+            print("Initial save completed, primary key generated.")
 
-        # Recalculate and store the tax amount
+        # Perform calculations requiring a saved instance
         taxable_amount = Decimal('0.00')
         for contract_product in self.contract_products.all():
             if contract_product.product.is_taxable:
                 taxable_amount += contract_product.product.price * contract_product.quantity
         self.tax_amount = taxable_amount * self.tax_rate / 100
 
-        # Recalculate and store the package discount
-        package_based_discount = self.calculate_package_discount()
-        self.calculated_discount = Decimal(package_based_discount)  # Update this field with the calculated discount
-
-        # Recalculate the total discount considering other discounts and package discount
+        # Calculate discounts
+        self.calculated_discount = Decimal(self.calculate_package_discount())
         self.total_discount = self.calculate_discount()
+        self.total_cost = self.calculate_total_cost()
 
-        # Recalculate the total cost and apply discounts
-        self.total_cost = self.calculate_total_cost()  # Update total cost before saving
-        super(Contract, self).save(*args, **kwargs)  # Save the contract with updated total
+        # Save again with updated fields
+        super().save(*args, **kwargs)
+        print("Final save completed with calculated fields.")
 
-
-
-
-class ContractOvertime(models.Model):
-    contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name='overtimes')
-    overtime_option = models.ForeignKey(OvertimeOption, on_delete=models.CASCADE)
-    hours = models.DecimalField(max_digits=3, decimal_places=1)
-
-    def __str__(self):
-        return f"{self.contract} - {self.overtime_option} - Hours: {self.hours}"
-
-class ContractProduct(models.Model):
-    contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name='contract_products')
-    product = models.ForeignKey(AdditionalProduct, on_delete=models.CASCADE, related_name='product_contracts')
-    quantity = models.PositiveIntegerField(default=1)
-    special_notes = models.TextField(blank=True, null=True)
-
-    def get_product_price(self):
-        return self.product.price  # Access the price of the related AdditionalProduct
-
-    def __str__(self):
-        return f"{self.contract} - {self.product} - Qty: {self.quantity}"
 
 class ServiceFeeType(models.Model):
     name = models.CharField(max_length=50, unique=True)

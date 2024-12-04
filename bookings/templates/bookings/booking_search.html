@@ -60,6 +60,7 @@
                     <select name="status_filter">
                         <option value="">All Statuses</option>
                         <option value="PROSPECT">Prospect</option>
+                        <option value="PENDING">Pending</option>
                         <option value="BOOKED">Booked</option>
                         <!-- Add other statuses as needed -->
                     </select>
@@ -104,6 +105,7 @@
                     <th>Event Date</th>
                     <th>Primary Contact</th>
                     <th>Role</th>
+                    <th>Status</th> <!-- New column for status -->
                     <th>Confirmed</th>
                     <!-- Add other columns as needed -->
                 </tr>
@@ -115,6 +117,7 @@
                     <td>{{ booking.contract.event_date|date:"Y-m-d" }}</td>
                     <td>{{ booking.contract.client.primary_contact }}</td>
                     <td>{{ booking.get_role_display }}</td>
+                    <td>{{ booking.get_status_display }}</td> <!-- New status display -->
                     <td>
                         {% if booking.confirmed %}
                             <span class="badge badge-success">Yes</span>

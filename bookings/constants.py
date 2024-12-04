@@ -7,8 +7,9 @@ SERVICE_ROLE_MAPPING = {
     'DJ2': 'dj2',
     'PHOTOBOOTH_OP1': 'photobooth_op1',
     'PHOTOBOOTH_OP2': 'photobooth_op2',
-    'PROSPECT1': 'prospect_photographer1',  # Updated
-    'PROSPECT2': 'prospect_photographer2',  # Updated
+    'PROSPECT1': 'prospect_photographer1',
+    'PROSPECT2': 'prospect_photographer2',
     'PROSPECT3': 'prospect_photographer3',
-    'ENGAGEMENT': 'engagement'# Updated
+    'ENGAGEMENT': 'engagement'
 }
+

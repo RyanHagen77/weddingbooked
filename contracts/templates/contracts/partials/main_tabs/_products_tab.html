@@ -1,0 +1,79 @@
+<!-- Products Tab Content -->
+<div class="tab-pane fade" id="products">
+    <div class="row">
+        <div class="col-12">
+            <!-- Additional Products -->
+            <div id="products-section" class="mt-4">
+                <form method="post" action="{% url 'products:save_products' id=contract.contract_id %}">
+                    {% csrf_token %}
+                    {% load app_filters %}
+                    <input type="hidden" name="contract_id" value="{{ contract.contract_id }}">
+                    {{ products_formset.management_form }}
+                    <table id="products-table" class="table table-bordered table-hover">
+                        <thead class="table-bordered">
+                            <tr>
+                                <th class="product-column">Product</th>
+                                <th class="description-column">Description</th>
+                                <th class="quantity-column">Qty</th>
+                                <th class="special-notes-column">Special Notes</th>
+                                <th class="total-price-column">Total Price</th>
+                                <th class="post-event-column">Post Event</th>
+                                <th class="remove-column">Remove</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for form in products_formset %}
+                            <tr>
+                                <td>
+                                    {{ form.id }}
+                                    {{ form.product }}
+                                </td>
+                                <td>
+                                    {% if form.instance.product.description %}
+                                        {{ form.instance.product.description }}
+                                    {% else %}
+                                        No description provided
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control quantity-input"
+                                           name="{{ form.quantity.html_name }}"
+                                           id="{{ form.quantity.id_for_label }}"
+                                           value="{{ form.quantity.value }}">
+                                </td>
+                                <td>
+                                    <textarea class="form-control special-notes-textarea"
+                                              name="{{ form.special_notes.html_name }}"
+                                              id="{{ form.special_notes.id_for_label }}">{{ form.special_notes.value }}</textarea>
+                                </td>
+                                <td class="total-price">
+                                    ${{ form.instance.get_product_price|multiply:form.quantity.value|floatformat:2 }}
+                                </td>
+                                <td class="post-event">
+                                    <input type="checkbox" class="form-check-input"
+                                           name="{{ form.post_event.html_name }}"
+                                           id="{{ form.post_event.id_for_label }}"
+                                           {% if form.post_event.value %}checked{% endif %}>
+                                </td>
+                                <td>
+                                    {{ form.DELETE }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <button type="button" class="btn btn-dusty-pink" onclick="addProduct()" id="add-product-btn">
+                        Add Another Product
+                    </button>
+                    <button type="submit" class="btn btn-dusty-pink">
+                        Update Products
+                    </button>
+                </form>
+                <div class="text-right total-product-cost-container">
+                    <p><strong>Tax Amount:</strong> <span id="tax_amount">$0.00</span></p>
+                    <p><strong>Total Products Cost:</strong> <span id="total-product-cost">$0.00</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

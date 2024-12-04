@@ -57,7 +57,7 @@ export default function Home() {
   useEffect(() => {
     if (isAuthenticated && contractId) {
       // Fetching photographers
-      fetch(`https://www.enet2.com/contracts/api/prospect-photographers/?contract_id=${contractId}`, {
+      fetch(`https://www.enet2.com/bookings/api/prospect-photographers/?contract_id=${contractId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },

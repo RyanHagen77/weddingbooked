@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const PhotographyMgmt = {
+    const ServiceMgmt = {
         init() {
             this.setupElements();
             this.bindEvents();
@@ -57,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
             serviceTypes.forEach(serviceType => {
                 const serviceTypeLower = serviceType.toLowerCase();
 
+                // Handle package dropdown changes
                 const packageDropdown = this[`${serviceTypeLower}PackageDropdown`];
                 if (packageDropdown) {
                     packageDropdown.addEventListener('change', () => {
@@ -70,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
+                // Handle additional staff dropdown changes
                 const additionalDropdown = document.getElementById(`id_${serviceTypeLower}_additional`);
                 if (additionalDropdown) {
                     additionalDropdown.addEventListener('change', () => {
@@ -83,23 +85,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
-                const engagementDropdown = document.getElementById('id_engagement_session');
-                if (engagementDropdown) {
-                    engagementDropdown.addEventListener('change', () => {
-                        this.updatePriceAndHoursDisplay(
-                            'id_engagement_session',
-                            'engagement-session-price',
-                            null,
-                            'Photography'
-                        );
+                // Handle engagement session changes (specific to Photography)
+                if (serviceType === 'Photography') {
+                    const engagementDropdown = document.getElementById('id_engagement_session');
+                    if (engagementDropdown) {
+                        engagementDropdown.addEventListener('change', () => {
+                            this.updatePriceAndHoursDisplay(
+                                'id_engagement_session',
+                                'engagement-session-price',
+                                null,
+                                'Photography'
+                            );
+                        });
+                    }
+                }
+
+                // Bind save button for each service type
+                const saveSectionButton = document.getElementById(`save${serviceType}Section`);
+                if (saveSectionButton) {
+                    saveSectionButton.addEventListener('click', (event) => {
+                        event.preventDefault(); // Prevent default form submission
+                        this.saveSection(serviceType);
                     });
                 }
 
-                const saveSectionButton = document.getElementById(`save${serviceType}Section`);
-                if (saveSectionButton) {
-                    saveSectionButton.addEventListener('click', this[`save${serviceType}Section`].bind(this));
-                }
-
+                // Handle overtime dropdown changes
                 const overtimeDropdown = document.getElementById(`id_${serviceTypeLower}_overtime`);
                 const overtimeHoursInput = document.getElementById(`id_${serviceTypeLower}_overtime_hours`);
                 if (overtimeDropdown) {
@@ -115,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
+                // Bind add overtime entry button
                 const addOvertimeEntryButton = document.getElementById(`add${serviceType}OvertimeEntryButton`);
                 if (addOvertimeEntryButton) {
                     addOvertimeEntryButton.addEventListener('click', () => {
@@ -122,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
+                // Bind save overtime entry button
                 const saveOvertimeEntryButton = document.getElementById(`save${serviceType}OvertimeEntryButton`);
                 if (saveOvertimeEntryButton) {
                     saveOvertimeEntryButton.addEventListener('click', () => {
@@ -129,6 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
             });
+
 
             document.querySelectorAll('.overtime-entries-display').forEach(display => {
                 display.addEventListener('click', (e) => {
@@ -151,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         fetchAndPopulatePackages(serviceType) {
-            const url = `/contracts/api/package_options/?service_type=${serviceType}`;
+            const url = `/services/api/package_options/?service_type=${serviceType}`;
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
@@ -246,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         fetchAndPopulateAdditionalStaff(serviceType) {
-            const url = `/contracts/api/additional_staff_options/?service_type=${serviceType}`;
+            const url = `/services/api/additional_staff_options/?service_type=${serviceType}`;
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
@@ -272,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         fetchAndPopulateEngagementSessions() {
-            const url = `/contracts/api/engagement_session_options`;
+            const url = `/services/api/engagement_session_options`;
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
@@ -344,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const body = JSON.stringify({ entryId, optionId, hours, serviceType });
 
-            fetch(`/contracts/${contractId}/save_overtime_entry/`, {
+            fetch(`/services/${contractId}/save_overtime_entry/`, {
                 method: 'POST',
                 headers: headers,
                 body: body,
@@ -424,7 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         fetchAndPopulateOvertimeOptions(serviceType) {
-            const url = `/contracts/api/overtime_options?service_type=${serviceType}`;
+            const url = `/services/api/overtime_options?service_type=${serviceType}`;
             fetch(url)
                 .then(response => response.json())
                 .then(overtimeOptions => {
@@ -451,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         fetchAndUpdateOvertimeEntries(contractId, serviceType) {
-            fetch(`/contracts/${contractId}/overtime_entries/?service_type=${serviceType}`)
+            fetch(`/services/${contractId}/overtime_entries/?service_type=${serviceType}`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
@@ -493,7 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         loadEntryForEdit(entryId, serviceType) {
-            fetch(`/contracts/${entryId}/get_overtime_entry/`)
+            fetch(`/services/${entryId}/get_overtime_entry/`)
             .then(response => response.json())
             .then(data => {
                 const entryFormId = serviceType.toLowerCase() + 'OvertimeEntryForm';
@@ -514,7 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         removeOvertimeEntry(entryId, serviceType) {
-            fetch(`/contracts/${entryId}/delete_overtime_entry/`, {
+            fetch(`/services/${entryId}/delete_overtime_entry/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -591,25 +604,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
 
-        savePhotographySection() {
+        saveSection(serviceType) {
             const contractId = this.getContractId();
             if (!contractId) {
                 console.error("Contract ID is undefined.");
                 return;
             }
 
-            const formData = new FormData();
-            formData.append('photography_package', document.getElementById('id_photography_package').value);
-            formData.append('photography_additional', document.getElementById('id_photography_additional').value);
-            formData.append('engagement_session', document.getElementById('id_engagement_session').value);
-            formData.append('videography_package', document.getElementById('id_videography_package').value);
-            formData.append('videography_additional', document.getElementById('id_videography_additional').value);
-            formData.append('dj_package', document.getElementById('id_dj_package').value);
-            formData.append('dj_additional', document.getElementById('id_dj_additional').value);
-            formData.append('photobooth_package', document.getElementById('id_photobooth_package').value);
-            formData.append('photobooth_additional', document.getElementById('id_photobooth_additional').value);
+            const serviceTypeLower = serviceType.toLowerCase();
+            const formSelector = `#${serviceTypeLower} form`; // Dynamically target the form for the specific tab
+            const formElement = document.querySelector(formSelector);
 
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            if (!formElement) {
+                console.error(`Form not found for ${serviceType} section.`);
+                return;
+            }
+
+            const formData = new FormData(formElement);
+
+            const csrfToken = this.getCSRFToken();
             formData.append('csrfmiddlewaretoken', csrfToken);
 
             fetch(`/contracts/${contractId}/edit_services/`, {
@@ -627,155 +640,16 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .then(data => {
                 if (data.status === 'success') {
-                    console.log('Photography section saved successfully');
+                    console.log(`${serviceType} section saved successfully`);
                     window.location.href = `/contracts/${contractId}/#services`;
                     window.location.reload();
                 } else {
-                    console.error('Error saving photography section:', data.message);
+                    console.error(`Error saving ${serviceType} section:`, data.message);
                 }
             })
             .catch(error => console.error('Error:', error));
-        },
-
-        saveVideographySection() {
-            const contractId = this.getContractId();
-            if (!contractId) {
-                console.error("Contract ID is undefined.");
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('photography_package', document.getElementById('id_photography_package').value);
-            formData.append('photography_additional', document.getElementById('id_photography_additional').value);
-            formData.append('engagement_session', document.getElementById('id_engagement_session').value);
-            formData.append('videography_package', document.getElementById('id_videography_package').value);
-            formData.append('videography_additional', document.getElementById('id_videography_additional').value);
-            formData.append('dj_package', document.getElementById('id_dj_package').value);
-            formData.append('dj_additional', document.getElementById('id_dj_additional').value);
-            formData.append('photobooth_package', document.getElementById('id_photobooth_package').value);
-            formData.append('photobooth_additional', document.getElementById('id_photobooth_additional').value);
-
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-            formData.append('csrfmiddlewaretoken', csrfToken);
-
-            fetch(`/contracts/${contractId}/edit_services/`, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.status === 'success') {
-                    console.log('Videography section saved successfully');
-                    window.location.href = `/contracts/${contractId}/#services`;
-                    window.location.reload();
-                } else {
-                    console.error('Error saving videography section:', data.message);
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        },
-
-        saveDjSection() {
-            const contractId = this.getContractId();
-            if (!contractId) {
-                console.error("Contract ID is undefined.");
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('photography_package', document.getElementById('id_photography_package').value);
-            formData.append('photography_additional', document.getElementById('id_photography_additional').value);
-            formData.append('engagement_session', document.getElementById('id_engagement_session').value);
-            formData.append('videography_package', document.getElementById('id_videography_package').value);
-            formData.append('videography_additional', document.getElementById('id_videography_additional').value);
-            formData.append('dj_package', document.getElementById('id_dj_package').value);
-            formData.append('dj_additional', document.getElementById('id_dj_additional').value);
-            formData.append('photobooth_package', document.getElementById('id_photobooth_package').value);
-            formData.append('photobooth_additional', document.getElementById('id_photobooth_additional').value);
-
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-            formData.append('csrfmiddlewaretoken', csrfToken);
-
-            fetch(`/contracts/${contractId}/edit_services/`, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.status === 'success') {
-                    console.log('DJ section saved successfully');
-                    window.location.href = `/contracts/${contractId}/#services`;
-                    window.location.reload();
-                } else {
-                    console.error('Error saving DJ section:', data.message);
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        },
-
-        savePhotoboothSection() {
-            const contractId = this.getContractId();
-            if (!contractId) {
-                console.error("Contract ID is undefined.");
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('photography_package', document.getElementById('id_photography_package').value);
-            formData.append('photography_additional', document.getElementById('id_photography_additional').value);
-            formData.append('engagement_session', document.getElementById('id_engagement_session').value);
-            formData.append('videography_package', document.getElementById('id_videography_package').value);
-            formData.append('videography_additional', document.getElementById('id_videography_additional').value);
-            formData.append('dj_package', document.getElementById('id_dj_package').value);
-            formData.append('dj_additional', document.getElementById('id_dj_additional').value);
-            formData.append('photobooth_package', document.getElementById('id_photobooth_package').value);
-            formData.append('photobooth_additional', document.getElementById('id_photobooth_additional').value);
-
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-            formData.append('csrfmiddlewaretoken', csrfToken);
-
-            fetch(`/contracts/${contractId}/edit_services/`, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.status === 'success') {
-                    console.log('Photobooth section saved successfully');
-                    window.location.href = `/contracts/${contractId}/#services`;
-                    window.location.reload();
-                } else {
-                    console.error('Error saving Photobooth section:', data.message);
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        },
+        }
 
     };
-
-    PhotographyMgmt.init();
+    ServiceMgmt.init();
 });

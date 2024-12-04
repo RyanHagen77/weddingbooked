@@ -1,0 +1,14 @@
+<div class="text-right total-cost-container">
+    <p>
+        <strong>Total {{ service }} Overtime Cost:</strong>
+        <span id="total-{{ service|lower }}-overtime-cost">
+            {{ overtime_cost|default:"$0.00" }}
+        </span>
+    </p>
+    <p>
+        <strong>Total {{ service }} Cost:</strong>
+        <span id="total-{{ service|lower }}-cost">
+            {{ total_cost|default:"$0.00" }}
+        </span>
+    </p>
+</div>

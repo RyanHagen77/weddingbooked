@@ -177,7 +177,7 @@ function displayTaxRate() {
 }
 
 function fetchAdditionalProducts() {
-    fetch('/contracts/api/additional_products/')
+    fetch('/products/api/additional_products/')
         .then(response => response.json())
         .then(data => {
             globalAdditionalProducts = data;

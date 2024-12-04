@@ -1,11 +1,13 @@
 from django.contrib import admin
 
-from contracts.models import (Client, ServiceType, LeadSourceCategory, Contract, AdditionalProduct, TaxRate,
-                     DiscountRule, Package, AdditionalEventStaffOption, EngagementSessionOption, Location, OvertimeOption,
-                     ContractOvertime, ContractProduct, ServiceFeeType, ServiceFee, ChangeLog)
-from bookings.models import EventStaffBooking
+from contracts.models import (Client, LeadSourceCategory, Contract, TaxRate,
+                     DiscountRule, Location, ServiceFeeType, ServiceFee, ChangeLog)
+from bookings.models import EventStaffBooking, Availability
 from documents.models import ContractAgreement, RiderAgreement
 from payments.models import Payment, PaymentPurpose, PaymentSchedule, SchedulePayment
+from products.models import AdditionalProduct, ContractProduct
+from services.models import (AdditionalEventStaffOption, ContractOvertime, EngagementSessionOption,
+                             OvertimeOption, Package, ServiceType)
 from wedding_day_guide.models import WeddingDayGuide
 admin.site.register(TaxRate)
 
@@ -40,6 +42,11 @@ class EngagementSessionOptionAdmin(admin.ModelAdmin):
     list_display = ('name', 'is_active', 'price', 'default_text', 'rider_text', 'deposit')
     search_fields = ('name',)
 
+@admin.register(Availability)
+class AvailabilityAdmin(admin.ModelAdmin):
+    list_display = ('staff', 'date', 'available', 'always_off_days')
+    list_filter = ('available', 'date')  # Optional: Filters for easier searching
+    search_fields = ('staff__username',)  # Optional: Search by staff username
 
 @admin.register(EventStaffBooking)
 class EventStaffBookingAdmin(admin.ModelAdmin):
@@ -52,9 +59,9 @@ class EventStaffBookingAdmin(admin.ModelAdmin):
 
 @admin.register(AdditionalProduct)
 class AdditionalProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'price', 'is_taxable', 'description', 'notes', 'cost')
+    list_display = ('name', 'is_active', 'price', 'is_taxable', 'description', 'notes', 'cost')
     search_fields = ('name', 'description')
-    list_filter = ('is_taxable',)
+    list_filter = ('is_active', 'is_taxable',)
 
 
 @admin.register(Location)
@@ -74,6 +81,22 @@ class ContractOvertimeInline(admin.TabularInline):
     model = ContractOvertime
     extra = 1
 
+@admin.register(ContractProduct)
+class ContractProductAdmin(admin.ModelAdmin):
+    """
+    Admin configuration for the ContractProduct model.
+    """
+    list_display = ('contract', 'product', 'quantity', 'special_notes', 'post_event')
+    list_filter = ('post_event', 'product')
+    search_fields = ('contract__contract_id', 'product__name', 'special_notes')
+    ordering = ('contract',)
+
+    def get_queryset(self, request):
+        """
+        Customize the queryset to include related fields for better performance.
+        """
+        queryset = super().get_queryset(request)
+        return queryset.select_related('contract', 'product')
 
 class ContractProductInline(admin.TabularInline):
     model = ContractProduct

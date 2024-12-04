@@ -1,0 +1,41 @@
+<div class="tab-pane" id="photobooth">
+    <form method="post" action="{% url 'contracts:edit_services' id=contract.contract_id %}">
+        {% csrf_token %}
+        <!-- Hidden Fields -->
+        <input type="hidden" name="section" value="photobooth">
+        <input type="hidden" id="hiddenSavedPhotoboothPackageId" value="{{ contract.photobooth_package_id|default:'' }}">
+        <input type="hidden" id="hiddenSavedPhotoboothAdditionalStaffId" value="{{ contract.photobooth_additional_id|default:'' }}">
+
+        <!-- Photobooth Services Section -->
+        <div class="service-category">
+            <h3>Photobooth Services</h3>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Hours</th>
+                        <th>Price</th>
+                        <th>Assigned Staff</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Include Photobooth Package Row -->
+                    {% include 'contracts/partials/service_tabs/_package_row.html' with package_list=photobooth_packages package_id=contract.photobooth_package_id service="Photobooth" role="PHOTOBOOTH_OP1" %}
+
+                    <!-- Additional Photobooth Staff -->
+                    {% include 'contracts/partials/service_tabs/_additional_row.html' with additional_list=additional_photobooth_options additional_id=contract.photobooth_additional_id service="Photobooth" role="PHOTOBOOTH_OP2" %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Include Overtime Details -->
+        {% include 'contracts/partials/service_tabs/_overtime_details.html' with service="Photobooth" %}
+
+        <!-- Include Total Cost Summary -->
+        {% include 'contracts/partials/service_tabs/_cost_summary.html' with service="Photobooth" %}
+
+        <!-- Save Changes Button -->
+        <button type="submit" id="savePhotoboothSection" class="btn btn-dusty-pink float-right">Save Changes</button>
+    </form>
+</div>

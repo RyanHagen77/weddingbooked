@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.urls import reverse
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpRequest
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.utils.http import urlsafe_base64_encode, urlencode
@@ -18,9 +18,32 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import UnifiedCommunication, Task
-from bookings.models import EventStaffBooking
 from .serializers import UnifiedCommunicationSerializer
-from django.contrib.contenttypes.models import ContentType
+
+# Django Form Imports
+from django.contrib.auth.forms import PasswordResetForm
+
+def send_password_reset_email(user_email):
+    print(f"Starting to send password reset email to: {user_email}")
+    form = PasswordResetForm({'email': user_email})
+    if form.is_valid():
+        request = HttpRequest()
+        request.META['SERVER_NAME'] = '127.0.0.1'
+        request.META['SERVER_PORT'] = '8000'
+
+
+        try:
+            form.save(
+                request=request,
+                use_https=True,
+                from_email='enetadmin@enet2.com',
+                email_template_name='registration/password_reset_email.html'
+            )
+            print("Password reset email sent successfully.")
+        except Exception as e:
+            print(f"Failed to send password reset email due to: {e}")
+    else:
+        print("PasswordResetForm is invalid. Errors:", form.errors)
 
 
 @api_view(['GET'])
@@ -88,68 +111,6 @@ def send_email_to_client(request, message, contract):
         print("Email sent to client:", client_user.email)
     else:
         print("Client does not have a valid email.")
-
-
-
-
-def booking_notes(request, booking_id):
-    booking = get_object_or_404(EventStaffBooking, id=booking_id)
-    notes = Note.objects.filter(booking=booking)
-    print("Notes for booking:", booking_id, "->", notes)  # Debug output to check notes
-    return render(request, 'communication/booking_notes.html', {'object': booking, 'notes': notes})
-
-
-@login_required
-def add_note(request):
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Invalid request method'})
-
-    content = request.POST.get('content')
-    booking_id = request.POST.get('booking_id')
-    note_type = request.POST.get('note_type')
-
-    if not content or not booking_id or not note_type:
-        return JsonResponse({'success': False, 'error': 'Missing required parameters'})
-
-    try:
-        booking = EventStaffBooking.objects.get(pk=booking_id)
-    except EventStaffBooking.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Booking not found'})
-
-    # Create a new communication directly
-    UnifiedCommunication.objects.create(
-        content=content,
-        note_type=note_type,
-        created_by=request.user,
-        content_type=ContentType.objects.get_for_model(booking),
-        object_id=booking_id
-    )
-
-    return JsonResponse({
-        'success': True,
-        'content': content
-    })
-
-def edit_note(request, note_id):
-    note = get_object_or_404(Note, id=note_id)
-    if request.method == 'POST':
-        new_content = request.POST.get('content')
-        if new_content:
-            note.content = new_content
-            note.save()
-            return JsonResponse({'success': True})
-        else:
-            return JsonResponse({'success': False, 'error': 'New content missing'})
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
-
-
-def delete_note(request, note_id):
-    note = get_object_or_404(Note, id=note_id)
-    if request.method == 'POST':
-        note.delete()
-        return JsonResponse({'success': True})
-    return JsonResponse({'success': False})
-
 
 def send_booking_email(request, staff, contract, role, is_update):
     context = {
@@ -256,7 +217,7 @@ def send_contract_and_rider_email_to_client(request, contract, rider_type=None, 
         subject = 'Sign Your Contract and Rider Agreements'
         message = f'Please sign your contract and rider agreements at the following link: {agreement_url}'
 
-    login_url = f"https://{request.get_host()}{reverse('contracts:client_portal_login')}?{urlencode({'next': agreement_url})}"
+    login_url = f"https://{request.get_host()}{reverse('users:client_portal_login')}?{urlencode({'next': agreement_url})}"
 
     try:
         send_mail(
@@ -296,107 +257,96 @@ def open_task_form(request, contract_id=None, note_id=None):
     form = TaskForm(initial=initial_data)
     return render(request, 'task_form.html', {'form': form})
 
-@login_required
 @require_POST
-def create_internal_task(request):
+@login_required
+def create_task(request, contract_id=None, note_id=None):
+    print(f"Received contract_id: {contract_id}, note_id: {note_id}")
+
+    # Ensure `contract_id` and `note_id` are properly set
+    contract_id = request.POST.get('contract', contract_id)
+    note_id = request.POST.get('note', note_id)
+    print(f"Final contract_id: {contract_id}, note_id: {note_id}")
+
     form = TaskForm(request.POST)
     if form.is_valid():
         task = form.save(commit=False)
         task.sender = request.user
-        task.task_type = 'internal'
-        task.save()
 
-        if hasattr(task.assigned_to, 'email') and task.assigned_to.email:
-            send_task_assignment_email(request, task)
+        # Determine the task type
+        task.task_type = 'contract' if contract_id else 'internal'
 
-        incomplete_tasks = Task.objects.filter(
-            assigned_to=request.user, task_type='internal', is_completed=False
-        ).order_by('due_date')
-
-        completed_tasks = Task.objects.filter(
-            assigned_to=request.user, task_type='internal', is_completed=True
-        ).order_by('due_date')
-
-        task_list_html = render_to_string(
-            'users/internal_task_list_snippet.html',
-            {'incomplete_tasks': incomplete_tasks, 'completed_tasks': completed_tasks},
-            request=request
-        )
-        return JsonResponse({'success': True, 'task_id': task.id, 'task_list_html': task_list_html})
-    else:
-        return JsonResponse({'success': False, 'errors': form.errors.as_json()})
-
-@login_required
-def get_internal_tasks(request):
-    tasks = Task.objects.filter(
-        assigned_to=request.user, type='internal', is_completed=False
-    ).order_by('due_date')
-    task_list_html = render_to_string('users/internal_task_list_snippet.html', {'tasks': tasks}, request=request)
-    return JsonResponse({'task_list_html': task_list_html})
-
-@require_POST
-@login_required
-def create_contract_task(request, contract_id=None, note_id=None):
-    form = TaskForm(request.POST)
-    if form.is_valid():
-        task = form.save(commit=False)
-        task.sender = request.user
-        task.task_type = 'contract'
-
+        # Assign contract if contract_id is provided
         if contract_id:
-            task.contract = get_object_or_404(Contract, id=contract_id)
-        if note_id:
-            task.note = get_object_or_404(UnifiedCommunication, id=note_id)
+            task.contract = get_object_or_404(Contract, pk=contract_id)
 
+        # Assign note if note_id is provided
+        if note_id:
+            task.note = get_object_or_404(UnifiedCommunication, pk=note_id)
+            print(f"Assigned note: {task.note}")
+        else:
+            print("No note_id provided.")
+
+        # Save the task
         task.save()
 
+        # Optionally send email notifications
         if hasattr(task.assigned_to, 'email') and task.assigned_to.email:
             send_task_assignment_email(request, task)
 
+        # Fetch task list
         tasks = Task.objects.filter(
-            contract=task.contract, task_type='contract', is_completed=False
+            contract=task.contract if task.contract else None,
+            task_type=task.task_type,
+            is_completed=False
         ).distinct().order_by('due_date')
 
-        task_list_html = render_to_string('contracts/task_list_snippet.html', {'tasks': tasks}, request=request)
+        # Render the appropriate task list HTML snippet
+        task_list_template = 'contracts/partials/messages/_task_list_snippet.html' if task.task_type == 'contract' else 'users/internal_task_list_snippet.html'
+        task_list_html = render_to_string(task_list_template, {'tasks': tasks}, request=request)
+
         return JsonResponse({'success': True, 'task_id': task.id, 'task_list_html': task_list_html})
     else:
+        print(f"Form errors: {form.errors}")
         return JsonResponse({'success': False, 'errors': form.errors.as_json()})
 
-@login_required
-def get_contract_tasks(request, contract_id):
-    tasks = Task.objects.filter(
-        assigned_to=request.user, contract_id=contract_id, task_type='contract', is_completed=False
-    ).order_by('due_date')
-    task_list_html = render_to_string('contracts/internal_task_list_snippet.html', {'tasks': tasks}, request=request)
-    return JsonResponse({'task_list_html': task_list_html})
 
 @login_required
-@require_POST
 def update_task(request, task_id):
     task = get_object_or_404(Task, pk=task_id)
     form = TaskForm(request.POST, instance=task)
 
     if form.is_valid():
         task = form.save(commit=False)
-        task.sender = request.user  # Set the sender explicitly
+        task.sender = request.user
 
-        # Ensure contract and note fields are set if they exist in the form data
+        # Update contract and note if provided in the form
         task.contract = form.cleaned_data.get('contract') or task.contract
         task.note = form.cleaned_data.get('note') or task.note
-        task.task_type = form.cleaned_data.get('task_type') or task.task_type
 
         task.save()
 
-        # Return the updated task list HTML if needed
-        task_list_html = render_to_string('users/internal_task_list_snippet.html', {
-            'incomplete_tasks': Task.objects.filter(assigned_to=request.user, is_completed=False).order_by('due_date'),
-            'completed_tasks': Task.objects.filter(assigned_to=request.user, is_completed=True).order_by('due_date'),
-        }, request=request)
+        # Specify the redirect URL to /communication/tasks/
+        redirect_url = '/communication/tasks/'
 
-        return JsonResponse({'success': True, 'task_list_html': task_list_html})
+        return JsonResponse({'success': True, 'redirect_url': redirect_url})
     else:
         return JsonResponse({'success': False, 'errors': form.errors.as_json()})
 
+
+
+@login_required
+def get_tasks(request, contract_id=None):
+    if contract_id:
+        tasks = Task.objects.filter(contract_id=contract_id, task_type='contract', is_completed=False).order_by('due_date')
+    else:
+        tasks = Task.objects.filter(assigned_to=request.user, task_type='internal', is_completed=False).order_by('due_date')
+
+    task_list_html = render_to_string(
+        'contracts/partials/messages/_task_list_snippet.html' if contract_id else 'users/internal_task_list_snippet.html',
+        {'tasks': tasks},
+        request=request
+    )
+    return JsonResponse({'task_list_html': task_list_html})
 
 @login_required
 @require_POST

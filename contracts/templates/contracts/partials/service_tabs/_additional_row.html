@@ -1,0 +1,35 @@
+<tr>
+    <td>
+        <select id="id_{{ service|lower }}_additional" name="{{ service|lower }}_additional">
+            <option value="">Select Additional {{ service }}</option>
+            {% for option in additional_list %}
+                <option value="{{ option.id }}" data-price="{{ option.price|floatformat:2 }}"
+                    {% if additional_id == option.id %}selected="selected"{% endif %}>
+                    {{ option.name }} - ${{ option.price|floatformat:2 }}
+                </option>
+            {% endfor %}
+        </select>
+    </td>
+    <td id="additional-{{ service|lower }}-hours"></td>
+    <td id="additional-{{ service|lower }}-price"></td>
+    <td id="assigned-{{ role|lower }}"></td>
+    <td>
+        <button type="button" class="btn btn-dusty-pink book-button"
+                data-toggle="modal"
+                data-role="{{ role }}"
+                data-service-type="{{ service }}">
+            Assign
+        </button>
+        <button type="button" class="btn btn-dusty-pink edit-button"
+                data-toggle="modal"
+                data-role="{{ role }}"
+                data-service-type="{{ service }}"
+                {% if booking %}
+                    data-booking-id="{{ booking.id }}"
+                {% else %}
+                    data-booking-id=""
+                {% endif %}>
+            Edit
+        </button>
+    </td>
+</tr>

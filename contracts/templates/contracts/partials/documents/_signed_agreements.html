@@ -1,0 +1,37 @@
+<div class="card mb-4">
+    <div class="card-header">
+        <h6>Signed Digital Agreements</h6>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Document Type</th>
+                    <th>Version</th>
+                    <th>Date Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for agreement in contract.contract_agreements.all %}
+                    <tr>
+                        <td>Main Contractual Agreement</td>
+                        <td>{{ agreement.version_number }}</td>
+                        <td>{{ agreement.created_at|date:"Y-m-d" }}</td>
+                        <td>
+                            <a href="{% url 'documents:view_submitted_contract' contract.contract_id agreement.version_number %}">View Version {{ agreement.version_number }}</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                <tr>
+                    <td>Rider Agreements</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>
+                        <a href="{% url 'documents:view_rider_agreements' contract.contract_id %}">View Riders</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
