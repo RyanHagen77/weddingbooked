@@ -17,7 +17,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     e.preventDefault();
 
     try {
-      const response = await axios.post('https://www.enet2.com/contracts/api/token/', {
+      const response = await axios.post('https://www.enet2.com/users/api/token/', {
         username,
         password,
       });
