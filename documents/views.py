@@ -291,7 +291,7 @@ def client_contract_agreement(request, contract_id):
 
             agreement.save()
 
-            portal_url = reverse('contracts:client_portal', args=[contract_id])
+            portal_url = reverse('users:client_portal', args=[contract_id])
 
             # Render the status page upon successful form submission
             return render(request, 'contracts/status_page.html', {
@@ -299,7 +299,7 @@ def client_contract_agreement(request, contract_id):
                 'portal_url': portal_url
             })
         else:
-            portal_url = reverse('contracts:client_portal', args=[contract_id])
+            portal_url = reverse('users:client_portal', args=[contract_id])
 
             return render(request, 'contracts/status_page.html', {
                 'message': 'There was an error submitting the contract agreement.',
@@ -587,7 +587,7 @@ def client_contract_and_rider_agreement(request, contract_id):
             email.attach(pdf_name, pdf_file, 'application/pdf')
             email.send()
 
-            portal_url = reverse('contracts:client_portal', args=[contract_id])
+            portal_url = reverse('users:client_portal', args=[contract_id])
             return render(request, 'contracts/status_page.html', {
                 'message': 'You\'re all set, thank you!',
                 'portal_url': portal_url
@@ -835,13 +835,13 @@ def client_rider_agreement(request, contract_id, rider_type):
             email.attach(pdf_name, pdf_file, 'application/pdf')
             email.send()
 
-            portal_url = reverse('contracts:client_portal', args=[contract_id])
+            portal_url = reverse('users:client_portal', args=[contract_id])
             return render(request, 'contracts/status_page.html', {
                 'message': 'You\'re all set, thank you!',
                 'portal_url': portal_url
             })
         else:
-            portal_url = reverse('contracts:client_portal', args=[contract_id])
+            portal_url = reverse('users:client_portal', args=[contract_id])
 
             return render(request, 'contracts/status_page.html', {
                 'message': 'There was an error submitting the agreements.',
