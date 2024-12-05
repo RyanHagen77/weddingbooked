@@ -45,10 +45,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const startTokenRefresh = useCallback(() => {
     const refreshInterval = 5 * 60 * 1000; // Refresh every 5 minutes
+
     if (refreshIntervalId) {
       clearInterval(refreshIntervalId);
     }
+
     refreshIntervalId = setInterval(async () => {
+      console.log("Attempting to refresh token...");
       const refreshToken = localStorage.getItem('refresh_token');
       if (!refreshToken) {
         console.error("No refresh token available for token refresh.");
@@ -67,12 +70,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         if (response.ok) {
           const data = await response.json();
-          const newExpirationTime = new Date().getTime() + 15 * 60 * 1000; // 15 minutes
+          const newExpirationTime = new Date().getTime() + 15 * 60 * 1000; // Extend session by 15 minutes
           localStorage.setItem('access_token', data.access);
           localStorage.setItem('token_expiration', newExpirationTime.toString());
           console.log("Token refreshed successfully.");
         } else {
-          console.error("Failed to refresh token, logging out.");
+          console.error("Failed to refresh token. Logging out.");
           logout();
         }
       } catch (error) {
