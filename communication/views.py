@@ -1,5 +1,6 @@
 # communication/views.py
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.http import require_GET
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.urls import reverse
@@ -46,8 +47,7 @@ def send_password_reset_email(user_email):
         print("PasswordResetForm is invalid. Errors:", form.errors)
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@require_GET
 def get_contract_messages(request, contract_id):  # `request` parameter added here
     contract = get_object_or_404(Contract, contract_id=contract_id)
     messages = UnifiedCommunication.objects.filter(contract=contract, note_type=UnifiedCommunication.PORTAL).order_by('-created_at')

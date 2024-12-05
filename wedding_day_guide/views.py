@@ -1,12 +1,11 @@
 import logging
 from django.shortcuts import render, get_object_or_404, redirect
+from django.views.decorators.http import require_GET
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseServerError
 from django.template.loader import render_to_string
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from weasyprint import HTML
@@ -147,8 +146,7 @@ def wedding_day_guide_pdf(request, pk):
         return HttpResponseServerError("Error generating PDF.")
 
 
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
+@require_GET
 def wedding_day_guide_api(request, contract_id):
     """
     API endpoint to manage Wedding Day Guide for a specific contract.

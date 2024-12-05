@@ -194,6 +194,8 @@ def get_current_booking(request):
         'current_booking': current_booking_data,
         'available_staff': available_staff_data,
     })
+
+
 @csrf_exempt
 def get_prospect_photographers(request):
     contract_id = request.GET.get('contract_id')
