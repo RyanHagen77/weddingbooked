@@ -8,7 +8,8 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.contrib import messages
-from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 from bookings.forms import EventStaffBookingForm
 from bookings.models import EventStaffBooking, Availability
@@ -196,7 +197,8 @@ def get_current_booking(request):
     })
 
 
-@csrf_exempt
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_prospect_photographers(request):
     contract_id = request.GET.get('contract_id')
     if contract_id:

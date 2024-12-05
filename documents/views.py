@@ -19,6 +19,9 @@ from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
 from django.core.files.base import ContentFile
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
 @login_required
 def delete_document(request, document_id):
     document = get_object_or_404(ContractDocument, pk=document_id)
@@ -33,7 +36,8 @@ def delete_document(request, document_id):
     # Redirect back to the contract detail page or wherever appropriate
     return redirect('contracts:contract_detail', id=document.contract.contract_id)
 
-@require_GET
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def client_documents(request, contract_id):
     try:
         contract = Contract.objects.get(contract_id=contract_id)
