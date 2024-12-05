@@ -1,6 +1,7 @@
 import logging
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.decorators.http import require_GET
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseServerError
 from django.template.loader import render_to_string
@@ -145,8 +146,8 @@ def wedding_day_guide_pdf(request, pk):
         logger.error("Error generating PDF for guide ID: %s - %s", pk, e)
         return HttpResponseServerError("Error generating PDF.")
 
-
-@require_GET
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def wedding_day_guide_api(request, contract_id):
     """
     API endpoint to manage Wedding Day Guide for a specific contract.
