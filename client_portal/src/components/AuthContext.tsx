@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 interface AuthContextProps {
   isAuthenticated: boolean;
   contractId: string | null;
-  login: (accessToken: string, contractId: string) => void;
+  login: (accessToken: string, refreshToken: string, contractId: string) => void;
   logout: () => void;
 }
 
@@ -120,11 +120,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, [logout, startTokenRefresh]);
 
-  const login = useCallback((accessToken: string, contractId: string) => {
-    console.log("Logging in with token and contract ID:", accessToken, contractId);
+  const login = useCallback((accessToken: string, refreshToken: string, contractId: string) => {
+    console.log("Logging in with token, refresh token, and contract ID:", accessToken, refreshToken, contractId);
 
     const expirationTime = new Date().getTime() + 15 * 60 * 1000; // 15 minutes
     localStorage.setItem('access_token', accessToken);
+    localStorage.setItem('refresh_token', refreshToken);
     localStorage.setItem('contract_id', contractId);
     localStorage.setItem('token_expiration', expirationTime.toString());
 

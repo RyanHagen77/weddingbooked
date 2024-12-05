@@ -22,14 +22,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         password,
       });
 
-      const accessToken = response.data.access;
-      const contractId = response.data.contract_id;
+      const { access, refresh, contract_id: contractId } = response.data;
 
       // Call login function to update the AuthContext
-      login(accessToken, contractId);
+      login(access, refresh, contractId);
       onLogin(); // Notify parent that login was successful
 
-    } catch (error) {
+    } catch (err) {
+      console.error('Login error:', err);
       setError('Login failed. Please check your credentials.');
     }
   };
