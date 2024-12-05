@@ -41,6 +41,7 @@ ROLE_DISPLAY_NAMES = {
     'PHOTOBOOTH_OP2': 'Photobooth Operator 2'
 }
 
+
 def user_login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -48,11 +49,15 @@ def user_login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
+
+            # Initialize the last_activity timestamp
+            request.session['last_activity'] = now().isoformat()
+
+            # Redirect based on user group
             if user.groups.filter(name='Event Staff').exists():
                 return redirect('users:event_staff_dashboard', pk=user.pk)
             elif user.groups.filter(name='Office Staff').exists():
                 return redirect('users:office_staff_dashboard', pk=user.pk)
-
 
     # Render the login template if the request is not a POST request or if authentication failed
     return render(request, 'users/login.html')
