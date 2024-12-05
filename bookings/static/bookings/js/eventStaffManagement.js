@@ -123,111 +123,35 @@ const eventStaffManagement = {
 };
 $(document).on('click', '.book-button, .edit-button', function (event) {
     const button = $(this);
-    const role = button.data('role'); // e.g., "ENGAGEMENT", "DJ1", "PHOTOGRAPHER1", "PROSPECT1"
-    const serviceType = button.data('service-type'); // e.g., "Photography", "DJ"
+    const role = button.data('role'); // Role (e.g., "PHOTOGRAPHER1", "PROSPECT1")
+    const serviceType = button.data('service-type'); // Service type (e.g., "Photography")
     const bookingId = button.data('booking-id') || '';
+    const eventDate = $('#id_event_date').val(); // Event date from input field
 
-    console.log(`Button clicked. Role: ${role}, Service: ${serviceType}, Booking ID: ${bookingId}`);
+    console.log(`Button clicked. Role: ${role}, Service: ${serviceType}, Booking ID: ${bookingId}, Event Date: ${eventDate}`);
 
-    // Skip validation for all PROSPECT roles
-    if (role.toLowerCase().includes('prospect')) {
-        console.log(`Skipping validation for prospect role: ${role}`);
-
-        // Open the modal directly without validation
-        $('#bookingModal').modal('show');
-
-        // Prepopulate fields for the prospect role
-        $('#id_role').val(role); // Set the role
-        $('#id_booking_id').val(bookingId); // If available, set the booking ID
-
-        const staffSelect = $('#id_staff');
-        staffSelect.empty(); // Clear existing options
-        staffSelect.append(new Option('Select Staff', '')); // Add default "Select Staff" option
-
-        // Prepopulate staff dropdown with options for this role
-        fetch(`/bookings/get_available_staff/?role=${role}`)
-            .then(response => response.json())
-            .then(data => {
-                const staffKey = `${serviceType.toLowerCase()}_staff`;
-
-                if (data[staffKey]) {
-                    data[staffKey].forEach(staff => {
-                        staffSelect.append(new Option(staff.name, staff.id));
-                    });
-
-                    // Select the currently assigned staff, if any
-                    if (data.current_staff) {
-                        staffSelect.val(data.current_staff.id);
-                    }
-                }
-            })
-            .catch(error => console.error('Error fetching available staff:', error));
-
-        return; // Skip further validation and execution
+    if (!eventDate) {
+        alert('Event date is required to fetch available staff.');
+        console.error('Event date is missing.');
+        return;
     }
 
-    // Normalize serviceType to match hidden field IDs (capitalize first letter if needed)
-    const normalizedServiceType = serviceType.charAt(0).toUpperCase() + serviceType.slice(1).toLowerCase();
-
-    // Determine the field to validate based on the role and service type
-    let fieldToCheck;
-    if (role === 'ENGAGEMENT') {
-        // Special case for engagement
-        fieldToCheck = $('#hiddenSavedEngagementSessionId'); // Engagement session field
-    } else if (role.includes('1')) {
-        // Primary role, check package
-        fieldToCheck = $(`#hiddenSaved${normalizedServiceType}PackageId`);
-    } else {
-        // Secondary role, check additional staff
-        fieldToCheck = $(`#hiddenSaved${normalizedServiceType}AdditionalStaffId`);
-    }
-
-    const fieldValue = fieldToCheck?.val() || null;
-
-    console.log(`Field to check: ${fieldToCheck?.attr('id') || 'undefined'}, Value: ${fieldValue}`);
-
-    // Block modal if the relevant field is empty
-    if (!fieldValue) {
-        const message = `No ${serviceType} service assigned for the selected role (${role}). Modal will not open.`;
-        console.warn(message);
-        alert(message); // Display the warning message as an alert
-        event.preventDefault(); // Prevent default behavior
-        return; // Explicitly stop function execution
-    }
-
-    // Block modal if the edit button is clicked without a booking ID
-    if (button.hasClass('edit-button') && !bookingId) {
-        const message = `Edit button clicked for ${role}, but no booking exists. Modal will not open.`;
-        console.warn(message);
-        alert(message); // Display the warning message as an alert
-        event.preventDefault(); // Prevent default behavior
-        return; // Explicitly stop function execution
-    }
-
-    // Open the modal programmatically
-    console.log('Validation passed. Opening modal...');
+    // Open the modal
+    console.log('Opening modal...');
     $('#bookingModal').modal('show');
 
-    // Prepare the modal fields
-    console.log(`Preparing modal for role: ${role}, booking ID: ${bookingId}, service type: ${serviceType}`);
+    // Prepopulate fields in the modal
     $('#id_role').val(role);
     $('#id_booking_id').val(bookingId);
 
     const staffSelect = $('#id_staff');
     staffSelect.empty(); // Clear existing options
-    staffSelect.append(new Option('Select Staff', '')); // Add default "Select Staff" option
+    staffSelect.append(new Option('Select Staff', '')); // Add a default "Select Staff" option
 
-    const contractId = $('#contractId').val();
-    const eventDate = $('#id_event_date').val();
-
-    if (!bookingId) {
-        console.log('No booking ID provided. Preparing modal for a new booking.');
-        $('#id_status').val(role.includes('PROSPECT') ? 'PROSPECT' : 'BOOKED'); // Default to PROSPECT for prospect roles
-        $('#id_hours_booked').val('');
-        $('#id_confirmed').prop('checked', false);
-    } else {
-        // Fetch current booking data if editing an existing booking
-        fetch(`/bookings/get_current_booking/?contract_id=${contractId}&role=${role}`)
+    // Fetch current booking data if editing an existing booking
+    if (bookingId) {
+        console.log('Fetching current booking data...');
+        fetch(`/bookings/get_current_booking/?contract_id=${$('#contractId').val()}&role=${role}`)
             .then(response => response.json())
             .then(data => {
                 if (data.current_booking) {
@@ -239,29 +163,38 @@ $(document).on('click', '.book-button, .edit-button', function (event) {
                     $('#id_confirmed').prop('checked', data.current_booking.confirmed);
 
                     // Add the assigned staff member to the dropdown and select it
-                    const currentStaffOption = new Option(
-                        data.current_booking.staff_name,
-                        data.current_booking.staff_id,
-                        true, // Mark as selected
-                        true  // Set as default selected
+                    staffSelect.append(
+                        new Option(data.current_booking.staff_name, data.current_booking.staff_id, true, true)
                     );
-                    staffSelect.append(currentStaffOption);
                 } else {
-                    console.log('No current booking found. Preparing modal for a new booking.');
+                    console.log('No current booking found. Preparing for new booking.');
                 }
             })
             .catch(error => console.error('Error fetching current booking:', error));
+    } else {
+        console.log('Preparing modal for a new booking.');
+        $('#id_status').val(role.includes('PROSPECT') ? 'PROSPECT' : 'BOOKED');
+        $('#id_hours_booked').val('');
+        $('#id_confirmed').prop('checked', false);
     }
 
-    // Populate available staff for the service type
-    fetch(`/bookings/get_available_staff/?event_date=${eventDate}&service_type=${serviceType}`)
-        .then(response => response.json())
+    // Fetch available staff for the selected role and event date
+    console.log('Fetching available staff...');
+    fetch(`/bookings/get_available_staff/?role=${role}&event_date=${eventDate}&service_type=${serviceType}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error fetching available staff: ${response.statusText}`);
+            }
+            return response.json();
+        })
         .then(data => {
-            const staffKey = `${serviceType.toLowerCase()}_staff`;
+            console.log('Available staff:', data);
 
+            // Populate staff dropdown without IDs
+            const staffKey = `${serviceType.toLowerCase()}_staff`;
             if (data[staffKey]) {
                 data[staffKey].forEach(staff => {
-                    staffSelect.append(new Option(staff.name, staff.id));
+                    staffSelect.append(new Option(staff.name, staff.id)); // Only display name
                 });
             }
         })
