@@ -20,8 +20,12 @@ from django.contrib import admin
 from django.contrib.auth.views import LogoutView
 from django.conf import settings
 from django.conf.urls.static import static
+from rest_framework_simplejwt.views import  TokenRefreshView
 
 urlpatterns = [
+
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
     path('admin/', admin.site.urls),
     path('accounts/logout/', LogoutView.as_view(next_page='/accounts/login/'), name='logout'),
     path('accounts/', include('django.contrib.auth.urls')),
