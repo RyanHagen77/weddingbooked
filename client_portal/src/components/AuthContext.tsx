@@ -44,7 +44,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const startTokenRefresh = useCallback(() => {
-    const refreshInterval = 15 * 60 * 1000; // Refresh every 15 minutes
+    const refreshInterval = 5 * 60 * 1000; // Refresh every 5 minutes
     if (refreshIntervalId) {
       clearInterval(refreshIntervalId);
     }
@@ -67,7 +67,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         if (response.ok) {
           const data = await response.json();
-          const newExpirationTime = new Date().getTime() + 60 * 60 * 1000; // 1 hour
+          const newExpirationTime = new Date().getTime() + 15 * 60 * 1000; // 15 minutes
           localStorage.setItem('access_token', data.access);
           localStorage.setItem('token_expiration', newExpirationTime.toString());
           console.log("Token refreshed successfully.");
@@ -120,7 +120,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = useCallback((accessToken: string, contractId: string) => {
     console.log("Logging in with token and contract ID:", accessToken, contractId);
 
-    const expirationTime = new Date().getTime() + 60 * 60 * 1000; // 1 hour
+    const expirationTime = new Date().getTime() + 15 * 60 * 1000; // 15 minutes
     localStorage.setItem('access_token', accessToken);
     localStorage.setItem('contract_id', contractId);
     localStorage.setItem('token_expiration', expirationTime.toString());
