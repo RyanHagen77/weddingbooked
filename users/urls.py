@@ -29,8 +29,7 @@ urlpatterns = [
         email_template_name='registration/office_password_reset_email.html',
         subject_template_name='registration/password_reset_subject.txt',
     ), name='password_reset'),
-    path(
-        'reset/<uidb64>/<token>/',
+    path('reset/confirm/<uidb64>/<token>/',
         CustomPasswordResetConfirmView.as_view(
             template_name='registration/office_password_reset_confirm.html'
         ),
