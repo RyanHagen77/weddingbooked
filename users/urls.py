@@ -40,7 +40,7 @@ urlpatterns = [
     path('update_specific_date_availability/<int:user_id>/', views.update_specific_date_availability, name='update_specific_date_availability'),
 
     # Password Reset Flow
-    path('password_reset/', CustomPasswordResetView.as_view(), name='office_password_reset'),
+    path('password_reset/', CustomPasswordResetView.as_view(), name='password_reset'),
     path('password_reset/done/', CustomPasswordResetDoneView.as_view(), name='password_reset_done'),
     path('reset/<uidb64>/<token>/', CustomPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/complete/', CustomPasswordResetCompleteView.as_view(), name='password_reset_complete'),
