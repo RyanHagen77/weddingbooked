@@ -1,12 +1,19 @@
 from django.urls import path
 from . import views
+from .views import (
+    CustomTokenObtainPairView,
+    CustomPasswordResetView,
+    CustomPasswordResetConfirmView,
+    CustomPasswordResetDoneView,
+    CustomPasswordResetCompleteView
+)
 
 app_name = 'users'  # Replace 'users' with your actual app name
 
 urlpatterns = [
 
     # JWT Authentication URLs
-    path('api/token/', views.CustomTokenObtainPairView, name='token_obtain_pair'),
+    path('api/token/', CustomTokenObtainPairView, name='token_obtain_pair'),
 
     # Client Portal URLs
     path('client_portal_login/', views.custom_login, name='client_portal_login'),
@@ -34,8 +41,8 @@ urlpatterns = [
     path('update_specific_date_availability/<int:user_id>/', views.update_specific_date_availability, name='update_specific_date_availability'),
 
     # Password Reset Flow
-    path('password_reset/', views.CustomPasswordResetView, name='password_reset'),
-    path('password_reset/done/', views.CustomPasswordResetDoneView, name='password_reset_done'),
-    path('reset/<uidb64>/<token>/', views.CustomPasswordResetConfirmView, name='password_reset_confirm'),
-    path('reset/complete/', views.CustomPasswordResetCompleteView, name='password_reset_complete'),
+    path('password_reset/', CustomPasswordResetView, name='password_reset'),
+    path('password_reset/done/', CustomPasswordResetDoneView, name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', CustomPasswordResetConfirmView, name='password_reset_confirm'),
+    path('reset/complete/', CustomPasswordResetCompleteView, name='password_reset_complete'),
 ]
