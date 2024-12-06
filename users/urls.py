@@ -11,9 +11,8 @@ from .views import (
 app_name = 'users'  # Replace 'users' with your actual app name
 
 urlpatterns = [
-
     # JWT Authentication URLs
-    path('api/token/', CustomTokenObtainPairView, name='token_obtain_pair'),
+    path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
 
     # Client Portal URLs
     path('client_portal_login/', views.custom_login, name='client_portal_login'),
@@ -25,9 +24,9 @@ urlpatterns = [
     path('logout/', views.user_logout_view, name='logout'),
 
     # Office Staff Management
-    path('office_staff/', views.OfficeStaffListView, name='office_staff_list'),
-    path('office-staff/new/', views.OfficeStaffCreateView, name='office_staff_new'),
-    path('office-staff/<int:pk>/edit/', views.OfficeStaffUpdateView, name='office_staff_edit'),
+    path('office_staff/', views.OfficeStaffListView.as_view(), name='office_staff_list'),
+    path('office-staff/new/', views.OfficeStaffCreateView.as_view(), name='office_staff_new'),
+    path('office-staff/<int:pk>/edit/', views.OfficeStaffUpdateView.as_view(), name='office_staff_edit'),
     path('office_staff_dashboard/<int:pk>/', views.office_staff_dashboard, name='office_staff_dashboard'),
 
     # Event Staff Management
@@ -41,8 +40,8 @@ urlpatterns = [
     path('update_specific_date_availability/<int:user_id>/', views.update_specific_date_availability, name='update_specific_date_availability'),
 
     # Password Reset Flow
-    path('password_reset/', CustomPasswordResetView, name='password_reset'),
-    path('password_reset/done/', CustomPasswordResetDoneView, name='password_reset_done'),
-    path('reset/<uidb64>/<token>/', CustomPasswordResetConfirmView, name='password_reset_confirm'),
-    path('reset/complete/', CustomPasswordResetCompleteView, name='password_reset_complete'),
+    path('password_reset/', CustomPasswordResetView.as_view(), name='password_reset'),
+    path('password_reset/done/', CustomPasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', CustomPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset/complete/', CustomPasswordResetCompleteView.as_view(), name='password_reset_complete'),
 ]
