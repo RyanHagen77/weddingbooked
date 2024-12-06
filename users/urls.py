@@ -24,7 +24,7 @@ urlpatterns = [
     path('office-staff/<int:pk>/edit/', views.OfficeStaffUpdateView.as_view(), name='office_staff_edit'),
     path('office_staff_dashboard/<int:pk>/', views.office_staff_dashboard, name='office_staff_dashboard'),
     path('event_staff_dashboard/<int:pk>/', views.event_staff_dashboard, name='event_staff_dashboard'),
-    path('password_reset/', auth_views.CustomPasswordResetView.as_view(
+    path('password_reset/', views.CustomPasswordResetView.as_view(
         template_name='registration/office_password_reset.html',
         email_template_name='registration/office_password_reset_email.html',
         subject_template_name='registration/password_reset_subject.txt',
