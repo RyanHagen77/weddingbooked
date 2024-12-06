@@ -36,8 +36,8 @@ urlpatterns = [
         ),
         name='password_reset_confirm'
     ),
-    path('password_reset/done/', CustomPasswordResetDoneView.as_view(), name='password_reset_done'),
-    path('complete/', CustomPasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    path('reset/done/', CustomPasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('reset/complete/', CustomPasswordResetCompleteView.as_view(), name='password_reset_complete'),
 
     path('event_staff/', views.event_staff, name='event_staff'),
     path('update_event_staff_ranking/', views.update_event_staff_ranking, name='update_event_staff_ranking'),
