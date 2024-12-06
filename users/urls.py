@@ -4,6 +4,7 @@ from django.contrib.auth import views as auth_views
 from .views import CustomTokenObtainPairView
 
 
+
 app_name = 'users'  # replace 'users' with your actual app name
 
 urlpatterns = [

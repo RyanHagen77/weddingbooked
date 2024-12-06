@@ -5,7 +5,7 @@ from django.conf import settings
 from django.views.generic import ListView, CreateView, UpdateView
 from django.utils.timezone import now
 
-
+from django.contrib.auth.views import PasswordResetView
 
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
@@ -150,7 +150,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
-from django.contrib.auth.views import PasswordResetView
+
 
 class CustomPasswordResetView(PasswordResetView):
     def form_valid(self, form):
