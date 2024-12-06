@@ -23,7 +23,11 @@ urlpatterns = [
     path('office-staff/<int:pk>/edit/', views.OfficeStaffUpdateView.as_view(), name='office_staff_edit'),
     path('office_staff_dashboard/<int:pk>/', views.office_staff_dashboard, name='office_staff_dashboard'),
     path('event_staff_dashboard/<int:pk>/', views.event_staff_dashboard, name='event_staff_dashboard'),
-    path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
+    path('password_reset/', auth_views.CustomPasswordResetView.as_view(
+        template_name='registration/office_password_reset.html',
+        email_template_name='registration/office_password_reset_email.html',
+        subject_template_name='registration/password_reset_subject.txt',
+    ), name='password_reset'),
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),

@@ -150,6 +150,19 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
+from django.contrib.auth.views import PasswordResetView
+
+class CustomPasswordResetView(PasswordResetView):
+    def form_valid(self, form):
+        email = form.cleaned_data['email']
+        user = User.objects.filter(email=email).first()
+        if user and user.groups.filter(name='Clients').exists():
+            self.template_name = 'users/client_password_reset_done.html'
+        elif user and user.groups.filter(name='Office Staff').exists():
+            self.template_name = 'users/office_password_reset_done.html'
+        return super().form_valid(form)
+
+
 @login_required
 def client_portal(request, contract_id):
     contract = get_object_or_404(Contract, pk=contract_id)
