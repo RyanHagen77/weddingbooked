@@ -5,7 +5,8 @@ from django.conf import settings
 from django.views.generic import ListView, CreateView, UpdateView
 from django.utils.timezone import now
 
-from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
+from django.contrib.auth.views import (PasswordResetView, PasswordResetConfirmView, PasswordResetDoneView,
+                                       PasswordResetCompleteView)
 
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
@@ -150,8 +151,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
-
-
 class CustomPasswordResetView(PasswordResetView):
     def form_valid(self, form):
         email = form.cleaned_data['email']
@@ -164,6 +163,12 @@ class CustomPasswordResetView(PasswordResetView):
 
 class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     template_name = 'registration/office_password_reset_confirm.html'
+
+class CustomPasswordResetDoneView(PasswordResetDoneView):
+    template_name = "registration/office_password_reset_done.html"
+
+class CustomPasswordResetCompleteView(PasswordResetCompleteView):
+    template_name = "registration/office_password_reset_complete.html"
 
 @login_required
 def client_portal(request, contract_id):
