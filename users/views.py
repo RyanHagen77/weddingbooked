@@ -54,14 +54,18 @@ def user_login_view(request):
             # Initialize the last_activity timestamp
             request.session['last_activity'] = now().isoformat()
 
+            # Handle the `next` parameter
+            next_url = request.POST.get('next', '')  # Get the next URL if it exists
+
             # Redirect based on user group
             if user.groups.filter(name='Event Staff').exists():
-                return redirect('users:event_staff_dashboard', pk=user.pk)
+                return redirect(next_url or 'users:event_staff_dashboard', pk=user.pk)
             elif user.groups.filter(name='Office Staff').exists():
+                # Always redirect Office Staff to their dashboard, ignoring `next`
                 return redirect('users:office_staff_dashboard', pk=user.pk)
 
     # Render the login template if the request is not a POST request or if authentication failed
-    return render(request, 'users/login.html')
+    return render(request, 'users/login.html', {'next': request.GET.get('next', '')})
 
 def user_logout_view(request):
     logout(request)
