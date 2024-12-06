@@ -155,8 +155,8 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 class CustomPasswordResetView(PasswordResetView):
     template_name = "registration/office_password_reset.html"
     email_template_name = "registration/office_password_reset_email.html"
-    subject_template_name = "registration/password_reset_subject.txt"
-    success_url = reverse_lazy('users:password_reset_done')
+    subject_template_name = "registration/office_password_reset_subject.txt"
+    success_url = reverse_lazy('users:office_password_reset_done')
 
 class CustomPasswordResetDoneView(PasswordResetDoneView):
     template_name = "registration/office_password_reset_done.html"
