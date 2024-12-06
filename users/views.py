@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.conf import settings
 from django.views.generic import ListView, CreateView, UpdateView
 from django.utils.timezone import now
+from django.urls import reverse_lazy
 
 from django.contrib.auth.views import (PasswordResetView, PasswordResetConfirmView, PasswordResetDoneView,
                                        PasswordResetCompleteView)
@@ -152,20 +153,17 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 class CustomPasswordResetView(PasswordResetView):
-    def form_valid(self, form):
-        email = form.cleaned_data['email']
-        user = User.objects.filter(email=email).first()
-        if user and user.groups.filter(name='Clients').exists():
-            self.template_name = 'users/client_password_reset_done.html'
-        elif user and user.groups.filter(name='Office Staff').exists():
-            self.template_name = 'users/office_password_reset_done.html'
-        return super().form_valid(form)
-
-class CustomPasswordResetConfirmView(PasswordResetConfirmView):
-    template_name = 'registration/office_password_reset_confirm.html'
+    template_name = "registration/office_password_reset.html"
+    email_template_name = "registration/office_password_reset_email.html"
+    subject_template_name = "registration/password_reset_subject.txt"
+    success_url = reverse_lazy('users:password_reset_done')
 
 class CustomPasswordResetDoneView(PasswordResetDoneView):
-    template_name = "registration/office_password_reset_done.html"
+    template_name = "registration/client_password_reset_done.html"  # Update for clients
+    success_url = reverse_lazy('users:password_reset_done')
+
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = "registration/office_password_reset_confirm.html"
 
 class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = "registration/office_password_reset_complete.html"
