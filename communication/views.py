@@ -24,6 +24,8 @@ from django.contrib.auth.models import User
 # Django Form Imports
 from django.contrib.auth.forms import PasswordResetForm
 
+from django.contrib.auth import get_user_model
+
 
 def send_password_reset_email(user_email):
     print(f"Starting to send password reset email to: {user_email}")
@@ -74,63 +76,89 @@ def get_contract_messages(request, contract_id):  # `request` parameter added he
     serializer = UnifiedCommunicationSerializer(messages, many=True)
     return Response(serializer.data)
 
+
+User = get_user_model()
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def post_contract_message(request, contract_id):
     contract = get_object_or_404(Contract, contract_id=contract_id)
     content = request.data.get('content')
+
     if content:
+        # Create the communication message
         message = UnifiedCommunication.objects.create(
             content=content,
             note_type=UnifiedCommunication.PORTAL,
             created_by=request.user,
             contract=contract
         )
-        send_contract_message_email(request, message, contract)  # Call the email sending function
+
+        # Determine the sender's type and send appropriate emails
+        if request.user.user_type == 'client':  # Adjust user_type field check
+            send_contract_message_email(request, message, contract)  # Notify coordinator
+        elif request.user.user_type == 'coordinator':  # Adjust user_type field check
+            send_email_to_client(request, message, contract)  # Notify client
+        else:
+            print("User type is not client or coordinator, email not sent.")
+
+        # Serialize and return the created message
         serializer = UnifiedCommunicationSerializer(message)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
     return Response({'error': 'Content is required'}, status=status.HTTP_400_BAD_REQUEST)
 
+
 def send_contract_message_email(request, message, contract):
+    """Send email to the coordinator."""
     if contract.coordinator and contract.coordinator.email:
         subject = f'New Message Posted for Contract {contract.custom_contract_number}'
         message_body = render_to_string('communication/contract_message_email.html', {
-            'user': request.user,
+            'user': contract.coordinator,  # Pass the coordinator as the recipient
             'message': message,
             'contract': contract,
             'domain': get_current_site(request).domain,
         })
-        send_mail(
-            subject,
-            message_body,
-            'enetadmin@enet2.com',  # Use a valid sender email address
-            [contract.coordinator.email],
-            fail_silently=False,
-        )
-        print("Email sent to coordinator:", contract.coordinator.email)
+        try:
+            send_mail(
+                subject,
+                message_body,
+                'enetadmin@enet2.com',
+                [contract.coordinator.email],
+                fail_silently=False,
+            )
+            print(f"Email sent to coordinator: {contract.coordinator.email}")
+        except Exception as e:
+            print(f"Failed to send email to coordinator: {e}")
     else:
         print("No coordinator assigned, or missing email.")
 
 def send_email_to_client(request, message, contract):
+    """Send email to the client."""
     client_user = contract.client.user
     if client_user and client_user.email:
         subject = f'New Message from Coordinator for Contract {contract.custom_contract_number}'
         message_body = render_to_string('communication/contract_message_email.html', {
-            'user': request.user,
+            'user': client_user,  # Pass the client user as the recipient
             'message': message,
             'contract': contract,
             'domain': get_current_site(request).domain,
         })
-        send_mail(
-            subject,
-            message_body,
-            'enetadmin@enet2.com',
-            [client_user.email],
-            fail_silently=False,
-        )
-        print("Email sent to client:", client_user.email)
+        try:
+            send_mail(
+                subject,
+                message_body,
+                'enetadmin@enet2.com',
+                [client_user.email],
+                fail_silently=False,
+            )
+            print(f"Email sent to client: {client_user.email}")
+        except Exception as e:
+            print(f"Failed to send email to client: {e}")
     else:
         print("Client does not have a valid email.")
+
 
 def send_booking_email(request, staff, contract, role, is_update):
     context = {
