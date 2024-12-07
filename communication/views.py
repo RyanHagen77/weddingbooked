@@ -151,12 +151,10 @@ def send_task_assignment_email(request, task):
             fail_silently=False,
         )
 
-from django.utils.html import strip_tags
-
 @login_required
 def send_portal_access(request, contract_id):
     contract = get_object_or_404(Contract, pk=contract_id)
-    client = contract.client
+    client = contract.client  # Accessing the client from the contract
 
     print(f"Processing contract {contract_id} for client {client.primary_contact}")
     print(f"User: {client.user}")
@@ -181,14 +179,13 @@ def send_portal_access(request, contract_id):
             'domain': get_current_site(request).domain,
         }
 
-        subject = 'Portal Access'
+        subject = 'Welcome to Essence Weddings!'
         message = render_to_string('communication/portal_access_email.html', context, request=request)
-        plain_message = strip_tags(message)  # Optional: Add plain-text fallback
 
         try:
             send_mail(
                 subject,
-                plain_message,  # Send plain text or use `message` for HTML
+                message,
                 'enetadmin@enet2.com',  # Your sending email
                 [client.user.email],
                 fail_silently=False,

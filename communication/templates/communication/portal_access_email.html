@@ -1,10 +1,10 @@
 {% autoescape off %}
-Hi {{ client.primary_contact.split|default:"Valued Client" }},
+Hi {{ first_name }},
 
-Welcome to Essence Weddings! We're thrilled to have you join us as we prepare for your unforgettable event.
+Welcome to Essence Weddings! We're thrilled to have you join us.
 
 To get started, click the link below to set your password and access your personalized portal:
-https://www.enet2.com/users/password_reset/
+{{ password_reset_url }}
 
 If you need assistance or have any questions, feel free to reach out. We're here to help make your wedding truly unforgettable.
 
