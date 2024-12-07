@@ -165,7 +165,7 @@ def send_portal_access(request, contract_id):
         token = default_token_generator.make_token(client.user)
         uid = urlsafe_base64_encode(force_bytes(client.user.pk))
         password_reset_url = request.build_absolute_uri(
-            reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
+            reverse('users:password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
         )
 
         context = {
