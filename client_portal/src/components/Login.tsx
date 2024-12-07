@@ -68,7 +68,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <button type="submit" className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition">Login</button>
         </form>
         <div className="mt-4 text-center">
-          <a href="https://www.enet2.com/users/registration/password_reset_form/" className="text-pink-700 hover:underline">Forgot Password?</a>
+          <a href="https://www.enet2.com/users/registration/password_reset/" className="text-pink-700 hover:underline">Forgot Password?</a>
         </div>
       </div>
     </main>
