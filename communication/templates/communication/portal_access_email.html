@@ -1,3 +1,7 @@
+from django.core.mail import EmailMessage
+
+subject = "Welcome to Essence Weddings!"
+html_message = """
 <p>Dear {{ user.get_full_name }},</p>
 
 <p>Welcome to Essence Weddings! We're thrilled to be a part of your special event. To get started, we've created a portal for you to manage all the details of your booking.</p>
@@ -10,3 +14,12 @@
 
 <p>Warm regards,</p>
 <p>The Essence Weddings Team</p>
+"""
+email = EmailMessage(
+    subject,
+    html_message,
+    "your-email@example.com",
+    [user.email],
+)
+email.content_subtype = "html"  # Set the email to HTML
+email.send()
