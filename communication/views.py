@@ -94,7 +94,7 @@ def post_contract_message(request, contract_id):
 def send_contract_message_email(request, message, contract):
     if contract.coordinator and contract.coordinator.email:
         subject = f'New Message Posted for Contract {contract.custom_contract_number}'
-        message_body = render_to_string('communication/contract_message_email.html', {
+        message_body = render_to_string('communication/contract_message_email_to_coordinator.html', {
             'user': request.user,
             'message': message,
             'contract': contract,
@@ -112,25 +112,39 @@ def send_contract_message_email(request, message, contract):
         print("No coordinator assigned, or missing email.")
 
 def send_email_to_client(request, message, contract):
+    """Send email notification to the client."""
     client_user = contract.client.user
-    if client_user and client_user.email:
-        subject = f'New Message from Coordinator for Contract {contract.custom_contract_number}'
-        message_body = render_to_string('communication/contract_message_email.html', {
-            'user': request.user,
+    primary_contact = contract.client.primary_contact
+    first_name = primary_contact.split()[0] if primary_contact else "Client"  # Extract the first name
+
+    print(f"Preparing to send email to: {first_name}, Email: {client_user.email if client_user else 'No email'}")
+
+    if client_user and client_user.user_type == 'client' and client_user.email:
+        subject = f'New Message from Your Coordinator for Contract {contract.custom_contract_number}'
+        message_body = render_to_string('communication/contract_message_email_to_client.html', {
+            'first_name': first_name,  # Pass the first name
+            'user': request.user,  # The employee who created the message
             'message': message,
             'contract': contract,
-            'domain': get_current_site(request).domain,
+            'domain': 'enet2.com',  # Updated domain
         })
-        send_mail(
-            subject,
-            message_body,
-            'enetadmin@enet2.com',
-            [client_user.email],
-            fail_silently=False,
-        )
-        print("Email sent to client:", client_user.email)
+        print("Rendered Email Content:", message_body)
+
+        try:
+            send_mail(
+                subject,
+                message_body,
+                'enetadmin@enet2.com',  # Replace with your sender email
+                [client_user.email],
+                fail_silently=False,
+            )
+            print(f"Email successfully sent to client: {client_user.email}")
+        except Exception as e:
+            print(f"Failed to send email to client: {e}")
     else:
-        print("Client does not have a valid email.")
+        print("Client does not have a valid email or user_type is not 'client'.")
+
+
 
 def send_booking_email(request, staff, contract, role, is_update):
     context = {

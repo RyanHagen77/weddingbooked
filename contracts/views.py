@@ -272,15 +272,30 @@ def contract_detail(request, id):
     if request.method == 'POST':
         communication_form = CommunicationForm(request.POST)
         if communication_form.is_valid():
+            print("Form is valid")
+
+            # Create the UnifiedCommunication message
             new_message = UnifiedCommunication.objects.create(
                 content=communication_form.cleaned_data['message'],
                 note_type=communication_form.cleaned_data['message_type'],
                 created_by=request.user,
                 contract=contract,
             )
-            if request.user.is_coordinator:
+            print(f"Message saved. Note Type: {new_message.note_type}")
+
+            # Check if the sender is an employee and the note type is PORTAL
+            if request.user.user_type == 'employee' and new_message.note_type == UnifiedCommunication.PORTAL:
+                print("Employee sent a PORTAL type message. Triggering email...")
                 send_email_to_client(request, new_message, contract)
+            else:
+                print(f"Email not triggered. User Type: {request.user.user_type}, Note Type: {new_message.note_type}")
+
             return redirect('contracts:contract_detail', id=contract.contract_id)
+        else:
+            print("Form errors:", communication_form.errors)
+
+    else:
+        communication_form = CommunicationForm()
 
     photography_service_type = ServiceType.objects.get(name='Photography')
     photography_packages = Package.objects.filter(service_type=photography_service_type).order_by('name')
