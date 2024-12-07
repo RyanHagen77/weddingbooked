@@ -151,6 +151,8 @@ def send_task_assignment_email(request, task):
             fail_silently=False,
         )
 
+from django.utils.html import strip_tags
+
 @login_required
 def send_portal_access(request, contract_id):
     contract = get_object_or_404(Contract, pk=contract_id)
@@ -159,6 +161,10 @@ def send_portal_access(request, contract_id):
     print(f"Processing contract {contract_id} for client {client.primary_contact}")
     print(f"User: {client.user}")
     print(f"User has usable password: {client.user.has_usable_password()}")
+
+    # Extract the first name from primary_contact
+    primary_contact = client.primary_contact
+    first_name = primary_contact.split()[0] if primary_contact else "Valued Client"
 
     # Forcing email send regardless of has_usable_password() result
     if hasattr(client, 'user'):
@@ -170,20 +176,23 @@ def send_portal_access(request, contract_id):
 
         context = {
             'user': client.user,
+            'first_name': first_name,
             'password_reset_url': password_reset_url,
             'domain': get_current_site(request).domain,
         }
 
         subject = 'Portal Access'
         message = render_to_string('communication/portal_access_email.html', context, request=request)
+        plain_message = strip_tags(message)  # Optional: Add plain-text fallback
 
         try:
             send_mail(
                 subject,
-                message,
+                plain_message,  # Send plain text or use `message` for HTML
                 'enetadmin@enet2.com',  # Your sending email
                 [client.user.email],
                 fail_silently=False,
+                html_message=message,  # Include HTML message
             )
             print("Email sent successfully")
             response_message = {'status': 'success', 'message': 'Portal access email sent successfully.'}
