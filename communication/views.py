@@ -20,24 +20,44 @@ from rest_framework.response import Response
 from .models import UnifiedCommunication, Task
 from .serializers import UnifiedCommunicationSerializer
 
+from django.contrib.auth.models import User
 # Django Form Imports
 from django.contrib.auth.forms import PasswordResetForm
 
+
 def send_password_reset_email(user_email):
     print(f"Starting to send password reset email to: {user_email}")
+
+    # Attempt to retrieve the user by email
+    try:
+        user = User.objects.get(email=user_email)
+    except User.DoesNotExist:
+        print("User with this email does not exist.")
+        return
+
+    # Determine name dynamically
+    if hasattr(user, 'client') and user.client.primary_contact:
+        name = user.client.primary_contact.split()[0]  # Get the first name
+    else:
+        name = user.get_full_name() or "Valued User"
+
+    # Create a PasswordResetForm and prepare the email context
     form = PasswordResetForm({'email': user_email})
     if form.is_valid():
         request = HttpRequest()
-        request.META['SERVER_NAME'] = '127.0.0.1'
-        request.META['SERVER_PORT'] = '8000'
+        request.META['SERVER_NAME'] = '127.0.0.1'  # Adjust for production
+        request.META['SERVER_PORT'] = '8000'  # Adjust for production
 
-
+        # Extend the form save logic to include a name context
         try:
             form.save(
                 request=request,
                 use_https=True,
                 from_email='enetadmin@enet2.com',
-                email_template_name='registration/password_reset_email.html'
+                email_template_name='registration/password_reset_email.html',  # Ensure template matches your setup
+                extra_email_context={
+                    'name': name,  # Pass the dynamically determined name
+                },
             )
             print("Password reset email sent successfully.")
         except Exception as e:
