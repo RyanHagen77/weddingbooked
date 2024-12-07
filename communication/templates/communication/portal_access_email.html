@@ -1,25 +1,13 @@
-from django.core.mail import EmailMessage
+{% autoescape off %}
+Hi {{ user.get_full_name }},
 
-subject = "Welcome to Essence Weddings!"
-html_message = """
-<p>Dear {{ user.get_full_name }},</p>
+Welcome to Essence Weddings! We're so excited to have you join us as we prepare for your special day.
 
-<p>Welcome to Essence Weddings! We're thrilled to be a part of your special event. To get started, we've created a portal for you to manage all the details of your booking.</p>
+To get started, click the link below to set up your password and access your personalized portal:
+https://www.enet2.com/users/password_reset/
 
-<p>Please click the link below to set up your password and access your portal:</p>
+If you need assistance or have any questions, feel free to reach out. We're here to help make your wedding truly unforgettable.
 
-<p><a href="https://www.enet2.com/users/password_reset/" style="color: #E91E63; text-decoration: none;">Set Your Password</a></p>
-
-<p>If you have any questions or need assistance, our team is here to help. We can't wait to work with you to create unforgettable memories!</p>
-
-<p>Warm regards,</p>
-<p>The Essence Weddings Team</p>
-"""
-email = EmailMessage(
-    subject,
-    html_message,
-    "your-email@example.com",
-    [user.email],
-)
-email.content_subtype = "html"  # Set the email to HTML
-email.send()
+Warm regards,
+The Essence Weddings Team
+{% endautoescape %}
