@@ -153,20 +153,39 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 class CustomPasswordResetView(PasswordResetView):
-    template_name = "registration/office_password_reset.html"
-    email_template_name = "registration/office_password_reset_email.html"
-    subject_template_name = "registration/office_password_reset_subject.txt"
-    success_url = reverse_lazy('users:office_password_reset_done')
+    def dispatch(self, *args, **kwargs):
+        print("CustomPasswordResetView dispatch method called")
+        return super().dispatch(*args, **kwargs)
+    template_name = "users/registration/password_reset.html"
+    email_template_name = "users/registration/password_reset_email.html"
+    subject_template_name = "users/registration/password_reset_subject.txt"
+    success_url = reverse_lazy('users:password_reset_done')
+
 
 class CustomPasswordResetDoneView(PasswordResetDoneView):
-    template_name = "registration/office_password_reset_done.html"
+    template_name = "users/registration/password_reset_done.html"
+
+    def dispatch(self, *args, **kwargs):
+        print("CustomPasswordResetDoneView dispatch method called")
+        return super().dispatch(*args, **kwargs)
+
 
 class CustomPasswordResetConfirmView(PasswordResetConfirmView):
-    template_name = "registration/office_password_reset_confirm.html"
-    success_url = reverse_lazy('users:office_password_reset_complete')
+    template_name = "users/registration/password_reset_confirm.html"
+    success_url = reverse_lazy('users:password_reset_complete')  # Correct namespaced URL
+
+    def dispatch(self, *args, **kwargs):
+        # Initialize validlink as False at the beginning
+        self.validlink = False
+
+        # Debugging to ensure correct flow
+        print(f"Dispatch called with uidb64: {kwargs.get('uidb64')}, token: {kwargs.get('token')}")
+
+        return super().dispatch(*args, **kwargs)
+
 
 class CustomPasswordResetCompleteView(PasswordResetCompleteView):
-    template_name = "registration/office_password_reset_complete.html"
+    template_name = "users/registration/password_reset_complete.html"
 
 @login_required
 def client_portal(request, contract_id):

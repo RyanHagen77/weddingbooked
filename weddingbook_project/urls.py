@@ -25,7 +25,6 @@ urlpatterns = [
 
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    path('reset/', include('users.urls')),  # Include custom password reset URLs
 
     path('admin/', admin.site.urls),
     path('bookings/', include('bookings.urls', namespace='bookings')),

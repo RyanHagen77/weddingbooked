@@ -37,7 +37,7 @@ def send_password_reset_email(user_email):
                 request=request,
                 use_https=True,
                 from_email='enetadmin@enet2.com',
-                email_template_name='registration/office_password_reset_email.html'
+                email_template_name='registration/password_reset_email.html'
             )
             print("Password reset email sent successfully.")
         except Exception as e:
