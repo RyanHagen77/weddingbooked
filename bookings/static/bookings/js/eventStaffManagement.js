@@ -116,8 +116,8 @@ const eventStaffManagement = {
 
 $(document).on('click', '.book-button', function (event) {
     const button = $(this);
-    const role = button.data('role'); // e.g., "DJ1", "PHOTOBOOTH_OP1", "PROSPECT1"
-    let serviceType = button.data('service-type'); // e.g., "DJ", "Photobooth"
+    const role = button.data('role'); // Role (e.g., "PHOTOGRAPHER1", "PROSPECT1", "PROSPECT2", "PROSPECT3")
+    let serviceType = button.data('service-type'); // Service type (e.g., "DJ", "Photobooth")
     const contractId = $('#contractId').val();
     const eventDate = $('#id_event_date').val();
 
@@ -133,33 +133,36 @@ $(document).on('click', '.book-button', function (event) {
         return;
     }
 
-    // Determine the specific row's hidden field for validation
-    let fieldToCheck, hasService;
-    if (role === 'ENGAGEMENT') {
-        fieldToCheck = $('#hiddenSavedEngagementSessionId');
-        hasService = fieldToCheck.val() !== '';
-    } else if (role.includes('1')) {
-        fieldToCheck = $(`#hiddenSaved${serviceType}PackageId`);
-        hasService = fieldToCheck.val() !== '';
-    } else if (role.includes('2')) {
-        fieldToCheck = $(`#hiddenSaved${serviceType}AdditionalStaffId`);
-        hasService = fieldToCheck.val() !== '';
-    } else if (role.includes('PROSPECT')) {
-        // Prospects do not require a service assignment
-        hasService = true;
+    // Check for prospect roles (PROSPECT1, PROSPECT2, PROSPECT3)
+    const isProspect = ['PROSPECT1', 'PROSPECT2', 'PROSPECT3'].includes(role);
+    if (isProspect) {
+        console.log(`Skipping service validation for prospect role: ${role}`);
     } else {
-        fieldToCheck = null;
-        hasService = false;
-    }
+        // Determine the specific row's hidden field for validation
+        let fieldToCheck, hasService;
+        if (role === 'ENGAGEMENT') {
+            fieldToCheck = $('#hiddenSavedEngagementSessionId');
+            hasService = fieldToCheck.val() !== '';
+        } else if (role.includes('1')) {
+            fieldToCheck = $(`#hiddenSaved${serviceType}PackageId`);
+            hasService = fieldToCheck.val() !== '';
+        } else if (role.includes('2')) {
+            fieldToCheck = $(`#hiddenSaved${serviceType}AdditionalStaffId`);
+            hasService = fieldToCheck.val() !== '';
+        } else {
+            fieldToCheck = null;
+            hasService = false;
+        }
 
-    console.log(`Field to check: ${fieldToCheck?.attr('id') || 'undefined'}, Value: ${fieldToCheck?.val() || 'undefined'}`);
+        console.log(`Field to check: ${fieldToCheck?.attr('id') || 'undefined'}, Value: ${fieldToCheck?.val() || 'undefined'}`);
 
-    // Block modal if no service is assigned for this row (except for prospects)
-    if (!hasService) {
-        const message = `No ${serviceType} service assigned for the selected role (${role}). Modal will not open.`;
-        console.warn(message);
-        alert(message);
-        return;
+        // Block modal if no service is assigned for this row
+        if (!hasService) {
+            const message = `No ${serviceType} service assigned for the selected role (${role}). Modal will not open.`;
+            console.warn(message);
+            alert(message);
+            return;
+        }
     }
 
     // Clear modal fields
@@ -174,7 +177,7 @@ $(document).on('click', '.book-button', function (event) {
     $('#bookingModalLabel').text('Assign or Edit Staff');
 
     // Fetch available staff for the role and service type
-    const staffKey = role.includes('PROSPECT') ? 'photographers' : (role === 'ENGAGEMENT' ? 'photographers' : `${serviceType.toLowerCase()}_staff`);
+    const staffKey = isProspect || role === 'ENGAGEMENT' ? 'photographers' : `${serviceType.toLowerCase()}_staff`;
 
     fetch(`/bookings/get_available_staff/?event_date=${eventDate}&service_type=${serviceType}`)
         .then(response => {
@@ -218,7 +221,7 @@ $(document).on('click', '.book-button', function (event) {
 
                 // Populate modal fields with existing booking data
                 $('#id_booking_id').val(data.current_booking.id);
-                $('#id_status').val(data.current_booking.status || (role.includes('PROSPECT') ? 'PROSPECT' : 'BOOKED'));
+                $('#id_status').val(data.current_booking.status || (isProspect ? 'PROSPECT' : 'BOOKED'));
                 $('#id_hours_booked').val(data.current_booking.hours_booked || '');
                 $('#id_confirmed').prop('checked', data.current_booking.confirmed);
 
@@ -232,7 +235,7 @@ $(document).on('click', '.book-button', function (event) {
                 $('#id_staff').append(currentStaffOption);
             } else {
                 console.log('No existing booking found. Preparing modal for a new booking.');
-                $('#id_status').val(role.includes('PROSPECT') ? 'PROSPECT' : 'BOOKED'); // Default status
+                $('#id_status').val(isProspect ? 'PROSPECT' : 'BOOKED'); // Default status
             }
         })
         .catch(error => {
@@ -243,7 +246,6 @@ $(document).on('click', '.book-button', function (event) {
     // Show the modal
     $('#bookingModal').modal('show');
 });
-
 
 
 $(document).on('click', '#deleteBooking', function (event) {
