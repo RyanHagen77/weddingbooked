@@ -116,7 +116,7 @@ const eventStaffManagement = {
 
 $(document).on('click', '.book-button', function (event) {
     const button = $(this);
-    const role = button.data('role'); // e.g., "DJ1", "PHOTOBOOTH_OP1"
+    const role = button.data('role'); // e.g., "DJ1", "PHOTOBOOTH_OP1", "PROSPECT1"
     let serviceType = button.data('service-type'); // e.g., "DJ", "Photobooth"
     const contractId = $('#contractId').val();
     const eventDate = $('#id_event_date').val();
@@ -144,6 +144,9 @@ $(document).on('click', '.book-button', function (event) {
     } else if (role.includes('2')) {
         fieldToCheck = $(`#hiddenSaved${serviceType}AdditionalStaffId`);
         hasService = fieldToCheck.val() !== '';
+    } else if (role.includes('PROSPECT')) {
+        // Prospects do not require a service assignment
+        hasService = true;
     } else {
         fieldToCheck = null;
         hasService = false;
@@ -151,7 +154,7 @@ $(document).on('click', '.book-button', function (event) {
 
     console.log(`Field to check: ${fieldToCheck?.attr('id') || 'undefined'}, Value: ${fieldToCheck?.val() || 'undefined'}`);
 
-    // Block modal if no service is assigned for this row
+    // Block modal if no service is assigned for this row (except for prospects)
     if (!hasService) {
         const message = `No ${serviceType} service assigned for the selected role (${role}). Modal will not open.`;
         console.warn(message);
@@ -171,7 +174,7 @@ $(document).on('click', '.book-button', function (event) {
     $('#bookingModalLabel').text('Assign or Edit Staff');
 
     // Fetch available staff for the role and service type
-    const staffKey = role === 'ENGAGEMENT' ? 'photographers' : `${serviceType.toLowerCase()}_staff`;
+    const staffKey = role.includes('PROSPECT') ? 'photographers' : (role === 'ENGAGEMENT' ? 'photographers' : `${serviceType.toLowerCase()}_staff`);
 
     fetch(`/bookings/get_available_staff/?event_date=${eventDate}&service_type=${serviceType}`)
         .then(response => {
@@ -215,7 +218,7 @@ $(document).on('click', '.book-button', function (event) {
 
                 // Populate modal fields with existing booking data
                 $('#id_booking_id').val(data.current_booking.id);
-                $('#id_status').val(data.current_booking.status || 'BOOKED');
+                $('#id_status').val(data.current_booking.status || (role.includes('PROSPECT') ? 'PROSPECT' : 'BOOKED'));
                 $('#id_hours_booked').val(data.current_booking.hours_booked || '');
                 $('#id_confirmed').prop('checked', data.current_booking.confirmed);
 
@@ -240,6 +243,7 @@ $(document).on('click', '.book-button', function (event) {
     // Show the modal
     $('#bookingModal').modal('show');
 });
+
 
 
 $(document).on('click', '#deleteBooking', function (event) {
