@@ -61,34 +61,76 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Fetch and display the always off days and days off
     fetch(staffScheduleUrl)
         .then(response => response.json())
         .then(data => {
-            var alwaysOffDaysList = document.getElementById('alwaysOffDays');
-            alwaysOffDaysList.innerHTML = ''; // Clear any existing content
+            // Populate the always off days
+            const alwaysOffDaysList = document.getElementById('alwaysOffDays');
+            alwaysOffDaysList.innerHTML = '';
             data.alwaysOffDays.forEach(function(day) {
-                var li = document.createElement('li');
+                const li = document.createElement('li');
                 li.textContent = day;
                 alwaysOffDaysList.appendChild(li);
             });
 
-            var daysOffList = document.getElementById('daysOffList').getElementsByTagName('tbody')[0];
-            daysOffList.innerHTML = ''; // Clear any existing content
+            // Populate days off, excluding bookings
+            const daysOffList = document.getElementById('daysOffList').getElementsByTagName('tbody')[0];
+            daysOffList.innerHTML = '';
             data.events.filter(event => event.type === 'day_off').forEach(function(event) {
-                var row = daysOffList.insertRow();
-                var cellDate = row.insertCell(0);
-                var cellDay = row.insertCell(1);
-                var cellAction = row.insertCell(2);
+                const row = daysOffList.insertRow();
+                const cellDate = row.insertCell(0);
+                const cellDay = row.insertCell(1);
+                const cellAction = row.insertCell(2);
                 cellDate.textContent = event.start;
                 cellDay.textContent = event.day;
                 cellAction.innerHTML = `<button class="remove-day-off" data-date="${event.start}">Clear</button>`;
             });
-        });
+
+            // Render the calendar
+            $('#calendar').fullCalendar({
+                events: data.events.filter(event => event.type !== 'day_off'), // Filter out "day_off" for the calendar
+                editable: false,
+                eventRender: function(event, element) {
+                    if (event.type === 'booking') {
+                        element.css('background-color', '#378006'); // Bookings in green
+                    } else if (event.type === 'always_off') {
+                        element.css('background-color', '#ff0000'); // Always off in red
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error fetching schedule data:', error));
 
     // Attach event listener to update availability button
     document.getElementById('updateAvailabilityBtn').addEventListener('click', function() {
         updateSchedule(userId);
+    });
+
+    // Attach event listener to remove day off buttons
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('remove-day-off')) {
+            const date = e.target.getAttribute('data-date');
+            if (confirm(`Are you sure you want to clear the day off for ${date}?`)) {
+            fetch(`/users/update_specific_date_availability/${userId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ date: date, available: true }),
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to update availability');
+                    return response.json();
+                })
+                .then(() => {
+                    alert('Day off removed successfully');
+                    location.reload(); // Refresh the page to reflect changes
+                })
+                .catch(error => alert(`Error: ${error.message}`));
+
+            }
+        }
     });
 });
 </script>

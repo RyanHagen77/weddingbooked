@@ -311,10 +311,17 @@ def event_staff(request):
             status__in=['PENDING', 'BOOKED']  # Exclude PROSPECT
         ).count()
 
+        # Get all booking dates for the staff
+        booking_dates = EventStaffBooking.objects.filter(
+            staff=staff,
+            status__in=['PENDING', 'BOOKED']
+        ).values_list('contract__event_date', flat=True)
+
+        # Count days off excluding dates with bookings
         days_off_count = Availability.objects.filter(
             staff=staff,
             available=False
-        ).count()
+        ).exclude(date__in=booking_dates).count()
 
         # Append only the filtered data
         staff_with_days_off.append({
@@ -333,7 +340,6 @@ def event_staff(request):
         'roles': roles,
         'current_role': role_name,
     })
-
 
 @login_required
 @require_http_methods(["POST"])
@@ -404,6 +410,7 @@ def get_event_staff_schedule(request, user_id):
     bookings = EventStaffBooking.objects.filter(**query_filters).exclude(status='PROSPECT')
     booking_dates = set()
 
+    # Add bookings as events
     for booking in bookings:
         booking_date_str = booking.contract.event_date.strftime('%Y-%m-%d')
         booking_dates.add(booking_date_str)
@@ -411,16 +418,17 @@ def get_event_staff_schedule(request, user_id):
             "start": booking_date_str,
             "day": booking.contract.event_date.strftime('%A'),
             "allDay": True,
-            "color": "#378006",
+            "color": "#378006",  # Green for bookings
             "type": "booking"
         })
 
+    # Add explicitly marked days off, excluding booked dates
     days_off = Availability.objects.filter(
         staff_id=user_id,
         date__gte=start_date,
         date__lte=end_date,
         available=False
-    ).exclude(date__in=booking_dates)  # Exclude days that are already booked
+    ).exclude(date__in=booking_dates)
 
     for day in days_off:
         events.append({
@@ -428,10 +436,11 @@ def get_event_staff_schedule(request, user_id):
             "day": day.date.strftime('%A'),
             "allDay": True,
             "rendering": "background",
-            "color": "#ff9f89",
+            "color": "#ff9f89",  # Light red for days off
             "type": "day_off"
         })
 
+    # Add always off days, excluding booked dates
     try:
         always_off_record = Availability.objects.get(staff_id=user_id, date__isnull=True)
         always_off_days = always_off_record.always_off_days
@@ -439,20 +448,21 @@ def get_event_staff_schedule(request, user_id):
         while current_date <= end_date:
             if current_date.weekday() in always_off_days:
                 current_date_str = current_date.strftime('%Y-%m-%d')
-                if current_date_str not in booking_dates:  # Exclude always off days that are already booked
+                if current_date_str not in booking_dates:  # Ensure no overlap with bookings
                     always_off_days_list.append(current_date.strftime('%A'))
                     events.append({
                         "start": current_date_str,
                         "day": current_date.strftime('%A'),
                         "allDay": True,
                         "rendering": "background",
-                        "color": "#ff0000",
+                        "color": "#ff0000",  # Bright red for always off
                         "type": "always_off"
                     })
             current_date += timedelta(days=1)
     except Availability.DoesNotExist:
         pass
 
+    # Sort events by date for consistency
     sorted_events = sorted(events, key=lambda x: x['start'])
     return JsonResponse({"events": sorted_events, "alwaysOffDays": list(set(always_off_days_list))}, safe=False)
 

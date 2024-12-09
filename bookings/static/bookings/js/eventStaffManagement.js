@@ -14,6 +14,8 @@ const eventStaffManagement = {
                         if (data.current_booking && data.current_booking.staff_name) {
                             console.log(`Updating field for role ${role}: ${data.current_booking.staff_name}`);
                             assignedStaffField.textContent = data.current_booking.staff_name;
+                        } else {
+                            assignedStaffField.textContent = "None assigned";
                         }
                     }
                 })
@@ -41,25 +43,24 @@ const eventStaffManagement = {
     handleBookingFormSubmission() {
         const bookingForm = document.getElementById('bookingForm');
         const submitButton = document.getElementById('submitBooking');
-        const updateButton = document.getElementById('updateBooking');
 
-        const submitHandler = (event) => {
+        if (!submitButton) {
+            console.error("Submit button not found. Aborting form submission setup.");
+            return;
+        }
+
+        submitButton.addEventListener('click', (event) => {
             event.preventDefault();
-            const isUpdate = event.target.id === 'updateBooking';
 
-            const eventDateInput = document.getElementById('id_event_date');
-            if (eventDateInput) {
-                const eventDateField = bookingForm.elements['event_date'];
-                if (eventDateField) {
-                    eventDateField.value = eventDateInput.value;
-                }
-            }
+            const bookingId = document.getElementById('id_booking_id').value;
+            const isEdit = !!bookingId; // Determine if this is an update
 
             const formData = new FormData(bookingForm);
-            if (isUpdate) {
-                const bookingId = document.getElementById('id_booking_id').value;
+            if (isEdit) {
                 console.log(`Updating booking ID: ${bookingId}`);
                 formData.append('booking_id', bookingId);
+            } else {
+                console.log('Creating a new booking.');
             }
 
             fetch(bookingForm.action, {
@@ -70,177 +71,228 @@ const eventStaffManagement = {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 }
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    console.log(`Booking saved successfully: ${data.message}`);
-                    const assignedStaffField = document.getElementById(`assigned-${data.role.toLowerCase()}`);
-                    if (assignedStaffField) {
-                        assignedStaffField.textContent = data.staff_name;
+                .then(response => response.ok ? response.json() : Promise.reject('Failed to save booking.'))
+                .then(data => {
+                    if (data.success) {
+                        console.log(`Booking ${isEdit ? "updated" : "created"} successfully.`);
+                        const assignedStaffField = document.getElementById(`assigned-${data.role.toLowerCase()}`);
+                        if (assignedStaffField) {
+                            assignedStaffField.textContent = data.staff_name;
+                        }
+                        $('#bookingModal').modal('hide');
+                        bookingForm.reset();
+                        $('body').removeClass('modal-open');
+                        $('.modal-backdrop').remove();
+                    } else {
+                        console.error('Error saving booking:', data.errors);
                     }
-                    $('#bookingModal').modal('hide');
-                    bookingForm.reset();
-                    $('body').removeClass('modal-open');
-                    $('.modal-backdrop').remove();
-                } else {
-                    console.error('Error saving booking:', data.errors);
-                }
-            })
-            .catch(error => {
-                console.error('Error submitting booking form:', error);
-            });
-        };
-
-        submitButton.addEventListener('click', submitHandler);
-        updateButton.addEventListener('click', submitHandler);
+                })
+                .catch(error => console.error('Error submitting booking form:', error));
+        });
     },
 
     init() {
         this.setupEventDateChangeListener();
+
         const contractId = document.getElementById('contractId').value;
+        if (!contractId) {
+            console.error("Contract ID is missing. Initialization aborted.");
+            return;
+        }
+
         const roles = [
-            'PHOTOGRAPHER1',
-            'PHOTOGRAPHER2',
-            'VIDEOGRAPHER1',
-            'VIDEOGRAPHER2',
-            'DJ1',
-            'DJ2',
-            'PHOTOBOOTH_OP1',
-            'PHOTOBOOTH_OP2',
+            'PHOTOGRAPHER1', 'PHOTOGRAPHER2',
+            'VIDEOGRAPHER1', 'VIDEOGRAPHER2',
+            'DJ1', 'DJ2',
+            'PHOTOBOOTH_OP1', 'PHOTOBOOTH_OP2',
             'ENGAGEMENT',
         ];
+
         this.updateAssignedFields(contractId, roles);
         this.handleBookingFormSubmission();
-
-
-
-    }
+    },
 };
-$(document).on('click', '.book-button, .edit-button', function (event) {
+
+
+$(document).on('click', '.book-button', function (event) {
     const button = $(this);
-    const role = button.data('role'); // Role (e.g., "PHOTOGRAPHER1", "PROSPECT1")
-    const serviceType = button.data('service-type'); // Service type (e.g., "Photography")
-    const bookingId = button.data('booking-id') || '';
-    const eventDate = $('#id_event_date').val(); // Event date from input field
+    const role = button.data('role'); // e.g., "DJ1", "PHOTOBOOTH_OP1"
+    let serviceType = button.data('service-type'); // e.g., "DJ", "Photobooth"
+    const contractId = $('#contractId').val();
+    const eventDate = $('#id_event_date').val();
 
-    console.log(`Button clicked. Role: ${role}, Service: ${serviceType}, Booking ID: ${bookingId}, Event Date: ${eventDate}`);
+    console.log(`Button clicked. Role: ${role}, Service: ${serviceType}, Event Date: ${eventDate}`);
 
+    // Normalize serviceType to capitalize only the first letter
+    serviceType = serviceType.charAt(0).toUpperCase() + serviceType.slice(1).toLowerCase();
+    console.log(`Normalized service type: ${serviceType}`);
+
+    // Validate event date
     if (!eventDate) {
-        alert('Event date is required to fetch available staff.');
-        console.error('Event date is missing.');
+        alert('Event date is required to proceed.');
         return;
     }
 
-    // Open the modal
-    console.log('Opening modal...');
-    $('#bookingModal').modal('show');
-
-    // Prepopulate fields in the modal
-    $('#id_role').val(role);
-    $('#id_booking_id').val(bookingId);
-
-    const staffSelect = $('#id_staff');
-    staffSelect.empty(); // Clear existing options
-    staffSelect.append(new Option('Select Staff', '')); // Add a default "Select Staff" option
-
-    // Fetch current booking data if editing an existing booking
-    if (bookingId) {
-        console.log('Fetching current booking data...');
-        fetch(`/bookings/get_current_booking/?contract_id=${$('#contractId').val()}&role=${role}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.current_booking) {
-                    console.log('Populating modal with current booking data:', data.current_booking);
-
-                    // Populate fields based on current booking
-                    $('#id_status').val(data.current_booking.status || 'BOOKED');
-                    $('#id_hours_booked').val(data.current_booking.hours_booked);
-                    $('#id_confirmed').prop('checked', data.current_booking.confirmed);
-
-                    // Add the assigned staff member to the dropdown and select it
-                    staffSelect.append(
-                        new Option(data.current_booking.staff_name, data.current_booking.staff_id, true, true)
-                    );
-                } else {
-                    console.log('No current booking found. Preparing for new booking.');
-                }
-            })
-            .catch(error => console.error('Error fetching current booking:', error));
+    // Determine the specific row's hidden field for validation
+    let fieldToCheck, hasService;
+    if (role === 'ENGAGEMENT') {
+        fieldToCheck = $('#hiddenSavedEngagementSessionId');
+        hasService = fieldToCheck.val() !== '';
+    } else if (role.includes('1')) {
+        fieldToCheck = $(`#hiddenSaved${serviceType}PackageId`);
+        hasService = fieldToCheck.val() !== '';
+    } else if (role.includes('2')) {
+        fieldToCheck = $(`#hiddenSaved${serviceType}AdditionalStaffId`);
+        hasService = fieldToCheck.val() !== '';
     } else {
-        console.log('Preparing modal for a new booking.');
-        $('#id_status').val(role.includes('PROSPECT') ? 'PROSPECT' : 'BOOKED');
-        $('#id_hours_booked').val('');
-        $('#id_confirmed').prop('checked', false);
+        fieldToCheck = null;
+        hasService = false;
     }
 
-    // Fetch available staff for the selected role and event date
-    console.log('Fetching available staff...');
-    fetch(`/bookings/get_available_staff/?role=${role}&event_date=${eventDate}&service_type=${serviceType}`)
+    console.log(`Field to check: ${fieldToCheck?.attr('id') || 'undefined'}, Value: ${fieldToCheck?.val() || 'undefined'}`);
+
+    // Block modal if no service is assigned for this row
+    if (!hasService) {
+        const message = `No ${serviceType} service assigned for the selected role (${role}). Modal will not open.`;
+        console.warn(message);
+        alert(message);
+        return;
+    }
+
+    // Clear modal fields
+    $('#id_role').val(role);
+    $('#id_booking_id').val('');
+    $('#id_status').val('');
+    $('#id_hours_booked').val('');
+    $('#id_confirmed').prop('checked', false);
+    $('#id_staff').empty().append(new Option('Select Staff', ''));
+
+    // Set modal title
+    $('#bookingModalLabel').text('Assign or Edit Staff');
+
+    // Fetch available staff for the role and service type
+    const staffKey = role === 'ENGAGEMENT' ? 'photographers' : `${serviceType.toLowerCase()}_staff`;
+
+    fetch(`/bookings/get_available_staff/?event_date=${eventDate}&service_type=${serviceType}`)
         .then(response => {
             if (!response.ok) {
-                throw new Error(`Error fetching available staff: ${response.statusText}`);
+                throw new Error('Failed to fetch available staff.');
             }
             return response.json();
         })
         .then(data => {
-            console.log('Available staff:', data);
+            console.log('Available staff data received:', data);
+            console.log('Staff key:', staffKey);
 
-            // Populate staff dropdown without IDs
-            const staffKey = `${serviceType.toLowerCase()}_staff`;
-            if (data[staffKey]) {
+            const staffSelect = $('#id_staff');
+
+            if (data[staffKey] && data[staffKey].length > 0) {
                 data[staffKey].forEach(staff => {
-                    staffSelect.append(new Option(staff.name, staff.id)); // Only display name
+                    staffSelect.append(new Option(staff.name, staff.id));
                 });
+                console.log('Available staff added to dropdown.');
+            } else {
+                console.warn(`No staff available for the selected service type: ${serviceType}`);
+                staffSelect.append(new Option('No staff available', ''));
             }
         })
-        .catch(error => console.error('Error fetching available staff:', error));
+        .catch(error => {
+            console.error('Error fetching available staff:', error);
+            alert('Could not fetch available staff. Please try again later.');
+        });
+
+    // Fetch existing booking data
+    fetch(`/bookings/get_current_booking/?contract_id=${contractId}&role=${role}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch booking data.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.current_booking && Object.keys(data.current_booking).length > 0) {
+                console.log('Populating modal with existing booking data:', data.current_booking);
+
+                // Populate modal fields with existing booking data
+                $('#id_booking_id').val(data.current_booking.id);
+                $('#id_status').val(data.current_booking.status || 'BOOKED');
+                $('#id_hours_booked').val(data.current_booking.hours_booked || '');
+                $('#id_confirmed').prop('checked', data.current_booking.confirmed);
+
+                // Add the assigned staff member to the dropdown and select it
+                const currentStaffOption = new Option(
+                    data.current_booking.staff_name,
+                    data.current_booking.staff_id,
+                    true,
+                    true
+                );
+                $('#id_staff').append(currentStaffOption);
+            } else {
+                console.log('No existing booking found. Preparing modal for a new booking.');
+                $('#id_status').val(role.includes('PROSPECT') ? 'PROSPECT' : 'BOOKED'); // Default status
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching booking data:', error);
+            alert('Could not fetch booking data. Please try again later.');
+        });
+
+    // Show the modal
+    $('#bookingModal').modal('show');
 });
 
-$('#deleteBooking').on('click', function() {
-        const bookingId = $('#id_booking_id').val();
-        const contractId = $('#contractId').val();
-        const role = $('#id_role').val().toLowerCase();
 
-        console.log('Attempting to delete booking with ID:', bookingId);
+$(document).on('click', '#deleteBooking', function (event) {
+    console.log('Delete button clicked'); // Debug log
+    const bookingId = $('#id_booking_id').val(); // Get the booking ID from the modal field
+    const contractId = $('#contractId').val(); // Get the contract ID for additional context
 
-        if (!bookingId) {
-            console.error("No booking ID found for deletion.");
-            alert("No booking ID found for deletion.");
-            return;
-        }
+    if (!bookingId) {
+        alert('No booking ID provided. Cannot delete.');
+        return;
+    }
 
-        if (confirm('Are you sure you want to delete this booking?')) {
-            fetch(`/bookings/booking/${bookingId}/clear/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => {
+    if (confirm('Are you sure you want to delete this booking?')) {
+        fetch(`/bookings/booking/${bookingId}/clear/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json',
+            },
+        })
+            .then((response) => {
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    throw new Error(`Failed to delete booking. HTTP Status: ${response.status}`);
                 }
-                return response.text();
+                return response.json();
             })
-            .then(() => {
-                console.log('Booking deleted successfully');
-                $('#bookingModal').modal('hide');
-                $(`#assigned-${role}`).text("None assigned");
-                $('body').removeClass('modal-open');
-                $('.modal-backdrop').remove();
+            .then((data) => {
+                console.log('Server response:', data); // Debug log
+                if (data.success) {
+                    alert(data.message);
+
+                    // Clear assigned staff field in the UI
+                    const assignedField = document.getElementById(`assigned-${data.role.toLowerCase()}`);
+                    if (assignedField) {
+                        assignedField.textContent = 'None assigned';
+                    }
+
+                    // Close the modal and reset the form
+                    $('#bookingModal').modal('hide');
+                    $('body').removeClass('modal-open');
+                    $('.modal-backdrop').remove();
+                    $('#bookingForm').trigger('reset'); // Reset the modal form
+                } else {
+                    alert('Error deleting booking: ' + (data.message || 'Unknown error.'));
+                }
             })
-            .catch(error => {
-                console.error('Error deleting booking:', error);
-                alert('Error clearing booking: ' + error.message);
+            .catch((error) => {
+                console.error('Error during booking deletion:', error);
+                alert('Error deleting booking. Please try again later.');
             });
-        }
-    });
+    }
+});
 
 
     document.addEventListener("DOMContentLoaded", () => {

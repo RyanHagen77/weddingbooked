@@ -15,21 +15,10 @@
     <td id="assigned-{{ role|lower }}"></td>
     <td>
         <button type="button" class="btn btn-dusty-pink book-button"
-                data-toggle="modal"
-                data-role="{{ role }}"
-                data-service-type="{{ service }}">
-            Assign
-        </button>
-        <button type="button" class="btn btn-dusty-pink edit-button"
-                data-toggle="modal"
                 data-role="{{ role }}"
                 data-service-type="{{ service }}"
-                {% if booking %}
-                    data-booking-id="{{ booking.id }}"
-                {% else %}
-                    data-booking-id=""
-                {% endif %}>
-            Edit
+                data-toggle="modal">
+            Assign or Edit
         </button>
     </td>
 </tr>

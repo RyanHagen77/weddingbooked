@@ -342,42 +342,44 @@ def confirm_booking(request, booking_id):
         messages.success(request, 'Your attendance has been confirmed.')
     return redirect('bookings:booking_detail_staff', booking_id=booking_id)
 
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+
 @require_http_methods(["POST"])
 @login_required
 def clear_booking(request, booking_id):
-    """
-    Deletes a specific booking and updates related data.
-    """
-    booking = get_object_or_404(EventStaffBooking, id=booking_id)
-    contract = booking.contract
+    try:
+        booking = get_object_or_404(EventStaffBooking, id=booking_id)
+        contract = booking.contract
 
-    logger.info("Attempting to delete booking with ID: %d", booking_id)
+        # Update staff availability
+        if booking.staff:
+            Availability.objects.update_or_create(
+                staff=booking.staff,
+                date=contract.event_date,
+                defaults={'available': True}
+            )
 
-    if booking.staff:
-        # Mark the staff as available
-        Availability.objects.update_or_create(
-            staff=booking.staff,
-            date=contract.event_date,
-            defaults={'available': True}
+        # Remove role assignment
+        role_field = SERVICE_ROLE_MAPPING.get(booking.role, None)
+        if role_field and hasattr(contract, role_field):
+            setattr(contract, role_field, None)
+            contract.save()
+
+        # Delete booking
+        booking.delete()
+
+        # Log the change
+        ChangeLog.objects.create(
+            user=request.user,
+            description=f"Deleted booking for {booking.role}.",
+            contract=contract
         )
-        logger.info("Restored availability for staff: %s", booking.staff.get_full_name())
 
-    role_field = SERVICE_ROLE_MAPPING.get(booking.role, None)
-    if role_field and hasattr(contract, role_field):
-        setattr(contract, role_field, None)
-        contract.save()
-
-    ChangeLog.objects.create(
-        user=request.user,
-        description=f"Deleted booking for {booking.role} ({booking.staff.get_full_name()}).",
-        contract=contract
-    )
-
-    booking.delete()
-    messages.success(request, f'Booking for {booking.staff.get_full_name()} has been cleared!')
-
-    next_url = request.POST.get('next', reverse('contracts:contract_detail', args=[contract.contract_id]) + "#services")
-    return redirect(next_url)
+        return JsonResponse({'success': True, 'message': 'Booking cleared successfully!', 'role': booking.role})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=400)
 
 
 def get_booking_context(booking_id):

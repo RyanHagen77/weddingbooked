@@ -15,26 +15,10 @@
     <td id="engagement-session-staff"></td>
     <td>
         <button type="button" class="btn btn-dusty-pink book-button"
-                data-toggle="modal"
                 data-role="ENGAGEMENT"
                 data-service-type="Engagement"
-                {% if contract.engagement_session %}
-                    data-session-id="{{ contract.engagement_session.id }}"
-                {% else %}
-                    data-session-id=""
-                {% endif %}>
-            Assign
-        </button>
-        <button type="button" class="btn btn-dusty-pink edit-button"
-                data-toggle="modal"
-                data-role="ENGAGEMENT"
-                data-service-type="Engagement"
-                {% if booking %}
-                    data-booking-id="{{ booking.id }}"
-                {% else %}
-                    data-booking-id=""
-                {% endif %}>
-            Edit
+                data-toggle="modal">
+            Assign or Edit
         </button>
     </td>
 </tr>
