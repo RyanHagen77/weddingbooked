@@ -6,42 +6,24 @@
     <div class="search-results">
         <h4>Sales Detail by Contract</h4>
         <button onclick="history.back()" class="btn-dusty-pink">Go Back</button>
-
-        <form method="get" class="report-form">
-            <label for="start_date">Start Date:</label>
-            <input type="date" id="start_date" name="start_date" value="{{ start_date }}" required>
-            <label for="end_date">End Date:</label>
-            <input type="date" id="end_date" name="end_date" value="{{ end_date }}" required>
-            <label for="location">Location:</label>
-            <select id="location" name="location">
-                <option value="all" {% if selected_location == 'all' %}selected{% endif %}>All Locations</option>
-                {% for location in locations %}
-                <option value="{{ location.id }}" {% if selected_location == location.id|stringformat:"s" %}selected{% endif %}>{{ location.name }}</option>
-                {% endfor %}
-            </select>
-            <label for="group_by">Group By:</label>
-            <select id="group_by" name="group_by">
-                <option value="week" {% if group_by == 'week' %}selected{% endif %}>Week</option>
-                <option value="month" {% if group_by == 'month' %}selected{% endif %}>Month</option>
-            </select>
-            <button type="submit">Filter Report</button>
-        </form>
-            <div class="search-results">
-                <h6>{{ group_by|capfirst }}ly Contract Breakdown between {{ start_date }} and {{ end_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Contract Number</th>
-                            <th>Location</th>
-                            <th>Service Sales</th>
-                            <th>Product Sales</th>
-                            <th>Taxable Products Sold</th>
-                            <th>Sales Tax Collected</th>
-                            <th>Other Revenue</th>
-                            <th>Total Sales w/ Tax</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+        <div class="search-results">
+            <h6>Contract Breakdown from {{ start_date }} to {{ end_date }} for
+                {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}
+            </h6>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Contract Number</th>
+                        <th>Location</th>
+                        <th>Service Sales</th>
+                        <th>Product Sales</th>
+                        <th>Taxable Products Sold</th>
+                        <th>Sales Tax Collected</th>
+                        <th>Total Sales w/ Tax</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if contract_data %}
                         {% for data in contract_data %}
                         <tr>
                             <td><a href="{% url 'contracts:contract_detail' data.contract_id %}">{{ data.custom_contract_number }}</a></td>
@@ -50,28 +32,28 @@
                             <td>${{ data.products_revenue|floatformat:2 }}</td>
                             <td>${{ data.taxable_products_revenue|floatformat:2 }}</td>
                             <td>${{ data.tax_collected|floatformat:2 }}</td>
-                            <td>${{ data.other_revenue|floatformat:2 }}</td>
                             <td>${{ data.total_revenue|floatformat:2 }}</td>
                         </tr>
                         {% endfor %}
-                    </tbody>
-                    <tfoot>
+                    {% else %}
                         <tr>
-                            <th colspan="2">Totals</th>
-                            <th>${{ total_service_revenue|floatformat:2 }}</th>
-                            <th>${{ total_products_revenue|floatformat:2 }}</th>
-                            <th>${{ total_taxable_products_revenue|floatformat:2 }}</th>
-                            <th>${{ total_tax_collected|floatformat:2 }}</th>
-                            <th>${{ total_other_revenue|floatformat:2 }}</th>
-                            <th>${{ total_revenue|floatformat:2 }}</th>
+                            <td colspan="7">No records found for the selected criteria.</td>
                         </tr>
-                    </tfoot>
-                </table>
-            </div>
+                    {% endif %}
+                </tbody>
+
+                <tfoot>
+                    <tr>
+                        <th colspan="2">Totals</th>
+                        <th>${{ total_service_revenue|floatformat:2 }}</th>
+                        <th>${{ total_products_revenue|floatformat:2 }}</th>
+                        <th>${{ total_taxable_products_revenue|floatformat:2 }}</th>
+                        <th>${{ total_tax_collected|floatformat:2 }}</th>
+                        <th>${{ total_revenue|floatformat:2 }}</th>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>
 </div>
 {% endblock %}
-
-

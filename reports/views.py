@@ -43,6 +43,57 @@ def reports(request):
 
     return render(request, 'reports/reports.html', context)
 
+DATE_RANGE_DISPLAY = {
+    'current_quarter': 'Current Quarter',
+    'last_quarter': 'Last Quarter',
+    'this_month': 'This Month',
+    'last_month': 'Last Month',
+    'this_year': 'This Year',
+    'last_year': 'Last Year',
+}
+
+def get_date_range(date_range):
+    today = datetime.today()
+    if date_range == 'current_quarter':
+        quarter = (today.month - 1) // 3 + 1
+        start_month = 3 * quarter - 2
+        start_date = datetime(today.year, start_month, 1)
+        end_month = start_month + 2
+        end_date = datetime(today.year, end_month, calendar.monthrange(today.year, end_month)[1])
+    elif date_range == 'last_quarter':
+        quarter = (today.month - 1) // 3
+        if quarter == 0:
+            start_date = datetime(today.year - 1, 10, 1)
+            end_date = datetime(today.year - 1, 12, 31)
+        else:
+            start_month = 3 * quarter - 2
+            start_date = datetime(today.year, start_month, 1)
+            end_month = start_month + 2
+            end_date = datetime(today.year, end_month, calendar.monthrange(today.year, end_month)[1])
+    elif date_range == 'this_month':
+        start_date = today.replace(day=1)
+        end_date = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+    elif date_range == 'last_month':
+        first_day_of_current_month = today.replace(day=1)
+        last_day_of_last_month = first_day_of_current_month - timedelta(days=1)
+        start_date = last_day_of_last_month.replace(day=1)
+        end_date = last_day_of_last_month
+    elif date_range == 'this_year':
+        start_date = datetime(today.year, 1, 1)
+        end_date = datetime(today.year, 12, 31)
+    elif date_range == 'last_year':
+        start_date = datetime(today.year - 1, 1, 1)
+        end_date = datetime(today.year - 1, 12, 31)
+    else:
+        start_date = today.replace(day=1)
+        end_date = today
+
+    if start_date and is_naive(start_date):
+        start_date = make_aware(start_date)
+    if end_date and is_naive(end_date):
+        end_date = make_aware(end_date)
+    return start_date, end_date
+
 
 @login_required
 def lead_source_report(request):
@@ -887,206 +938,227 @@ def event_staff_payroll_report(request):
 
     return render(request, 'reports/event_staff_payroll_report.html', context)
 
-
-
 @login_required
 def sales_detail_report(request):
     """
     Generates a detailed sales report grouped by week or month.
-    Correctly associates pre-event products with balance payments
-    and post-event products with post-event payments.
+    Supports predefined and custom date ranges.
     """
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
-    # Get the current date
-    today = datetime.today()
-    first_day_of_month = today.replace(day=1)
-    last_day_of_month = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+    # Get date range and group_by selection from the request
+    date_range = request.GET.get('date_range', 'this_month')  # Default to "This Month"
+    start_date, end_date = get_date_range(date_range)
 
-    # Get start_date and end_date from request or default to current month
-    start_date = request.GET.get('start_date', first_day_of_month.strftime('%Y-%m-%d'))
-    end_date = request.GET.get('end_date', last_day_of_month.strftime('%Y-%m-%d'))
-    start_date_dt = datetime.strptime(start_date, '%Y-%m-%d')
-    end_date_dt = datetime.strptime(end_date, '%Y-%m-%d')
+    # Override with custom range if "custom" is selected
+    if date_range == 'custom':
+        custom_start = request.GET.get('start_date')
+        custom_end = request.GET.get('end_date')
+        if custom_start and custom_end:
+            start_date = datetime.strptime(custom_start, '%Y-%m-%d')
+            end_date = datetime.strptime(custom_end, '%Y-%m-%d')
 
-    selected_location = request.GET.get('location', 'all')
+    # Ensure end_date includes the full day
+    if start_date and end_date:
+        end_date += timedelta(days=1) - timedelta(seconds=1)
+
+    # Group by week or month
     group_by = request.GET.get('group_by', 'week')  # Default to grouping by week
+    selected_location = request.GET.get('location', 'all')
 
-    # Filter payments by date range
+    # Filter contracts and payments
+    contracts = Contract.objects.filter(contract_date__gte=start_date, contract_date__lte=end_date, status="booked")
+    if selected_location != 'all':
+        contracts = contracts.filter(location_id=selected_location)
+
     payments = Payment.objects.filter(date__gte=start_date, date__lte=end_date)
     if selected_location != 'all':
         payments = payments.filter(contract__location_id=selected_location)
 
     report_data = []
 
-    # Convert dates to datetime objects
-    start_date_dt = datetime.strptime(start_date, '%Y-%m-%d')
-    end_date_dt = datetime.strptime(end_date, '%Y-%m-%d')
-    current_date = start_date_dt
-
-    while current_date <= end_date_dt:
+    # Generate periods based on group_by selection
+    current_date = start_date
+    while current_date <= end_date:
         if group_by == 'week':
             period_end_date = current_date + timedelta(days=6)
-        else:
-            # Move to the end of the month
+        elif group_by == 'month':
             next_month = current_date.replace(day=28) + timedelta(days=4)
             period_end_date = next_month - timedelta(days=next_month.day)
+        else:
+            period_end_date = end_date
 
-        period_payments = payments.filter(date__gte=current_date, date__lte=period_end_date)
+        if period_end_date > end_date:
+            period_end_date = end_date
 
+        # Calculate service and product revenues
         service_revenue = Decimal('0.00')
         products_revenue = Decimal('0.00')
         taxable_products_revenue = Decimal('0.00')
         tax_collected = Decimal('0.00')
 
-        for payment in period_payments:
-            contract = payment.contract
+        for contract in contracts.filter(contract_date__gte=current_date, contract_date__lte=period_end_date):
+            total_service_cost = contract.calculate_total_service_cost()
+            total_discount = contract.calculate_discount()
+            service_revenue += max(total_service_cost - total_discount, Decimal('0.00'))
 
+        for payment in payments.filter(date__gte=current_date, date__lte=period_end_date):
+            contract = payment.contract
             payment_taxable_amount = Decimal('0.00')
 
-            # Process pre-event products for balance payments
             if payment.payment_purpose and payment.payment_purpose.name == "Balance Payment":
                 for cp in contract.contract_products.all():
                     if not cp.post_event:
                         product_revenue = Decimal(cp.quantity) * cp.product.price
+                        products_revenue += product_revenue
                         if cp.product.is_taxable:
                             taxable_products_revenue += product_revenue
                             payment_taxable_amount += product_revenue
 
-            # Process post-event products for post-event payments
             if payment.payment_purpose and payment.payment_purpose.name == "Post Event Payment":
                 for cp in contract.contract_products.all():
                     if cp.post_event:
                         product_revenue = Decimal(cp.quantity) * cp.product.price
-                        taxable_products_revenue += product_revenue
-                        payment_taxable_amount += product_revenue
+                        products_revenue += product_revenue
+                        if cp.product.is_taxable:
+                            taxable_products_revenue += product_revenue
+                            payment_taxable_amount += product_revenue
 
-            # Calculate the tax collected for this payment
             payment_tax = (payment_taxable_amount * Decimal(contract.location.tax_rate) / Decimal('100.00')).quantize(
                 Decimal('0.01'), rounding=ROUND_HALF_UP
             )
             tax_collected += payment_tax
 
-            # Add taxable product revenue to the total products revenue for this period
-            products_revenue += payment_taxable_amount
-
-        # Summarize revenue
         total_revenue = service_revenue + products_revenue + tax_collected
-
         report_data.append({
             'period_start': current_date.strftime('%Y-%m-%d'),
             'period_end': period_end_date.strftime('%Y-%m-%d'),
-            'service_revenue': service_revenue,
+            'service_revenue': service_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
             'products_revenue': products_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
             'taxable_products_revenue': taxable_products_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
             'tax_collected': tax_collected.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
             'total_revenue': total_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
         })
 
-        # Move to the next period
         current_date = period_end_date + timedelta(days=1)
 
     locations = Location.objects.all()
 
     context = {
         'logo_url': logo_url,
-        'start_date': start_date,
-        'end_date': end_date,
+        'date_range': date_range,
+        'start_date': start_date.strftime('%Y-%m-%d') if start_date else '',
+        'end_date': end_date.strftime('%Y-%m-%d') if end_date else '',
         'selected_location': selected_location,
         'locations': locations,
         'report_data': report_data,
-        'group_by': group_by
+        'DATE_RANGE_DISPLAY': DATE_RANGE_DISPLAY,
+        'group_by': group_by,
     }
 
     return render(request, 'reports/sales_detail_report.html', context)
-
 
 @login_required
 def sales_detail_by_contract(request):
     """
     Generates a detailed sales report grouped by contract.
-    Correctly associates pre-event products with balance payments
-    and post-event products with post-event payments.
+    Services are calculated by contract date, and products are calculated by payment date and purpose.
+    Only includes booked contracts. Respects the date range passed from the detail view.
     """
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
-    # Get the current date
-    today = datetime.today()
-    first_day_of_month = today.replace(day=1)
-    last_day_of_month = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+    # Get date range from query parameters
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
 
-    # Get start_date and end_date from request or default to current month
-    start_date = request.GET.get('start_date', first_day_of_month.strftime('%Y-%m-%d'))
-    end_date = request.GET.get('end_date', last_day_of_month.strftime('%Y-%m-%d'))
-    start_date_dt = datetime.strptime(start_date, '%Y-%m-%d')
-    end_date_dt = datetime.strptime(end_date, '%Y-%m-%d')
+    # If no date range is passed, default to "This Month"
+    if not start_date or not end_date:
+        start_date, end_date = get_date_range('this_month')
+    else:
+        start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        end_date = datetime.strptime(end_date, '%Y-%m-%d')
 
+    # Ensure end_date includes the full day
+    end_date += timedelta(days=1) - timedelta(seconds=1)
 
     selected_location = request.GET.get('location', 'all')
-    group_by = request.GET.get('group_by', 'week')  # Default to grouping by week
 
+    # Filter contracts by booked status and contract date
+    contracts = Contract.objects.filter(contract_date__gte=start_date, contract_date__lte=end_date, status="booked")
+    if selected_location != 'all':
+        contracts = contracts.filter(location_id=selected_location)
 
-    # Filter payments by date range
+    # Filter payments by payment date
     payments = Payment.objects.filter(date__gte=start_date, date__lte=end_date)
     if selected_location != 'all':
         payments = payments.filter(contract__location_id=selected_location)
 
     contract_data = []
-
     total_service_revenue = Decimal('0.00')
     total_products_revenue = Decimal('0.00')
     total_taxable_products_revenue = Decimal('0.00')
-    total_other_revenue = Decimal('0.00')
     total_tax_collected = Decimal('0.00')
     total_revenue = Decimal('0.00')
 
-    for payment in payments:
-        contract = payment.contract
+    for contract in contracts:
+        # Calculate service revenue based on contract date
+        total_service_cost = contract.calculate_total_service_cost()
+        total_discount = contract.calculate_discount()
+        net_service_revenue = max(total_service_cost - total_discount, Decimal('0.00'))
 
-        service_revenue = contract.calculate_total_service_cost()
+        # Initialize product revenue and taxes
         products_revenue = Decimal('0.00')
         taxable_products_revenue = Decimal('0.00')
         tax_collected = Decimal('0.00')
 
-        # Handle pre-event products with balance payments
-        if payment.payment_purpose and payment.payment_purpose.name == "Balance Payment":
-            for cp in contract.contract_products.all():
-                if not cp.post_event:
-                    product_revenue = Decimal(cp.quantity) * cp.product.price
-                    products_revenue += product_revenue
-                    if cp.product.is_taxable:
-                        taxable_products_revenue += product_revenue
+        # Process payments related to this contract
+        relevant_payments = payments.filter(contract=contract)
+        for payment in relevant_payments:
+            payment_taxable_amount = Decimal('0.00')
 
-        # Handle post-event products with post-event payments
-        if payment.payment_purpose and payment.payment_purpose.name == "Post Event Payment":
-            for cp in contract.contract_products.all():
-                if cp.post_event:
-                    product_revenue = Decimal(cp.quantity) * cp.product.price
-                    products_revenue += product_revenue
-                    if cp.product.is_taxable:
-                        taxable_products_revenue += product_revenue
+            # Handle pre-event products for balance payments
+            if payment.payment_purpose and payment.payment_purpose.name == "Balance Payment":
+                for cp in contract.contract_products.all():
+                    if not cp.post_event:
+                        product_revenue = Decimal(cp.quantity) * cp.product.price
+                        products_revenue += product_revenue
+                        if cp.product.is_taxable:
+                            taxable_products_revenue += product_revenue
+                            payment_taxable_amount += product_revenue
 
-        # Calculate tax for the current payment
-        current_tax_rate = contract.location.tax_rate
-        tax_collected = (taxable_products_revenue * Decimal(current_tax_rate) / Decimal('100.00')).quantize(
-            Decimal('0.01'), rounding=ROUND_HALF_UP
-        )
+            # Handle post-event products for post-event payments
+            if payment.payment_purpose and payment.payment_purpose.name == "Post Event Payment":
+                for cp in contract.contract_products.all():
+                    if cp.post_event:
+                        product_revenue = Decimal(cp.quantity) * cp.product.price
+                        products_revenue += product_revenue
+                        if cp.product.is_taxable:
+                            taxable_products_revenue += product_revenue
+                            payment_taxable_amount += product_revenue
+
+            # Calculate tax for this payment
+            payment_tax = (payment_taxable_amount * Decimal(contract.location.tax_rate) / Decimal('100.00')).quantize(
+                Decimal('0.01'), rounding=ROUND_HALF_UP
+            )
+            tax_collected += payment_tax
 
         # Calculate total revenue for the contract
-        total_revenue_per_contract = service_revenue + products_revenue + tax_collected
+        total_revenue_per_contract = net_service_revenue + products_revenue + tax_collected
 
+        # Append contract data
         contract_data.append({
             'contract_id': contract.contract_id,
             'custom_contract_number': contract.custom_contract_number,
             'location': contract.location.name,
-            'service_revenue': service_revenue,
+            'service_revenue': net_service_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
             'products_revenue': products_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
             'taxable_products_revenue': taxable_products_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
             'tax_collected': tax_collected.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
             'total_revenue': total_revenue_per_contract.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
         })
 
-        total_service_revenue += service_revenue
+        # Update totals
+        total_service_revenue += net_service_revenue
         total_products_revenue += products_revenue
         total_taxable_products_revenue += taxable_products_revenue
         total_tax_collected += tax_collected
@@ -1096,12 +1168,11 @@ def sales_detail_by_contract(request):
 
     context = {
         'logo_url': logo_url,
-        'start_date': start_date,
-        'end_date': end_date,
+        'start_date': start_date.strftime('%Y-%m-%d'),
+        'end_date': end_date.strftime('%Y-%m-%d'),
         'selected_location': selected_location,
         'locations': locations,
         'contract_data': contract_data,
-        'group_by': group_by,
         'total_service_revenue': total_service_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
         'total_products_revenue': total_products_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
         'total_taxable_products_revenue': total_taxable_products_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
@@ -1111,58 +1182,6 @@ def sales_detail_by_contract(request):
 
     return render(request, 'reports/sales_detail_by_contract.html', context)
 
-
-DATE_RANGE_DISPLAY = {
-    'current_quarter': 'Current Quarter',
-    'last_quarter': 'Last Quarter',
-    'this_month': 'This Month',
-    'last_month': 'Last Month',
-    'this_year': 'This Year',
-    'last_year': 'Last Year',
-}
-
-def get_date_range(date_range):
-    today = datetime.today()  # Use naive datetime here
-    if date_range == 'current_quarter':
-        quarter = (today.month - 1) // 3 + 1
-        start_month = 3 * quarter - 2
-        start_date = datetime(today.year, start_month, 1)
-        end_month = start_month + 2
-        end_date = datetime(today.year, end_month, calendar.monthrange(today.year, end_month)[1])
-    elif date_range == 'last_quarter':
-        quarter = (today.month - 1) // 3
-        if quarter == 0:
-            start_date = datetime(today.year - 1, 10, 1)
-            end_date = datetime(today.year - 1, 12, 31)
-        else:
-            start_month = 3 * quarter - 2
-            start_date = datetime(today.year, start_month, 1)
-            end_month = start_month + 2
-            end_date = datetime(today.year, end_month, calendar.monthrange(today.year, end_month)[1])
-    elif date_range == 'this_month':
-        start_date = today.replace(day=1)
-        end_date = today.replace(day=calendar.monthrange(today.year, today.month)[1])
-    elif date_range == 'last_month':
-        first_day_of_current_month = today.replace(day=1)
-        last_day_of_last_month = first_day_of_current_month - timedelta(days=1)
-        start_date = last_day_of_last_month.replace(day=1)
-        end_date = last_day_of_last_month.replace(hour=23, minute=59, second=59)  # Exact end of last month
-    elif date_range == 'this_year':
-        start_date = datetime(today.year, 1, 1)
-        end_date = datetime(today.year, 12, 31)
-    elif date_range == 'last_year':
-        start_date = datetime(today.year - 1, 1, 1)
-        end_date = datetime(today.year - 1, 12, 31)
-    else:
-        start_date = None
-        end_date = None
-
-    # Return timezone-aware datetimes
-    if start_date and is_naive(start_date):
-        start_date = make_aware(start_date)
-    if end_date and is_naive(end_date):
-        end_date = make_aware(end_date)
-    return start_date, end_date
 
 
 @login_required
