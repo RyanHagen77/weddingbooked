@@ -948,7 +948,6 @@ def sales_detail_report(request):
     """
     Generates a detailed sales report grouped by week or month.
     Supports predefined and custom date ranges.
-    Includes service fees (other charges) in the report.
     """
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
@@ -979,7 +978,6 @@ def sales_detail_report(request):
     # Filter payments for "booked" contracts only
     payments = Payment.objects.filter(date__gte=start_date, date__lte=end_date, contract__status="booked")
     if selected_location != 'all':
-        contracts = contracts.filter(location_id=selected_location)
         payments = payments.filter(contract__location_id=selected_location)
 
     report_data = []
@@ -1003,19 +1001,14 @@ def sales_detail_report(request):
         products_revenue = Decimal('0.00')
         taxable_products_revenue = Decimal('0.00')
         tax_collected = Decimal('0.00')
-        service_fees = Decimal('0.00')  # Other charges
 
-        # Calculate service revenue and service fees (other charges) for booked contracts
+        # Calculate service revenue for booked contracts
         for contract in contracts.filter(contract_date__gte=current_date, contract_date__lte=period_end_date):
-            total_service_cost = Decimal(contract.calculate_total_service_cost() or 0)
-            total_discount = Decimal(contract.calculate_discount() or 0)
-            net_service_revenue = max(total_service_cost - total_discount, Decimal('0.00'))
-            service_revenue += net_service_revenue
+            total_service_cost = contract.calculate_total_service_cost()
+            total_discount = contract.calculate_discount()
+            service_revenue += max(total_service_cost - total_discount, Decimal('0.00'))
 
-            # Calculate service fees
-            service_fees += Decimal(contract.calculate_total_service_fees() or 0)
-
-        # Calculate product revenue and tax from payments related to booked contracts
+        # Calculate product revenue from payments related to booked contracts
         for payment in payments.filter(date__gte=current_date, date__lte=period_end_date):
             contract = payment.contract
             payment_taxable_amount = Decimal('0.00')
@@ -1023,7 +1016,7 @@ def sales_detail_report(request):
             if payment.payment_purpose and payment.payment_purpose.name == "Balance Payment":
                 for cp in contract.contract_products.all():
                     if not cp.post_event:
-                        product_revenue = Decimal(cp.quantity) * Decimal(cp.product.price or 0)
+                        product_revenue = Decimal(cp.quantity) * cp.product.price
                         products_revenue += product_revenue
                         if cp.product.is_taxable:
                             taxable_products_revenue += product_revenue
@@ -1032,21 +1025,20 @@ def sales_detail_report(request):
             if payment.payment_purpose and payment.payment_purpose.name == "Post Event Payment":
                 for cp in contract.contract_products.all():
                     if cp.post_event:
-                        product_revenue = Decimal(cp.quantity) * Decimal(cp.product.price or 0)
+                        product_revenue = Decimal(cp.quantity) * cp.product.price
                         products_revenue += product_revenue
                         if cp.product.is_taxable:
                             taxable_products_revenue += product_revenue
                             payment_taxable_amount += product_revenue
 
             # Calculate tax for the payment
-            payment_tax = (
-                        payment_taxable_amount * Decimal(contract.location.tax_rate or 0) / Decimal('100.00')).quantize(
+            payment_tax = (payment_taxable_amount * Decimal(contract.location.tax_rate) / Decimal('100.00')).quantize(
                 Decimal('0.01'), rounding=ROUND_HALF_UP
             )
             tax_collected += payment_tax
 
         # Calculate the total revenue
-        total_revenue = service_revenue + products_revenue + tax_collected + service_fees
+        total_revenue = service_revenue + products_revenue + tax_collected
         report_data.append({
             'period_start': current_date.strftime('%Y-%m-%d'),
             'period_end': period_end_date.strftime('%Y-%m-%d'),
@@ -1054,7 +1046,6 @@ def sales_detail_report(request):
             'products_revenue': products_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
             'taxable_products_revenue': taxable_products_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
             'tax_collected': tax_collected.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
-            'service_fees': service_fees.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),  # Include other charges
             'total_revenue': total_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
         })
 
@@ -1075,6 +1066,8 @@ def sales_detail_report(request):
     }
 
     return render(request, 'reports/sales_detail_report.html', context)
+
+
 
 
 @login_required
