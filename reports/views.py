@@ -52,47 +52,80 @@ DATE_RANGE_DISPLAY = {
     'last_year': 'Last Year',
 }
 
-def get_date_range(date_range):
+from datetime import datetime, timedelta
+import calendar
+
+def get_date_range(date_range, period=None):
+    """
+    Returns the start and end date for a given predefined date range.
+    If period is given ('monthly' or 'weekly'), it generates the corresponding date range.
+    """
     today = datetime.today()
+
+    # Handle predefined date ranges
     if date_range == 'current_quarter':
         quarter = (today.month - 1) // 3 + 1
         start_month = 3 * quarter - 2
         start_date = datetime(today.year, start_month, 1)
         end_month = start_month + 2
-        end_date = datetime(today.year, end_month, calendar.monthrange(today.year, end_month)[1])
+        end_date = datetime(today.year, end_month, calendar.monthrange(today.year, end_month)[1], 23, 59, 59)
     elif date_range == 'last_quarter':
         quarter = (today.month - 1) // 3
         if quarter == 0:
             start_date = datetime(today.year - 1, 10, 1)
-            end_date = datetime(today.year - 1, 12, 31)
+            end_date = datetime(today.year - 1, 12, 31, 23, 59, 59)
         else:
             start_month = 3 * quarter - 2
             start_date = datetime(today.year, start_month, 1)
             end_month = start_month + 2
-            end_date = datetime(today.year, end_month, calendar.monthrange(today.year, end_month)[1])
+            end_date = datetime(today.year, end_month, calendar.monthrange(today.year, end_month)[1], 23, 59, 59)
     elif date_range == 'this_month':
         start_date = today.replace(day=1)
-        end_date = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+        end_date = today.replace(day=calendar.monthrange(today.year, today.month)[1], hour=23, minute=59, second=59)
     elif date_range == 'last_month':
         first_day_of_current_month = today.replace(day=1)
         last_day_of_last_month = first_day_of_current_month - timedelta(days=1)
         start_date = last_day_of_last_month.replace(day=1)
-        end_date = last_day_of_last_month
+        end_date = last_day_of_last_month.replace(hour=23, minute=59, second=59)
     elif date_range == 'this_year':
         start_date = datetime(today.year, 1, 1)
-        end_date = datetime(today.year, 12, 31)
+        end_date = datetime(today.year, 12, 31, 23, 59, 59)
     elif date_range == 'last_year':
         start_date = datetime(today.year - 1, 1, 1)
-        end_date = datetime(today.year - 1, 12, 31)
+        end_date = datetime(today.year - 1, 12, 31, 23, 59, 59)
     else:
+        # Default to the current month if the date range is invalid
         start_date = today.replace(day=1)
-        end_date = today
+        end_date = today.replace(day=calendar.monthrange(today.year, today.month)[1], hour=23, minute=59, second=59)
 
-    if start_date and is_naive(start_date):
-        start_date = make_aware(start_date)
-    if end_date and is_naive(end_date):
-        end_date = make_aware(end_date)
-    return start_date, end_date
+    # Handle monthly and weekly periods
+    if period is None:
+        # Return a single start and end date when period is not specified
+        return start_date, end_date
+
+    if period == 'monthly':
+        # Generate monthly ranges (returns the first month in the period)
+        start_month = start_date.replace(day=1)
+        end_month = end_date.replace(day=1)
+        current_month = start_month
+        month_ranges = []
+        while current_month <= end_month:
+            month_ranges.append((current_month, current_month.replace(day=calendar.monthrange(current_month.year, current_month.month)[1])))
+            next_month = current_month + timedelta(days=calendar.monthrange(current_month.year, current_month.month)[1])
+            current_month = next_month.replace(day=1)
+        return month_ranges  # Return a list of tuples (start_date, end_date) for each month
+
+    elif period == 'weekly':
+        # Generate weekly ranges (returns a list of weeks in the period)
+        start_week = start_date - timedelta(days=start_date.weekday())  # Start of the week (Monday)
+        end_week = end_date - timedelta(days=end_date.weekday())  # Start of the week (Monday)
+        week_ranges = []
+        current_week = start_week
+        while current_week <= end_week:
+            week_ranges.append((current_week, current_week + timedelta(days=6)))  # A full week range (start and end date)
+            current_week += timedelta(days=7)  # Move to the next week
+        return week_ranges  # Return a list of tuples (week_start, week_end)
+
 
 
 @login_required
@@ -104,23 +137,10 @@ def lead_source_report(request):
     end_date_str = request.GET.get('end_date')
     location_id = request.GET.get('location', 'all')
     period = request.GET.get('period', 'monthly')
+    date_range = request.GET.get('date_range', 'this_month')  # Added date_range for date selection
 
-    # Default date range to current month if not provided
-    today = datetime.today()
-    first_day_of_month = today.replace(day=1)
-    last_day_of_month = today.replace(day=calendar.monthrange(today.year, today.month)[1])
-
-    if not start_date_str:
-        start_date = first_day_of_month
-        start_date_str = start_date.strftime('%Y-%m-%d')
-    else:
-        start_date = parse_date(start_date_str)
-
-    if not end_date_str:
-        end_date = last_day_of_month
-        end_date_str = end_date.strftime('%Y-%m-%d')
-    else:
-        end_date = parse_date(end_date_str)
+    # Use get_date_range function to get start and end dates for the selected date range
+    start_date, end_date = get_date_range(date_range)
 
     # Filter contracts based on location and contract date
     if location_id == 'all':
@@ -184,15 +204,16 @@ def lead_source_report(request):
     context = {
         'logo_url': logo_url,
         'report_data': report_data,
-        'start_date': start_date_str,
-        'end_date': end_date_str,
+        'start_date': start_date.strftime('%Y-%m-%d'),
+        'end_date': end_date.strftime('%Y-%m-%d'),
         'locations': locations,
         'selected_location': location_id,
         'selected_period': period,
+        'date_range': date_range,  # Passed to template to maintain selected range
+        'DATE_RANGE_DISPLAY': DATE_RANGE_DISPLAY,  # Pass the date range options to template
     }
 
     return render(request, 'reports/lead_source_report.html', context)
-
 
 @login_required
 def appointments_report(request):
@@ -203,23 +224,10 @@ def appointments_report(request):
     end_date_str = request.GET.get('end_date')
     location_id = request.GET.get('location', 'all')
     period = request.GET.get('period', 'monthly')
+    date_range = request.GET.get('date_range', 'this_month')  # Added date_range for date selection
 
-    # Default date range to current month if not provided
-    today = datetime.today()
-    first_day_of_month = today.replace(day=1)
-    last_day_of_month = today.replace(day=calendar.monthrange(today.year, today.month)[1])
-
-    if not start_date_str:
-        start_date = first_day_of_month
-        start_date_str = start_date.strftime('%Y-%m-%d')
-    else:
-        start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
-
-    if not end_date_str:
-        end_date = last_day_of_month
-        end_date_str = end_date.strftime('%Y-%m-%d')
-    else:
-        end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+    # Use get_date_range function to get start and end dates for the selected date range
+    start_date, end_date = get_date_range(date_range)
 
     # Filter contracts based on location and ensure contracts have at least one service
     if location_id == 'all':
@@ -356,11 +364,13 @@ def appointments_report(request):
         'logo_url': logo_url,
         'report_data': report_data,
         'sales_data': sales_data,
-        'start_date': start_date_str,
-        'end_date': end_date_str,
+        'start_date': start_date.strftime('%Y-%m-%d'),
+        'end_date': end_date.strftime('%Y-%m-%d'),
         'locations': locations,
         'selected_location': location_id,
         'selected_period': period,
+        'date_range': date_range,  # Passed to template to maintain selected range
+        'DATE_RANGE_DISPLAY': DATE_RANGE_DISPLAY,  # Pass the date range options to template
     }
 
     return render(request, 'reports/appointments_report.html', context)
@@ -370,34 +380,28 @@ def appointments_report(request):
 def reception_venue_report(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
-    # Get date range, location, and period from request
-    start_date_str = request.GET.get('start_date')
-    end_date_str = request.GET.get('end_date')
-    location_id = request.GET.get('location', 'all')
-    period = request.GET.get('period', 'monthly')
+    # Get date range and period from request
+    date_range = request.GET.get('date_range', 'this_month')
+    period = request.GET.get('period', 'monthly')  # Default to grouping by month
+    start_date, end_date = get_date_range(date_range)
 
-    # Default date range to current month if not provided
-    today = datetime.today()
-    first_day_of_month = today.replace(day=1)
-    last_day_of_month = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+    selected_location = request.GET.get('location', 'all')
 
-    if not start_date_str:
-        start_date = first_day_of_month
-        start_date_str = start_date.strftime('%Y-%m-%d')
-    else:
-        start_date = parse_date(start_date_str)
+    # If the date range is 'custom', allow custom start and end date input
+    if date_range == 'custom':
+        custom_start = request.GET.get('start_date')
+        custom_end = request.GET.get('end_date')
+        if custom_start and custom_end:
+            start_date = datetime.strptime(custom_start, '%Y-%m-%d')
+            end_date = datetime.strptime(custom_end, '%Y-%m-%d')
+            # Ensure end_date includes the entire day
+            end_date = end_date.replace(hour=23, minute=59, second=59)
 
-    if not end_date_str:
-        end_date = last_day_of_month
-        end_date_str = end_date.strftime('%Y-%m-%d')
-    else:
-        end_date = parse_date(end_date_str)
-
-    # Filter contracts based on location and event date
-    if location_id == 'all':
+    # Filter contracts based on location and event date (allow future dates)
+    if selected_location == 'all':
         contracts = Contract.objects.filter(event_date__range=(start_date, end_date))
     else:
-        contracts = Contract.objects.filter(event_date__range=(start_date, end_date), location_id=location_id)
+        contracts = Contract.objects.filter(event_date__range=(start_date, end_date), location_id=selected_location)
 
     # Function to generate a list of months in the date range
     def month_range(start_date, end_date):
@@ -471,11 +475,13 @@ def reception_venue_report(request):
     context = {
         'logo_url': logo_url,
         'report_data': report_data,
-        'start_date': start_date_str,
-        'end_date': end_date_str,
+        'start_date': start_date.strftime('%Y-%m-%d'),
+        'end_date': end_date.strftime('%Y-%m-%d'),
         'locations': locations,
-        'selected_location': location_id,
+        'selected_location': selected_location,
         'selected_period': period,
+        'date_range': date_range,  # Passed to template to maintain selected range
+        'DATE_RANGE_DISPLAY': DATE_RANGE_DISPLAY,  # Pass the date range options to template
     }
 
     return render(request, 'reports/reception_venue_report.html', context)
@@ -621,7 +627,6 @@ def revenue_report(request):
     }
 
     return render(request, 'reports/revenue_report.html', context)
-
 
 @login_required
 def revenue_by_contract(request):
@@ -943,65 +948,74 @@ def sales_detail_report(request):
     """
     Generates a detailed sales report grouped by week or month.
     Supports predefined and custom date ranges.
+    Includes service fees (other charges) in the report.
     """
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
-    # Get date range and group_by selection from the request
-    date_range = request.GET.get('date_range', 'this_month')  # Default to "This Month"
+    # Get date range and group_by from request
+    date_range = request.GET.get('date_range', 'this_month')
+    group_by = request.GET.get('group_by', 'week')  # Default to grouping by week
     start_date, end_date = get_date_range(date_range)
 
-    # Override with custom range if "custom" is selected
+    # Override with custom range if selected
     if date_range == 'custom':
         custom_start = request.GET.get('start_date')
         custom_end = request.GET.get('end_date')
         if custom_start and custom_end:
             start_date = datetime.strptime(custom_start, '%Y-%m-%d')
             end_date = datetime.strptime(custom_end, '%Y-%m-%d')
+            # Ensure end_date includes the entire day
+            end_date = end_date.replace(hour=23, minute=59, second=59)
 
-    # Ensure end_date includes the full day
-    if start_date and end_date:
-        end_date += timedelta(days=1) - timedelta(seconds=1)
-
-    # Group by week or month
-    group_by = request.GET.get('group_by', 'week')  # Default to grouping by week
     selected_location = request.GET.get('location', 'all')
 
-    # Filter contracts and payments
-    contracts = Contract.objects.filter(contract_date__gte=start_date, contract_date__lte=end_date, status="booked")
+    # Filter only "booked" contracts
+    contracts = Contract.objects.filter(
+        contract_date__gte=start_date,
+        contract_date__lte=end_date,
+        status="booked"  # Ensure only booked contracts are included
+    )
+
+    # Filter payments for "booked" contracts only
+    payments = Payment.objects.filter(date__gte=start_date, date__lte=end_date, contract__status="booked")
     if selected_location != 'all':
         contracts = contracts.filter(location_id=selected_location)
-
-    payments = Payment.objects.filter(date__gte=start_date, date__lte=end_date)
-    if selected_location != 'all':
         payments = payments.filter(contract__location_id=selected_location)
 
     report_data = []
 
-    # Generate periods based on group_by selection
     current_date = start_date
     while current_date <= end_date:
+        # Determine the period end based on group_by
         if group_by == 'week':
             period_end_date = current_date + timedelta(days=6)
         elif group_by == 'month':
             next_month = current_date.replace(day=28) + timedelta(days=4)
             period_end_date = next_month - timedelta(days=next_month.day)
         else:
-            period_end_date = end_date
+            period_end_date = end_date  # Default to single range if group_by is invalid
 
         if period_end_date > end_date:
             period_end_date = end_date
 
-        # Calculate service and product revenues
+        # Initialize revenue variables
         service_revenue = Decimal('0.00')
         products_revenue = Decimal('0.00')
         taxable_products_revenue = Decimal('0.00')
         tax_collected = Decimal('0.00')
+        service_fees = Decimal('0.00')  # Other charges
 
+        # Calculate service revenue and service fees (other charges) for booked contracts
         for contract in contracts.filter(contract_date__gte=current_date, contract_date__lte=period_end_date):
-            total_service_cost = contract.calculate_total_service_cost()
-            total_discount = contract.calculate_discount()
-            service_revenue += max(total_service_cost - total_discount, Decimal('0.00'))
+            total_service_cost = Decimal(contract.calculate_total_service_cost() or 0)
+            total_discount = Decimal(contract.calculate_discount() or 0)
+            net_service_revenue = max(total_service_cost - total_discount, Decimal('0.00'))
+            service_revenue += net_service_revenue
 
+            # Calculate service fees
+            service_fees += Decimal(contract.calculate_total_service_fees() or 0)
+
+        # Calculate product revenue and tax from payments related to booked contracts
         for payment in payments.filter(date__gte=current_date, date__lte=period_end_date):
             contract = payment.contract
             payment_taxable_amount = Decimal('0.00')
@@ -1009,7 +1023,7 @@ def sales_detail_report(request):
             if payment.payment_purpose and payment.payment_purpose.name == "Balance Payment":
                 for cp in contract.contract_products.all():
                     if not cp.post_event:
-                        product_revenue = Decimal(cp.quantity) * cp.product.price
+                        product_revenue = Decimal(cp.quantity) * Decimal(cp.product.price or 0)
                         products_revenue += product_revenue
                         if cp.product.is_taxable:
                             taxable_products_revenue += product_revenue
@@ -1018,18 +1032,21 @@ def sales_detail_report(request):
             if payment.payment_purpose and payment.payment_purpose.name == "Post Event Payment":
                 for cp in contract.contract_products.all():
                     if cp.post_event:
-                        product_revenue = Decimal(cp.quantity) * cp.product.price
+                        product_revenue = Decimal(cp.quantity) * Decimal(cp.product.price or 0)
                         products_revenue += product_revenue
                         if cp.product.is_taxable:
                             taxable_products_revenue += product_revenue
                             payment_taxable_amount += product_revenue
 
-            payment_tax = (payment_taxable_amount * Decimal(contract.location.tax_rate) / Decimal('100.00')).quantize(
+            # Calculate tax for the payment
+            payment_tax = (
+                        payment_taxable_amount * Decimal(contract.location.tax_rate or 0) / Decimal('100.00')).quantize(
                 Decimal('0.01'), rounding=ROUND_HALF_UP
             )
             tax_collected += payment_tax
 
-        total_revenue = service_revenue + products_revenue + tax_collected
+        # Calculate the total revenue
+        total_revenue = service_revenue + products_revenue + tax_collected + service_fees
         report_data.append({
             'period_start': current_date.strftime('%Y-%m-%d'),
             'period_end': period_end_date.strftime('%Y-%m-%d'),
@@ -1037,6 +1054,7 @@ def sales_detail_report(request):
             'products_revenue': products_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
             'taxable_products_revenue': taxable_products_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
             'tax_collected': tax_collected.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
+            'service_fees': service_fees.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),  # Include other charges
             'total_revenue': total_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
         })
 
@@ -1047,22 +1065,23 @@ def sales_detail_report(request):
     context = {
         'logo_url': logo_url,
         'date_range': date_range,
+        'group_by': group_by,
         'start_date': start_date.strftime('%Y-%m-%d') if start_date else '',
         'end_date': end_date.strftime('%Y-%m-%d') if end_date else '',
         'selected_location': selected_location,
         'locations': locations,
         'report_data': report_data,
         'DATE_RANGE_DISPLAY': DATE_RANGE_DISPLAY,
-        'group_by': group_by,
     }
 
     return render(request, 'reports/sales_detail_report.html', context)
+
 
 @login_required
 def sales_detail_by_contract(request):
     """
     Generates a detailed sales report grouped by contract.
-    Services are calculated by contract date, and products are calculated by payment date and purpose.
+    Services, products, and other charges (service fees) are included.
     Only includes booked contracts. Respects the date range passed from the detail view.
     """
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
@@ -1098,13 +1117,17 @@ def sales_detail_by_contract(request):
     total_products_revenue = Decimal('0.00')
     total_taxable_products_revenue = Decimal('0.00')
     total_tax_collected = Decimal('0.00')
+    total_service_fees = Decimal('0.00')  # Other charges (service fees)
     total_revenue = Decimal('0.00')
 
     for contract in contracts:
         # Calculate service revenue based on contract date
-        total_service_cost = contract.calculate_total_service_cost()
-        total_discount = contract.calculate_discount()
+        total_service_cost = Decimal(contract.calculate_total_service_cost() or 0)
+        total_discount = Decimal(contract.calculate_discount() or 0)
         net_service_revenue = max(total_service_cost - total_discount, Decimal('0.00'))
+
+        # Calculate service fees (other charges)
+        service_fees = Decimal(contract.calculate_total_service_fees() or 0)
 
         # Initialize product revenue and taxes
         products_revenue = Decimal('0.00')
@@ -1120,7 +1143,7 @@ def sales_detail_by_contract(request):
             if payment.payment_purpose and payment.payment_purpose.name == "Balance Payment":
                 for cp in contract.contract_products.all():
                     if not cp.post_event:
-                        product_revenue = Decimal(cp.quantity) * cp.product.price
+                        product_revenue = Decimal(cp.quantity) * Decimal(cp.product.price or 0)
                         products_revenue += product_revenue
                         if cp.product.is_taxable:
                             taxable_products_revenue += product_revenue
@@ -1130,20 +1153,20 @@ def sales_detail_by_contract(request):
             if payment.payment_purpose and payment.payment_purpose.name == "Post Event Payment":
                 for cp in contract.contract_products.all():
                     if cp.post_event:
-                        product_revenue = Decimal(cp.quantity) * cp.product.price
+                        product_revenue = Decimal(cp.quantity) * Decimal(cp.product.price or 0)
                         products_revenue += product_revenue
                         if cp.product.is_taxable:
                             taxable_products_revenue += product_revenue
                             payment_taxable_amount += product_revenue
 
             # Calculate tax for this payment
-            payment_tax = (payment_taxable_amount * Decimal(contract.location.tax_rate) / Decimal('100.00')).quantize(
+            payment_tax = (payment_taxable_amount * Decimal(contract.location.tax_rate or 0) / Decimal('100.00')).quantize(
                 Decimal('0.01'), rounding=ROUND_HALF_UP
             )
             tax_collected += payment_tax
 
         # Calculate total revenue for the contract
-        total_revenue_per_contract = net_service_revenue + products_revenue + tax_collected
+        total_revenue_per_contract = net_service_revenue + products_revenue + tax_collected + service_fees
 
         # Append contract data
         contract_data.append({
@@ -1154,6 +1177,7 @@ def sales_detail_by_contract(request):
             'products_revenue': products_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
             'taxable_products_revenue': taxable_products_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
             'tax_collected': tax_collected.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
+            'service_fees': service_fees.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
             'total_revenue': total_revenue_per_contract.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
         })
 
@@ -1162,6 +1186,7 @@ def sales_detail_by_contract(request):
         total_products_revenue += products_revenue
         total_taxable_products_revenue += taxable_products_revenue
         total_tax_collected += tax_collected
+        total_service_fees += service_fees
         total_revenue += total_revenue_per_contract
 
     locations = Location.objects.all()
@@ -1177,11 +1202,11 @@ def sales_detail_by_contract(request):
         'total_products_revenue': total_products_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
         'total_taxable_products_revenue': total_taxable_products_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
         'total_tax_collected': total_tax_collected.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
+        'total_service_fees': total_service_fees.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
         'total_revenue': total_revenue.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP),
     }
 
     return render(request, 'reports/sales_detail_by_contract.html', context)
-
 
 
 @login_required

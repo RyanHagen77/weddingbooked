@@ -9,25 +9,44 @@
         <button onclick="history.back()" class="btn-dusty-pink">Go Back</button>
 
         <form method="get" class="report-form">
-            <label for="start_date">Start Date:</label>
-            <input type="date" id="start_date" name="start_date" value="{{ start_date|default_if_none:'' }}" required>
-            <label for="end_date">End Date:</label>
-            <input type="date" id="end_date" name="end_date" value="{{ end_date|default_if_none:'' }}" required>
+            <!-- Date Range Dropdown -->
+            <label for="date_range">Date Range:</label>
+            <select id="date_range" name="date_range" onchange="toggleCustomDates()">
+                {% for key, label in DATE_RANGE_DISPLAY.items %}
+                    <option value="{{ key }}" {% if date_range == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+                <option value="custom" {% if date_range == "custom" %}selected{% endif %}>Custom</option>
+            </select>
+
+            <!-- Custom Dates (only visible if "Custom" is selected) -->
+            <div id="custom-dates" {% if date_range != "custom" %}style="display:none;"{% endif %}>
+                <label for="start_date">Start Date:</label>
+                <input type="date" id="start_date" name="start_date" value="{{ start_date|default_if_none:'' }}">
+
+                <label for="end_date">End Date:</label>
+                <input type="date" id="end_date" name="end_date" value="{{ end_date|default_if_none:'' }}">
+            </div>
+
+            <!-- Location Dropdown -->
             <label for="location">Location:</label>
             <select id="location" name="location">
                 <option value="all" {% if selected_location == 'all' %}selected{% endif %}>All Locations</option>
                 {% for location in locations %}
-                <option value="{{ location.id }}" {% if selected_location == location.id|stringformat:"s" %}selected{% endif %}>{{ location.name }}</option>
+                    <option value="{{ location.id }}" {% if selected_location == location.id|stringformat:"s" %}selected{% endif %}>{{ location.name }}</option>
                 {% endfor %}
             </select>
+
+            <!-- Period Dropdown -->
             <label for="period">Period:</label>
             <select id="period" name="period">
                 <option value="monthly" {% if selected_period == 'monthly' %}selected{% endif %}>Monthly</option>
                 <option value="weekly" {% if selected_period == 'weekly' %}selected{% endif %}>Weekly</option>
             </select>
+
             <button type="submit" class="btn-dusty-pink">Generate Report</button>
         </form>
 
+        <!-- Report Table -->
         <div class="search-results">
             <h6>{{ selected_period|title }} Appointments between {{ start_date }} and {{ end_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
             <table>
@@ -63,7 +82,8 @@
                 </tbody>
             </table>
 
-                <h6 style="margin-top: 10px;">Salesperson Breakdown</h6>
+            <!-- Salesperson Breakdown Table -->
+            <h6 style="margin-top: 10px;">Salesperson Breakdown</h6>
             <table>
                 <thead>
                     <tr>
@@ -74,18 +94,34 @@
                     </tr>
                 </thead>
                 <tbody>
-                {% for data in sales_data %}
-                <tr>
-                    <td>{{ data.name }}</td>
-                    <td>{{ data.total_appointments }}</td>
-                    <td>{{ data.booked_appointments }}</td>
-                    <td>{{ data.closed_percentage }}%</td>
-                </tr>
-                {% endfor %}
+                    {% for data in sales_data %}
+                    <tr>
+                        <td>{{ data.name }}</td>
+                        <td>{{ data.total_appointments }}</td>
+                        <td>{{ data.booked_appointments }}</td>
+                        <td>{{ data.closed_percentage }}%</td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 </div>
-{% endblock %}
 
+<script>
+    // Function to toggle the visibility of the custom date range inputs
+    function toggleCustomDates() {
+        const dateRange = document.getElementById("date_range").value;
+        const customDatesDiv = document.getElementById("custom-dates");
+        if (dateRange === "custom") {
+            customDatesDiv.style.display = "block";
+        } else {
+            customDatesDiv.style.display = "none";
+        }
+    }
+
+    // Initial call to adjust visibility based on the current selection
+    toggleCustomDates();
+</script>
+
+{% endblock %}

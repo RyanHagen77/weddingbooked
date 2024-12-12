@@ -17,8 +17,9 @@
                         <th>Location</th>
                         <th>Service Sales</th>
                         <th>Product Sales</th>
-                        <th>Taxable Products Sold</th>
-                        <th>Sales Tax Collected</th>
+                        <th>Taxable Products</th>
+                        <th>Sales Tax</th>
+                        <th>Other Charges</th>
                         <th>Total Sales w/ Tax</th>
                     </tr>
                 </thead>
@@ -32,12 +33,13 @@
                             <td>${{ data.products_revenue|floatformat:2 }}</td>
                             <td>${{ data.taxable_products_revenue|floatformat:2 }}</td>
                             <td>${{ data.tax_collected|floatformat:2 }}</td>
+                            <td>${{ data.service_fees|floatformat:2 }}</td>
                             <td>${{ data.total_revenue|floatformat:2 }}</td>
                         </tr>
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="7">No records found for the selected criteria.</td>
+                            <td colspan="8">No records found for the selected criteria.</td>
                         </tr>
                     {% endif %}
                 </tbody>
@@ -49,6 +51,7 @@
                         <th>${{ total_products_revenue|floatformat:2 }}</th>
                         <th>${{ total_taxable_products_revenue|floatformat:2 }}</th>
                         <th>${{ total_tax_collected|floatformat:2 }}</th>
+                        <th>${{ total_service_fees|floatformat:2 }}</th>
                         <th>${{ total_revenue|floatformat:2 }}</th>
                     </tr>
                 </tfoot>
