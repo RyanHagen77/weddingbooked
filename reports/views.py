@@ -456,6 +456,9 @@ def reception_venue_report(request):
     return render(request, 'reports/reception_venue_report.html', context)
 
 
+from django.db.models import Sum, DecimalField, F
+from django.db.models.functions import Coalesce
+
 @login_required
 def revenue_report(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
@@ -509,8 +512,7 @@ def revenue_report(request):
         if group_by == 'week':
             period_end_date = current_date + timedelta(days=6)
         elif group_by == 'month':
-            next_month = current_date.replace(day=28) + timedelta(days=4)
-            period_end_date = next_month - timedelta(days=next_month.day)
+            period_end_date = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
         else:
             period_end_date = end_date
 
@@ -570,7 +572,11 @@ def revenue_report(request):
             'total_revenue': period_total_revenue.quantize(Decimal('0.01')),
         })
 
-        current_date = period_end_date + timedelta(days=1)
+        # Move to the next period
+        if group_by == 'week':
+            current_date = period_end_date + timedelta(days=1)
+        elif group_by == 'month':
+            current_date = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1)
 
     # Add total row
     report_data.append({
@@ -597,6 +603,7 @@ def revenue_report(request):
     }
 
     return render(request, 'reports/revenue_report.html', context)
+
 
 
 @login_required
