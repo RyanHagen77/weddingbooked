@@ -460,17 +460,6 @@ def reception_venue_report(request):
 def revenue_report(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
-    # Define date range presets
-    DATE_RANGE_DISPLAY = {
-        'current_quarter': 'Current Quarter',
-        'last_quarter': 'Last Quarter',
-        'this_month': 'This Month',
-        'last_month': 'Last Month',
-        'this_year': 'This Year',
-        'last_year': 'Last Year',
-        'custom': 'Custom',
-    }
-
     # Get the date range and group_by from the request
     date_range = request.GET.get('date_range', 'this_month')
     group_by = request.GET.get('group_by', 'week')  # Default to grouping by week
