@@ -9,13 +9,13 @@
         <button onclick="history.back()" class="btn-dusty-pink">Go Back</button>
         <form method="get" class="report-form">
             <label for="date_range">Date Range:</label>
-            <select id="date_range" name="date_range">
+            <select id="date_range" name="date_range" onchange="toggleCustomDates()">
                 {% for key, label in DATE_RANGE_DISPLAY.items %}
                     <option value="{{ key }}" {% if date_range == key %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
                 <option value="custom" {% if date_range == "custom" %}selected{% endif %}>Custom</option>
             </select>
-            <div id="custom-dates" {% if request.GET.date_range != "custom" %}style="display:none;"{% endif %}>
+            <div id="custom-dates" {% if date_range != "custom" %}style="display:none;"{% endif %}>
                 <label for="start_date">Start Date:</label>
                 <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
                 <label for="end_date">End Date:</label>
@@ -87,11 +87,7 @@
 function toggleCustomDates() {
     const dateRange = document.getElementById("date_range").value;
     const customDatesDiv = document.getElementById("custom-dates");
-    if (dateRange === "custom") {
-        customDatesDiv.style.display = "block";
-    } else {
-        customDatesDiv.style.display = "none";
-    }
+    customDatesDiv.style.display = dateRange === "custom" ? "block" : "none";
 }
 </script>
 {% endblock %}

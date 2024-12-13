@@ -50,7 +50,7 @@
                     {% for data in report_data %}
                     <tr>
                         <td>{{ data.location }}</td>
-                        <td>${{ data.taxable_products_revenue }}</td>
+                        <td>${{ data.taxable_revenue }}</td> <!-- Ensure this matches the key in your report_data -->
                         <td>${{ data.tax_collected }}</td>
                     </tr>
                     {% endfor %}
