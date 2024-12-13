@@ -6,10 +6,10 @@ from contracts.models import Contract, LeadSourceCategory, Location, ServiceFee
 
 from services.models import ContractOvertime
 from payments.models import Payment, SchedulePayment
-from django.db.models import Sum, F, Q
+from django.db.models import Sum, Q
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime, timedelta, date
-from django.utils.timezone import make_aware, is_naive, localtime
+from django.utils.timezone import make_aware, localtime
 from django.utils.dateparse import parse_date
 import calendar
 from django.contrib.auth import get_user_model
@@ -455,27 +455,50 @@ def reception_venue_report(request):
 
     return render(request, 'reports/reception_venue_report.html', context)
 
+
 @login_required
 def revenue_report(request):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
+    # Define date range presets
+    DATE_RANGE_DISPLAY = {
+        'current_quarter': 'Current Quarter',
+        'last_quarter': 'Last Quarter',
+        'this_month': 'This Month',
+        'last_month': 'Last Month',
+        'this_year': 'This Year',
+        'last_year': 'Last Year',
+        'custom': 'Custom',
+    }
+
+    # Get the date range and group_by from the request
     date_range = request.GET.get('date_range', 'this_month')
+    group_by = request.GET.get('group_by', 'week')  # Default to grouping by week
     today = datetime.today()
 
+    # Handle custom date range or predefined ranges
     if date_range == 'custom':
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
+        if start_date and end_date:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d')
+            end_date = datetime.strptime(end_date, '%Y-%m-%d')
+        else:
+            start_date, end_date = get_date_range('this_month', today)
     else:
         start_date, end_date = get_date_range(date_range, today)
-        start_date = start_date.strftime('%Y-%m-%d')
-        end_date = end_date.strftime('%Y-%m-%d')
 
+    # Ensure end_date includes the full day
+    end_date = end_date.replace(hour=23, minute=59, second=59)
+
+    # Get location filter
     selected_location = request.GET.get('location', 'all')
-    group_by = request.GET.get('group_by', 'week')
 
+    # Initialize filters
     filters = {
-        'payments__date__gte': start_date,
-        'payments__date__lte': end_date,
+        'contract_date__gte': start_date,
+        'contract_date__lte': end_date,
+        'status': 'booked',
     }
     if selected_location != 'all':
         filters['location_id'] = selected_location
@@ -483,102 +506,109 @@ def revenue_report(request):
     contracts = Contract.objects.filter(**filters).distinct()
 
     report_data = []
-    if start_date and end_date:
-        start_date_dt = datetime.strptime(start_date, '%Y-%m-%d')
-        end_date_dt = datetime.strptime(end_date, '%Y-%m-%d')
-        current_date = start_date_dt
 
-        total_deposits_received = Decimal('0.00')
-        total_other_payments = Decimal('0.00')
-        total_tax_collected = Decimal('0.00')
-        total_revenue = Decimal('0.00')
+    # Initialize totals
+    total_deposits_received = Decimal('0.00')
+    total_other_payments = Decimal('0.00')
+    total_tax_collected = Decimal('0.00')
+    total_revenue = Decimal('0.00')
 
-        while current_date <= end_date_dt:
-            if group_by == 'week':
-                period_end_date = current_date + timedelta(days=6)
-            else:
-                next_month = current_date.replace(day=28) + timedelta(days=4)
-                period_end_date = next_month - timedelta(days=next_month.day)
+    current_date = start_date
 
-            deposits_received = Decimal('0.00')
-            other_payments = Decimal('0.00')
-            tax_collected = Decimal('0.00')
+    while current_date <= end_date:
+        # Determine period range based on group_by
+        if group_by == 'week':
+            period_end_date = current_date + timedelta(days=6)
+        elif group_by == 'month':
+            next_month = current_date.replace(day=28) + timedelta(days=4)
+            period_end_date = next_month - timedelta(days=next_month.day)
+        else:
+            period_end_date = end_date
 
-            payments = Payment.objects.filter(
-                contract__in=contracts,
-                date__gte=current_date,
-                date__lt=period_end_date + timedelta(days=1)  # Inclusive filtering
+        if period_end_date > end_date:
+            period_end_date = end_date
+
+        deposits_received = Decimal('0.00')
+        other_payments = Decimal('0.00')
+        tax_collected = Decimal('0.00')
+
+        payments = Payment.objects.filter(
+            contract__in=contracts,
+            date__gte=current_date,
+            date__lte=period_end_date
+        )
+
+        for payment in payments:
+            payment_taxable_amount = Decimal('0.00')
+
+            if payment.payment_purpose and payment.payment_purpose.name == "Balance Payment":
+                for cp in payment.contract.contract_products.all():
+                    if not cp.post_event and cp.product.is_taxable:
+                        product_revenue = Decimal(cp.quantity) * cp.product.price
+                        payment_taxable_amount += product_revenue
+
+            if payment.payment_purpose and payment.payment_purpose.name == "Post Event Payment":
+                for cp in payment.contract.contract_products.all():
+                    if cp.post_event and cp.product.is_taxable:
+                        product_revenue = Decimal(cp.quantity) * cp.product.price
+                        payment_taxable_amount += product_revenue
+
+            tax_rate = payment.contract.location.tax_rate
+            tax_collected += (payment_taxable_amount * Decimal(tax_rate) / Decimal('100.00')).quantize(
+                Decimal('0.01'), rounding=ROUND_HALF_UP
             )
 
-            for payment in payments:
-                payment_taxable_amount = Decimal('0.00')
+            if payment.payment_purpose and payment.payment_purpose.name == 'Deposit':
+                deposits_received += payment.amount
+            else:
+                other_payments += payment.amount
 
-                if payment.payment_purpose and payment.payment_purpose.name == "Balance Payment":
-                    for cp in payment.contract.contract_products.all():
-                        if not cp.post_event and cp.product.is_taxable:
-                            product_revenue = Decimal(cp.quantity) * cp.product.price
-                            payment_taxable_amount += product_revenue
+        period_total_revenue = deposits_received + other_payments - tax_collected
 
-                if payment.payment_purpose and payment.payment_purpose.name == "Post Event Payment":
-                    for cp in payment.contract.contract_products.all():
-                        if cp.post_event and cp.product.is_taxable:
-                            product_revenue = Decimal(cp.quantity) * cp.product.price
-                            payment_taxable_amount += product_revenue
+        # Update totals
+        total_deposits_received += deposits_received
+        total_other_payments += other_payments
+        total_tax_collected += tax_collected
+        total_revenue += period_total_revenue
 
-                tax_rate = payment.contract.location.tax_rate
-                tax_collected += (payment_taxable_amount * Decimal(tax_rate) / Decimal('100.00')).quantize(
-                    Decimal('0.01'), rounding=ROUND_HALF_UP
-                )
-
-                if payment.payment_purpose and payment.payment_purpose.name == 'Deposit':
-                    deposits_received += payment.amount
-                else:
-                    other_payments += payment.amount
-
-            period_total_revenue = deposits_received + other_payments - tax_collected
-
-            total_deposits_received += deposits_received
-            total_other_payments += other_payments
-            total_tax_collected += tax_collected
-            total_revenue += period_total_revenue
-
-            report_data.append({
-                'period_start': current_date.strftime('%Y-%m-%d'),
-                'period_end': period_end_date.strftime('%Y-%m-%d'),
-                'deposits_received': deposits_received.quantize(Decimal('0.01')),
-                'other_payments': other_payments.quantize(Decimal('0.01')),
-                'tax_collected': tax_collected.quantize(Decimal('0.01')),
-                'total_revenue': period_total_revenue.quantize(Decimal('0.01')),
-                'original_start_date': start_date,
-                'original_end_date': end_date,
-            })
-
-            current_date = period_end_date + timedelta(days=1)
-
+        # Append period data
         report_data.append({
-            'period_start': 'Totals',
-            'period_end': '',
-            'deposits_received': total_deposits_received.quantize(Decimal('0.01')),
-            'other_payments': total_other_payments.quantize(Decimal('0.01')),
-            'tax_collected': total_tax_collected.quantize(Decimal('0.01')),
-            'total_revenue': total_revenue.quantize(Decimal('0.01')),
+            'period_start': current_date.strftime('%Y-%m-%d'),
+            'period_end': period_end_date.strftime('%Y-%m-%d'),
+            'deposits_received': deposits_received.quantize(Decimal('0.01')),
+            'other_payments': other_payments.quantize(Decimal('0.01')),
+            'tax_collected': tax_collected.quantize(Decimal('0.01')),
+            'total_revenue': period_total_revenue.quantize(Decimal('0.01')),
         })
+
+        current_date = period_end_date + timedelta(days=1)
+
+    # Add total row
+    report_data.append({
+        'period_start': 'Totals',
+        'period_end': '',
+        'deposits_received': total_deposits_received.quantize(Decimal('0.01')),
+        'other_payments': total_other_payments.quantize(Decimal('0.01')),
+        'tax_collected': total_tax_collected.quantize(Decimal('0.01')),
+        'total_revenue': total_revenue.quantize(Decimal('0.01')),
+    })
 
     locations = Location.objects.all()
 
     context = {
         'logo_url': logo_url,
-        'start_date': start_date,
-        'end_date': end_date,
+        'date_range': date_range,
+        'group_by': group_by,
+        'start_date': start_date.strftime('%Y-%m-%d'),
+        'end_date': end_date.strftime('%Y-%m-%d'),
         'selected_location': selected_location,
         'locations': locations,
         'report_data': report_data,
-        'group_by': group_by,
-        'date_range': date_range,
         'DATE_RANGE_DISPLAY': DATE_RANGE_DISPLAY,
     }
 
     return render(request, 'reports/revenue_report.html', context)
+
 
 @login_required
 def revenue_by_contract(request):
