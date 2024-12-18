@@ -9,19 +9,11 @@
         <button onclick="history.back()" class="btn btn-dusty-pink">Go Back</button>
 
         <form method="get" class="report-form">
-            <label for="date_range">Date Range:</label>
-            <select id="date_range" name="date_range" onchange="toggleCustomDates()">
-                {% for key, label in DATE_RANGE_DISPLAY.items %}
-                <option value="{{ key }}" {% if date_range == key %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-                <option value="custom" {% if date_range == "custom" %}selected{% endif %}>Custom</option>
-            </select>
-            <div id="custom-dates" {% if date_range != "custom" %}style="display: none;"{% endif %}>
-                <label for="start_date">Start Date:</label>
-                <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
-                <label for="end_date">End Date:</label>
-                <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
-            </div>
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
+
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
 
             <label for="location">Location:</label>
             <select id="location" name="location">
@@ -30,16 +22,11 @@
                 <option value="{{ location.id }}" {% if selected_location == location.id|stringformat:"s" %}selected{% endif %}>{{ location.name }}</option>
                 {% endfor %}
             </select>
-            <label for="group_by">Group By:</label>
-            <select id="group_by" name="group_by">
-                <option value="week" {% if group_by == 'week' %}selected{% endif %}>Week</option>
-                <option value="month" {% if group_by == 'month' %}selected{% endif %}>Month</option>
-            </select>
-            <button type="submit" class="btn-dusty-pink">Generate Report</button>
+            <button type="submit" class="btn btn-dusty-pink">Generate Report</button>
         </form>
 
         <div class="search-results">
-            <h6>{{ group_by|capfirst }}ly Revenue between {{ start_date }} and {{ end_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
+            <h6>Revenue between {{ start_date }} and {{ end_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
             <table>
                 <thead>
                     <tr>

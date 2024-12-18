@@ -17,7 +17,7 @@
                                 <th class="quantity-column">Qty</th>
                                 <th class="special-notes-column">Special Notes</th>
                                 <th class="total-price-column">Total Price</th>
-                                <th class="post-event-column">Post Event</th>
+                                <th class="added-on-column">Added On</th>
                                 <th class="remove-column">Remove</th>
                             </tr>
                         </thead>
@@ -49,11 +49,12 @@
                                 <td class="total-price">
                                     ${{ form.instance.get_product_price|multiply:form.quantity.value|floatformat:2 }}
                                 </td>
-                                <td class="post-event">
-                                    <input type="checkbox" class="form-check-input"
-                                           name="{{ form.post_event.html_name }}"
-                                           id="{{ form.post_event.id_for_label }}"
-                                           {% if form.post_event.value %}checked{% endif %}>
+                                <td class="added-on">
+                                    {% if form.instance.added_on %}
+                                        {{ form.instance.added_on|date:"Y-m-d H:i" }}
+                                    {% else %}
+                                        Not yet added
+                                    {% endif %}
                                 </td>
                                 <td>
                                     {{ form.DELETE }}

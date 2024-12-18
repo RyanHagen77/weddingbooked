@@ -59,9 +59,9 @@ class ContractProduct(models.Model):
         null=True,
         help_text="Optional notes or instructions specific to this product within this contract."
     )
-    post_event = models.BooleanField(
-        default=False,
-        help_text="Indicates if this product was added after the event date."
+    added_on = models.DateTimeField(
+        auto_now_add=True,
+        help_text="The date and time when this product was added to the contract."
     )
 
     def get_product_price(self):

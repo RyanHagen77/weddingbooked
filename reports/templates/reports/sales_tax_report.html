@@ -9,40 +9,22 @@
         <button onclick="history.back()" class="btn btn-dusty-pink">Go Back</button>
 
         <form method="get" class="report-form">
-            <label for="date_range">Date Range:</label>
-            <select id="date_range" name="date_range" onchange="toggleDatePickers()">
-                <option value="current_quarter" {% if date_range == 'current_quarter' %}selected{% endif %}>Current Quarter</option>
-                <option value="last_quarter" {% if date_range == 'last_quarter' %}selected{% endif %}>Last Quarter</option>
-                <option value="this_month" {% if date_range == 'this_month' %}selected{% endif %}>This Month</option>
-                <option value="last_month" {% if date_range == 'last_month' %}selected{% endif %}>Last Month</option>
-                <option value="this_year" {% if date_range == 'this_year' %}selected{% endif %}>This Year</option>
-                <option value="last_year" {% if date_range == 'last_year' %}selected{% endif %}>Last Year</option>
-                <option value="custom_range" {% if date_range == 'custom_range' %}selected{% endif %}>Custom Range</option>
-            </select>
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
 
-            <div id="customDateRange" style="display: {% if date_range == 'custom_range' %}block{% else %}none{% endif %};">
-                <label for="start_date">Start Date:</label>
-                <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
-                <label for="end_date">End Date:</label>
-                <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
-            </div>
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
 
-            <label for="location">Location:</label>
-            <select id="location" name="location">
-                <option value="all" {% if selected_location == 'all' %}selected{% endif %}>All Locations</option>
-                {% for location in locations %}
-                <option value="{{ location.id }}" {% if selected_location == location.id|stringformat:"s" %}selected{% endif %}>{{ location.name }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit" class="btn-dusty-pink">Generate Report</button>
+            <button type="submit" class="btn btn-dusty-pink">Generate Report</button>
         </form>
+
         <div class="search-results">
-            <h6>Taxable Revenue and Tax Collected from {{ start_date }} to {{ end_date }}</h6>
+            <h6>Sales Tax Report between {{ start_date }} and {{ end_date }}</h6>
             <table>
                 <thead>
                     <tr>
                         <th>Location</th>
-                        <th>Taxable Products Revenue</th>
+                        <th>Taxable Revenue</th>
                         <th>Tax Collected</th>
                     </tr>
                 </thead>
@@ -50,7 +32,7 @@
                     {% for data in report_data %}
                     <tr>
                         <td>{{ data.location }}</td>
-                        <td>${{ data.taxable_revenue }}</td> <!-- Ensure this matches the key in your report_data -->
+                        <td>${{ data.taxable_revenue }}</td>
                         <td>${{ data.tax_collected }}</td>
                     </tr>
                     {% endfor %}
@@ -59,17 +41,4 @@
         </div>
     </div>
 </div>
-
-<script>
-function toggleDatePickers() {
-    var dateRange = document.getElementById("date_range").value;
-    var customDateRange = document.getElementById("customDateRange");
-    if (dateRange === "custom_range") {
-        customDateRange.style.display = "block";
-    } else {
-        customDateRange.style.display = "none";
-    }
-}
-</script>
-
 {% endblock %}

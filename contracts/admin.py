@@ -86,8 +86,7 @@ class ContractProductAdmin(admin.ModelAdmin):
     """
     Admin configuration for the ContractProduct model.
     """
-    list_display = ('contract', 'product', 'quantity', 'special_notes', 'post_event')
-    list_filter = ('post_event', 'product')
+    list_display = ('contract', 'product', 'quantity', 'special_notes')
     search_fields = ('contract__contract_id', 'product__name', 'special_notes')
     ordering = ('contract',)
 
