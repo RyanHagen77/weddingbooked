@@ -14,6 +14,7 @@ from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.db import transaction
 from django.db.models import Q
+from django.core.paginator import Paginator
 
 # Django Form Imports
 
@@ -71,14 +72,16 @@ def success_view(request):
 @login_required
 def contract_search(request):
     form = ContractSearchForm(request.GET)
-    contracts = Contract.objects.all().order_by('-event_date')
+    contracts = Contract.objects.all()
 
+    # Apply ordering
     order = request.GET.get('order', 'desc')
     if order == 'asc':
         contracts = contracts.order_by('event_date')
     else:
         contracts = contracts.order_by('-event_date')
 
+    # Apply filters if the form is valid
     if form.is_valid():
         if form.cleaned_data.get('location'):
             contracts = contracts.filter(location=form.cleaned_data['location'])
@@ -139,6 +142,7 @@ def contract_search(request):
             ).values_list('contract_id', flat=True)
             contracts = contracts.filter(contract_id__in=photobooth_operator_contracts)
 
+    # Apply search query
     query = request.GET.get('q')
     if query:
         contracts = contracts.filter(
@@ -149,6 +153,11 @@ def contract_search(request):
             Q(client__primary_email__icontains=query) |
             Q(client__primary_phone1__icontains=query)
         )
+
+    # Apply pagination
+    paginator = Paginator(contracts, 25)  # Show 25 contracts per page
+    page_number = request.GET.get('page')
+    contracts = paginator.get_page(page_number)
 
     return render(request, 'contracts/contract_search.html', {
         'form': form,
