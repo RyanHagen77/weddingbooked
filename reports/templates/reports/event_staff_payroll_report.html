@@ -25,46 +25,39 @@
         <div class="search-results">
             <h6>Contracts between {{ start_date }} and {{ end_date }}</h6>
             {% if grouped_report_data %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Contract</th>
-                        <th>Event Date</th>
-                        <th>Travel Fee Exists</th>
-                        <th>Travel Fee Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for contract_number, data in grouped_report_data.items %}
-                    <tr>
-                        <td>{{ contract_number }}</td>
-                        <td>{{ data.event_date|date:"F j, Y" }}</td>
-                        <td>{% if data.travel_fee_exists %}Yes{% else %}No{% endif %}</td>
-                        <td>${{ data.travel_fee_amount }}</td>
-                    </tr>
-                    <tr>
-                        <th>Role</th>
-                        <th>Staff Name</th>
-                        <th>Regular Hours</th>
-                        <th>Overtime Hours</th>
-                    </tr>
-                    {% for role in data.roles %}
-                    <tr>
-                        <td>{{ role.role }}</td>
-                        <td>{{ role.staff_name }}</td>
-                        <td>{{ role.regular_hours }}</td>
-                        <td>{{ role.overtime_hours }}</td>
-                    </tr>
-                    {% endfor %}
-                    <tr>
-                        <th>Contract</th>
-                        <th>Event Date</th>
-                        <th>Travel Fee Exists</th>
-                        <th>Travel Fee Amount</th>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="contracts-container">
+                {% for contract_number, data in grouped_report_data.items %}
+                <div class="contract-card">
+                    <div class="contract-details">
+                        <h5>Contract: {{ contract_number }}</h5>
+                        <p>Event Date: {{ data.event_date|date:"F j, Y" }}</p>
+                        <p>Travel Fee: {% if data.travel_fee_exists %}Yes - ${{ data.travel_fee_amount }}{% else %}No{% endif %}</p>
+                    </div>
+                    <div class="contract-roles">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Role</th>
+                                    <th>Staff Name</th>
+                                    <th>Regular Hours</th>
+                                    <th>Overtime Hours</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for role in data.roles %}
+                                <tr>
+                                    <td>{{ role.role }}</td>
+                                    <td>{{ role.staff_name }}</td>
+                                    <td>{{ role.regular_hours }}</td>
+                                    <td>{{ role.overtime_hours }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
             {% else %}
             <p>No data available for the selected date range and location.</p>
             {% endif %}

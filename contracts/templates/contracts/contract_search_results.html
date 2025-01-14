@@ -19,9 +19,27 @@
             <td>{{ contract.custom_contract_number }}</td>
             <td>{{ contract.event_date|date:"Y-m-d" }}</td>
             <td>{{ contract.client.primary_contact }}</td>
-            <td>{{ contract.photographer1.get_full_name|default:"Not Assigned" }}</td>
-            <td>{{ contract.videographer1.get_full_name|default:"Not Assigned" }}</td>
-            <td>{{ contract.photobooth_op1.get_full_name|default:"Not Assigned" }}</td>
+            <td>
+                {% if contract.photographer1 %}
+                    {{ contract.photographer1.get_full_name }}
+                {% else %}
+                    <span style="color: red;">Not Assigned</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if contract.videographer1 %}
+                    {{ contract.videographer1.get_full_name }}
+                {% else %}
+                    <span style="color: red;">Not Assigned</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if contract.photobooth_op1 %}
+                    {{ contract.photobooth_op1.get_full_name }}
+                {% else %}
+                    <span style="color: red;">Not Assigned</span>
+                {% endif %}
+            </td>
             <td>{{ contract.csr.get_full_name }}</td>
             <td>{{ contract.status }}</td>
         </tr>

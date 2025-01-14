@@ -7,4 +7,4 @@ class EventStaffBookingForm(forms.ModelForm):
 
     class Meta:
         model = EventStaffBooking
-        fields = ['role', 'staff', 'status', 'confirmed', 'hours_booked', 'booking_id']
+        fields = ['role', 'staff', 'status', 'confirmed', 'booking_id']

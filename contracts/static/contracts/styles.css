@@ -1005,3 +1005,50 @@ body {
     background-color: #9aac9a; /* Darken event color on hover */
 }
 
+.contracts-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Space between contract cards */
+    margin-top: 20px;
+}
+
+.contract-card {
+    display: flex;
+    flex-direction: row; /* Horizontal layout for details and table */
+    align-items: flex-start; /* Align top edges */
+    background-color: #f9f9f9; /* Subtle background for contrast */
+    border: 1px solid #ddd; /* Light border for separation */
+    border-radius: 8px; /* Rounded corners */
+    padding: 15px; /* Padding inside the card */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    gap: 20px; /* Space between details and table */
+}
+
+.contract-details {
+    flex: 1; /* Allow details to take available space */
+}
+
+.contract-roles {
+    flex: 2; /* Allow table to take more space */
+    overflow-x: auto; /* Add horizontal scroll if the table is too wide */
+}
+
+.contract-roles table {
+    width: 100%; /* Make the table fill its container */
+    border-collapse: collapse;
+}
+
+.contract-roles th {
+    background-color: #f2f2f2; /* Light header background */
+    color: black; /* Black text for headers */
+    font-weight: bold;
+    padding: 8px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.contract-roles td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
