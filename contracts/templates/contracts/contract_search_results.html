@@ -19,39 +19,9 @@
             <td>{{ contract.custom_contract_number }}</td>
             <td>{{ contract.event_date|date:"Y-m-d" }}</td>
             <td>{{ contract.client.primary_contact }}</td>
-            {% if contract.photography_package %}
-                <td>
-                    {% if contract.photographer1 %} {{ contract.photographer1.get_full_name }}{% else %} <span style="color:red;">Not Assigned</span>{% endif %}
-                    <br>
-                    {% if contract.photography_additional %}
-                        {% if contract.photographer2 %} {{ contract.photographer2.get_full_name }}{% else %} <span style="color:red;">Not Assigned</span>{% endif %}
-                    {% endif %}
-                </td>
-            {% else %}
-                <td>N/A</td>
-            {% endif %}
-            {% if contract.videography_package %}
-                <td>
-                    {% if contract.videographer1 %} {{ contract.videographer1.get_full_name }}{% else %} <span style="color:red;">Not Assigned</span>{% endif %}
-                    <br>
-                    {% if contract.videography_additional %}
-                        {% if contract.videographer2 %} {{ contract.videographer2.get_full_name }}{% else %} <span style="color:red;">Not Assigned</span>{% endif %}
-                    {% endif %}
-                </td>
-            {% else %}
-                <td>N/A</td>
-            {% endif %}
-            {% if contract.photobooth_package %}
-                <td>
-                    {% if contract.photobooth_op1 %} {{ contract.photobooth_op1.get_full_name }}{% else %} <span style="color:red;">Not Assigned</span>{% endif %}
-                    <br>
-                    {% if contract.photobooth_additional %}
-                        {% if contract.photobooth_op2 %} {{ contract.photobooth_op2.get_full_name }}{% else %} <span style="color:red;">Not Assigned</span>{% endif %}
-                    {% endif %}
-                </td>
-            {% else %}
-                <td>N/A</td>
-            {% endif %}
+            <td>{{ contract.photographer1.get_full_name|default:"Not Assigned" }}</td>
+            <td>{{ contract.videographer1.get_full_name|default:"Not Assigned" }}</td>
+            <td>{{ contract.photobooth_op1.get_full_name|default:"Not Assigned" }}</td>
             <td>{{ contract.csr.get_full_name }}</td>
             <td>{{ contract.status }}</td>
         </tr>
@@ -59,6 +29,27 @@
         </tbody>
     </table>
 </div>
+
+<!-- Pagination Block -->
+<div style="width: 100%; text-align: center; margin-top: 20px;">
+    <div class="pagination">
+        <span class="step-links">
+            {% if contracts.has_previous %}
+                <a href="?page=1">&laquo; First</a>
+                <a href="?page={{ contracts.previous_page_number }}">Previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ contracts.number }} of {{ contracts.paginator.num_pages }}
+            </span>
+
+            {% if contracts.has_next %}
+                <a href="?page={{ contracts.next_page_number }}">Next</a>
+                <a href="?page={{ contracts.paginator.num_pages }}">Last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+</div>
 {% else %}
-<p>No contracts found</p>
+<p>No contracts found.</p>
 {% endif %}

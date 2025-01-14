@@ -472,6 +472,23 @@ input[type="reset"]:hover,
     width: calc(50% - 4px); /* Adjust the width to fit two inputs side by side, accounting for any margins or borders */
 }
 
+.pagination {
+    display: inline-block; /* Centers the pagination block itself */
+    text-align: center;    /* Aligns links inside the pagination block */
+}
+
+.pagination .step-links a {
+    margin: 0 10px;
+    text-decoration: none;
+    color: #3C1414;
+}
+
+.pagination .step-links .current {
+    color: #3C1414;
+    margin: 0 10px;
+}
+
+
 /* Label styling */
 label {
     margin-bottom: 5px;

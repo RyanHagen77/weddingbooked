@@ -1,6 +1,4 @@
-
-
-<form method="GET" action="{% url 'contracts:search' %}" class="search-form">
+<form method="GET" action="{% url 'contracts:contract_search' %}" class="search-form">
     {% csrf_token %}
     <div class="quick-search-group">
         <div class="form-group">
@@ -75,45 +73,10 @@
             </div>
         </div>
     </div>
-        <div class="form-row">
+    <div class="form-row">
         <div class="button-group">
             <input type="submit" value="Search" class="btn-dusty-pink">
             <input type="reset" value="Clear" class="btn" onclick="clearForm(this.form)">
-            <!-- Sorting Buttons -->
-            <a href="{% url 'contracts:search' %}?order=asc" class="btn-dusty-pink">Sort Ascending</a>
-            <a href="{% url 'contracts:search' %}?order=desc" class="btn-dusty-pink">Sort Descending</a>
         </div>
     </div>
 </form>
-
-
-    <!-- First, include jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Then, include jQuery UI -->
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-
-
-    <!-- Include Bootstrap Datepicker JS -->
-    <script>
-    function clearForm(form) {
-        // Reset the form
-        form.reset();
-
-        // Get the base URL without any query parameters
-        const baseUrl = window.location.origin + window.location.pathname;
-
-        // Change the browser's URL without reloading the page
-        window.history.replaceState({}, document.title, baseUrl);
-
-        // Clear the input values in the form
-        $(form).find('input, select').val('');
-
-        // Ensure CSRF token is retained if necessary
-        const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
-        if (csrfToken) {
-            $(form).find('input[name="csrfmiddlewaretoken"]').val(csrfToken);
-        }
-    }
-    </script>

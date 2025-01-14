@@ -109,40 +109,6 @@ def contract_search(request):
         if form.cleaned_data.get('csr'):
             contracts = contracts.filter(csr=form.cleaned_data['csr'])
 
-        service_type = form.cleaned_data.get('service_type')
-        if service_type:
-            staff_roles = {
-                "PHOTOGRAPHER": ['PHOTOGRAPHER1', 'PHOTOGRAPHER2'],
-                "VIDEOGRAPHER": ['VIDEOGRAPHER1', 'VIDEOGRAPHER2'],
-                "DJ": ['DJ1', 'DJ2'],
-                "PHOTOBOOTH": ['PHOTOBOOTH_OP1', 'PHOTOBOOTH_OP2']
-            }
-            roles = staff_roles.get(service_type, [])
-            service_contracts = EventStaffBooking.objects.filter(role__in=roles).values_list('contract_id', flat=True)
-            contracts = contracts.filter(contract_id__in=service_contracts)
-
-        if form.cleaned_data.get('photographer'):
-            photographer_contracts = EventStaffBooking.objects.filter(
-                staff=form.cleaned_data['photographer'],
-                role__in=['PHOTOGRAPHER1', 'PHOTOGRAPHER2']
-            ).values_list('contract_id', flat=True)
-            contracts = contracts.filter(contract_id__in=photographer_contracts)
-
-        if form.cleaned_data.get('videographer'):
-            videographer_contracts = EventStaffBooking.objects.filter(
-                staff=form.cleaned_data['videographer'],
-                role__in=['VIDEOGRAPHER1', 'VIDEOGRAPHER2']
-            ).values_list('contract_id', flat=True)
-            contracts = contracts.filter(contract_id__in=videographer_contracts)
-
-        if form.cleaned_data.get('photobooth_operator'):
-            photobooth_operator_contracts = EventStaffBooking.objects.filter(
-                staff=form.cleaned_data['photobooth_operator'],
-                role__in=['PHOTOBOOTH_OP1', 'PHOTOBOOTH_OP2']
-            ).values_list('contract_id', flat=True)
-            contracts = contracts.filter(contract_id__in=photobooth_operator_contracts)
-
-    # Apply search query
     query = request.GET.get('q')
     if query:
         contracts = contracts.filter(
@@ -154,10 +120,14 @@ def contract_search(request):
             Q(client__primary_phone1__icontains=query)
         )
 
-    # Apply pagination
-    paginator = Paginator(contracts, 25)  # Show 25 contracts per page
-    page_number = request.GET.get('page')
-    contracts = paginator.get_page(page_number)
+    if form.is_valid() or query:
+        contracts = contracts[:250]
+        paginator = Paginator(contracts, 2)
+        page_number = request.GET.get('page')
+        contracts = paginator.get_page(page_number)
+
+    else:
+        contracts = None
 
     return render(request, 'contracts/contract_search.html', {
         'form': form,
