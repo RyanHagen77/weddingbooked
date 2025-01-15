@@ -122,7 +122,7 @@ def contract_search(request):
 
     if form.is_valid() or query:
         contracts = contracts[:250]
-        paginator = Paginator(contracts, 2)
+        paginator = Paginator(contracts, 25)
         page_number = request.GET.get('page')
         contracts = paginator.get_page(page_number)
 
