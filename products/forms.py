@@ -22,12 +22,11 @@ class ContractProductForm(forms.ModelForm):
     """
     class Meta:
         model = ContractProduct
-        fields = ['product', 'quantity', 'special_notes', 'post_event']
+        fields = ['product', 'quantity', 'special_notes']
         widgets = {
             'product': forms.Select(attrs={'class': 'form-control'}),
             'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
             'special_notes': forms.Textarea(attrs={'class': 'form-control'}),
-            'post_event': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -55,7 +54,7 @@ class ContractProductForm(forms.ModelForm):
 ContractProductFormset = inlineformset_factory(
     Contract,  # Parent model
     ContractProduct,  # Child model
-    fields=('product', 'quantity', 'special_notes', 'post_event'),
+    fields=('product', 'quantity', 'special_notes'),
     extra=0,  # Do not display empty forms for additional ContractProduct entries
     can_delete=True  # Allow deletion of ContractProduct entries
 )
