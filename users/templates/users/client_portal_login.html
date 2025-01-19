@@ -102,7 +102,7 @@
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required>
             <button type="submit">Login</button>
-            <a href="{% url 'password_reset' %}" class="forgot-password">Forgot Password?</a>
+            <a href="{% url 'users:password_reset' %}" class="forgot-password">Forgot Password?</a>
         </form>
         {% if messages %}
             <ul>

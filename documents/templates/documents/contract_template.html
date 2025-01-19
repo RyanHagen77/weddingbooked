@@ -243,6 +243,7 @@
     </style>
 </head>
 <body>
+{% load group_tags %}
     <div class="contract-header">
         <div class="logo">
             <img src="{{ logo_url }}" alt="Logo">
@@ -500,6 +501,111 @@
             </tr>
         </table>
     </div>
+
+    <div class="divider"></div>
+
+    <div class="product-details">
+        <h3>Products</h3>
+        <table>
+            <tr>
+                <th>Product Name</th>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Total Price</th>
+            </tr>
+            {% for product in contract.contract_products.all %}
+            <tr>
+                <td>{{ product.product.name|strip_year }}</td>
+                <td>{{ product.product.description }}</td>
+                <td>{{ product.quantity }}</td>
+                <td>${{ product.product.price|floatformat:2 }}</td>
+                <td>${{ product.quantity|multiply:product.product.price|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="4" style="text-align: right;"><strong>Product Subtotal:</strong></td>
+                <td>${{ product_subtotal|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td colspan="4" style="text-align: right;"><strong>Tax Rate:</strong></td>
+                <td>{{ tax_rate|floatformat:2 }}%</td>
+            </tr>
+            <tr>
+                <td colspan="4" style="text-align: right;"><strong>Tax Amount:</strong></td>
+                <td>${{ tax_amount|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td colspan="4" style="text-align: right;"><strong>Total with Tax:</strong></td>
+                <td>${{ product_subtotal_with_tax|floatformat:2 }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Service Fees Section -->
+    <div class="fee-details">
+        <h3>Service Fees</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <th style="text-align: left; padding: 8px; border: 1px solid #ddd;">Fee Type</th>
+                <th style="text-align: left; padding: 8px; border: 1px solid #ddd;">Applied Date</th>
+                <th style="text-align: right; padding: 8px; border: 1px solid #ddd;">Amount</th>
+            </tr>
+            {% for fee in service_fees %}
+            <tr>
+                <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">{{ fee.fee_type }}</td>
+                <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">{{ fee.applied_date }}</td>
+                <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${{ fee.amount|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" style="text-align: center; padding: 8px; border: 1px solid #ddd;">No service fees applied.</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="2" style="text-align: right; padding: 8px; border: 1px solid #ddd;"><strong>Service Fees Total:</strong></td>
+                <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${{ service_fees_total|floatformat:2 }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Tax and Grand Total Section -->
+    <div class="summary-details">
+        <h3>Summary</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">Service Total:</td>
+                <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${{ contract.calculate_total_service_cost|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">Product Total with Tax:</td>
+                <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${{ product_subtotal_with_tax|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">Service Fees Total:</td>
+                <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${{ contract.calculate_total_service_fees|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">Total Discounts:</td>
+                <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">-${{ contract.display_discounts|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td style="text-align: left; padding: 8px; border: 1px solid #ddd;"><strong>Grand Total:</strong></td>
+                <td style="text-align: right; padding: 8px; border: 1px solid #ddd;"><strong>${{ contract.display_total_cost|floatformat:2 }}</strong></td>
+            </tr>
+            <tr>
+                <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">Amount Paid:</td>
+                <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${{ contract.amount_paid|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td style="text-align: left; padding: 8px; border: 1px solid #ddd;"><strong>Balance Due:</strong></td>
+                <td style="text-align: right; padding: 8px; border: 1px solid #ddd;"><strong>${{ contract.balance_due|floatformat:2 }}</strong></td>
+            </tr>
+        </table>
+    </div>
+
 
     <!-- Custom text area -->
     <div class="text-box">

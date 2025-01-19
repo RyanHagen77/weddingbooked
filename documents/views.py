@@ -100,11 +100,9 @@ def generate_contract_pdf(request, contract_id):
 
     # Initialize an empty dictionary to store overtime options grouped by service type
     overtime_options_by_service_type = {}
-
-    # Initialize total overtime cost
     total_overtime_cost = 0
 
-    # Iterate over each overtime option
+    # Process overtime options
     for contract_overtime in contract.overtimes.all():
         service_type = contract_overtime.overtime_option.service_type.name
         if service_type in overtime_options_by_service_type:
@@ -122,25 +120,28 @@ def generate_contract_pdf(request, contract_id):
                 'hours': contract_overtime.hours,
             }]
 
-    # Calculate total cost for each overtime option
     for service_type, options in overtime_options_by_service_type.items():
         for option in options:
             option['total_cost'] = option['hours'] * option['rate_per_hour']
             total_overtime_cost += option['total_cost']
 
+    # Calculate totals
+    product_subtotal = contract.calculate_product_subtotal()
+    tax_rate_percentage = float(contract.tax_rate)  # Keep as-is for percentage display
+    tax_amount = contract.calculate_tax()  # Keep as a Decimal for calculations
+    product_subtotal_with_tax = product_subtotal + tax_amount
+
     total_service_cost = contract.calculate_total_service_cost()
     total_discount = contract.calculate_discount()
     total_cost_after_discounts = contract.calculate_total_service_cost_after_discounts()
+    grand_total = contract.calculate_total_cost()
 
-    # Get the first contract agreement for the contract
+    # Get the first and latest agreements and rider agreements
     first_agreement = ContractAgreement.objects.filter(contract=contract).order_by('version_number').first()
-
-    # Get the latest contract agreement for the contract
     latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
-
-    # Get the rider agreements for the contract
     rider_agreements = RiderAgreement.objects.filter(contract=contract)
 
+    # Build the context
     context = {
         'contract': contract,
         'client_info': {
@@ -157,12 +158,19 @@ def generate_contract_pdf(request, contract_id):
         'total_overtime_cost': total_overtime_cost,
         'overtime_options_by_service_type': overtime_options_by_service_type,
         'ROLE_DISPLAY_NAMES': ROLE_DISPLAY_NAMES,
+        'product_subtotal': product_subtotal,
+        'product_subtotal_with_tax': product_subtotal_with_tax,
+        'service_fees': contract.servicefees.all(),  # Add the list of service fees
+        'service_fees_total': contract.calculate_total_service_fees(),  # Add the total of service fees
         'total_service_cost': total_service_cost,
+        'tax_rate': tax_rate_percentage,  # Use as-is in percentage format
+        'tax_amount': tax_amount,  # Keep as Decimal for numeric calculations
         'total_discount': total_discount,
         'total_cost_after_discounts': total_cost_after_discounts,
+        'grand_total': grand_total,
         'rider_agreements': rider_agreements,
-        'first_agreement': first_agreement,  # Add first agreement to context
-        'latest_agreement': latest_agreement,  # Add latest agreement to context
+        'first_agreement': first_agreement,
+        'latest_agreement': latest_agreement,
     }
 
     # Render HTML to string
@@ -268,9 +276,6 @@ def contract_agreement(request, contract_id):
     }
 
     return render(request, 'documents/contract_agreement_form.html', context)
-
-
-
 
 @login_required
 def client_contract_agreement(request, contract_id):

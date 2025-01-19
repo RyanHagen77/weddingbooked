@@ -1,4 +1,4 @@
-#documents/models.py
+# documents/models.py
 
 from django.db import models
 from django.conf import settings
@@ -36,6 +36,7 @@ class RiderAgreement(models.Model):
     def __str__(self):
         return f"{self.contract} - {self.rider_type}"
 
+
 class ContractDocument(models.Model):
     contract = models.ForeignKey('contracts.Contract', related_name='documents', on_delete=models.CASCADE)
     document = models.FileField(upload_to='contract_documents/')
@@ -47,4 +48,3 @@ class ContractDocument(models.Model):
 
     def __str__(self):
         return f"Document for {self.contract}"
-

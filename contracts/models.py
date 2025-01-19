@@ -511,24 +511,28 @@ class Contract(models.Model):
             with transaction.atomic():
                 regex_pattern = rf'^[A-Z]{{3}}-{year}-{month}-(\d+)$'
                 contracts = Contract.objects.filter(custom_contract_number__regex=regex_pattern).order_by(
-                    '-custom_contract_number')
+                    '-custom_contract_number'
+                )
                 new_number = max(
                     (int(re.search(r'-(\d+)$', contract.custom_contract_number).group(1)) for contract in contracts),
                     default=0
                 ) + 1
                 self.custom_contract_number = f"{primary_contact_last_name}-{year}-{month}-{str(new_number).zfill(2)}"
 
-        # Save the instance to generate a primary key
-        if not self.pk:
-            super().save(*args, **kwargs)
-            print("Initial save completed, primary key generated.")
+        # Set tax rate based on location
+        if self.location and self.location.tax_rate:
+            self.tax_rate = self.location.tax_rate
+        else:
+            self.tax_rate = Decimal('0.00')  # Default value if no location or tax rate is set
 
         # Perform calculations requiring a saved instance
         taxable_amount = Decimal('0.00')
         for contract_product in self.contract_products.all():
             if contract_product.product.is_taxable:
                 taxable_amount += contract_product.product.price * contract_product.quantity
-        self.tax_amount = taxable_amount * self.tax_rate / 100
+
+        # Correct tax calculation: Divide tax_rate by 100
+        self.tax_amount = taxable_amount * (self.tax_rate / 100)
 
         # Calculate discounts
         self.calculated_discount = Decimal(self.calculate_package_discount())
