@@ -1,12 +1,12 @@
 import logging
 from datetime import datetime
 
+from django.core.paginator import Paginator
+
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.db.models import Q, F, Value, CharField
 from django.db.models.functions import Concat
-from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -25,6 +25,8 @@ from users.views import ROLE_DISPLAY_NAMES
 logger = logging.getLogger(__name__)
 
 # Helper Functions
+
+
 def parse_date_safe(date_str, field_name="date"):
     """
     Safely parses a date string into a date object.
@@ -35,6 +37,7 @@ def parse_date_safe(date_str, field_name="date"):
     except ValueError:
         logger.error("Invalid %s format: %s", field_name, date_str)
         return None
+
 
 def validate_date_range(start_date, end_date):
     """
@@ -48,11 +51,12 @@ def validate_date_range(start_date, end_date):
     logger.error("Invalid date range: %s to %s", start_date, end_date)
     return None
 
+
 @login_required
 def booking_search(request):
     """
     Search for event staff bookings based on various filters like date range,
-    service type, role, and status.
+    service type, role, and status, with pagination.
     """
     query = request.GET.get("booking_q")
     start_date = request.GET.get("event_date_start")
@@ -108,8 +112,17 @@ def booking_search(request):
         sort_expression = sort_by if order == "asc" else f"-{sort_by}"
         bookings = bookings.order_by(sort_expression)
 
+    # Apply pagination
+    paginator = Paginator(bookings, 25)  # Display 25 bookings per page
+    page_number = request.GET.get("page")
+    bookings_page = paginator.get_page(page_number)
+
     logger.info("Booking search completed with %d results.", bookings.count())
-    return render(request, "bookings/booking_search.html", {"bookings": bookings})
+    return render(request, "bookings/booking_search.html", {
+        "bookings": bookings_page,
+        "query_params": request.GET.urlencode(),  # Pass query parameters to the template
+    })
+
 
 def get_available_staff(request):
     """
@@ -157,6 +170,7 @@ def get_available_staff(request):
 
     logger.info("Available staff fetched for event date: %s", event_date)
     return JsonResponse(data)
+
 
 @login_required
 def get_current_booking(request):

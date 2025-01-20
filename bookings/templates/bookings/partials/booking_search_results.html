@@ -35,8 +35,8 @@
             <div class="pagination">
                 <span class="step-links">
                     {% if bookings.has_previous %}
-                        <a href="?page=1{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}">&laquo; First</a>
-                        <a href="?page={{ bookings.previous_page_number }}{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}">Previous</a>
+                        <a href="?page=1&{{ query_params }}">&laquo; First</a>
+                        <a href="?page={{ bookings.previous_page_number }}&{{ query_params }}">Previous</a>
                     {% endif %}
 
                     <span class="current">
@@ -44,8 +44,8 @@
                     </span>
 
                     {% if bookings.has_next %}
-                        <a href="?page={{ bookings.next_page_number }}{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}">Next</a>
-                        <a href="?page={{ bookings.paginator.num_pages }}{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}">Last &raquo;</a>
+                        <a href="?page={{ bookings.next_page_number }}&{{ query_params }}">Next</a>
+                        <a href="?page={{ bookings.paginator.num_pages }}&{{ query_params }}">Last &raquo;</a>
                     {% endif %}
                 </span>
             </div>
