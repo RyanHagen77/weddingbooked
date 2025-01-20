@@ -11,7 +11,7 @@ from django.contrib import messages
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
-from bookings.forms import EventStaffBookingForm
+from bookings.forms import BookingSearchForm, EventStaffBookingForm
 from bookings.models import EventStaffBooking, Availability
 from bookings.constants import SERVICE_ROLE_MAPPING
 from communication.models import UnifiedCommunication
@@ -56,71 +56,79 @@ def validate_date_range(start_date, end_date):
 def booking_search(request):
     """
     Search for event staff bookings based on various filters like date range,
-    service type, role, and status, with pagination.
+    service type, role, and status.
     """
-    query = request.GET.get("booking_q")
-    start_date = request.GET.get("event_date_start")
-    end_date = request.GET.get("event_date_end")
-    service_type = request.GET.get("service_type")
-    role_filter = request.GET.get("role_filter")
-    status_filter = request.GET.get("status_filter")
-    sort_by = request.GET.get("sort_by")
-    order = request.GET.get("order", "asc")
-
+    form = BookingSearchForm(request.GET)
     bookings = EventStaffBooking.objects.all()
 
-    # Apply text-based search
-    if query:
-        bookings = bookings.filter(
-            Q(staff__username__icontains=query) |
-            Q(staff__first_name__icontains=query) |
-            Q(staff__last_name__icontains=query) |
-            Q(contract__custom_contract_number__icontains=query) |
-            Q(contract__client__primary_contact__icontains=query) |
-            Q(contract__client__partner_contact__icontains=query) |
-            Q(contract__old_contract_number__icontains=query) |
-            Q(contract__client__primary_email__icontains=query) |
-            Q(contract__client__primary_phone1__icontains=query)
-        )
+    # Apply ordering
+    order = request.GET.get('order', 'desc')
+    if order == 'asc':
+        bookings = bookings.order_by('contract__event_date')
+    else:
+        bookings = bookings.order_by('-contract__event_date')
 
-    # Filter by event date range
-    date_range = validate_date_range(start_date, end_date)
-    if date_range:
-        bookings = bookings.filter(contract__event_date__range=date_range)
-    elif start_date or end_date:
-        messages.error(request, "Invalid date range. Please check your input.")
+    # Apply filters if the form is valid
+    if form.is_valid():
+        if form.cleaned_data.get('service_type'):
+            roles = SERVICE_ROLE_MAPPING.get(form.cleaned_data['service_type'].upper(), [])
+            if roles:
+                bookings = bookings.filter(role__in=roles)
+        if form.cleaned_data.get('role_filter'):
+            bookings = bookings.filter(role=form.cleaned_data['role_filter'])
+        if form.cleaned_data.get('status_filter'):
+            status_list = form.cleaned_data['status_filter'].split(',')
+            bookings = book@login_required
+def booking_search(request):
+    """
+    Search for event staff bookings based on filters, using a form for validation.
+    """
+    form = BookingSearchForm(request.GET)
+    bookings = EventStaffBooking.objects.all()
 
-    # Filter by service type
-    if service_type:
-        roles = SERVICE_ROLE_MAPPING.get(service_type.upper(), [])
-        if roles:
-            bookings = bookings.filter(role__in=roles)
+    # Apply filters if the form is valid
+    if form.is_valid():
+        if form.cleaned_data.get("booking_q"):
+            query = form.cleaned_data["booking_q"]
+            bookings = bookings.filter(
+                Q(staff__username__icontains=query) |
+                Q(staff__first_name__icontains=query) |
+                Q(staff__last_name__icontains=query) |
+                Q(contract__custom_contract_number__icontains=query) |
+                Q(contract__client__primary_contact__icontains=query)
+            )
+        if form.cleaned_data.get("event_date_start") and form.cleaned_data.get("event_date_end"):
+            bookings = bookings.filter(
+                contract__event_date__range=[
+                    form.cleaned_data["event_date_start"],
+                    form.cleaned_data["event_date_end"],
+                ]
+            )
+        if form.cleaned_data.get("service_type"):
+            roles = SERVICE_ROLE_MAPPING.get(form.cleaned_data["service_type"].upper(), [])
+            if roles:
+                bookings = bookings.filter(role__in=roles)
+        if form.cleaned_data.get("role_filter"):
+            bookings = bookings.filter(role=form.cleaned_data["role_filter"])
+        if form.cleaned_data.get("status_filter"):
+            statuses = form.cleaned_data["status_filter"].split(",")
+            bookings = bookings.filter(status__in=statuses)
 
-    # Filter by role
-    if role_filter:
-        bookings = bookings.filter(role=role_filter)
+        # Apply sorting
+        sort_by = form.cleaned_data.get("sort_by")
+        order = form.cleaned_data.get("order", "asc")
+        if sort_by:
+            sort_expression = sort_by if order == "asc" else f"-{sort_by}"
+            bookings = bookings.order_by(sort_expression)
 
-    # Filter by status
-    if status_filter:
-        # Allow multiple statuses, separated by commas
-        status_list = status_filter.split(",")
-        bookings = bookings.filter(status__in=status_list)
-
-    # Sort results
-    allowed_sort_fields = ["staff__username", "contract__event_date", "role", "status"]
-    if sort_by in allowed_sort_fields:
-        sort_expression = sort_by if order == "asc" else f"-{sort_by}"
-        bookings = bookings.order_by(sort_expression)
-
-    # Apply pagination
-    paginator = Paginator(bookings, 25)  # Display 25 bookings per page
+    # Paginate results
+    paginator = Paginator(bookings, 25)  # Display 25 results per page
     page_number = request.GET.get("page")
-    bookings_page = paginator.get_page(page_number)
+    bookings = paginator.get_page(page_number)
 
-    logger.info("Booking search completed with %d results.", bookings.count())
     return render(request, "bookings/booking_search.html", {
-        "bookings": bookings_page,
-        "query_params": request.GET.urlencode(),  # Pass query parameters to the template
+        "form": form,
+        "bookings": bookings,
     })
 
 

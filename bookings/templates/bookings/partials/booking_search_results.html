@@ -30,13 +30,14 @@
                 {% endfor %}
             </tbody>
         </table>
+
         <!-- Pagination -->
         <div class="pagination-container" style="text-align: center; margin-top: 20px;">
             <div class="pagination">
                 <span class="step-links">
                     {% if bookings.has_previous %}
-                        <a href="?page=1&{{ query_params }}">&laquo; First</a>
-                        <a href="?page={{ bookings.previous_page_number }}&{{ query_params }}">Previous</a>
+                        <a href="?page=1">&laquo; First</a>
+                        <a href="?page={{ bookings.previous_page_number }}">Previous</a>
                     {% endif %}
 
                     <span class="current">
@@ -44,8 +45,8 @@
                     </span>
 
                     {% if bookings.has_next %}
-                        <a href="?page={{ bookings.next_page_number }}&{{ query_params }}">Next</a>
-                        <a href="?page={{ bookings.paginator.num_pages }}&{{ query_params }}">Last &raquo;</a>
+                        <a href="?page={{ bookings.next_page_number }}">Next</a>
+                        <a href="?page={{ bookings.paginator.num_pages }}">Last &raquo;</a>
                     {% endif %}
                 </span>
             </div>
