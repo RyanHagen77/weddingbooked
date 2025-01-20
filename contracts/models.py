@@ -524,11 +524,11 @@ class Contract(models.Model):
                 self.custom_contract_number = f"{primary_contact_last_name}-{year}-{month}-{str(new_number).zfill(2)}"
 
         # Set tax rate based on location
-        self.tax_rate = self.location.tax_rate if self.location and self.location.tax_rate else Decimal('0.00')
+        self.tax_rate = self.location.tax_rate if self.location and self.location.tax_rate else Decimal("0.00")
         if not self.location or not self.location.tax_rate:
             print("Location or tax rate not set; defaulting to 0.")
 
-        # Save the instance to generate a primary key
+        # Save the instance to generate a primary key if not already saved
         if not self.pk:
             super().save(*args, **kwargs)
             print("Initial save completed, primary key generated.")
@@ -538,6 +538,8 @@ class Contract(models.Model):
         for contract_product in self.contract_products.all():
             if contract_product.product.is_taxable:
                 taxable_amount += contract_product.product.price * contract_product.quantity
+
+        # Calculate tax amount
         self.tax_amount = taxable_amount * self.tax_rate / 100
 
         # Calculate discounts
@@ -547,7 +549,7 @@ class Contract(models.Model):
         # Calculate total cost
         self.total_cost = self.calculate_total_cost()
 
-        # Save again with updated fields
+        # Save all calculated fields
         super().save(*args, **kwargs)
         print("Final save completed with calculated fields.")
 
