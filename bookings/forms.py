@@ -2,6 +2,12 @@
 from django import forms
 from .models import EventStaffBooking
 
+SERVICE_TYPE_CHOICES = [
+    ("Photography", "Photography"),
+    ("Videography", "Videography"),
+    ("DJ", "DJ"),
+    ("Photobooth", "Photobooth"),
+]
 
 class BookingSearchForm(forms.Form):
     booking_q = forms.CharField(
@@ -19,13 +25,8 @@ class BookingSearchForm(forms.Form):
     )
     service_type = forms.ChoiceField(
         required=False,
-        choices=[
-            ("", "All Service Types"),
-            ("PHOTOGRAPHER", "Photographer"),
-            ("VIDEOGRAPHER", "Videographer"),
-            ("DJ", "DJ"),
-            ("PHOTOBOOTH", "Photobooth"),
-        ],
+        choices=[("", "All Service Types")] + SERVICE_TYPE_CHOICES,
+        label="Filter by Service Type",
     )
     role_filter = forms.ChoiceField(
         required=False,
@@ -33,18 +34,24 @@ class BookingSearchForm(forms.Form):
             ("", "All Roles"),
             ("PHOTOGRAPHER1", "Photographer 1"),
             ("PHOTOGRAPHER2", "Photographer 2"),
-            ("ENGAGEMENT", "Engagement"),
             ("VIDEOGRAPHER1", "Videographer 1"),
             ("VIDEOGRAPHER2", "Videographer 2"),
             ("DJ1", "DJ 1"),
             ("DJ2", "DJ 2"),
-            ("PHOTOBOOTH_OP", "Photobooth Operator"),
+            ("PHOTOBOOTH_OP1", "Photobooth Operator 1"),
+            ("PHOTOBOOTH_OP2", "Photobooth Operator 2"),
         ],
+        label="Filter by Role",
     )
-    status_filter = forms.CharField(
+    status_filter = forms.ChoiceField(
         required=False,
+        choices=[
+            ("", "All Statuses"),
+            ("Prospect", "Prospect"),
+            ("Pending", "Pending"),
+            ("Booked", "Booked"),
+        ],
         label="Filter by Status",
-        widget=forms.TextInput(attrs={"placeholder": "Comma-separated (e.g., PENDING,BOOKED)"})
     )
     sort_by = forms.ChoiceField(
         required=False,
@@ -52,6 +59,7 @@ class BookingSearchForm(forms.Form):
             ("contract__event_date", "Event Date"),
             ("role", "Role"),
         ],
+        label="Sort by",
     )
     order = forms.ChoiceField(
         required=False,
@@ -60,7 +68,9 @@ class BookingSearchForm(forms.Form):
             ("desc", "Descending"),
         ],
         initial="asc",
+        label="Order",
     )
+
 
 class EventStaffBookingForm(forms.ModelForm):
     booking_id = forms.CharField(widget=forms.HiddenInput(), required=False)

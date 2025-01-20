@@ -24,6 +24,18 @@ from users.views import ROLE_DISPLAY_NAMES
 
 logger = logging.getLogger(__name__)
 
+ROLE_TO_SERVICE_TYPE = {
+    'PHOTOGRAPHER1': 'Photography',
+    'PHOTOGRAPHER2': 'Photography',
+    'VIDEOGRAPHER1': 'Videography',
+    'VIDEOGRAPHER2': 'Videography',
+    'DJ1': 'DJ',
+    'DJ2': 'DJ',
+    'PHOTOBOOTH_OP1': 'Photobooth',
+    'PHOTOBOOTH_OP2': 'Photobooth',
+}
+
+
 # Helper Functions
 
 
@@ -52,37 +64,20 @@ def validate_date_range(start_date, end_date):
     return None
 
 
+# Mapping roles to service types
+ROLE_TO_SERVICE_TYPE = {
+    'PHOTOGRAPHER1': 'Photography',
+    'PHOTOGRAPHER2': 'Photography',
+    'VIDEOGRAPHER1': 'Videography',
+    'VIDEOGRAPHER2': 'Videography',
+    'DJ1': 'DJ',
+    'DJ2': 'DJ',
+    'PHOTOBOOTH_OP1': 'Photobooth',
+    'PHOTOBOOTH_OP2': 'Photobooth',
+}
+
 @login_required
 def booking_search(request):
-    """
-    Search for event staff bookings based on various filters like date range,
-    service type, role, and status.
-    """
-    form = BookingSearchForm(request.GET)
-    bookings = EventStaffBooking.objects.all()
-
-    # Apply ordering
-    order = request.GET.get('order', 'desc')
-    if order == 'asc':
-        bookings = bookings.order_by('contract__event_date')
-    else:
-        bookings = bookings.order_by('-contract__event_date')
-
-    # Apply filters if the form is valid
-    if form.is_valid():
-        if form.cleaned_data.get('service_type'):
-            roles = SERVICE_ROLE_MAPPING.get(form.cleaned_data['service_type'].upper(), [])
-            if roles:
-                bookings = bookings.filter(role__in=roles)
-        if form.cleaned_data.get('role_filter'):
-            bookings = bookings.filter(role=form.cleaned_data['role_filter'])
-        if form.cleaned_data.get('status_filter'):
-            status_list = form.cleaned_data['status_filter'].split(',')
-            bookings = book@login_required
-def booking_search(request):
-    """
-    Search for event staff bookings based on filters, using a form for validation.
-    """
     form = BookingSearchForm(request.GET)
     bookings = EventStaffBooking.objects.all()
 
@@ -105,14 +100,15 @@ def booking_search(request):
                 ]
             )
         if form.cleaned_data.get("service_type"):
-            roles = SERVICE_ROLE_MAPPING.get(form.cleaned_data["service_type"].upper(), [])
-            if roles:
-                bookings = bookings.filter(role__in=roles)
+            service_type = form.cleaned_data["service_type"]
+            roles_for_service_type = [
+                role for role, stype in ROLE_TO_SERVICE_TYPE.items() if stype == service_type
+            ]
+            bookings = bookings.filter(role__in=roles_for_service_type)
         if form.cleaned_data.get("role_filter"):
             bookings = bookings.filter(role=form.cleaned_data["role_filter"])
         if form.cleaned_data.get("status_filter"):
-            statuses = form.cleaned_data["status_filter"].split(",")
-            bookings = bookings.filter(status__in=statuses)
+            bookings = bookings.filter(status=form.cleaned_data["status_filter"])
 
         # Apply sorting
         sort_by = form.cleaned_data.get("sort_by")

@@ -504,8 +504,9 @@ class Contract(models.Model):
             primary_contact_last_name = "UNK"  # Default value
             if self.client and self.client.primary_contact:
                 name_parts = self.client.primary_contact.split()
-                primary_contact_last_name = name_parts[-1][:3].upper() if len(name_parts) > 1 else name_parts[0][
-                                                                                                   :3].upper()
+                primary_contact_last_name = (
+                    name_parts[-1][:3].upper() if len(name_parts) > 1 else name_parts[0][:3].upper()
+                )
 
             # Generate custom contract number
             with transaction.atomic():
@@ -514,29 +515,36 @@ class Contract(models.Model):
                     '-custom_contract_number'
                 )
                 new_number = max(
-                    (int(re.search(r'-(\d+)$', contract.custom_contract_number).group(1)) for contract in contracts),
-                    default=0
+                    (
+                        int(re.search(r'-(\d+)$', contract.custom_contract_number).group(1))
+                        for contract in contracts if re.search(r'-(\d+)$', contract.custom_contract_number)
+                    ),
+                    default=0,
                 ) + 1
                 self.custom_contract_number = f"{primary_contact_last_name}-{year}-{month}-{str(new_number).zfill(2)}"
 
         # Set tax rate based on location
-        if self.location and self.location.tax_rate:
-            self.tax_rate = self.location.tax_rate
-        else:
-            self.tax_rate = Decimal('0.00')  # Default value if no location or tax rate is set
+        self.tax_rate = self.location.tax_rate if self.location and self.location.tax_rate else Decimal('0.00')
+        if not self.location or not self.location.tax_rate:
+            print("Location or tax rate not set; defaulting to 0.")
+
+        # Save the instance to generate a primary key
+        if not self.pk:
+            super().save(*args, **kwargs)
+            print("Initial save completed, primary key generated.")
 
         # Perform calculations requiring a saved instance
-        taxable_amount = Decimal('0.00')
+        taxable_amount = Decimal("0.00")
         for contract_product in self.contract_products.all():
             if contract_product.product.is_taxable:
                 taxable_amount += contract_product.product.price * contract_product.quantity
-
-        # Correct tax calculation: Divide tax_rate by 100
-        self.tax_amount = taxable_amount * (self.tax_rate / 100)
+        self.tax_amount = taxable_amount * self.tax_rate / 100
 
         # Calculate discounts
-        self.calculated_discount = Decimal(self.calculate_package_discount())
-        self.total_discount = self.calculate_discount()
+        self.calculated_discount = self.calculate_package_discount() or Decimal("0.00")
+        self.total_discount = self.calculate_discount() or Decimal("0.00")
+
+        # Calculate total cost
         self.total_cost = self.calculate_total_cost()
 
         # Save again with updated fields

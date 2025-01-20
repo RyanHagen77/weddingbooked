@@ -14,7 +14,16 @@
 {% block extra_head %}
 <script>
     function clearForm(form) {
-        form.reset();
+        // Clear all fields in the form
+        for (let element of form.elements) {
+            if (element.type === "select-one" || element.type === "text" || element.type === "date") {
+                element.value = ""; // Reset the value
+            } else if (element.type === "checkbox" || element.type === "radio") {
+                element.checked = false; // Uncheck checkboxes and radio buttons
+            }
+        }
+
+        // Redirect to the base URL without query parameters
         window.location.href = "{{ action_url }}";
     }
 </script>
