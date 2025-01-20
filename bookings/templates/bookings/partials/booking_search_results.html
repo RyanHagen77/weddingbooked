@@ -1,0 +1,56 @@
+<div class="search-results">
+    {% if bookings %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Event Staff</th>
+                    <th>Event Date</th>
+                    <th>Primary Contact</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Confirmed</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr onclick="window.location='{% url 'bookings:booking_detail' booking.id %}';" style="cursor: pointer;">
+                    <td>{{ booking.staff.get_full_name }}</td>
+                    <td>{{ booking.contract.event_date|date:"Y-m-d" }}</td>
+                    <td>{{ booking.contract.client.primary_contact }}</td>
+                    <td>{{ booking.get_role_display }}</td>
+                    <td>{{ booking.get_status_display }}</td>
+                    <td>
+                        {% if booking.confirmed %}
+                            <span class="badge badge-success">Yes</span>
+                        {% else %}
+                            <span class="badge badge-danger">No</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <!-- Pagination -->
+        <div class="pagination-container" style="text-align: center; margin-top: 20px;">
+            <div class="pagination">
+                <span class="step-links">
+                    {% if bookings.has_previous %}
+                        <a href="?page=1{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}">&laquo; First</a>
+                        <a href="?page={{ bookings.previous_page_number }}{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}">Previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ bookings.number }} of {{ bookings.paginator.num_pages }}
+                    </span>
+
+                    {% if bookings.has_next %}
+                        <a href="?page={{ bookings.next_page_number }}{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}">Next</a>
+                        <a href="?page={{ bookings.paginator.num_pages }}{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}">Last &raquo;</a>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    {% else %}
+        <p>No bookings found</p>
+    {% endif %}
+</div>
