@@ -22,6 +22,7 @@ from django.core.files.base import ContentFile
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
+
 @login_required
 def delete_document(request, document_id):
     document = get_object_or_404(ContractDocument, pk=document_id)
@@ -35,6 +36,7 @@ def delete_document(request, document_id):
 
     # Redirect back to the contract detail page or wherever appropriate
     return redirect('contracts:contract_detail', id=document.contract.contract_id)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -56,15 +58,14 @@ def client_documents(request, contract_id):
         return JsonResponse({'error': 'Contract not found'}, status=404)
 
 
-
 @login_required
 def generate_contract_pdf(request, contract_id):
     contract = get_object_or_404(Contract, pk=contract_id)
 
     # Constructing full URL for the logo and company signature
     domain = 'enet2.com'
-    logo_url = f'http://{domain}{settings.MEDIA_URL}logo/Final_Logo.png'
-    company_signature_url = f'http://{domain}{settings.MEDIA_URL}signatures/company_signature.png'
+    logo_url = f'https://{domain}{settings.MEDIA_URL}logo/Final_Logo.png'
+    company_signature_url = f'https://{domain}{settings.MEDIA_URL}signatures/company_signature.png'
 
     # Package texts
     package_texts = {
@@ -188,7 +189,7 @@ def generate_contract_pdf(request, contract_id):
 @login_required
 def contract_agreement(request, contract_id):
     contract = get_object_or_404(Contract, pk=contract_id)
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+    logo_url = f"https://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     if request.method == 'POST':
         rider_type = request.POST.get('rider_type')
@@ -289,10 +290,11 @@ def client_contract_agreement(request, contract_id):
             agreement.contract = contract
             agreement.signature = form.cleaned_data['main_signature']
 
+            # Increment version number
             latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
             agreement.version_number = latest_agreement.version_number + 1 if latest_agreement else 1
 
-            # Save the state of services
+            # Save services
             agreement.photography_service = contract.photography_package.service_type if contract.photography_package else None
             agreement.videography_service = contract.videography_package.service_type if contract.videography_package else None
             agreement.dj_service = contract.dj_package.service_type if contract.dj_package else None
@@ -300,83 +302,92 @@ def client_contract_agreement(request, contract_id):
 
             agreement.save()
 
-            portal_url = reverse('users:client_portal', args=[contract_id])
+            # Prepare context for PDF generation
+            package_texts = {
+                'photography': linebreaks(contract.photography_package.default_text) if contract.photography_package else None,
+                'videography': linebreaks(contract.videography_package.default_text) if contract.videography_package else None,
+                'dj': linebreaks(contract.dj_package.default_text) if contract.dj_package else None,
+                'photobooth': linebreaks(contract.photobooth_package.default_text) if contract.photobooth_package else None,
+            }
 
-            # Render the status page upon successful form submission
+            overtime_options_by_service_type = {}
+            total_overtime_cost = 0
+            for contract_overtime in contract.overtimes.all():
+                service_type = contract_overtime.overtime_option.service_type.name
+                option = {
+                    'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role, contract_overtime.overtime_option.role),
+                    'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
+                    'hours': contract_overtime.hours,
+                }
+                option['total_cost'] = option['hours'] * option['rate_per_hour']
+                total_overtime_cost += option['total_cost']
+                overtime_options_by_service_type.setdefault(service_type, []).append(option)
+
+            context = {
+                'contract': contract,
+                'logo_url': logo_url,
+                'package_texts': package_texts,
+                'total_service_cost': contract.calculate_total_service_cost(),
+                'total_discount': contract.calculate_discount(),
+                'total_cost_after_discounts': contract.calculate_total_service_cost_after_discounts(),
+                'overtime_options_by_service_type': overtime_options_by_service_type,
+                'total_overtime_cost': total_overtime_cost,
+                'ROLE_DISPLAY_NAMES': ROLE_DISPLAY_NAMES,
+                'latest_agreement': agreement,
+            }
+
+            # Generate PDF
+            html_string = render_to_string('documents/client_contract_agreement_pdf.html', context)
+            pdf_file = HTML(string=html_string).write_pdf()
+
+            # Save PDF to contract documents
+            pdf_name = f"contract_{contract_id}_agreement.pdf"
+            path = default_storage.save(f"contract_documents/{pdf_name}", ContentFile(pdf_file))
+            ContractDocument.objects.create(contract=contract, document=path, is_client_visible=True)
+
+            # Email the PDF to the client
+            client_email = contract.client.primary_email
+            email = EmailMessage(
+                subject="Your Contract Agreement",
+                body="Please find attached your signed contract agreement.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[client_email],
+            )
+            email.attach(pdf_name, pdf_file, 'application/pdf')
+            email.send()
+
+            portal_url = reverse('users:client_portal', args=[contract_id])
             return render(request, 'contracts/status_page.html', {
                 'message': 'You\'re all set, thank you!',
                 'portal_url': portal_url
             })
         else:
-            portal_url = reverse('users:client_portal', args=[contract_id])
-
             return render(request, 'contracts/status_page.html', {
                 'message': 'There was an error submitting the contract agreement.',
-                'portal_url': portal_url
+                'portal_url': reverse('users:client_portal', args=[contract_id])
             })
 
     else:
         form = ContractAgreementForm()
+        package_texts = {
+            'photography': linebreaks(contract.photography_package.default_text) if contract.photography_package else None,
+            'videography': linebreaks(contract.videography_package.default_text) if contract.videography_package else None,
+            'dj': linebreaks(contract.dj_package.default_text) if contract.dj_package else None,
+            'photobooth': linebreaks(contract.photobooth_package.default_text) if contract.photobooth_package else None,
+        }
 
-    # Initialize an empty dictionary to store overtime options grouped by service type
-    overtime_options_by_service_type = {}
+        context = {
+            'contract': contract,
+            'logo_url': logo_url,
+            'package_texts': package_texts,
+            'total_service_cost': contract.calculate_total_service_cost(),
+            'total_discount': contract.calculate_discount(),
+            'total_cost_after_discounts': contract.calculate_total_service_cost_after_discounts(),
+            'form': form,
+        }
 
-    # Initialize total overtime cost
-    total_overtime_cost = 0
+        return render(request, 'documents/client_contract_agreement.html', context)
 
-    # Iterate over each overtime option
-    for contract_overtime in contract.overtimes.all():
-        # Get the service type of the overtime option
-        service_type = contract_overtime.overtime_option.service_type.name
-
-        # Check if the service type already exists in the dictionary
-        if service_type in overtime_options_by_service_type:
-            # If the service type exists, append the overtime option to its list
-            overtime_options_by_service_type[service_type].append({
-                'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role, contract_overtime.overtime_option.role),
-                'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
-                'hours': contract_overtime.hours,
-            })
-        else:
-            # If the service type does not exist, create a new list with the overtime option
-            overtime_options_by_service_type[service_type] = [{
-                'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role, contract_overtime.overtime_option.role),
-                'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
-                'hours': contract_overtime.hours,
-            }]
-
-    # Calculate total cost for each overtime option
-    for service_type, options in overtime_options_by_service_type.items():
-        for option in options:
-            option['total_cost'] = option['hours'] * option['rate_per_hour']
-            total_overtime_cost += option['total_cost']
-
-    package_texts = {
-        'photography': linebreaks(contract.photography_package.default_text) if contract.photography_package else None,
-        'videography': linebreaks(contract.videography_package.default_text) if contract.videography_package else None,
-        'dj': linebreaks(contract.dj_package.default_text) if contract.dj_package else None,
-        'photobooth': linebreaks(contract.photobooth_package.default_text) if contract.photobooth_package else None,
-    }
-
-    context = {
-        'contract': contract,
-        'logo_url': logo_url,
-        'package_texts': package_texts,
-        'total_service_cost': contract.calculate_total_service_cost(),
-        'total_discount': contract.calculate_discount(),
-        'total_cost_after_discounts': contract.calculate_total_service_cost_after_discounts(),
-        'photographer_choices': [
-            contract.prospect_photographer1,
-            contract.prospect_photographer2,
-            contract.prospect_photographer3
-        ],
-        'overtime_options_by_service_type': overtime_options_by_service_type,
-        'total_overtime_cost': total_overtime_cost,
-        'ROLE_DISPLAY_NAMES': ROLE_DISPLAY_NAMES,  # Add role display names to context
-        'form': form,
-    }
-
-    return render(request, 'documents/client_contract_agreement.html', context)
 
 @login_required
 def view_submitted_contract(request, contract_id, version_number):
