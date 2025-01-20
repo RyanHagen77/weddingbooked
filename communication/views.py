@@ -257,7 +257,7 @@ def send_contract_and_rider_email_to_client(request, contract, rider_type=None, 
         subject = 'Sign Your Contract and Rider Agreements'
         message = f'Please sign your contract and rider agreements at the following link: {agreement_url}'
 
-    login_url = f"https://{request.get_host()}{reverse('client_portal')}?{urlencode({'next': agreement_url})}"
+    login_url = f"https://{request.get_host()}{reverse('users:client_portal_login')}?{urlencode({'next': agreement_url})}"
 
     try:
         send_mail(
