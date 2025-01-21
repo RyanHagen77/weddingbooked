@@ -12,7 +12,6 @@ class ContractProductForm(forms.ModelForm):
     - Select a product from a dropdown (`product`).
     - Specify the quantity of the selected product (`quantity`).
     - Add any special notes for the product (`special_notes`).
-    - Indicate if the product was added post-event (`post_event`).
 
     Attributes:
         Meta:
