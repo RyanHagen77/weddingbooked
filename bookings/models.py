@@ -11,9 +11,6 @@ from django.contrib.auth import get_user_model
 from bookings.constants import SERVICE_ROLE_MAPPING  # Adjust the import path as needed
 
 
-
-
-
 class Availability(models.Model):
     staff = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -57,8 +54,8 @@ class Availability(models.Model):
         all_unavailable_ids = set(unavailable_staff_ids) | set(booked_or_pending_staff_ids)
 
         # Use CustomUser to exclude staff who are unavailable or booked
-        CustomUser = get_user_model()
-        return CustomUser.objects.exclude(id__in=all_unavailable_ids)
+        customuser = get_user_model()
+        return customuser.objects.exclude(id__in=all_unavailable_ids)
 
 
 class Service(models.Model):
@@ -66,6 +63,7 @@ class Service(models.Model):
     name = models.CharField(max_length=100)
     hourly_rate = models.DecimalField(max_digits=5, decimal_places=2)
     is_taxable = models.BooleanField(default=False)
+
 
 class EventStaffBookingManager(models.Manager):
     pass
@@ -133,33 +131,37 @@ class EventStaffBooking(models.Model):
         self.update_contract_role()
 
     def handle_status_change(self, old_status, new_status):
+        # Handle availability updates
         if old_status not in ['PENDING', 'BOOKED'] and new_status in ['PENDING', 'BOOKED']:
-            # Remove staff from availability when status is set to PENDING or BOOKED
             Availability.objects.update_or_create(
                 staff=self.staff,
                 date=self.contract.event_date,
                 defaults={'available': False}
             )
         elif old_status in ['PENDING', 'BOOKED'] and new_status not in ['PENDING', 'BOOKED']:
-            # Add staff back to availability when status is changed from PENDING or BOOKED
             Availability.objects.update_or_create(
                 staff=self.staff,
                 date=self.contract.event_date,
                 defaults={'available': True}
             )
         elif new_status == 'CLEARED':
-            # Ensure availability is updated when status is cleared
             Availability.objects.update_or_create(
                 staff=self.staff,
                 date=self.contract.event_date,
                 defaults={'available': True}
             )
 
-        if old_status != 'BOOKED' and new_status == 'BOOKED':
-            # Send email to the staff when booking is marked as 'Booked'
+        # Send email only for BOOKED status, and avoid duplication
+        if old_status != 'BOOKED' and new_status == 'BOOKED' and not getattr(self, '_email_sent', False):
             self.send_booking_email(self._request, self.staff, self.contract, self.get_role_display(), is_update=False)
+            self._email_sent = True  # Prevent duplicate emails
 
     def send_booking_email(self, request, staff, contract, role, is_update):
+        # Ensure email is only sent for 'BOOKED' status
+        if self.status != 'BOOKED':
+            print(f"Email not sent because status is {self.status}")
+            return  # Exit early if status is not 'BOOKED'
+
         context = {
             'user': staff,
             'contract': contract,
@@ -219,17 +221,6 @@ class EventStaffBooking(models.Model):
 
         return UnifiedCommunication.objects.filter(content_type=ContentType.objects.get_for_model(self),
                                                    object_id=self.pk)
-
-    def total_cost(self):
-        """Calculates the total cost for this booking."""
-        service = Service.objects.get(role_identifier=self.role)
-        return service.hourly_rate * self.hours_booked
-
-    @staticmethod
-    def total_service_cost(contract_id):
-        """Calculates the total service cost for a given contract."""
-        bookings = EventStaffBooking.objects.filter(contract_id=contract_id)
-        return sum(booking.total_cost() for booking in bookings)
 
     def delete(self, *args, **kwargs):
         # Before deleting, clear the contract role

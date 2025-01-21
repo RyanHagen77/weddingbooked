@@ -19,7 +19,6 @@ from bookings.models import EventStaffBooking, Availability
 from bookings.constants import SERVICE_ROLE_MAPPING
 from communication.models import UnifiedCommunication
 from communication.forms import BookingCommunicationForm
-from communication.views import send_booking_email
 from contracts.models import Contract, ChangeLog
 from contracts.forms import ContractClientEditForm, ContractEventEditForm
 from users.models import Role
@@ -66,18 +65,6 @@ def validate_date_range(start_date, end_date):
     logger.error("Invalid date range: %s to %s", start_date, end_date)
     return None
 
-
-# Mapping roles to service types
-ROLE_TO_SERVICE_TYPE = {
-    'PHOTOGRAPHER1': 'Photography',
-    'PHOTOGRAPHER2': 'Photography',
-    'VIDEOGRAPHER1': 'Videography',
-    'VIDEOGRAPHER2': 'Videography',
-    'DJ1': 'DJ',
-    'DJ2': 'DJ',
-    'PHOTOBOOTH_OP1': 'Photobooth',
-    'PHOTOBOOTH_OP2': 'Photobooth',
-}
 
 @login_required
 def booking_search(request):
@@ -207,7 +194,8 @@ def get_current_booking(request):
     except EventStaffBooking.DoesNotExist:
         pass  # No current booking for this role
 
-    available_staff = Availability.get_available_staff_for_date(event_date) if event_date else Availability.objects.none()
+    available_staff = Availability.get_available_staff_for_date(event_date) \
+        if event_date else Availability.objects.none()
     available_staff_data = list(available_staff.annotate(
         name=Concat('staff__first_name', Value(' '), 'staff__last_name')
     ).values('id', 'name'))
@@ -229,19 +217,22 @@ def get_prospect_photographers(request):
                 'prospect_photographer1': {
                     'id': contract.prospect_photographer1.id,
                     'name': f"{contract.prospect_photographer1.first_name} {contract.prospect_photographer1.last_name}",
-                    'profile_picture': contract.prospect_photographer1.profile_picture.url if contract.prospect_photographer1.profile_picture else None,
+                    'profile_picture': contract.prospect_photographer1.profile_picture.url
+                    if contract.prospect_photographer1.profile_picture else None,
                     'website': contract.prospect_photographer1.website
                 } if contract.prospect_photographer1 else None,
                 'prospect_photographer2': {
                     'id': contract.prospect_photographer2.id,
                     'name': f"{contract.prospect_photographer2.first_name} {contract.prospect_photographer2.last_name}",
-                    'profile_picture': contract.prospect_photographer2.profile_picture.url if contract.prospect_photographer2.profile_picture else None,
+                    'profile_picture': contract.prospect_photographer2.profile_picture.url
+                    if contract.prospect_photographer2.profile_picture else None,
                     'website': contract.prospect_photographer2.website
                 } if contract.prospect_photographer2 else None,
                 'prospect_photographer3': {
                     'id': contract.prospect_photographer3.id,
                     'name': f"{contract.prospect_photographer3.first_name} {contract.prospect_photographer3.last_name}",
-                    'profile_picture': contract.prospect_photographer3.profile_picture.url if contract.prospect_photographer3.profile_picture else None,
+                    'profile_picture': contract.prospect_photographer3.profile_picture.url
+                    if contract.prospect_photographer3.profile_picture else None,
                     'website': contract.prospect_photographer3.website
                 } if contract.prospect_photographer3 else None,
             }
@@ -282,7 +273,8 @@ def manage_staff_assignments(request, contract_id):
         if booking_id:
             booking = get_object_or_404(EventStaffBooking, id=booking_id)
             original_staff = booking.staff
-            logger.debug("Updating existing booking. Original Staff: %s", original_staff.get_full_name() if original_staff else "None")
+            logger.debug("Updating existing booking. Original Staff: %s",
+                         original_staff.get_full_name() if original_staff else "None")
         else:
             booking = EventStaffBooking(contract=contract)
 
@@ -302,7 +294,8 @@ def manage_staff_assignments(request, contract_id):
         ).exclude(id=booking_id).first()
 
         if existing_booking:
-            logger.info("Clearing existing booking for staff %s from role %s.", staff.get_full_name(), existing_booking.role)
+            logger.info("Clearing existing booking for staff %s from role %s.",
+                        staff.get_full_name(), existing_booking.role)
             existing_booking.delete()
 
         booking.role = role
@@ -325,7 +318,8 @@ def manage_staff_assignments(request, contract_id):
         )
 
         change_description = (
-            f"Updated booking: {booking.role} from {original_staff.get_full_name() if original_staff else 'None'} to {staff.get_full_name()}"
+            f"Updated booking: {booking.role} from "
+            f"{original_staff.get_full_name() if original_staff else 'None'} to {staff.get_full_name()}"
             if is_update else
             f"Created new booking for {role} with {staff.get_full_name()}"
         )
@@ -336,8 +330,6 @@ def manage_staff_assignments(request, contract_id):
             prospect_field = f'prospect_photographer{role[-1]}'
             setattr(contract, prospect_field, staff)
             contract.save()
-        else:
-            send_booking_email(request, staff, contract, booking.get_role_display(), is_update)
 
         return JsonResponse({
             'success': True,
@@ -362,8 +354,6 @@ def confirm_booking(request, booking_id):
         booking.save()
         messages.success(request, 'Your attendance has been confirmed.')
     return redirect('bookings:booking_detail_staff', booking_id=booking_id)
-
-
 
 
 @require_http_methods(["POST"])
@@ -409,7 +399,8 @@ def get_booking_context(booking_id):
     booking = get_object_or_404(EventStaffBooking, id=booking_id)
     contract = booking.contract
 
-    roles = ['PHOTOGRAPHER1', 'PHOTOGRAPHER2', 'ENGAGEMENT', 'VIDEOGRAPHER1', 'VIDEOGRAPHER2', 'DJ1', 'DJ2', 'PHOTOBOOTH_OP1', 'PHOTOBOOTH_OP2']
+    roles = ['PHOTOGRAPHER1', 'PHOTOGRAPHER2', 'ENGAGEMENT', 'VIDEOGRAPHER1', 'VIDEOGRAPHER2', 'DJ1', 'DJ2',
+             'PHOTOBOOTH_OP1', 'PHOTOBOOTH_OP2']
     role_bookings = {
         role: EventStaffBooking.objects.filter(contract=contract, role=role).first()
         for role in roles
@@ -438,6 +429,7 @@ def get_booking_context(booking_id):
         'overtime_entries': overtime_entries,
         'event_documents': event_documents,
     }
+
 
 @login_required
 def booking_detail(request, booking_id):
@@ -473,6 +465,7 @@ def booking_detail(request, booking_id):
 
     return render(request, 'bookings/booking_detail_office.html', context)
 
+
 @login_required
 def booking_detail_staff(request, booking_id):
     """
@@ -495,6 +488,7 @@ def booking_detail_staff(request, booking_id):
     })
 
     return render(request, 'bookings/booking_detail_staff.html', context)
+
 
 @login_required
 def booking_list(request):

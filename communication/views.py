@@ -146,27 +146,6 @@ def send_email_to_client(request, message, contract):
 
 
 
-def send_booking_email(request, staff, contract, role, is_update):
-    context = {
-        'user': staff,
-        'contract': contract,
-        'role': role,
-        'domain': get_current_site(request).domain,
-        'is_update': is_update,
-    }
-    subject = 'Booking Updated' if is_update else 'New Booking Assigned'
-    message = render_to_string('communication/booking_assignment_email.html', context, request=request)
-    from_email = 'enetadmin@enet2.com'
-    to_email = [staff.email]
-
-    send_mail(
-        subject,
-        message,
-        from_email,
-        to_email,
-        fail_silently=False,
-    )
-
 def send_task_assignment_email(request, task):
     # Assuming the role is stored in a related model or field called 'role'
     if task.assigned_to.role.name == 'ADMIN':  # Adjust this line based on how roles are implemented
