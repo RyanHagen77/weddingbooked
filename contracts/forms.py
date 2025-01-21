@@ -1,19 +1,20 @@
 from django import forms
 from bookings.models import EventStaffBooking
 from contracts.models import (Contract, LeadSourceCategory, Client, Discount, Location,
-                             ServiceFee)
+                              ServiceFee)
 from services.models import AdditionalEventStaffOption, EngagementSessionOption, Package
 from django.core.validators import RegexValidator
 from users.models import CustomUser
 from django.forms.widgets import DateInput
 from django.forms import inlineformset_factory
 from django.contrib.auth import get_user_model
-
+import re
 
 phone_validator = RegexValidator(
     regex=r'^\d{3}-\d{3}-\d{4}$',
     message='Phone number must be in the format XXX-XXX-XXXX.'
 )
+
 
 class UserModelChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
@@ -21,7 +22,6 @@ class UserModelChoiceField(forms.ModelChoiceField):
 
 
 class ContractSearchForm(forms.Form):
-
     STATUS_CHOICES = [
         ('', '---------'),
         ('pipeline', 'Pipeline'),
@@ -88,6 +88,7 @@ class ContractSearchForm(forms.Form):
         self.fields['photobooth_operator'].queryset = CustomUser.objects.filter(
             id__in=photobooth_operator_ids).distinct()
 
+
 class NewContractForm(forms.ModelForm):
     # Client Fields
     primary_contact = forms.CharField(max_length=255, required=True, label="Primary Contact")
@@ -95,7 +96,6 @@ class NewContractForm(forms.ModelForm):
     primary_email = forms.EmailField(required=True, label="Primary Email")
     primary_phone1 = forms.CharField(
         max_length=12,
-        validators=[phone_validator],
         required=False,
         label="Primary Phone 1"
     )
@@ -110,10 +110,10 @@ class NewContractForm(forms.ModelForm):
     location = forms.ModelChoiceField(
         queryset=Location.objects.all(),
         required=True,
-        label="Event Location"
+        label="Store Location"
     )
     status = forms.ChoiceField(
-        choices=Contract.STATUS_CHOICES,  # Ensure `STATUS_CHOICES` exists in your Contract model
+        choices=Contract.STATUS_CHOICES,
         required=True,
         label="Status"
     )
@@ -158,6 +158,47 @@ class NewContractForm(forms.ModelForm):
             'old_contract_number',
         ]
 
+    # Validation Methods
+    def clean_primary_contact(self):
+        """
+        Validate that the primary contact contains only letters, spaces, hyphens, or apostrophes.
+        """
+        primary_contact = self.cleaned_data.get("primary_contact", "").strip()  # Ensure we handle None and strip spaces
+        if not primary_contact:
+            raise ValidationError("The primary contact name is required.")
+        if not re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿ\s\-']+$", primary_contact):
+            raise ValidationError(
+                "The primary contact name must not contain numbers or special characters (except hyphens and "
+                "apostrophes).")
+        return primary_contact
+
+    def clean_partner_contact(self):
+        """
+        Validate that the partner contact contains only letters, spaces, hyphens, or apostrophes.
+        """
+        partner_contact = self.cleaned_data.get("partner_contact", "").strip()  # Ensure we handle None and strip spaces
+        if partner_contact and not re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿ\s\-']+$", partner_contact):
+            raise ValidationError(
+                "The partner contact name must not contain numbers or special characters (except hyphens and "
+                "apostrophes).")
+        return partner_contact
+
+    def clean_primary_phone1(self):
+        """
+        Ensure the phone number format matches the required pattern.
+        Only 12-character formats like 123-456-7890 or 123.456.7890 are allowed.
+        """
+        primary_phone1 = self.cleaned_data.get("primary_phone1")
+        if primary_phone1 and not re.match(r"^\d{3}[-.]\d{3}[-.]\d{4}$", primary_phone1):
+            raise ValidationError("Phone number must be in the format 123-456-7890 or 123.456.7890.")
+        return primary_phone1
+
+    def clean_primary_email(self):
+        primary_email = self.cleaned_data.get("primary_email")
+        if primary_email and not re.match(r"[^@]+@[^@]+\.[^@]+", primary_email):
+            raise ValidationError("Enter a valid email address (e.g., example@domain.com).")
+        return primary_email
+
     def save(self, commit=True):
         # Save or update the client instance
         client_data = {
@@ -168,9 +209,9 @@ class NewContractForm(forms.ModelForm):
         }
 
         # Check if a related client already exists
-        User = get_user_model()
+        user = get_user_model()
         primary_email = client_data['primary_email']
-        user, created = User.objects.get_or_create(
+        user, created = user.objects.get_or_create(
             email=primary_email,
             defaults={'username': primary_email, 'user_type': 'client'}
         )
@@ -202,14 +243,16 @@ class ContractInfoEditForm(forms.ModelForm):
         label="Sales Person"
     )
     status = forms.ChoiceField(choices=Contract.STATUS_CHOICES, required=False)
-    lead_source_category = forms.ModelChoiceField(queryset=LeadSourceCategory.objects.all(), required=False, label="Lead Source Category")
+    lead_source_category = forms.ModelChoiceField(queryset=LeadSourceCategory.objects.all(), required=False,
+                                                  label="Lead Source Category")
     lead_source_details = forms.CharField(max_length=255, required=False, label="Lead Source Details")
 
     old_contract_number = forms.CharField(max_length=255, required=False, label="Old Contract Number")
 
     class Meta:
         model = Contract
-        fields = ['is_code_92', 'event_date', 'location', 'coordinator', 'status', 'csr', 'lead_source_category', 'lead_source_details',
+        fields = ['is_code_92', 'event_date', 'location', 'coordinator', 'status', 'csr', 'lead_source_category',
+                  'lead_source_details',
                   'old_contract_number', 'custom_text']
         widgets = {
             'custom_text': forms.Textarea(attrs={'rows': 4}),
@@ -273,20 +316,20 @@ class ContractEventEditForm(forms.ModelForm):
     ceremony_state = forms.CharField(max_length=255, required=False)
     ceremony_contact = forms.CharField(max_length=255, required=False)
     ceremony_phone = forms.CharField(
-    max_length=12,  # Adjusted to accommodate dashes
-    validators=[phone_validator],
-    required=False  # Instead of blank=True, null=True
-)
+        max_length=12,  # Adjusted to accommodate dashes
+        validators=[phone_validator],
+        required=False  # Instead of blank=True, null=True
+    )
     ceremony_email = forms.EmailField(required=False)
     reception_site = forms.CharField(max_length=255, required=False)
     reception_city = forms.CharField(max_length=255, required=False)
     reception_state = forms.CharField(max_length=255, required=False)
     reception_contact = forms.CharField(max_length=255, required=False)
     reception_phone = forms.CharField(
-    max_length=12,  # Adjusted to accommodate dashes
-    validators=[phone_validator],
-    required=False  # Instead of blank=True, null=True
-)
+        max_length=12,  # Adjusted to accommodate dashes
+        validators=[phone_validator],
+        required=False  # Instead of blank=True, null=True
+    )
     reception_email = forms.EmailField(required=False)
 
     class Meta:
@@ -313,8 +356,8 @@ class ContractEventEditForm(forms.ModelForm):
         self.fields['reception_phone'].widget.attrs.update({'id': 'event-reception-phone'})
         self.fields['reception_email'].widget.attrs.update({'id': 'event-reception-email'})
 
-class ContractServicesForm(forms.ModelForm):
 
+class ContractServicesForm(forms.ModelForm):
     class Meta:
         model = Contract
         fields = [
@@ -327,23 +370,30 @@ class ContractServicesForm(forms.ModelForm):
         super(ContractServicesForm, self).__init__(*args, **kwargs)
 
         # Initialize photography fields
-        self.fields['photography_package'].queryset = Package.objects.filter(service_type__name='Photography', is_active=True)
-        self.fields['photography_additional'].queryset = AdditionalEventStaffOption.objects.filter(service_type__name='Photography', is_active=True)
+        self.fields['photography_package'].queryset = Package.objects.filter(service_type__name='Photography',
+                                                                             is_active=True)
+        self.fields['photography_additional'].queryset = AdditionalEventStaffOption.objects.filter(
+            service_type__name='Photography', is_active=True)
 
         # Initialize engagement session field
         self.fields['engagement_session'].queryset = EngagementSessionOption.objects.filter(is_active=True)
 
         # Initialize videography fields
-        self.fields['videography_package'].queryset = Package.objects.filter(service_type__name='Videography', is_active=True)
-        self.fields['videography_additional'].queryset = AdditionalEventStaffOption.objects.filter(service_type__name='Videography', is_active=True)
+        self.fields['videography_package'].queryset = Package.objects.filter(service_type__name='Videography',
+                                                                             is_active=True)
+        self.fields['videography_additional'].queryset = AdditionalEventStaffOption.objects.filter(
+            service_type__name='Videography', is_active=True)
 
         # Initialize DJ fields
         self.fields['dj_package'].queryset = Package.objects.filter(service_type__name='Dj', is_active=True)
-        self.fields['dj_additional'].queryset = AdditionalEventStaffOption.objects.filter(service_type__name='Dj', is_active=True)
+        self.fields['dj_additional'].queryset = AdditionalEventStaffOption.objects.filter(service_type__name='Dj',
+                                                                                          is_active=True)
 
         # Initialize photobooth fields
-        self.fields['photobooth_package'].queryset = Package.objects.filter(service_type__name='Photobooth', is_active=True)
-        self.fields['photobooth_additional'].queryset = AdditionalEventStaffOption.objects.filter(service_type__name='Photobooth', is_active=True)
+        self.fields['photobooth_package'].queryset = Package.objects.filter(service_type__name='Photobooth',
+                                                                            is_active=True)
+        self.fields['photobooth_additional'].queryset = AdditionalEventStaffOption.objects.filter(
+            service_type__name='Photobooth', is_active=True)
 
         # Optionally, add an empty label for each field to show a default choice like "Select an option"
         for field_name in self.fields:
@@ -364,7 +414,6 @@ class ServiceFeeForm(forms.ModelForm):
         }
 
 
-
 ServiceFeeFormSet = inlineformset_factory(
     parent_model=Contract,
     model=ServiceFee,
@@ -373,9 +422,8 @@ ServiceFeeFormSet = inlineformset_factory(
     can_delete=True  # Allows deletion of service fees directly from the formset
 )
 
+
 class DiscountForm(forms.ModelForm):
     class Meta:
         model = Discount
         fields = ['memo', 'amount', 'service_type']
-
-

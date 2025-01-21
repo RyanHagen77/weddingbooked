@@ -1,4 +1,4 @@
-#contracts/models.py
+# contracts/models.py
 
 from decimal import Decimal, ROUND_HALF_UP
 from django.db.models import Sum
@@ -21,6 +21,7 @@ phone_validator = RegexValidator(
 CustomUser = get_user_model()
 
 ROLE_CHOICES = [(key, value) for key, value in SERVICE_ROLE_MAPPING.items()]
+
 
 class Location(models.Model):
     name = models.CharField(max_length=255)
@@ -120,6 +121,7 @@ class Discount(models.Model):
     def __str__(self):
         return f"{self.memo} - {self.amount} - {self.service_type}"
 
+
 class DiscountRule(models.Model):
     PACKAGE = 'Package'
     SUNDAY = 'Sunday'
@@ -139,6 +141,7 @@ class DiscountRule(models.Model):
 
     def __str__(self):
         return f"{self.get_discount_type_display()} - Version {self.version} - {self.base_amount}"
+
 
 class LeadSourceCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -241,36 +244,42 @@ class Contract(models.Model):
     photography_package = models.ForeignKey('services.Package', on_delete=models.SET_NULL, null=True, blank=True,
                                             related_name='photography_packages',
                                             limit_choices_to={'service_type__name': 'Photography', 'is_active': True})
-    photography_additional = models.ForeignKey('services.AdditionalEventStaffOption', on_delete=models.SET_NULL, null=True,
+    photography_additional = models.ForeignKey('services.AdditionalEventStaffOption',
+                                               on_delete=models.SET_NULL, null=True,
                                                blank=True, related_name='additional_photography_options',
                                                limit_choices_to={'service_type__name': 'Photography',
                                                                  'is_active': True})
-    engagement_session = models.ForeignKey('services.EngagementSessionOption', on_delete=models.SET_NULL, null=True, blank=True,
+    engagement_session = models.ForeignKey('services.EngagementSessionOption',
+                                           on_delete=models.SET_NULL, null=True, blank=True,
                                            related_name='engagement_session_options',
                                            limit_choices_to={'is_active': True})
     videography_package = models.ForeignKey('services.Package', on_delete=models.SET_NULL, null=True, blank=True,
                                             related_name='videography_packages',
                                             limit_choices_to={'service_type__name': 'Videography', 'is_active': True})
-    videography_additional = models.ForeignKey('services.AdditionalEventStaffOption', on_delete=models.SET_NULL, null=True,
+    videography_additional = models.ForeignKey('services.AdditionalEventStaffOption',
+                                               on_delete=models.SET_NULL, null=True,
                                                blank=True, related_name='additional_videography_options',
                                                limit_choices_to={'service_type__name': 'Videography',
                                                                  'is_active': True})
     dj_package = models.ForeignKey('services.Package', on_delete=models.SET_NULL, null=True, blank=True,
                                    related_name='dj_packages',
                                    limit_choices_to={'service_type__name': 'Dj', 'is_active': True})
-    dj_additional = models.ForeignKey('services.AdditionalEventStaffOption', on_delete=models.SET_NULL, null=True, blank=True,
+    dj_additional = models.ForeignKey('services.AdditionalEventStaffOption',
+                                      on_delete=models.SET_NULL, null=True, blank=True,
                                       related_name='additional_dj_options',
                                       limit_choices_to={'service_type__name': 'Dj', 'is_active': True})
     photobooth_package = models.ForeignKey('services.Package', on_delete=models.SET_NULL, null=True, blank=True,
                                            related_name='photobooth_packages',
                                            limit_choices_to={'service_type__name': 'Photobooth', 'is_active': True})
-    photobooth_additional = models.ForeignKey('services.AdditionalEventStaffOption', on_delete=models.SET_NULL, null=True,
+    photobooth_additional = models.ForeignKey('services.AdditionalEventStaffOption',
+                                              on_delete=models.SET_NULL, null=True,
                                               blank=True,
                                               related_name='additional_photobooth_options',
                                               limit_choices_to={'service_type__name': 'Photobooth', 'is_active': True})
 
     # Additional Fields
-    overtime_options = models.ManyToManyField('services.OvertimeOption', through='services.ContractOvertime', related_name='contracts')
+    overtime_options = models.ManyToManyField('services.OvertimeOption', through='services.ContractOvertime',
+                                              related_name='contracts')
     custom_text = models.TextField(blank=True, null=True)
     package_discount_version = models.IntegerField(default=1)
     sunday_discount_version = models.IntegerField(default=1)
@@ -309,7 +318,8 @@ class Contract(models.Model):
             overtime.hours * overtime.overtime_option.rate_per_hour
             for overtime in self.overtimes.filter(overtime_option__service_type=photography_service_type)
         )
-        total_photography_cost = photography_base_cost + additional_photography_cost + engagement_session_cost + photography_overtime_cost
+        total_photography_cost = (photography_base_cost + additional_photography_cost +
+                                  engagement_session_cost + photography_overtime_cost)
         return total_photography_cost.quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
 
     def calculate_videography_cost(self):
@@ -342,8 +352,9 @@ class Contract(models.Model):
             overtime.hours * overtime.overtime_option.rate_per_hour
             for overtime in self.overtimes.filter(overtime_option__service_type=photobooth_service_type)
         )
-        return (photobooth_base_cost + additional_photobooth_cost + photobooth_overtime_cost).quantize(Decimal('.00'),
-                                                                                                       rounding=ROUND_HALF_UP)
+        return (photobooth_base_cost + additional_photobooth_cost +
+                photobooth_overtime_cost).quantize(Decimal('.00'),
+                                                   rounding=ROUND_HALF_UP)
 
     def is_sunday_event(self):
         return self.event_date.weekday() == 6
@@ -571,13 +582,14 @@ class ServiceFee(models.Model):
     def __str__(self):
         return f"Service Fee - {self.amount}"
 
+
 class ChangeLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     description = models.TextField()
     previous_value = models.TextField(blank=True, null=True)
     new_value = models.TextField(blank=True, null=True)
-    contract = models.ForeignKey('Contract', on_delete=models.CASCADE, related_name='changelogs')  # Assuming 'Contract' is the correct model name
+    contract = models.ForeignKey('Contract', on_delete=models.CASCADE, related_name='changelogs')
 
     def __str__(self):
         return f"{self.timestamp} - {self.user}"

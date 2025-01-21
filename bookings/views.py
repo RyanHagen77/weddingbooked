@@ -3,6 +3,9 @@ from datetime import datetime
 
 from django.core.paginator import Paginator
 
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.db.models import Q, F, Value, CharField
 from django.db.models.functions import Concat
@@ -361,8 +364,7 @@ def confirm_booking(request, booking_id):
     return redirect('bookings:booking_detail_staff', booking_id=booking_id)
 
 
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
+
 
 @require_http_methods(["POST"])
 @login_required

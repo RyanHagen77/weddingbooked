@@ -7,8 +7,10 @@ from django.contrib.auth import views as auth_views
 
 app_name = 'contracts'
 
+
 def redirect_to_next_login(request):
     return redirect('https://www.enet2.com/client_portal')
+
 
 urlpatterns = [
     path('new/', views.new_contract, name='contract_new'),

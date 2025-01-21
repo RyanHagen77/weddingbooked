@@ -17,6 +17,3 @@ class ContractSerializer(serializers.ModelSerializer):
             'partner_contact', 'partner_email', 'partner_phone', 'ceremony_site', 'reception_site',
             # Include any other fields you need from the Contract model
         ]
-
-
-
