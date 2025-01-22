@@ -26,10 +26,8 @@ from bookings.models import EventStaffBooking
 from communication.models import UnifiedCommunication, Task
 
 
-from .models import (
-    Contract, Discount,
-     TaxRate, ChangeLog, ServiceFee
-)
+from .models import Contract, Discount, TaxRate, ChangeLog, ServiceFee
+
 from payments.models import Payment, PaymentPurpose, PaymentSchedule
 from services.models import AdditionalEventStaffOption, EngagementSessionOption, OvertimeOption, Package, ServiceType
 from wedding_day_guide.models import WeddingDayGuide
@@ -69,15 +67,14 @@ def get_decimal(value):
 def success_view(request):
     return render(request, 'success.html')  # Replace 'success.html' with the actual template name for your success page
 
-from django.db.models import Q
-from django.core.paginator import Paginator
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-
 @login_required
 def contract_search(request):
-    form = ContractSearchForm(request.GET)
+    form = ContractSearchForm(request.GET or None)
     contracts = Contract.objects.all()
+
+    # Clear filters if the "clear" flag is in the query string
+    if "clear" in request.GET:
+        return redirect(request.path)  # Redirect to base URL to clear filters
 
     # Apply ordering
     order = request.GET.get('order', 'desc')
@@ -114,6 +111,7 @@ def contract_search(request):
         if form.cleaned_data.get('csr'):
             contracts = contracts.filter(csr=form.cleaned_data['csr'])
 
+    # Apply search query
     query = request.GET.get('q')
     if query:
         contracts = contracts.filter(
@@ -125,7 +123,7 @@ def contract_search(request):
             Q(client__primary_phone1__icontains=query)
         )
 
-    # Apply pagination
+    # Paginate results
     paginator = Paginator(contracts, 25)  # Display 25 results per page
     page_number = request.GET.get('page')
     contracts = paginator.get_page(page_number)
@@ -134,7 +132,6 @@ def contract_search(request):
         'form': form,
         'contracts': contracts,
     })
-
 
 @login_required
 def new_contract(request):
