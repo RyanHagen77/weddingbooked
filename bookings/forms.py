@@ -47,9 +47,9 @@ class BookingSearchForm(forms.Form):
         required=False,
         choices=[
             ("", "All Statuses"),
-            ("Prospect", "Prospect"),
-            ("Pending", "Pending"),
-            ("Booked", "Booked"),
+            ("PROSPECT", "Prospect"),
+            ("PENDING", "Pending"),
+            ("BOOKED", "Booked"),
         ],
         label="Filter by Status",
     )

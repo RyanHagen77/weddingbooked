@@ -112,7 +112,7 @@ class EventStaffBooking(models.Model):
     booking_notes = models.TextField(blank=True, null=True)
 
     class Meta:
-        unique_together = ('contract', 'role')
+        ordering = ['contract__event_date', 'role']  # Default ordering
 
     def save(self, *args, **kwargs):
         # Check if the request is provided and set it as an attribute

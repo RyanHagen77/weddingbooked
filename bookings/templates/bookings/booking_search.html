@@ -24,7 +24,8 @@
         }
 
         // Redirect to the base URL without query parameters
-        window.location.href = "{{ action_url }}";
+        const baseUrl = "{{ request.path }}"; // Use the base URL of the current page
+        window.location.href = baseUrl;
     }
 </script>
 {% endblock %}
