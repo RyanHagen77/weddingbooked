@@ -69,6 +69,11 @@ def get_decimal(value):
 def success_view(request):
     return render(request, 'success.html')  # Replace 'success.html' with the actual template name for your success page
 
+from django.db.models import Q
+from django.core.paginator import Paginator
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
 @login_required
 def contract_search(request):
     form = ContractSearchForm(request.GET)
@@ -120,19 +125,16 @@ def contract_search(request):
             Q(client__primary_phone1__icontains=query)
         )
 
-    if form.is_valid() or query:
-        contracts = contracts[:250]
-        paginator = Paginator(contracts, 25)
-        page_number = request.GET.get('page')
-        contracts = paginator.get_page(page_number)
-
-    else:
-        contracts = None
+    # Apply pagination
+    paginator = Paginator(contracts, 25)  # Display 25 results per page
+    page_number = request.GET.get('page')
+    contracts = paginator.get_page(page_number)
 
     return render(request, 'contracts/contract_search.html', {
         'form': form,
         'contracts': contracts,
     })
+
 
 @login_required
 def new_contract(request):

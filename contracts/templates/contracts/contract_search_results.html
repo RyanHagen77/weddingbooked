@@ -89,8 +89,8 @@
     <div class="pagination">
         <span class="step-links">
             {% if contracts.has_previous %}
-                <a href="?page=1">&laquo; First</a>
-                <a href="?page={{ contracts.previous_page_number }}">Previous</a>
+                <a href="?page=1&{{ request.GET.urlencode }}">&laquo; First</a>
+                <a href="?page={{ contracts.previous_page_number }}&{{ request.GET.urlencode }}">Previous</a>
             {% endif %}
 
             <span class="current">
@@ -98,8 +98,8 @@
             </span>
 
             {% if contracts.has_next %}
-                <a href="?page={{ contracts.next_page_number }}">Next</a>
-                <a href="?page={{ contracts.paginator.num_pages }}">Last &raquo;</a>
+                <a href="?page={{ contracts.next_page_number }}&{{ request.GET.urlencode }}">Next</a>
+                <a href="?page={{ contracts.paginator.num_pages }}&{{ request.GET.urlencode }}">Last &raquo;</a>
             {% endif %}
         </span>
     </div>
