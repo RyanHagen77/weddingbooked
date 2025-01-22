@@ -89,8 +89,8 @@
     <div class="pagination">
         <span class="step-links">
             {% if contracts.has_previous %}
-                <a href="?page=1&{{ request.GET.urlencode }}">&laquo; First</a>
-                <a href="?page={{ contracts.previous_page_number }}&{{ request.GET.urlencode }}">Previous</a>
+                <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; First</a>
+                <a href="?page={{ contracts.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
             {% endif %}
 
             <span class="current">
@@ -98,12 +98,13 @@
             </span>
 
             {% if contracts.has_next %}
-                <a href="?page={{ contracts.next_page_number }}&{{ request.GET.urlencode }}">Next</a>
-                <a href="?page={{ contracts.paginator.num_pages }}&{{ request.GET.urlencode }}">Last &raquo;</a>
+                <a href="?page={{ contracts.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+                <a href="?page={{ contracts.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last &raquo;</a>
             {% endif %}
         </span>
     </div>
 </div>
+
 
 {% else %}
 <p>No contracts found.</p>

@@ -16,7 +16,7 @@
                 {{ form.contract_number }}
             </div>
             <div class="form-group">
-                <label for="{{ form.primary_contact.id_for_label }}">Primary contact:</label>
+                <label for="{{ form.primary_contact.id_for_label }}">Primary Contact:</label>
                 {{ form.primary_contact }}
             </div>
             <div class="form-group">
@@ -45,11 +45,11 @@
                 {{ form.csr }}
             </div>
             <div class="form-group">
-                <label for="{{ form.ceremony_site.id_for_label }}">Ceremony site:</label>
+                <label for="{{ form.ceremony_site.id_for_label }}">Ceremony Site:</label>
                 {{ form.ceremony_site }}
             </div>
             <div class="form-group">
-                <label for="{{ form.reception_site.id_for_label }}">Reception site:</label>
+                <label for="{{ form.reception_site.id_for_label }}">Reception Site:</label>
                 {{ form.reception_site }}
             </div>
         </div>
@@ -72,11 +72,11 @@
                 {{ form.photobooth_operator }}
             </div>
         </div>
-    </div>
         <div class="form-row">
             <div class="button-group">
                 <input type="submit" value="Search" class="btn">
-                <a href="?clear=1" class="btn">Clear</a>
+                <a href="{{ request.path }}" class="btn">Clear</a>
             </div>
         </div>
+
 </form>
