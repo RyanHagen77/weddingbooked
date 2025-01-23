@@ -132,6 +132,13 @@
                         <small class="form-text text-muted">Enter the full name of the primary contact. Avoid numbers or special characters.</small>
                     </div>
                     <div>
+                        {{ contract_form.partner_contact.label_tag }} {{ contract_form.partner_contact }}
+                        {% if contract_form.partner_contact.errors %}
+                        <div class="error">{{ contract_form.partner_contact.errors }}</div>
+                        {% endif %}
+                    <small class="form-text text-muted">Enter the full name of the partner contact. Avoid numbers or special characters.</small>
+                    </div>
+                    <div>
                         {{ contract_form.primary_email.label_tag }} {{ contract_form.primary_email }}
                         {% if contract_form.primary_email.errors %}
                             <div class="error">{{ contract_form.primary_email.errors }}</div>

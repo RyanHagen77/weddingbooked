@@ -92,7 +92,7 @@ class ContractSearchForm(forms.Form):
 class NewContractForm(forms.ModelForm):
     # Client Fields
     primary_contact = forms.CharField(max_length=255, required=True, label="Primary Contact")
-    partner_contact = forms.CharField(max_length=255, required=False, label="Partner Contact")
+    partner_contact = forms.CharField(max_length=255, required=True, label="Partner Contact")
     primary_email = forms.EmailField(required=True, label="Primary Email")
     primary_phone1 = forms.CharField(
         max_length=12,
