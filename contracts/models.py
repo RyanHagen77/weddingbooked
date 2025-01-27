@@ -504,14 +504,19 @@ class Contract(models.Model):
     display_total_cost.short_description = "Total Cost"
 
     def save(self, *args, **kwargs):
-        """Custom save method to handle custom contract number generation and tax calculations."""
+        """Custom save method to handle custom contract number generation, tax calculations, and related user updates."""
         print("Entering save method")
+
+        # Check if the contract's status is changing to COMPLETED
+        user_status_update_needed = False
+        if self.pk:
+            old_status = Contract.objects.get(pk=self.pk).status
+            if old_status != self.status and self.status == self.COMPLETED:
+                user_status_update_needed = True
 
         # Generate custom contract number if not already set
         if not self.custom_contract_number:
             year, month = timezone.now().strftime("%y"), timezone.now().strftime("%m")
-
-            # Extract first 3 letters of the primary contact's last name
             primary_contact_last_name = "UNK"  # Default value
             if self.client and self.client.primary_contact:
                 name_parts = self.client.primary_contact.split()
@@ -563,6 +568,15 @@ class Contract(models.Model):
         # Save all calculated fields
         super().save(*args, **kwargs)
         print("Final save completed with calculated fields.")
+
+        # Update the user's status if the contract is marked as COMPLETED
+        if user_status_update_needed:
+            user = self.client.user
+            if user:
+                user.status = 'INACTIVE'
+                user.is_active = False
+                user.save(update_fields=['status', 'is_active'])
+                print(f"User {user.username} marked as INACTIVE.")
 
 
 class ServiceFeeType(models.Model):
