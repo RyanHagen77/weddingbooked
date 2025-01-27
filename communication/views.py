@@ -78,11 +78,10 @@ def get_contract_messages(request, contract_id):  # `request` parameter added he
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def post_contract_message(request, contract_id):
-    from communication.views import send_contract_message_email  # Local import to avoid circular dependency
-
     contract = get_object_or_404(Contract, contract_id=contract_id)
     content = request.data.get('content')
     if content:
+        # Create the UnifiedCommunication object
         message = UnifiedCommunication.objects.create(
             content=content,
             note_type=UnifiedCommunication.PORTAL,
@@ -90,19 +89,21 @@ def post_contract_message(request, contract_id):
             contract=contract
         )
 
-        # Send email
+        # Always send an email to the coordinator
         send_contract_message_email(request, message, contract)
 
-        # Create task if sender is a client
-        if request.user.groups.filter(name='Client').exists():
+        # Check if the sender is a client before creating a task
+        if request.user.groups.filter(name='Client').exists():  # Adjust this to your role-check logic
+            # Create a task for the coordinator if one is assigned
             if contract.coordinator:
                 Task.objects.create(
                     sender=request.user,
                     assigned_to=contract.coordinator,
                     contract=contract,
                     note=message,
-                    due_date=now() + timedelta(days=3),
+                    due_date=now() + timedelta(days=3),  # Set a due date 3 days from now
                     description=f"Follow up on portal note: '{content[:50]}...'",
+                    # Include first 50 characters of the content
                     task_type='contract'
                 )
                 print(f"Task created for coordinator: {contract.coordinator}")
