@@ -78,10 +78,11 @@ def get_contract_messages(request, contract_id):  # `request` parameter added he
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def post_contract_message(request, contract_id):
+    from communication.views import send_contract_message_email  # Local import to avoid circular dependency
+
     contract = get_object_or_404(Contract, contract_id=contract_id)
     content = request.data.get('content')
     if content:
-        # Create the UnifiedCommunication object
         message = UnifiedCommunication.objects.create(
             content=content,
             note_type=UnifiedCommunication.PORTAL,
@@ -89,21 +90,19 @@ def post_contract_message(request, contract_id):
             contract=contract
         )
 
-        # Call the email sending function
+        # Send email
         send_contract_message_email(request, message, contract)
 
-        # Check if the sender is a client
+        # Create task if sender is a client
         if request.user.groups.filter(name='Client').exists():
-            # Create a task for the coordinator if one is assigned
             if contract.coordinator:
                 Task.objects.create(
                     sender=request.user,
                     assigned_to=contract.coordinator,
                     contract=contract,
                     note=message,
-                    due_date=now() + timedelta(days=3),  # Set a due date 3 days from now
+                    due_date=now() + timedelta(days=3),
                     description=f"Follow up on portal note: '{content[:50]}...'",
-                    # Include first 50 characters of the content
                     task_type='contract'
                 )
                 print(f"Task created for coordinator: {contract.coordinator}")
@@ -113,6 +112,26 @@ def post_contract_message(request, contract_id):
 
     return Response({'error': 'Content is required'}, status=status.HTTP_400_BAD_REQUEST)
 
+
+def send_contract_message_email(request, message, contract):
+    if contract.coordinator and contract.coordinator.email:
+        subject = f'New Message Posted for Contract {contract.custom_contract_number}'
+        message_body = render_to_string('communication/contract_message_email_to_coordinator.html', {
+            'user': request.user,
+            'message': message,
+            'contract': contract,
+            'domain': get_current_site(request).domain,
+        })
+        send_mail(
+            subject,
+            message_body,
+            'enetadmin@enet2.com',  # Use a valid sender email address
+            [contract.coordinator.email],
+            fail_silently=False,
+        )
+        print("Email sent to coordinator:", contract.coordinator.email)
+    else:
+        print("No coordinator assigned, or missing email.")
 
 def send_email_to_client(request, message, contract):
     """Send email notification to the client."""
