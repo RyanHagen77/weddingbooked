@@ -436,7 +436,7 @@ export default function Home() {
               {documents.map(doc => (
                   <div key={doc.id} className="bg-white rounded-lg p-4 shadow-lg">
                     <h3 className="font-semibold">{doc.name}</h3>
-                    <a href={`https://${doc.url}`} target="_blank" rel="noopener noreferrer"
+                    <a href={`${doc.url}`} target="_blank" rel="noopener noreferrer"
                        className="text-goodblue hover:underline">{doc.name}</a>
                   </div>
               ))}
