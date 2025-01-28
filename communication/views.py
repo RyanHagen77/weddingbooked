@@ -90,13 +90,14 @@ def post_contract_message(request, contract_id):
             contract=contract
         )
 
-        # Always send an email to the coordinator
+        # Send an email to the coordinator
         send_contract_message_email(request, message, contract)
 
-        # Check if the sender is a client before creating a task
-        if request.user.groups.filter(name='Client').exists():  # Adjust this to your role-check logic
+        # Automatically create a task for the coordinator
+        if request.user.groups.filter(name='Client').exists():  # Ensure it's the client sending the message
             create_task_for_coordinator(request.user, contract, message, content)
 
+        # Return the created message as a response
         serializer = UnifiedCommunicationSerializer(message)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -342,23 +343,28 @@ def create_task(request, contract_id=None, note_id=None):
         print(f"Form errors: {form.errors}")
         return JsonResponse({'success': False, 'errors': form.errors.as_json()})
 
+
 def create_task_for_coordinator(sender, contract, message, content):
+    print("Creating task for coordinator automatically...")
+    print(f"Sender: {sender}, Contract ID: {contract.id}, Message ID: {message.id}, Content: {content}")
+
     if contract.coordinator:
         try:
-            Task.objects.create(
+            # Programmatically create the task
+            task = Task.objects.create(
                 sender=sender,
                 assigned_to=contract.coordinator,
                 contract=contract,
                 note=message,
-                due_date=now() + timedelta(days=3),
-                description=f"Follow up on portal note: '{content[:50]}...'",  # Fixed the f-string
+                due_date=now() + timedelta(days=3),  # Example: Due in 3 days
+                description=f"Follow up on portal note: '{content[:50]}...'",  # Use the first 50 characters of the content
                 task_type='contract'
             )
-            print(f"Task created successfully for coordinator: {contract.coordinator}")
+            print(f"Task created successfully: {task}")
         except Exception as e:
             print(f"Error creating task: {e}")
     else:
-        print("No coordinator assigned; task not created.")
+        print("No coordinator assigned; task creation skipped.")
 
 
 @login_required
