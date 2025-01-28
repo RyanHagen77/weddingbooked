@@ -315,7 +315,7 @@ export default function Home() {
                   >
                     {photographer.profile_picture && (
                       <Image
-                        src={`https://www.enet2.com${photographer.profile_picture}`}
+                        src={`${photographer.profile_picture}`}
                         alt={photographer.name}
                         width={500} // Adjust this to the actual width of your image
                         height={500} // Adjust this to the actual height of your image
