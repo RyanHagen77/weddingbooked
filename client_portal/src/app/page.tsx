@@ -32,9 +32,11 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState<string>('');
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [formSubmitted] = useState<boolean>(false);
   const { isAuthenticated, contractId, logout } = useAuth();
 
+  // Check Token Expiration
   useEffect(() => {
     const checkTokenExpiration = () => {
       const tokenExpiration = localStorage.getItem('token_expiration');
@@ -42,6 +44,7 @@ export default function Home() {
         const now = new Date().getTime();
         if (now >= parseInt(tokenExpiration)) {
           console.log('Token expired, logging out...');
+          alert('Your session has expired. Please log in again.');
           logout();
         }
       }
@@ -54,174 +57,183 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [logout]);
 
+  // Fetch Data
   useEffect(() => {
     if (isAuthenticated && contractId) {
-      // Fetching photographers
-      fetch(`https://www.enet2.com/bookings/api/prospect-photographers/?contract_id=${contractId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      })
-        .then(response => response.json())
-        .then(data => {
+      const accessToken = localStorage.getItem('access_token');
+
+      const fetchPhotographers = fetch(
+        `https://www.enet2.com/bookings/api/prospect-photographers/?contract_id=${contractId}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      ).then((response) => response.json());
+
+      const fetchMessages = fetch(
+        `https://www.enet2.com/communication/api/contract-messages/${contractId}/`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      ).then((response) => response.json());
+
+      const fetchDocuments = fetch(
+        `https://www.enet2.com/documents/api/client-documents/${contractId}/`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      ).then((response) => response.json());
+
+      Promise.all([fetchPhotographers, fetchMessages, fetchDocuments])
+        .then(([photographersData, messagesData, documentsData]) => {
           const photographersList: Photographer[] = [];
-          if (data.prospect_photographer1) photographersList.push(data.prospect_photographer1);
-          if (data.prospect_photographer2) photographersList.push(data.prospect_photographer2);
-          if (data.prospect_photographer3) photographersList.push(data.prospect_photographer3);
+          if (photographersData.prospect_photographer1)
+            photographersList.push(photographersData.prospect_photographer1);
+          if (photographersData.prospect_photographer2)
+            photographersList.push(photographersData.prospect_photographer2);
+          if (photographersData.prospect_photographer3)
+            photographersList.push(photographersData.prospect_photographer3);
+
           setPhotographers(photographersList);
+          setMessages(messagesData);
+          setDocuments(documentsData || []);
         })
-        .catch(error => {
-          console.error('Error fetching photographers:', error);
-        });
-
-      // Fetching messages
-      fetch(`https://www.enet2.com/communication/api/contract-messages/${contractId}/`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      })
-        .then(response => response.json())
-        .then(data => setMessages(data))
-        .catch(error => console.error('Error fetching messages:', error));
-
-      // Fetching documents
-      fetch(`https://www.enet2.com/documents/api/client-documents/${contractId}/`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      })
-        .then(response => response.json())
-        .then(data => setDocuments(data))
-        .catch(error => console.error('Error fetching documents:', error));
+        .catch((error) => console.error('Error fetching data:', error))
+        .finally(() => setIsLoading(false));
     } else {
-      console.log('Not authenticated or missing contractId');
+      setPhotographers([]);
+      setMessages([]);
+      setDocuments([]);
+      setIsLoading(false);
     }
   }, [isAuthenticated, contractId]);
 
-  const handlePostMessage = (e: React.FormEvent<HTMLFormElement>) => {
+  const handlePostMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    const accessToken = localStorage.getItem('access_token');
 
     if (newMessage.trim() === '') {
       alert('Message cannot be empty');
       return;
     }
 
-    fetch(`https://www.enet2.com/communication/api/post-contract-message/${contractId}/`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ content: newMessage }),
-    })
-      .then(response => response.json())
-      .then(data => {
-        setMessages([data, ...messages]);
-        setNewMessage('');
-      })
-      .catch(error => {
-        console.error('Error posting message:', error);
-      });
+    const accessToken = localStorage.getItem('access_token');
+
+    try {
+      const response = await fetch(
+        `https://www.enet2.com/communication/api/post-contract-message/${contractId}/`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ content: newMessage }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to post message: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setMessages([data, ...messages]);
+      setNewMessage('');
+    } catch (error) {
+      console.error('Error posting message:', error);
+      alert('Failed to post message. Please try again.');
+    }
   };
 
-
   if (!isAuthenticated) {
-    console.log('User not authenticated, rendering Login component');
     return <Login onLogin={() => window.location.reload()} />;
   }
 
   const handleLogout = () => {
     logout();
-    window.location.reload();
+    setPhotographers([]);
+    setMessages([]);
+    setDocuments([]);
   };
+
 
   return (
 
-    <main className="bg-white">
-      <header className="bg-white p-6 text-black md:h-[60vh] relative">
-        <div className="max-w-7xl mx-auto flex flex-col justify-center h-full">
-          <div className="absolute top-4 right-4">
-            <a onClick={handleLogout} className="cursor-pointer text-base sm:text-lg text-black">
-              Logout
-            </a>
-          </div>
-          <div className="flex justify-center w-full">
-            <div className="relative w-full sm:w-1/2">
-              <Image
-                  src="/client_portal/Final_Logo.png"  // Correct path for public folder
-                  alt="Essense Logo"
-                  width={100}
-                  height={100}
-                  layout="responsive"
-                  objectFit="contain"
-                  className="sm:w-[400px] sm:h-[400px]"
-              />
+      <main className="bg-white">
+        <header className="bg-white p-6 text-black md:h-[60vh] relative">
+          <div className="max-w-7xl mx-auto flex flex-col justify-center h-full">
+            <div className="absolute top-4 right-4">
+              <a onClick={handleLogout} className="cursor-pointer text-base sm:text-lg text-black">
+                Logout
+              </a>
             </div>
-          </div>
-          <nav className="mt-6 w-full px-4 pt-8">
-            <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-              <div className="bg-black p-2 flex-1 hover:bg-gray-800">
-                <a onClick={() => {
-                  const element = document.getElementById('faq');
-                  if (element) {
-                    element.scrollIntoView({behavior: 'smooth'});
-                  }
-                }}
-                   className="font-sans font-thin cursor-pointer text-base sm:text-lg text-white block text-center">FAQ</a>
-              </div>
-              <div className="bg-black p-2 flex-1 hover:bg-gray-800">
-                <a onClick={() => {
-                  const element = document.getElementById('photographers');
-                  if (element) {
-                    element.scrollIntoView({behavior: 'smooth'});
-                  }
-                }}
-                   className="font-sans font-thin cursor-pointer text-base sm:text-lg text-white block text-center">Photographers</a>
-              </div>
-              <div className="bg-black p-2 flex-1 hover:bg-gray-800">
-                <a onClick={() => {
-                  const element = document.getElementById('wedding-planning-guide');
-                  if (element) {
-                    element.scrollIntoView({behavior: 'smooth'});
-                  }
-                }}
-                   className="font-sans font-thin cursor-pointer text-base sm:text-lg text-white block text-center whitespace-nowrap">Wedding
-                  Planning Guide</a>
-              </div>
-              <div className="bg-black p-2 flex-1 hover:bg-gray-800">
-                <a onClick={() => {
-                  const element = document.getElementById('Chat');
-                  if (element) {
-                    element.scrollIntoView({behavior: 'smooth'});
-                  }
-                }}
-                   className="font-sans font-thin cursor-pointer text-base sm:text-lg text-white block text-center">Chat</a>
-              </div>
-              <div className="bg-black p-2 flex-1 hover:bg-gray-800">
-                <a onClick={() => {
-                  const element = document.getElementById('downloads');
-                  if (element) {
-                    element.scrollIntoView({behavior: 'smooth'});
-                  }
-                }}
-                   className="font-sans font-thin cursor-pointer text-base sm:text-lg text-white block text-center">Downloads</a>
+            <div className="flex justify-center w-full">
+              <div className="relative w-full sm:w-1/2">
+                <Image
+                    src="/client_portal/Final_Logo.png"  // Correct path for public folder
+                    alt="Essense Logo"
+                    width={100}
+                    height={100}
+                    layout="responsive"
+                    objectFit="contain"
+                    className="sm:w-[400px] sm:h-[400px]"
+                />
               </div>
             </div>
-          </nav>
-        </div>
-      </header>
+            <nav className="mt-6 w-full px-4 pt-8">
+              <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <div className="bg-black p-2 flex-1 hover:bg-gray-800">
+                  <a onClick={() => {
+                    const element = document.getElementById('faq');
+                    if (element) {
+                      element.scrollIntoView({behavior: 'smooth'});
+                    }
+                  }}
+                     className="font-sans font-thin cursor-pointer text-base sm:text-lg text-white block text-center">FAQ</a>
+                </div>
+                <div className="bg-black p-2 flex-1 hover:bg-gray-800">
+                  <a onClick={() => {
+                    const element = document.getElementById('photographers');
+                    if (element) {
+                      element.scrollIntoView({behavior: 'smooth'});
+                    }
+                  }}
+                     className="font-sans font-thin cursor-pointer text-base sm:text-lg text-white block text-center">Photographers</a>
+                </div>
+                <div className="bg-black p-2 flex-1 hover:bg-gray-800">
+                  <a onClick={() => {
+                    const element = document.getElementById('wedding-planning-guide');
+                    if (element) {
+                      element.scrollIntoView({behavior: 'smooth'});
+                    }
+                  }}
+                     className="font-sans font-thin cursor-pointer text-base sm:text-lg text-white block text-center whitespace-nowrap">Wedding
+                    Planning Guide</a>
+                </div>
+                <div className="bg-black p-2 flex-1 hover:bg-gray-800">
+                  <a onClick={() => {
+                    const element = document.getElementById('Chat');
+                    if (element) {
+                      element.scrollIntoView({behavior: 'smooth'});
+                    }
+                  }}
+                     className="font-sans font-thin cursor-pointer text-base sm:text-lg text-white block text-center">Chat</a>
+                </div>
+                <div className="bg-black p-2 flex-1 hover:bg-gray-800">
+                  <a onClick={() => {
+                    const element = document.getElementById('downloads');
+                    if (element) {
+                      element.scrollIntoView({behavior: 'smooth'});
+                    }
+                  }}
+                     className="font-sans font-thin cursor-pointer text-base sm:text-lg text-white block text-center">Downloads</a>
+                </div>
+              </div>
+            </nav>
+          </div>
+        </header>
 
-      <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
-        <div className="flex-1">
-          <div className="border-t-4 border-lightpink"></div>
-          <div className="border-t-2 border-lightpink mt-[6px]"></div>
-        </div>
-        <h2 className="px-16 text-5xl font-brittany">FAQ</h2>
-        <div className="flex-1">
-          <div className="border-t-4 border-lightpink"></div>
-          <div className="border-t-2 border-lightpink mt-[6px]"></div>
+        <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
+          <div className="flex-1">
+            <div className="border-t-4 border-lightpink"></div>
+            <div className="border-t-2 border-lightpink mt-[6px]"></div>
+          </div>
+          <h2 className="px-16 text-5xl font-brittany">FAQ</h2>
+          <div className="flex-1">
+            <div className="border-t-4 border-lightpink"></div>
+            <div className="border-t-2 border-lightpink mt-[6px]"></div>
           </div>
         </div>
 
@@ -232,7 +244,10 @@ export default function Home() {
                     key={index}
                     onClick={() => setFaqOpen(faqOpen === index ? null : index)}
                     className="cursor-pointer py-4 transition duration-500 ease-in-out"
-                    style={{outline: "none"}}
+                    style={{outline: 'none'}}
+                    role="button"
+                    aria-expanded={faqOpen === index}
+                    aria-controls={`faq-content-${index}`}
                 >
                   <h3 className="font-bold text-center ">{
                     index === 1 ? "When is my payment due?" :
@@ -305,79 +320,78 @@ export default function Home() {
         <section id="photographers" className="py-6 px-6 bg-pistachio">
           <div className="py-20 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
             {photographers.map(photographer => (
-              <div key={photographer.id}>
-                <div className="text-center bg-white rounded-t-lg shadow-lg block">
-                  <a
-                    href={photographer.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="transition-transform duration-300 ease-in-out hover:scale-105 block"
-                  >
-                    {photographer.profile_picture && (
-                      <Image
-                        src={`${photographer.profile_picture}`}
-                        alt={photographer.name}
-                        width={500} // Adjust this to the actual width of your image
-                        height={500} // Adjust this to the actual height of your image
-                        layout="responsive"
-                        objectFit="cover"
-                        className="w-full h-auto object-cover"
-                      />
-                    )}
-                  </a>
-                </div>
-                <div className="flex justify-center">
-                  <button
-                      className="w-[50%] bg-white text-dark-pistachio border-dark-pistachio py-2 my-4 flex justify-center items-center">
+                <div key={photographer.id}>
+                  <div className="text-center bg-white rounded-t-lg shadow-lg block">
                     <a
                         href={photographer.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center"
+                        className="transition-transform duration-300 ease-in-out hover:scale-105 block"
                     >
-                      View My Demo <span className="ml-2 text-lg">&rsaquo;</span>
+                      {photographer.profile_picture && (
+                          <Image
+                              src={photographer.profile_picture || '/default-profile.jpg'} // Fallback to a default image
+                              alt={photographer.name || 'Photographer'}
+                              width={500}
+                              height={500}
+                              layout="responsive"
+                              objectFit="cover"
+                          />
+                      )}
                     </a>
-                  </button>
+                  </div>
+                  <div className="flex justify-center">
+                    <button
+                        className="w-[50%] bg-white text-dark-pistachio border-dark-pistachio py-2 my-4 flex justify-center items-center">
+                      <a
+                          href={photographer.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center"
+                      >
+                        View My Demo <span className="ml-2 text-lg">&rsaquo;</span>
+                      </a>
+                    </button>
+                  </div>
                 </div>
-              </div>
             ))}
           </div>
         </section>
 
-      <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
-        <div className="flex-1">
-          <div className="border-t-4 border-lightpink"></div>
-          <div className="border-t-2 border-lightpink mt-[6px]"></div>
+        <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
+          <div className="flex-1">
+            <div className="border-t-4 border-lightpink"></div>
+            <div className="border-t-2 border-lightpink mt-[6px]"></div>
+          </div>
+          <h2 className="px-16 text-5xl font-brittany">Wedding Planning Guide</h2>
+          <div className="flex-1">
+            <div className="border-t-4 border-lightpink"></div>
+            <div className="border-t-2 border-lightpink mt-[6px]"></div>
+          </div>
         </div>
-        <h2 className="px-16 text-5xl font-brittany">Wedding Planning Guide</h2>
-        <div className="flex-1">
-          <div className="border-t-4 border-lightpink"></div>
-          <div className="border-t-2 border-lightpink mt-[6px]"></div>
-        </div>
-      </div>
-      <section id='wedding-planning-guide' className="text-center py-8 mb-[200px]">
-        {contractId ? (
-            formSubmitted ? (
-                <p className="text-lg text-red-500 font-semibold">
-                  The Wedding Day Guide has been submitted and can no longer be edited.
-                </p>
-            ) : (
-                <a
-                    href={`/client_portal/wedding-day-guide/${contractId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-lg text-black font-semibold underline"
-                >
-                  Please click here to fill out your wedding day guide for your team!
-                </a>
-            )
-        ) : (
-            <p className="text-lg text-black font-semibold">
-              Contract ID not available. Please make sure you are logged in.
-            </p>
-        )}
-      </section>
-      <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
+        <section id='wedding-planning-guide' className="text-center py-8 mb-[200px]">
+          {contractId ? (
+              formSubmitted ? (
+                  <p className="text-lg text-red-500 font-semibold">
+                    The Wedding Day Guide has been submitted and can no longer be edited.
+                  </p>
+              ) : (
+                  <a
+                      href={`/client_portal/wedding-day-guide/${contractId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-lg text-black font-semibold underline"
+                  >
+                    Please click here to fill out your wedding day guide for your team!
+                  </a>
+              )
+          ) : (
+              <p className="text-lg text-black font-semibold">
+                Contract ID not available. Please make sure you are logged in.
+              </p>
+          )}
+        </section>
+        <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
           <div className="flex-1">
             <div className="border-t-4 border-lightpink"></div>
             <div className="border-t-2 border-lightpink mt-[6px]"></div>
@@ -433,13 +447,29 @@ export default function Home() {
         <section id="downloads" className="py-12 px-6 text-black bg-pistachio bg-dot-grid">
           <div className="max-w-4xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {documents.map(doc => (
-                  <div key={doc.id} className="bg-white rounded-lg p-4 shadow-lg">
-                    <h3 className="font-semibold">{doc.name}</h3>
-                    <a href={`${doc.url}`} target="_blank" rel="noopener noreferrer"
-                       className="text-goodblue hover:underline">{doc.name}</a>
-                  </div>
-              ))}
+              {isLoading ? (
+                  <p className="col-span-1 md:col-span-2 text-center text-gray-600">
+                    Loading documents...
+                  </p>
+              ) : documents.length > 0 ? (
+                  documents.map((doc) => (
+                      <div key={doc.id} className="bg-white rounded-lg p-4 shadow-lg">
+                        <h3 className="font-semibold">{doc.name}</h3>
+                        <a
+                            href={`${doc.url}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-goodblue hover:underline"
+                        >
+                          {doc.name}
+                        </a>
+                      </div>
+                  ))
+              ) : (
+                  <p className="col-span-1 md:col-span-2 text-center text-gray-600">
+                    No documents available.
+                  </p>
+              )}
             </div>
           </div>
         </section>
