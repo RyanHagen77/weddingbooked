@@ -20,6 +20,9 @@ from rest_framework.response import Response
 from .models import UnifiedCommunication, Task
 from .serializers import UnifiedCommunicationSerializer
 
+from django.utils.timezone import now
+from datetime import timedelta
+
 from django.contrib.auth.models import User
 # Django Form Imports
 from django.contrib.auth.forms import PasswordResetForm
@@ -81,6 +84,7 @@ def get_contract_messages(request, contract_id):  # `request` parameter added he
 def post_contract_message(request, contract_id):
     contract = get_object_or_404(Contract, contract_id=contract_id)
     content = request.data.get('content')
+
     if content:
         # Create the UnifiedCommunication object
         message = UnifiedCommunication.objects.create(
@@ -94,8 +98,11 @@ def post_contract_message(request, contract_id):
         send_contract_message_email(request, message, contract)
 
         # Automatically create a task for the coordinator
-        if request.user.groups.filter(name='Client').exists():  # Ensure it's the client sending the message
+        if request.user.is_client:  # Use the is_client property
+            print(f"Creating task for coordinator: {contract.coordinator}")
             create_task_for_coordinator(request.user, contract, message, content)
+        else:
+            print(f"User {request.user.username} is not a client. Task not created.")
 
         # Return the created message as a response
         serializer = UnifiedCommunicationSerializer(message)
