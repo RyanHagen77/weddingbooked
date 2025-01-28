@@ -70,7 +70,8 @@ def send_password_reset_email(user_email):
 @permission_classes([IsAuthenticated])
 def get_contract_messages(request, contract_id):  # `request` parameter added here
     contract = get_object_or_404(Contract, contract_id=contract_id)
-    messages = UnifiedCommunication.objects.filter(contract=contract, note_type=UnifiedCommunication.PORTAL).order_by('-created_at')
+    messages = UnifiedCommunication.objects.filter(contract=contract,
+                                                   note_type=UnifiedCommunication.PORTAL).order_by('-created_at')
     serializer = UnifiedCommunicationSerializer(messages, many=True)
     return Response(serializer.data)
 
@@ -94,19 +95,7 @@ def post_contract_message(request, contract_id):
 
         # Check if the sender is a client before creating a task
         if request.user.groups.filter(name='Client').exists():  # Adjust this to your role-check logic
-            # Create a task for the coordinator if one is assigned
-            if contract.coordinator:
-                Task.objects.create(
-                    sender=request.user,
-                    assigned_to=contract.coordinator,
-                    contract=contract,
-                    note=message,
-                    due_date=now() + timedelta(days=3),  # Set a due date 3 days from now
-                    description=f"Follow up on portal note: '{content[:50]}...'",
-                    # Include first 50 characters of the content
-                    task_type='contract'
-                )
-                print(f"Task created for coordinator: {contract.coordinator}")
+            create_task_for_coordinator(request.user, contract, message, content)
 
         serializer = UnifiedCommunicationSerializer(message)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -133,6 +122,7 @@ def send_contract_message_email(request, message, contract):
         print("Email sent to coordinator:", contract.coordinator.email)
     else:
         print("No coordinator assigned, or missing email.")
+
 
 def send_email_to_client(request, message, contract):
     """Send email notification to the client."""
@@ -168,7 +158,6 @@ def send_email_to_client(request, message, contract):
         print("Client does not have a valid email or user_type is not 'client'.")
 
 
-
 def send_task_assignment_email(request, task):
     # Assuming the role is stored in a related model or field called 'role'
     if task.assigned_to.role.name == 'ADMIN':  # Adjust this line based on how roles are implemented
@@ -186,6 +175,7 @@ def send_task_assignment_email(request, task):
             [task.assigned_to.email],
             fail_silently=False,
         )
+
 
 @login_required
 def send_portal_access(request, contract_id):
@@ -253,7 +243,8 @@ def send_contract_and_rider_email_to_client(request, contract, rider_type=None, 
     elif rider_type:
         agreement_url = reverse('documents:client_rider_agreement', args=[contract.contract_id, rider_type])
         subject = f'Sign Your {rider_type.replace("_", " ").capitalize()} Agreement'
-        message = f'Please sign your {rider_type.replace("_", " ").capitalize()} agreement at the following link: {agreement_url}'
+        message = (f'Please sign your {rider_type.replace("_", " ").capitalize()} agreement at the following link: '
+                   f'{agreement_url}')
     else:
         agreement_url = reverse('documents:client_contract_and_rider_agreement', args=[contract.contract_id])
         subject = 'Sign Your Contract and Rider Agreements'
@@ -350,6 +341,24 @@ def create_task(request, contract_id=None, note_id=None):
     else:
         print(f"Form errors: {form.errors}")
         return JsonResponse({'success': False, 'errors': form.errors.as_json()})
+
+def create_task_for_coordinator(sender, contract, message, content):
+    if contract.coordinator:
+        try:
+            Task.objects.create(
+                sender=sender,
+                assigned_to=contract.coordinator,
+                contract=contract,
+                note=message,
+                due_date=now() + timedelta(days=3),
+                description=f"Follow up on portal note: '{content[:50]}...'",  # Fixed the f-string
+                task_type='contract'
+            )
+            print(f"Task created successfully for coordinator: {contract.coordinator}")
+        except Exception as e:
+            print(f"Error creating task: {e}")
+    else:
+        print("No coordinator assigned; task not created.")
 
 
 @login_required
