@@ -353,7 +353,7 @@ def create_task(request, contract_id=None, note_id=None):
 
 def create_task_for_coordinator(sender, contract, message, content):
     print("Creating task for coordinator automatically...")
-    print(f"Sender: {sender}, Contract ID: {contract.id}, Message ID: {message.id}, Content: {content}")
+    print(f"Sender: {sender}, Contract ID: {contract.contract_id}, Message ID: {message.id}, Content: {content}")
 
     if contract.coordinator:
         try:
