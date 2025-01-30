@@ -13,6 +13,9 @@ from django.db import transaction
 from bookings.constants import SERVICE_ROLE_MAPPING  # Adjust the import path as needed
 from services.models import ServiceType
 
+from communication.utils import send_contract_booked_email
+
+
 phone_validator = RegexValidator(
     regex=r'^\d{3}-\d{3}-\d{4}$',
     message='Phone number must be in the format XXX-XXX-XXXX.'
@@ -504,15 +507,20 @@ class Contract(models.Model):
     display_total_cost.short_description = "Total Cost"
 
     def save(self, *args, **kwargs):
-        """Custom save method to handle custom contract number generation, tax calculations, and related user updates."""
+        """Custom save method to handle custom contract number generation, tax calculations, status updates, and email notifications."""
         print("Entering save method")
 
-        # Check if the contract's status is changing to COMPLETED
+        # Check if the contract's status is changing to COMPLETED or BOOKED
         user_status_update_needed = False
+        send_salesperson_email = False
+
         if self.pk:
             old_status = Contract.objects.get(pk=self.pk).status
-            if old_status != self.status and self.status == self.COMPLETED:
-                user_status_update_needed = True
+            if old_status != self.status:
+                if self.status == self.COMPLETED:
+                    user_status_update_needed = True
+                elif self.status == self.BOOKED:
+                    send_salesperson_email = True
 
         # Generate custom contract number if not already set
         if not self.custom_contract_number:
@@ -577,6 +585,10 @@ class Contract(models.Model):
                 user.is_active = False
                 user.save(update_fields=['status', 'is_active'])
                 print(f"User {user.username} marked as INACTIVE.")
+
+        # Send email notification to salesperson if contract moves to BOOKED
+        if send_salesperson_email:
+            send_contract_booked_email(self)
 
 
 class ServiceFeeType(models.Model):

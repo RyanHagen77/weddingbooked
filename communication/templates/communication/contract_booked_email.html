@@ -1,0 +1,11 @@
+{% autoescape off %}
+Hello {{ first_name }},
+
+Great Job! Your client’s contract ({{ contract.custom_contract_number }}) has just been Booked!
+
+You can view the contract details here:
+https://enet2.com/contracts/{{ contract.contract_id }}/
+
+Best regards,  
+Essence Weddings Team
+{% endautoescape %}

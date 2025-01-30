@@ -69,6 +69,7 @@ def send_password_reset_email(user_email):
         print("PasswordResetForm is invalid. Errors:", form.errors)
 
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_contract_messages(request, contract_id):  # `request` parameter added here
