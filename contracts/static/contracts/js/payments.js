@@ -272,12 +272,16 @@ function confirmPayment() {
     let paymentMethod = document.getElementById('payment_method').value;
     let paymentPurposeElement = document.getElementById('payment_purpose');
     let paymentPurpose = paymentPurposeElement.value;
-    let paymentPurposeText = paymentPurposeElement.options[paymentPurposeElement.selectedIndex].text;  // Get payment purpose text
+    let paymentPurposeText = paymentPurposeElement.options[paymentPurposeElement.selectedIndex].text;
     let paymentMemo = document.getElementById('memo').value;
     let paymentReference = document.getElementById('payment_reference').value;
     let paymentId = document.getElementById('payment-id').value;
     let paymentAction = document.getElementById('payment-action').value;
-    let url = (paymentAction === 'edit') ? `/payments/edit_payment/${paymentId}/` : `/payments/add_payment/${contractData.paymentScheduleId}/`;
+
+    // Correct URL formatting
+    let url = (paymentAction === 'edit')
+        ? `/payments/edit_payment/${paymentId}/`
+        : `/payments/add_payment/${contractData.paymentScheduleId}/`;
 
     let originalAmount = parseFloat(document.getElementById('original-amount').value) || 0;
     let amountDifference = paymentAmount - originalAmount;
@@ -309,26 +313,34 @@ function confirmPayment() {
             throw new Error('Error saving payment');
         }
     })
+
     .then(data => {
         // Update the UI based on the payment
-        updatePaymentsTable(paymentAmount, paymentMethod, paymentPurposeText, paymentReference, paymentMemo, data.payment_id, paymentAction);  // Pass paymentPurposeText
+        updatePaymentsTable(paymentAmount, paymentMethod, paymentPurposeText, paymentReference, paymentMemo, data.payment_id, paymentAction);
 
-        // Recalculate the balance due
+        // Update balance due
         let newBalanceDue = balanceDue - amountDifference;
         balanceDueElement.textContent = `$${newBalanceDue.toFixed(2)}`;
 
-        // Update the deposit status if applicable
+        // Manually update the contract status in the dropdown
+        document.getElementById("id_status").value = data.new_status;  // Dropdown gets updated
+        document.querySelector("#contract-status").textContent = `Status: ${data.new_status_display}`;
+
+        // Update deposit status if applicable
         if (paymentAction !== 'edit') {
             updateDepositStatus(paymentAmount, newBalanceDue);
         }
 
         clearPaymentForm();
     })
+
+
     .catch(error => console.error('Error saving payment:', error));
 
     $('#paymentModal').on('hidden.bs.modal', clearPaymentForm);
     $('#paymentModal').modal('hide');
 }
+
 
 
 // Clear payment form
