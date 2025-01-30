@@ -84,24 +84,39 @@
       <h2>Contract Details</h2>
     </div>
 
-    <form method="post">
-      {% csrf_token %}
-      {{ form.message.label_tag }} {{ form.message }}
-      <input type="hidden" name="message_type" value="contract">
-      <button type="submit">Send Message</button>
-    </form>
 
     <h3>Contract Messages</h3>
-    {% for note in contract_notes %}
-      <div class="message">
-        <p><strong>From:</strong> {{ note.created_by.username }}</p>
-        <p><strong>Date:</strong> {{ note.created_at }}</p>
-        <p>{{ note.content }}</p>
-      </div>
-    {% empty %}
-      <p>No contract messages available.</p>
-    {% endfor %}
-  </div>
+
+    <!-- Form to Post a New Message -->
+    <form method="post" action="{% url 'users:client_portal' contract.contract_id %}">
+        {% csrf_token %}
+        <textarea
+            name="message"
+            placeholder="Write your message here..."
+            class="w-full p-2 border border-gray-300 rounded"
+            rows="3"
+            style="width: 100%;"
+        ></textarea>
+        <input type="hidden" name="message_type" value="contract">
+        <button type="submit" class="mt-2 bg-black text-white py-2 px-4 rounded">
+            Send Message
+        </button>
+    </form>
+
+    <!-- Display Existing Messages -->
+    <div class="mt-4">
+        {% if contract_notes %}
+            {% for note in contract_notes %}
+                <div class="message mt-2 p-2 border border-gray-300 rounded">
+                    <p><strong>From:</strong> {{ note.created_by.username }}</p>
+                    <p><strong>Date:</strong> {{ note.created_at }}</p>
+                    <p>{{ note.content }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No contract messages available.</p>
+        {% endif %}
+    </div>
 
   <div class="faq-section">
     <!-- FAQ content here -->

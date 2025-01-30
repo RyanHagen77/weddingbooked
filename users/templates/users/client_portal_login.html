@@ -91,7 +91,8 @@
 <body>
     <div class="container">
         <div class="logo">
-            <img src="/media/Final_Logo.png" alt="Essence Logo">
+            <img src="{{ MEDIA_URL }}logo/Final_Logo.png" alt="Essence Logo">
+
         </div>
         <h2>Login</h2>
         <form method="post" action="{% url 'users:client_portal_login' %}">
