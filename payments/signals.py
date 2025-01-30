@@ -2,6 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from decimal import Decimal
 from payments.models import Payment
+from contracts.models import Contract
 
 
 @receiver(post_save, sender=Payment)
