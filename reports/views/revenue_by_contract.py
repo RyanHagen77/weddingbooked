@@ -27,7 +27,7 @@ def revenue_by_contract(request):
     """
     Generates a revenue report grouped by contract, detailing payments and tax collected.
     """
-    logo_url = f"https://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     # Default to current quarter if no dates are provided
     today = datetime.today()

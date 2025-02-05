@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def revenue_report(request):
-    logo_url = f"https://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     # Initialize variables
     today = datetime.today()

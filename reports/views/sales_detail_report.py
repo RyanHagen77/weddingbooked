@@ -20,7 +20,7 @@ def sales_detail_report(request):
     Generates a detailed sales report grouped by week or month.
     Supports predefined and custom date ranges, with a totals line.
     """
-    logo_url = f"https://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     # Get the date range and group_by from the request
     date_range = request.GET.get('date_range', 'this_month')

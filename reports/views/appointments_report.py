@@ -20,7 +20,7 @@ User = get_user_model()
 
 @login_required
 def appointments_report(request):
-    logo_url = f"https://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     # Get date range, location, and period from request
     start_date_str = request.GET.get('start_date')

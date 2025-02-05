@@ -19,7 +19,7 @@ def sales_detail_by_contract(request):
     Services, products, and other charges (service fees) are included.
     Only includes booked contracts. Respects the date range passed from the detail view.
     """
-    logo_url = f"https://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     # Get the date range from query parameters
     start_date = request.GET.get('start_date')

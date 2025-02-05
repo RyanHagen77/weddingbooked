@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def reception_venue_report(request):
-    logo_url = f"https://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     # Get date range and period from request
     date_range = request.GET.get('date_range', 'this_month')
