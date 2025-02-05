@@ -408,7 +408,7 @@ class ServiceFeeForm(forms.ModelForm):
         fields = ['contract', 'amount', 'description', 'fee_type', 'applied_date']
         widgets = {
             'description': forms.Textarea(attrs={'class': 'form-control description-field', 'rows': 3}),
-            'amount': forms.NumberInput(attrs={'class': 'form-control'}),
+            'amount': forms.NumberInput(attrs={'class': 'key-field'}),
             'fee_type': forms.Select(attrs={'class': 'form-control'}),
             'contract': forms.HiddenInput(),  # Assuming contract is not to be edited
         }
@@ -418,7 +418,7 @@ ServiceFeeFormSet = inlineformset_factory(
     parent_model=Contract,
     model=ServiceFee,
     form=ServiceFeeForm,
-    extra=0,
+    extra=1,
     can_delete=True  # Allows deletion of service fees directly from the formset
 )
 

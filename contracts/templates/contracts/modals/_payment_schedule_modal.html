@@ -1,77 +1,58 @@
-<!-- Add Schedule Modal -->
+{% load static %}
+<!-- Schedule Modal -->
 <div class="modal fade" id="scheduleModal" tabindex="-1" role="dialog" aria-labelledby="scheduleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="scheduleModalLabel">Add or Update Schedule</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="scheduleForm" method="post" action="{% url 'payments:create_or_update_schedule' contract_id=contract.contract_id %}">
-                    {% csrf_token %}
-                    {{ schedule_payment_formset.management_form }}
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="scheduleModalLabel">Add or Update Schedule</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="scheduleForm" method="post" action="{% url 'payments:create_or_update_schedule' contract_id=contract.contract_id %}">
+          {% csrf_token %}
+          {{ schedule_payment_formset.management_form }}
+          <hr>
+          <!-- Optional separate schedule form -->
+          {{ schedule_form.as_p }}
+          <hr>
 
-                    <hr>
-                    {{ schedule_form.as_p }}
-                    <hr>
+          <!-- Empty Payment Form (used for cloning new schedule entries) -->
+          <div class="schedule-payment-form empty-schedule-payment-form" style="display: none;">
+            {{ schedule_payment_formset.empty_form.as_p }}
+          </div>
 
-                    <!-- Empty Payment Form (used for cloning) -->
-                    <div class="payment-form empty-payment-form" style="display: none;">
-                        {{ schedule_payment_formset.empty_form.as_p }}
-                    </div>
+          <!-- Payment Schedule Entries -->
+          <div id="paymentScheduleEntries">
+            {% for form in schedule_payment_formset %}
+              <div class="schedule-payment-form mb-3">
+                <div class="form-check form-check-inline">
+                  <!-- We remove inline onclick; this checkbox will be targeted by our module -->
+                  <input type="checkbox" class="form-check-input edit-toggle" id="edit_{{ forloop.counter }}">
+                  <label for="edit_{{ forloop.counter }}" class="form-check-label ml-2 mb-0">Enable Editing</label>
+                </div>
+                <div class="form-fields mt-2" id="form_fields_{{ forloop.counter }}">
+                  {{ form.as_p }}
+                </div>
+                <hr>
+              </div>
+            {% endfor %}
+          </div>
 
-                    <div id="paymentScheduleEntries">
-                        {% for form in schedule_payment_formset %}
-                            <div class="payment-form mb-3">
-                                <div class="form-check form-check-inline">
-                                    <input type="checkbox" class="form-check-input edit-toggle" id="edit_{{ forloop.counter }}" onclick="toggleEdit(this)">
-                                    <label for="edit_{{ forloop.counter }}" class="form-check-label ml-2 mb-0">Enable Editing</label>
-                                </div>
-                                <div class="form-fields mt-2" id="form_fields_{{ forloop.counter }}">
-                                    {{ form.as_p }}
-                                </div>
-                                <hr>
-                            </div>
-                        {% endfor %}
-                    </div>
-
-                    <button type="button" class="btn btn-dusty-pink mt-2" onclick="addFormsetEntry('paymentScheduleEntries', 'id_schedule_payments-TOTAL_FORMS', '.payment-form')">Add Payment Entry</button>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-close" data-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-dusty-pink" form="scheduleForm" onclick="enableAllInputs()">Save Changes</button>
-            </div>
-        </div>
+          <!-- Button for adding a new schedule entry -->
+          <button type="button" id="addEntryBtn" class="btn btn-dusty-pink mt-2">
+            Add Payment Entry
+          </button>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-close" data-dismiss="modal">Close</button>
+        <!-- Save Changes button with an ID for our module to attach a listener -->
+        <button type="submit" id="saveChangesBtn" class="btn btn-dusty-pink" form="scheduleForm">
+          Save Changes
+        </button>
+      </div>
     </div>
+  </div>
 </div>
-
-<script>
-    function toggleEdit(checkbox) {
-        const formFields = checkbox.closest('.payment-form').querySelector('.form-fields');
-        const inputs = formFields.querySelectorAll('input, select, textarea');
-        inputs.forEach(input => input.disabled = !checkbox.checked);
-    }
-
-    function addFormsetEntry(containerId, totalFormsId, formClass) {
-        const container = document.getElementById(containerId);
-        const totalForms = document.getElementById(totalFormsId);
-        const emptyFormTemplate = document.querySelector('.empty-payment-form').cloneNode(true);
-
-        emptyFormTemplate.style.display = '';
-        emptyFormTemplate.classList.remove('empty-payment-form');
-
-        const formIndex = parseInt(totalForms.value);
-        emptyFormTemplate.innerHTML = emptyFormTemplate.innerHTML.replace(/__prefix__/g, formIndex);
-
-        container.appendChild(emptyFormTemplate);
-        totalForms.value = formIndex + 1;
-    }
-
-    function enableAllInputs() {
-        const inputs = document.querySelectorAll('#scheduleForm input, #scheduleForm select, #scheduleForm textarea');
-        inputs.forEach(input => input.disabled = false);
-    }
-</script>

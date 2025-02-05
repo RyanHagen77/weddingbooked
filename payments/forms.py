@@ -110,7 +110,7 @@ SchedulePaymentFormSet = inlineformset_factory(
     PaymentSchedule,
     SchedulePayment,
     form=SchedulePaymentForm,  # Use the custom SchedulePaymentForm
-    extra=0,  # Do not provide extra blank forms by default
+    extra=1,  # Do not provide extra blank forms by default
     can_delete=True  # Allow deleting schedule payments
 )
 

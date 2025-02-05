@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Contract
+from .models import Contract, ServiceFee
 
 
 class ContractSerializer(serializers.ModelSerializer):
@@ -17,3 +17,9 @@ class ContractSerializer(serializers.ModelSerializer):
             'partner_contact', 'partner_email', 'partner_phone', 'ceremony_site', 'reception_site',
             # Include any other fields you need from the Contract model
         ]
+
+
+class ServiceFeeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceFee
+        fields = ['applied_date', 'description', 'fee_type', 'amount']

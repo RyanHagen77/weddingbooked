@@ -1,79 +1,55 @@
+{% load static %}
 <!-- Service Fee Modal -->
 <div class="modal fade" id="serviceFeeModal" tabindex="-1" role="dialog" aria-labelledby="serviceFeeModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="serviceFeeModalLabel">Add or Update Service Fees</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: black; background-color: white;">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="serviceFeeForm" method="post" action="{% url 'contracts:add_service_fee' contract_id=contract.contract_id %}">
-                    {% csrf_token %}
-                    {{ service_fee_formset.management_form }}
-                    
-                    <div id="serviceFeeEntries">
-                        {% for form in service_fee_formset %}
-                            <div class="service-fee-form mb-3">
-                                <div class="form-check form-check-inline">
-                                    <input type="checkbox" class="form-check-input edit-toggle" id="edit_fee_{{ forloop.counter }}" onclick="toggleEdit(this)">
-                                    <label for="edit_fee_{{ forloop.counter }}" class="form-check-label ml-2 mb-0">Enable Editing</label>
-                                </div>
-                                <div class="form-fields mt-2" id="form_fields_fee_{{ forloop.counter }}">
-                                    {{ form.as_p }}
-                                </div>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="serviceFeeModalLabel">Add or Update Service Fees</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: black; background-color: white;">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- (Optional) Container for a service fee table -->
+        <div id="serviceFeeTableContainer"></div>
+        <form id="serviceFeeForm" method="post" action="{% url 'contracts:add_service_fee' contract_id=contract.contract_id %}">
+          {% csrf_token %}
+          {{ service_fee_formset.management_form }}
 
-                            </div>
-                        {% endfor %}
-                    </div>
+          <!-- Hidden empty form template for cloning new service fee entries -->
+          <div class="service-fee-form empty-service-fee-form" style="display: none;">
+            {{ service_fee_formset.empty_form.as_p }}
+          </div>
 
-                    <!-- Empty Form Template -->
-                    <div class="service-fee-form empty-service-fee-form" style="display: none;">
-                        {{ service_fee_formset.empty_form.as_p }}
-                    </div>
-                    <button type="button" class="btn btn-dusty-pink mt-2" onclick="addFormsetEntry('serviceFeeEntries', 'id_servicefees-TOTAL_FORMS', '.service-fee-form')">Add Service Fee Entry</button>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-close" data-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-dusty-pink" form="serviceFeeForm" onclick="enableAllInputs()">Save Changes</button>
-            </div>
-        </div>
+          <!-- Service Fee Entries: Render all forms in a uniform loop -->
+          <div id="serviceFeeEntries">
+            {% for form in service_fee_formset %}
+              <div class="service-fee-form mb-3">
+                <!-- Render the DELETE field (hidden) -->
+                <div style="display: none;">
+                  {{ form.DELETE }}a
+                </div>
+                <div class="form-check form-check-inline">
+                  <input type="checkbox" class="form-check-input edit-toggle" id="edit_fee_{{ forloop.counter }}">
+                  <label for="edit_fee_{{ forloop.counter }}" class="form-check-label ml-2 mb-0">Enable Editing</label>
+                </div>
+                <div class="form-fields mt-2" id="form_fields_fee_{{ forloop.counter }}">
+                  {{ form.as_p }}
+                </div>
+                <hr>
+              </div>
+            {% endfor %}
+          </div>
+
+          <!-- Button for adding a new service fee entry -->
+          <button type="button" id="addServiceFeeBtn" class="btn btn-dusty-pink mt-2">Add Service Fee Entry</button>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-close" data-dismiss="modal">Close</button>
+        <!-- Save Changes button -->
+        <button type="submit" id="saveServiceFeeBtn" class="btn btn-dusty-pink" form="serviceFeeForm">Save Changes</button>
+      </div>
     </div>
+  </div>
 </div>
-
-<script>
-    function toggleEdit(checkbox) {
-        const formFields = checkbox.closest('.service-fee-form').querySelector('.form-fields');
-        const inputs = formFields.querySelectorAll('input, select, textarea');
-        inputs.forEach(input => input.disabled = !checkbox.checked);
-    }
-
-    function addFormsetEntry(containerId, totalFormsId, formClass) {
-        const container = document.getElementById(containerId);
-        const totalForms = document.getElementById(totalFormsId);
-        const emptyFormTemplate = document.querySelector('.empty-service-fee-form').cloneNode(true);
-
-        emptyFormTemplate.style.display = '';
-        emptyFormTemplate.classList.remove('empty-service-fee-form');
-
-        const formIndex = parseInt(totalForms.value);
-        emptyFormTemplate.innerHTML = emptyFormTemplate.innerHTML.replace(/__prefix__/g, formIndex);
-
-        container.appendChild(emptyFormTemplate);
-        totalForms.value = formIndex + 1;
-    }
-
-    function removeServiceFeeEntry(button) {
-        const form = button.closest('.service-fee-form');
-        if (form) {
-            form.remove();
-        }
-    }
-
-    function enableAllInputs() {
-        const inputs = document.querySelectorAll('#serviceFeeForm input, #serviceFeeForm select, #serviceFeeForm textarea');
-        inputs.forEach(input => input.disabled = false);
-    }
-</script>

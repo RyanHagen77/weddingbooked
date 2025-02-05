@@ -5,12 +5,13 @@
 
     <!-- Add a new amount here -->
     <div class="amount-paid" data-payments-made="{{ contract.amount_paid }}">
-        <strong>Amount Paid:</strong> ${{ contract.amount_paid|floatformat:2 }}
+        <strong>Amount Paid:</strong> <span id="amount-paid-amount">${{ contract.amount_paid|floatformat:2 }}</span>
     </div>
 
     <div class="balance-due" data-initial-balance="{{ contract.balance_due }}">
-        <strong>Balance Due:</strong> <span id="balance-due-amount">${{ contract.balance_due|floatformat:2 }}</span>
+        <strong>Balance Due:</strong> <span class="balance-due-amount">${{ contract.balance_due|floatformat:2 }}</span>
     </div>
+
 </div>
 
 <h6>Existing Payments:</h6>
@@ -37,7 +38,7 @@
                 <td>{{ payment.memo }}</td>
                 <td>
                     <button type="button" class="btn btn-info btn-sm" onclick="editPayment('{{ payment.id }}', '{{ payment.amount }}', '{{ payment.payment_method }}', '{{ payment.payment_reference }}', '{{ payment.memo }}', '{{ payment.payment_purpose.id }}')">Edit</button>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="if(confirm('Are you sure?')){ window.location.href='{% url 'payments:delete_payment' payment.id %}'; }">Delete</button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="deletePayment('{{ payment.id }}')">Delete</button>
                 </td>
             </tr>
         {% endfor %}

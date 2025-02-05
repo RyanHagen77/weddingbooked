@@ -7,200 +7,186 @@
     <meta charset="UTF-8">
     <title>Contract Detail</title>
 
-    <!-- jQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
-    <!-- Bootstrap CSS -->
+    <!-- Bootstrap CSS (from CDN) -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
-    <!-- Include your custom CSS file -->
-    <link rel="stylesheet" href="{% static 'contracts/styles.css' %}">
-    <script src="{% static 'contracts/js/booking_notes.js' %}"></script>
+
+    <!-- jQuery is loaded in the base or here once -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- Additional head content -->
+    {% block extra_head %}{% endblock %}
 {% endblock head %}
 
 {% block content %}
-<body data-contract-id="{{ contract.contract_id }}" data-payment-schedule-id="{{ contract.payment_schedule.id }}">
-
-    <!-- Main Header Section -->
-    <header class="bg-cool-grey text-white py-1">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center" id="header-event-date">
-                    <p class="mb-0 small-text">Event Date: {{ contract.event_date|date:"Y-m-d" }}</p>
-                </div>
-                <div class="d-flex align-items-center">
-                    <a href="{% url 'documents:generate_contract_pdf' contract_id=contract.contract_id %}" class="section-link small-text" target="_blank">Print Contract</a>
-                    <span class="mx-2 section-divider">|</span>
-                    <a href="{% url 'documents:contract_agreement' contract_id=contract.contract_id %}" class="section-link small-text" target="_blank">View Contract</a>
-                    <span class="mx-2 section-divider">|</span>
-                    <a href="{% url 'communication:send_portal_access' contract_id=contract.contract_id %}" class="section-link small-text" id="give-portal-access-btn">Give Portal Access</a>
-                </div>
-                <div class="d-flex align-items-center">
-                    <p class="mb-0 small-text">Contract ID: {{ contract.custom_contract_number }}</p>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content Section -->
-    <main class="container mt-3">
-        <div class="card-container">
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <div class="card bg-white">
-                        <div class="card-body">
-                            <p class="card-text" id="header-status">Status: {{ contract.get_status_display }}</p>
-                            <p class="card-text" id="header-location">Location: {{ contract.location.name }}</p>
-                            <p class="card-text" id="header-csr">Sales Person: {{ contract.csr.get_full_name }}</p>
-                            <p class="card-text">Contract Date: {{ contract.contract_date|date:"Y-m-d" }}</p>
-                        </div>
+    <div data-contract-id="{{ contract.contract_id }}" data-payment-schedule-id="{{ contract.payment_schedule.id }}">
+        <!-- Main Header Section -->
+        <header class="bg-cool-grey text-white py-1">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center" id="header-event-date">
+                        <p class="mb-0 small-text">Event Date: {{ contract.event_date|date:"Y-m-d" }}</p>
                     </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <div class="card bg-white">
-                        <div class="card-body">
-                            <p class="card-text" id="header-primary-contact">Primary Contact: {{ contract.client.primary_contact }}</p>
-                            <p class="card-text" id="header-partner-contact">Partner Contact: {{ contract.client.partner_contact }}</p>
-                            <p class="card-text" id="header-primary-email">Primary Email: {{ contract.client.primary_email }}</p>
-                            <p class="card-text" id="header-primary-phone">Primary Phone 1: {{ contract.client.primary_phone1 }}</p>
-                        </div>
+                    <div class="d-flex align-items-center">
+                        <a href="{% url 'documents:generate_contract_pdf' contract_id=contract.contract_id %}" class="section-link small-text" target="_blank">Print Contract</a>
+                        <span class="mx-2 section-divider">|</span>
+                        <a href="{% url 'documents:contract_agreement' contract_id=contract.contract_id %}" class="section-link small-text" target="_blank">View Contract</a>
+                        <span class="mx-2 section-divider">|</span>
+                        <a href="{% url 'communication:send_portal_access' contract_id=contract.contract_id %}" class="section-link small-text" id="give-portal-access-btn">Give Portal Access</a>
                     </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <div class="card bg-white">
-                        <div class="card-body">
-                            <p id="payment-amount-due" class="card-text">Next Payment Due: $0.00</p>
-                            <p id="due-date" class="card-text">Due Date: N/A</p>
-                            <p class="card-text">Balance Due: ${{ contract.balance_due }}</p>
-                            <p class="card-text">Contract Total: ${{ contract.final_total }}</p>
-                        </div>
+                    <div class="d-flex align-items-center">
+                        <p class="mb-0 small-text">Contract ID: {{ contract.custom_contract_number }}</p>
                     </div>
                 </div>
             </div>
-        </div>
-    </main>
+        </header>
 
-   <!-- Bootstrap and other libraries should load after jQuery -->
+        <!-- Main Content Section -->
+        <main class="container mt-3">
+            <div class="card-container">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card bg-white">
+                            <div class="card-body">
+                                <p class="card-text" id="header-status">Status: {{ contract.get_status_display }}</p>
+                                <p class="card-text" id="header-location">Location: {{ contract.location.name }}</p>
+                                <p class="card-text" id="header-csr">Sales Person: {{ contract.csr.get_full_name }}</p>
+                                <p class="card-text">Contract Date: {{ contract.contract_date|date:"Y-m-d" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card bg-white">
+                            <div class="card-body">
+                                <p class="card-text" id="header-primary-contact">Primary Contact: {{ contract.client.primary_contact }}</p>
+                                <p class="card-text" id="header-partner-contact">Partner Contact: {{ contract.client.partner_contact }}</p>
+                                <p class="card-text" id="header-primary-email">Primary Email: {{ contract.client.primary_email }}</p>
+                                <p class="card-text" id="header-primary-phone">Primary Phone 1: {{ contract.client.primary_phone1 }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card bg-white">
+                            <div class="card-body">
+                                <p id="payment-amount-due" class="card-text">Next Payment Due: $0.00</p>
+                                <p id="due-date" class="card-text">Due Date: N/A</p>
+                                <p class="card-text">Balance Due:
+                                    <span class="balance-due-amount">${{ contract.balance_due|floatformat:2 }}</span></p>
+                                <p class="card-text">Contract Total: ${{ contract.final_total }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Nav tabs and content -->
+        <div class="container mt-3">
+            <!-- Hidden Fields -->
+            <input type="hidden" id="total_cost" name="total_cost" value="">
+            <input type="hidden" id="total_service_cost" name="total_service_cost" value="">
+
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs" id="mainTabs">
+                <li class="nav-item"><a class="nav-link active text-dark-sienna" href="#info" data-toggle="tab">Info</a></li>
+                <li class="nav-item"><a class="nav-link text-dark-sienna" href="#client" data-toggle="tab">Client</a></li>
+                <li class="nav-item"><a class="nav-link text-dark-sienna" href="#event" data-toggle="tab">Event</a></li>
+                <li class="nav-item"><a class="nav-link text-dark-sienna" href="#services" data-toggle="tab">Services</a></li>
+                <li class="nav-item"><a class="nav-link text-dark-sienna" href="#products" data-toggle="tab">Products</a></li>
+                <li class="nav-item"><a class="nav-link text-dark-sienna" href="#financial" data-toggle="tab">Financial</a></li>
+                <li class="nav-item"><a class="nav-link text-dark-sienna" href="#docs" data-toggle="tab">Docs</a></li>
+                <li class="nav-item"><a class="nav-link text-dark-sienna" href="#communication" data-toggle="tab">Tasks/Messages</a></li>
+                <li class="nav-item"><a class="nav-link text-dark-sienna" href="#changelog" data-toggle="tab">Change Log</a></li>
+            </ul>
+
+            <!-- Tab content -->
+            <div class="content-below-nav">
+                <div class="tab-content field-box">
+                    {% include 'contracts/partials/main_tabs/_info_tab.html' %}
+                    {% include 'contracts/partials/main_tabs/_client_tab.html' %}
+                    {% include 'contracts/partials/main_tabs/_event_tab.html' %}
+                    {% include 'contracts/partials/main_tabs/_services_tab.html' %}
+                    {% include 'contracts/partials/main_tabs/_products_tab.html' %}
+                    {% include 'contracts/partials/main_tabs/_financial_tab.html' %}
+                    {% include 'contracts/partials/main_tabs/_documents_tab.html' %}
+                    {% include 'contracts/partials/main_tabs/_messages_tab.html' %}
+                    {% include 'contracts/partials/main_tabs/_change_log_tab.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+    <!-- End of main content -->
+
+    <!-- The base template should already load jQuery and Bootstrap JS once.
+         If not, load them here (but avoid duplicates). -->
+
+    <!-- Popper and Bootstrap JS (from CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-    <!-- Custom JavaScript can be included here or in extra_head, depending on dependencies -->
+    <!-- Custom tasks script -->
     <script src="{% static 'communication/js/tasks.js' %}"></script>
-</body>
 
-
-    <div class="container mt-3">
-        <!-- Hidden Field for Total Cost -->
-        <input type="hidden" id="total_cost" name="total_cost" value="">
-        <input type="hidden" id="total_service_cost" name="total_service_cost" value="">
-
-
-        <!-- Nav tabs -->
-        <ul class="nav nav-tabs" id="mainTabs">
-            <li class="nav-item"><a class="nav-link active text-dark-sienna" href="#info" data-toggle="tab">Info</a></li>
-            <li class="nav-item"><a class="nav-link text-dark-sienna" href="#client" data-toggle="tab">Client</a></li>
-            <li class="nav-item"><a class="nav-link text-dark-sienna" href="#event" data-toggle="tab">Event</a></li>
-            <li class="nav-item"><a class="nav-link text-dark-sienna" href="#services" data-toggle="tab">Services</a></li>
-            <li class="nav-item"><a class="nav-link text-dark-sienna" href="#products" data-toggle="tab">Products</a></li>
-            <li class="nav-item"><a class="nav-link text-dark-sienna" href="#docs" data-toggle="tab">Docs</a></li>
-            <li class="nav-item"><a class="nav-link text-dark-sienna" href="#financial" data-toggle="tab">Financial</a></li>
-            <li class="nav-item"><a class="nav-link text-dark-sienna" href="#communication" data-toggle="tab">Tasks/Messages</a></li>
-            <li class="nav-item"><a class="nav-link text-dark-sienna" href="#changelog" data-toggle="tab">Change Log</a></li>
-        </ul>
-
-        <!-- Tab content -->
-        <div class="content-below-nav">
-            <div class="tab-content field-box">
-                {% include 'contracts/partials/main_tabs/_info_tab.html' %}
-                {% include 'contracts/partials/main_tabs/_client_tab.html' %}
-                {% include 'contracts/partials/main_tabs/_event_tab.html' %}
-                {% include 'contracts/partials/main_tabs/_services_tab.html' %}
-                {% include 'contracts/partials/main_tabs/_products_tab.html' %}
-                {% include 'contracts/partials/main_tabs/_documents_tab.html' %}
-                {% include 'contracts/partials/main_tabs/_financial_tab.html' %}
-                {% include 'contracts/partials/main_tabs/_messages_tab.html' %}
-                {% include 'contracts/partials/main_tabs/_change_log_tab.html' %}
-            </div>
-        </div>    <!-- Closes the overarching div, if this is meant to close the container for all content above, ensure its opening tag is correctly placed -->
-    </div>
-    <!-- Include jQuery -->
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    <!-- Include Bootstrap JS -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <!-- Your custom script for handling tabs -->
-<script>
-    $(document).ready(function() {
-        var hash = window.location.hash;
-        if (hash) {
-            var hashParts = hash.split('/');
-            var mainHash = hashParts[0];
-            var subHash = hashParts.length > 1 ? '#' + hashParts[1] : null;
-
-            // Activate main tab
-            $('.nav-tabs a[href="' + mainHash + '"]').tab('show');
-
-            // Activate nested service tab if present
-            if (subHash) {
-                $('.nav-tabs a[href="' + subHash + '"]').tab('show');
-            }
-        }
-
-        $('.nav-tabs a').on('click', function(e) {
-            window.location.hash = this.hash;
-        });
-
-        // Ensure the tab state is maintained after page refresh
-        $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
-            if (e.target.hash.startsWith('#services')) {
-                window.location.hash = e.target.hash.split('#')[1] + '/' + e.relatedTarget.hash.split('#')[1];
-            } else {
-                window.location.hash = e.target.hash;
-            }
-        });
-    });
-</script>
-
-
+    <!-- Inline script for handling tabs -->
     <script>
-        let contractData = {
-            servicesTotalAfterDiscounts: {{ contract.calculate_total_service_cost_after_discounts }},
-            totalContractAmount: {{ contract.calculate_total_cost }},
-            eventDate: '{{ contract.event_date|date:"Y-m-d" }}',
-            paymentScheduleId: {{ schedule_id|default:"null" }},        };
+      $(document).ready(function() {
+          var hash = window.location.hash;
+          if (hash) {
+              var hashParts = hash.split('/');
+              var mainHash = hashParts[0];
+              var subHash = hashParts.length > 1 ? '#' + hashParts[1] : null;
+
+              // Activate main tab
+              $('.nav-tabs a[href="' + mainHash + '"]').tab('show');
+
+              // Activate nested service tab if present
+              if (subHash) {
+                  $('.nav-tabs a[href="' + subHash + '"]').tab('show');
+              }
+          }
+
+          $('.nav-tabs a').on('click', function(e) {
+              window.location.hash = this.hash;
+          });
+
+          // Ensure tab state is maintained after refresh
+          $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+              if (e.target.hash.startsWith('#services')) {
+                  window.location.hash = e.target.hash.split('#')[1] + '/' + e.relatedTarget.hash.split('#')[1];
+              } else {
+                  window.location.hash = e.target.hash;
+              }
+          });
+      });
     </script>
 
+    <!-- Expose contractData globally -->
+    <script>
+      window.contractData = JSON.parse('{{ contract_data_json|escapejs }}');
+    </script>
 
+    <!-- Additional custom modules -->
+    <script type="module" src="***REMOVED***t.js"></script>
+    <script type="module" src="/contracts/js/serviceMgmt.js"></script>
+    <script type="module" src="/bookings/js/eventStaffManagement.js"></script>
+    <script src="/contracts/js/ContractEdit.js"></script>
+
+
+    <!-- Additional inline JavaScript functions (DjangoFilters) -->
+    <script>
+      var DjangoFilters = DjangoFilters || {};
+      DjangoFilters['roundup_to_nearest_100'] = function(value) {
+          return Math.ceil(value / 100) * 100;
+      };
+      DjangoFilters['subtract_days'] = function(dateString, days) {
+          var date = new Date(dateString);
+          date.setDate(date.getDate() - days);
+          return date.toISOString().split('T')[0];
+      };
+    </script>
+
+    <!-- Moment.js (if needed) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 </body>
-
-<script>
-    // Initialize DjangoFilters as an empty object if it doesn't already exist
-    var DjangoFilters = DjangoFilters || {};
-
-    // JavaScript function to round up to the nearest 100
-    DjangoFilters['roundup_to_nearest_100'] = function(value) {
-        return Math.ceil(value / 100) * 100;
-    };
-
-    // JavaScript function to subtract days from a date
-    DjangoFilters['subtract_days'] = function(dateString, days) {
-        var date = new Date(dateString);
-        date.setDate(date.getDate() - days);
-        return date.toISOString().split('T')[0];
-    };
-</script>
-
-<!-- Include Moment.js from a CDN before your script -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-
-<!-- Common script -->
-
-    <!-- Include your script here -->
-<script type="module" src="{% static '***REMOVED***.js' %}"></script>
-<script type="module" src="{% static 'contracts/js/serviceMgmt.js' %}"></script>
-<script type="module" src="{% static 'bookings/js/eventStaffManagement.js' %}"></script>
-<script src="{% static 'contracts/js/ContractEdit.js' %}"></script>
-<script src="{% static 'contracts/js/payments.js' %}"></script>
-
-
 </html>
-{% endblock content %}

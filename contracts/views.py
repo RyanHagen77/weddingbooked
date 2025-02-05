@@ -5,13 +5,16 @@ import logging
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 from collections import defaultdict
+import json
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 
 # Django Imports
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.db import transaction
 from django.db.models import Q
 from django.core.paginator import Paginator
@@ -20,6 +23,9 @@ from django.core.paginator import Paginator
 
 # DRF Imports
 from rest_framework import viewsets
+from rest_framework.response import Response
+
+from .serializers import ServiceFeeSerializer
 
 # Models
 from bookings.models import EventStaffBooking
@@ -342,6 +348,10 @@ def contract_detail(request, id):
 
     balance_due_date = contract.event_date - timedelta(days=60)
 
+    # Serialize the contract data using your serializer.
+    serializer = ContractSerializer(contract)
+    contract_data_json = json.dumps(serializer.data)
+
     context = {
         'contract': contract,
         'contract_url': contract_url,
@@ -399,6 +409,7 @@ def contract_detail(request, id):
         'service': current_tab,
         'changelogs': changelogs,
         'is_office_staff': is_office_staff,
+        'contract_data_json': contract_data_json,
 
 
     }
@@ -632,6 +643,7 @@ def discounts_view(request, contract_id):
     return render(request, 'contracts/contract_detail.html',
                   {'contract': contract, 'discounts': discounts, 'service_types': service_types})
 
+
 def get_tax_rate(request, location_id):
     try:
         tax_rate = TaxRate.objects.get(location_id=location_id)
@@ -640,43 +652,47 @@ def get_tax_rate(request, location_id):
         return JsonResponse({'error': 'Tax rate not found'}, status=404)
 
 
-def add_service_fees(request, contract_id):
-    contract = get_object_or_404(Contract, pk=contract_id)
+@login_required
+def create_or_update_service_fees(request, contract_id):
+    """
+    Create or update service fees for a contract.
+    This view uses an inline formset for ServiceFee with can_delete=True.
+    """
+    contract = get_object_or_404(Contract, contract_id=contract_id)
+
     if request.method == 'POST':
         service_fee_formset = ServiceFeeFormSet(request.POST, instance=contract)
         if service_fee_formset.is_valid():
             service_fee_formset.save()
-            # Optional: Update contract totals if necessary
-            contract.total_cost = sum([fee.amount for fee in contract.servicefees.all()])
+            # Optional: update contract totals based on service fees.
+            contract.total_cost = sum(fee.amount for fee in contract.servicefees.all())
             contract.save()
-            return redirect(reverse('contracts:contract_detail', kwargs={'id': contract_id}) + '#financial')
-    else:
-        service_fee_formset = ServiceFeeFormSet(instance=contract)
 
-    return render(request, 'contracts/contract_detail.html', {'service_fee_formset': service_fee_formset, 'contract': contract})
-
-@login_required
-def delete_service_fee(request, fee_id):
-    if request.method == 'POST':
-        fee = get_object_or_404(ServiceFee, id=fee_id)
-        contract_id = fee.contract.contract_id
-        fee.delete()
-        return redirect(f'/contracts/{contract_id}/#payments')  # Redirect back to the payments tab
+            # If the request is AJAX, return a JSON response.
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True})
+            else:
+                return HttpResponseRedirect(
+                    reverse('contracts:contract_detail', kwargs={'id': contract_id}) + '#financial')
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': service_fee_formset.errors}, status=400)
+            # For non-AJAX requests, re-render the page with errors.
     else:
-        return redirect('contracts:contract_detail')
+        # Always render at least one blank form by setting extra=1.
+        service_fee_formset = ServiceFeeFormSet(instance=contract, extra=1)
+
+    return render(request, 'contracts/service_fee_form.html', {
+        'contract': contract,
+        'service_fee_formset': service_fee_formset,
+    })
+
 
 def get_service_fees(request, contract_id):
-    service_fees = ServiceFee.objects.filter(contract_id=contract_id)
-    fees_data = [
-        {
-            'description': fee.description,
-            'fee_type': fee.fee_type.name if fee.fee_type else '',
-            'amount': str(fee.amount),
-            'applied_date': fee.applied_date.strftime('%Y-%m-%d')  # Format the date for JSON response
-        }
-        for fee in service_fees
-    ]
-    return JsonResponse(fees_data, safe=False)
+    fees = ServiceFee.objects.filter(contract_id=contract_id)
+    html = render_to_string("contracts/partials/financial/_service_fees.html", {"fees": fees})
+    return HttpResponse(html, content_type="text/html")
+
 
 def get_package_discounts(request, contract_id):
     # Assuming you have access to the contract ID or other identifiers

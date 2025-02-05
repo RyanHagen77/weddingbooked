@@ -39,9 +39,9 @@ urlpatterns = [
     path('api/get_package_discounts/<int:contract_id>/', views.get_package_discounts,
          name='get_package_discounts'),
 
-    path('add_service_fee/<int:contract_id>/', views.add_service_fees, name='add_service_fee'),
-    path('delete_service_fee/<int:fee_id>/', views.delete_service_fee, name='delete_service_fee'),
-    path('<int:contract_id>/get_service_fees/', views.get_service_fees, name='get_service_fees'),
+    path('add_service_fee/<int:contract_id>/', views.create_or_update_service_fees, name='add_service_fee'),
+    path('delete_service_fee/<int:fee_id>/', views.create_or_update_service_fees, name='delete_service_fee'),
+    path('get_service_fees/<int:contract_id>/', views.get_service_fees, name='get_service_fees'),
     path('<int:contract_id>/discounts/remove/<int:discount_id>/', views.remove_discount, name='remove_discount'),
     path('<int:contract_id>/discounts/', views.discounts_view, name='discounts_view'),
 

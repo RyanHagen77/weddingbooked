@@ -122,13 +122,7 @@ def create_or_update_schedule(request, contract_id):
     """
     Allows creating or updating a payment schedule for a contract.
     Supports both 'schedule_a' and custom schedules.
-
-    Args:
-        request: The HTTP request object.
-        contract_id (int): The ID of the contract.
-
-    Returns:
-        HttpResponse: Renders the payment schedule form or redirects on success.
+    Always returns a JSON response so that the page can be updated dynamically.
     """
     # Retrieve the contract
     contract = get_object_or_404(Contract, contract_id=contract_id)
@@ -146,7 +140,6 @@ def create_or_update_schedule(request, contract_id):
         # Calculate amounts for new payments
         balance_due = contract.balance_due
         if balance_due > 0:
-            # Calculate deposit and balance payment amounts
             deposit_amount = round(balance_due / 2, 2)
             balance_payment_amount = balance_due - deposit_amount
 
@@ -184,19 +177,24 @@ def create_or_update_schedule(request, contract_id):
             if new_schedule_type == 'custom':
                 schedule_payment_formset.save()
 
-            return HttpResponseRedirect(reverse('contracts:contract_detail', kwargs={'id': contract_id}) + '#financial')
+            # Return a JSON response on success
+            return JsonResponse({
+                'success': True,
+                'schedule_type': new_schedule_type
+            })
+        else:
+            # Return JSON with errors if the form is invalid
+            return JsonResponse({
+                'success': False,
+                'errors': schedule_form.errors  # or combine errors from both form and formset as needed
+            }, status=400)
     else:
-        if schedule.schedule_type == 'schedule_a':
-            update_schedule_a_payments()
+        # Disallow GET requests for this view
+        return JsonResponse({
+            'success': False,
+            'message': 'GET request not allowed'
+        }, status=405)
 
-        schedule_form = PaymentScheduleForm(instance=schedule)
-        schedule_payment_formset = SchedulePaymentFormSet(instance=schedule)
-
-    return render(request, 'payments/payment_schedule_form.html', {
-        'contract': contract,
-        'schedule_form': schedule_form,
-        'schedule_payment_formset': schedule_payment_formset,
-    })
 
 
 def get_schedule_payments_due(request, contract_id):
@@ -260,11 +258,17 @@ def add_payment(request, schedule_id):
             # Update payment status
             update_payment_status(schedule)
 
-            return JsonResponse({'success': True, 'payment_id': payment.id})
+            # Return JSON with update_schedule flag
+            return JsonResponse({
+                'success': True,
+                'payment_id': payment.id,
+                'update_schedule': True
+            })
         else:
             return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:
         return JsonResponse({'success': False, 'message': 'GET request not allowed'}, status=405)
+
 
 def update_payment_status(schedule):
     total_payments_made = Payment.objects.filter(contract=schedule.contract).aggregate(Sum('amount'))['amount__sum'] or 0
@@ -276,6 +280,7 @@ def update_payment_status(schedule):
         else:
             payment.paid = False
         payment.save()
+
 
 @login_required
 def edit_payment(request, payment_id):
@@ -294,13 +299,19 @@ def edit_payment(request, payment_id):
                 ChangeLog.objects.create(
                     user=request.user,
                     description=f"Payment updated from {original_amount} to {payment.amount} for payment ID {payment.id}",
-                    contract=payment.contract  # Pass the associated contract
+                    contract=payment.contract
                 )
 
             # Update payment status after editing the payment
-            update_payment_status(payment.contract.payment_schedule)
+            schedule = payment.contract.payment_schedule  # Adjust as needed.
+            update_payment_status(schedule)
 
-            return JsonResponse({'success': True, 'payment_id': payment.id})
+            # Return JSON with update_schedule flag
+            return JsonResponse({
+                'success': True,
+                'payment_id': payment.id,
+                'update_schedule': True
+            })
         else:
             return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:
@@ -309,23 +320,32 @@ def edit_payment(request, payment_id):
 
 @login_required
 def delete_payment(request, payment_id):
-    payment = get_object_or_404(Payment, id=payment_id)
-    contract = payment.contract  # Get the contract directly
+    if request.method == 'POST':  # Only allow POST for deletion.
+        payment = get_object_or_404(Payment, id=payment_id)
+        contract = payment.contract  # Get the contract directly
 
-    # Log the payment deletion
-    ChangeLog.objects.create(
-        user=request.user,
-        description=f"Deleted payment of {payment.amount} for payment ID {payment.id}",
-        contract=contract  # Ensure the contract is associated with the log
-    )
+        # Log the payment deletion
+        ChangeLog.objects.create(
+            user=request.user,
+            description=f"Deleted payment of {payment.amount} for payment ID {payment.id}",
+            contract=contract
+        )
 
-    payment.delete()
+        payment.delete()
 
-    # Update payment status after deletion
-    if contract.payment_schedule:
-        update_payment_status(contract.payment_schedule)
+        # Update payment status after deletion
+        if contract.payment_schedule:
+            update_payment_status(contract.payment_schedule)
 
-    return redirect('contracts:contract_detail', id=contract.contract_id)  # Make sure to use `id` or `pk`
+        # Return JSON with update_schedule flag
+        return JsonResponse({
+            'success': True,
+            'payment_id': payment_id,
+            'update_schedule': True
+        })
+    else:
+        return JsonResponse({'success': False, 'message': 'GET request not allowed'}, status=405)
+
 
 @login_required
 def get_existing_payments(request, contract_id):
