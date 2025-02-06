@@ -1,6 +1,6 @@
 # reports/urls.py
 from django.urls import path
-from reports.views.reports import reports
+from . import views
 from reports.views.appointments_report import appointments_report
 from reports.views.lead_source_report import lead_source_report
 from reports.views.reception_venue_report import reception_venue_report
@@ -18,7 +18,7 @@ from reports.views.contacts_report import contacts_report
 app_name = 'reports'
 
 urlpatterns = [
-    path('reports/', reports, name='reports'),
+    path('reports/', views.reports, name='reports'),
     path('lead_source_report/', lead_source_report, name='lead_source_report'),
     path('appointments/', appointments_report, name='appointments_report'),
     path('reception_venue_report/', reception_venue_report, name='reception_venue_report'),

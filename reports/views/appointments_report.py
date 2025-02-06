@@ -3,25 +3,19 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from contracts.models import Contract, Location
 from django.db.models import Q
-from datetime import timedelta
+from datetime import datetime, timedelta
 from reports.reports_helpers import get_date_range, DATE_RANGE_DISPLAY
 from django.contrib.auth import get_user_model
 import calendar
-
-
 import logging
 
 # Logging setup
 logger = logging.getLogger(__name__)
 
-
 User = get_user_model()
-
 
 @login_required
 def appointments_report(request):
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
-
     # Get date range, location, and period from request
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
@@ -30,28 +24,26 @@ def appointments_report(request):
     date_range = request.GET.get('date_range', 'this_month')  # Added date_range for date selection
 
     # Use get_date_range function to get start and end dates for the selected date range
-    start_date, end_date = get_date_range(date_range)
+    start_date, end_date = get_date_range(date_range, start_date_str, end_date_str)
+
+    # Handle missing custom dates
+    if date_range == 'custom' and (not start_date or not end_date):
+        return render(request, 'reports/error.html', {
+            'message': 'Please provide both start and end dates for the custom date range.'
+        })
 
     # Filter contracts based on location and ensure contracts have at least one service
-    if location_id == 'all':
-        contracts = Contract.objects.filter(
-            contract_date__range=(start_date, end_date)
-        ).filter(
-            Q(photography_package__isnull=False) |
-            Q(videography_package__isnull=False) |
-            Q(dj_package__isnull=False) |
-            Q(photobooth_package__isnull=False)
-        )
-    else:
-        contracts = Contract.objects.filter(
-            contract_date__range=(start_date, end_date),
-            location_id=location_id
-        ).filter(
-            Q(photography_package__isnull=False) |
-            Q(videography_package__isnull=False) |
-            Q(dj_package__isnull=False) |
-            Q(photobooth_package__isnull=False)
-        )
+    contracts = Contract.objects.filter(
+        contract_date__range=(start_date, end_date)
+    ).filter(
+        Q(photography_package__isnull=False) |
+        Q(videography_package__isnull=False) |
+        Q(dj_package__isnull=False) |
+        Q(photobooth_package__isnull=False)
+    )
+
+    if location_id != 'all':
+        contracts = contracts.filter(location_id=location_id)
 
     # Function to generate a list of months in the date range
     def month_range(start_date, end_date):
@@ -79,23 +71,18 @@ def appointments_report(request):
             month_end = month_start.replace(day=calendar.monthrange(month_start.year, month_start.month)[1])
             month_contracts = contracts.filter(contract_date__range=(month_start, month_end))
 
-            # Count unique contracts instead of summing individual services
             total_appointments = month_contracts.distinct().count()
 
             report_data.append({
-                'logo_url': logo_url,
                 'period': month_start.strftime('%b %Y'),
                 'photo_count': month_contracts.filter(photography_package__isnull=False).count(),
-                'photo_booked_count': month_contracts.filter(photography_package__isnull=False,
-                                                             status='booked').count(),
+                'photo_booked_count': month_contracts.filter(photography_package__isnull=False, status='booked').count(),
                 'video_count': month_contracts.filter(videography_package__isnull=False).count(),
-                'video_booked_count': month_contracts.filter(videography_package__isnull=False,
-                                                             status='booked').count(),
+                'video_booked_count': month_contracts.filter(videography_package__isnull=False, status='booked').count(),
                 'dj_count': month_contracts.filter(dj_package__isnull=False).count(),
                 'dj_booked_count': month_contracts.filter(dj_package__isnull=False, status='booked').count(),
                 'photobooth_count': month_contracts.filter(photobooth_package__isnull=False).count(),
-                'photobooth_booked_count': month_contracts.filter(photobooth_package__isnull=False,
-                                                                  status='booked').count(),
+                'photobooth_booked_count': month_contracts.filter(photobooth_package__isnull=False, status='booked').count(),
                 'total_appointments': total_appointments,
             })
 
@@ -104,26 +91,18 @@ def appointments_report(request):
             week_end = week_start + timedelta(days=6)
             week_contracts = contracts.filter(contract_date__range=(week_start, week_end))
 
-            photo_count = week_contracts.filter(photography_package__isnull=False).count()
-            photo_booked_count = week_contracts.filter(photography_package__isnull=False, status='booked').count()
-            video_count = week_contracts.filter(videography_package__isnull=False).count()
-            video_booked_count = week_contracts.filter(videography_package__isnull=False, status='booked').count()
-            dj_count = week_contracts.filter(dj_package__isnull=False).count()
-            dj_booked_count = week_contracts.filter(dj_package__isnull=False, status='booked').count()
-            photobooth_count = week_contracts.filter(photobooth_package__isnull=False).count()
-            photobooth_booked_count = week_contracts.filter(photobooth_package__isnull=False, status='booked').count()
-            total_appointments = photo_count + video_count + dj_count + photobooth_count
+            total_appointments = week_contracts.distinct().count()
 
             report_data.append({
                 'period': f"{week_start.strftime('%b %d, %Y')} - {week_end.strftime('%b %d, %Y')}",
-                'photo_count': photo_count,
-                'photo_booked_count': photo_booked_count,
-                'video_count': video_count,
-                'video_booked_count': video_booked_count,
-                'dj_count': dj_count,
-                'dj_booked_count': dj_booked_count,
-                'photobooth_count': photobooth_count,
-                'photobooth_booked_count': photobooth_booked_count,
+                'photo_count': week_contracts.filter(photography_package__isnull=False).count(),
+                'photo_booked_count': week_contracts.filter(photography_package__isnull=False, status='booked').count(),
+                'video_count': week_contracts.filter(videography_package__isnull=False).count(),
+                'video_booked_count': week_contracts.filter(videography_package__isnull=False, status='booked').count(),
+                'dj_count': week_contracts.filter(dj_package__isnull=False).count(),
+                'dj_booked_count': week_contracts.filter(dj_package__isnull=False, status='booked').count(),
+                'photobooth_count': week_contracts.filter(photobooth_package__isnull=False).count(),
+                'photobooth_booked_count': week_contracts.filter(photobooth_package__isnull=False, status='booked').count(),
                 'total_appointments': total_appointments,
             })
 
@@ -134,13 +113,13 @@ def appointments_report(request):
     for salesperson in salespeople:
         sales_contracts = contracts.filter(csr=salesperson)
 
-        total_appointments = sales_contracts.distinct().count()  # Unique contracts
+        total_appointments = sales_contracts.distinct().count()
         booked_appointments = sales_contracts.filter(
             Q(photography_package__isnull=False, status='booked') |
             Q(videography_package__isnull=False, status='booked') |
             Q(dj_package__isnull=False, status='booked') |
             Q(photobooth_package__isnull=False, status='booked')
-        ).distinct().count()  # Count distinct contracts
+        ).distinct().count()
 
         closed_percentage = (booked_appointments / total_appointments * 100) if total_appointments > 0 else 0
 
@@ -155,7 +134,6 @@ def appointments_report(request):
     locations = Location.objects.all()
 
     context = {
-        'logo_url': logo_url,
         'report_data': report_data,
         'sales_data': sales_data,
         'start_date': start_date.strftime('%Y-%m-%d'),
@@ -163,8 +141,8 @@ def appointments_report(request):
         'locations': locations,
         'selected_location': location_id,
         'selected_period': period,
-        'date_range': date_range,  # Passed to template to maintain selected range
-        'DATE_RANGE_DISPLAY': DATE_RANGE_DISPLAY,  # Pass the date range options to template
+        'date_range': date_range,
+        'DATE_RANGE_DISPLAY': DATE_RANGE_DISPLAY,
     }
 
     return render(request, 'reports/appointments_report.html', context)
