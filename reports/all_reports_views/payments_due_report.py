@@ -27,36 +27,52 @@ def payments_due_report(request):
     start_date = parse_date(start_date_str) if start_date_str else first_day_of_month
     end_date = parse_date(end_date_str) if end_date_str else last_day_of_month
 
-    # Filter contracts by location, if specified
+    # Filter contracts by location
     contract_filters = Q()
     if location_id != 'all':
         contract_filters &= Q(location_id=location_id)
 
-    # Fetch contracts with related client data
-    contracts = Contract.objects.select_related('client').filter(contract_filters)
+    # Optimize queries using select_related
+    contracts = Contract.objects.select_related('client', 'payment_schedule').filter(contract_filters)
 
-    # Get all unpaid scheduled payments within the date range
-    schedule_payments = SchedulePayment.objects.filter(
-        schedule__contract__in=contracts,
+    # Prefetch schedule payments within the date range for custom schedules
+    custom_payments = SchedulePayment.objects.filter(
         due_date__range=(start_date, end_date),
         paid=False
-    ).select_related('schedule', 'schedule__contract', 'schedule__contract__client')
+    ).select_related('schedule', 'schedule__contract')
 
-    # Build report data
     report_data = []
-    for payment in schedule_payments:
-        contract = payment.schedule.contract
-        client = contract.client
 
-        report_data.append({
-            'event_date': contract.event_date,
-            'amount_due': payment.amount,
-            'date_due': payment.due_date,
-            'primary_contact': client.primary_contact,
-            'primary_phone1': client.primary_phone1,
-            'custom_contract_number': contract.custom_contract_number,
-            'contract_link': f"/contracts/{contract.contract_id}/"
-        })
+    # Handle Schedule A contracts
+    schedule_a_contracts = contracts.filter(payment_schedule__schedule_type='schedule_a')
+    for contract in schedule_a_contracts:
+        due_date = contract.event_date - timedelta(days=60)
+        balance_due = contract.balance_due
+
+        if balance_due > 0 and start_date <= due_date <= end_date:
+            report_data.append({
+                'event_date': contract.event_date,
+                'amount_due': balance_due,
+                'date_due': due_date,
+                'primary_contact': contract.client.primary_contact,
+                'primary_phone1': contract.client.primary_phone1,
+                'custom_contract_number': contract.custom_contract_number,
+                'contract_link': f"/contracts/{contract.contract_id}/"
+            })
+
+    # Handle Custom Schedule contracts
+    for payment in custom_payments:
+        contract = payment.schedule.contract
+        if payment.amount > 0:
+            report_data.append({
+                'event_date': contract.event_date,
+                'amount_due': payment.amount,
+                'date_due': payment.due_date,
+                'primary_contact': contract.client.primary_contact,
+                'primary_phone1': contract.client.primary_phone1,
+                'custom_contract_number': contract.custom_contract_number,
+                'contract_link': f"/contracts/{contract.contract_id}/"
+            })
 
     # Fetch all locations for dropdown
     locations = Location.objects.all()
