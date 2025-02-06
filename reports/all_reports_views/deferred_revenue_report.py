@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 def deferred_revenue_report(request):
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
     report_date = request.GET.get('report_date')
     selected_location = request.GET.get('location', 'all')
 
@@ -62,7 +61,6 @@ def deferred_revenue_report(request):
     locations = Location.objects.all()
 
     context = {
-        'logo_url': logo_url,
         'report_date': report_date,
         'selected_location': selected_location,
         'locations': locations,

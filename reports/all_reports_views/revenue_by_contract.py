@@ -27,8 +27,6 @@ def revenue_by_contract(request):
     """
     Generates a revenue report grouped by contract, detailing payments and tax collected.
     """
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
-
     # Default to current quarter if no dates are provided
     today = datetime.today()
     start_date_str = request.GET.get('start_date')
@@ -123,7 +121,6 @@ def revenue_by_contract(request):
     locations = Location.objects.all()
 
     context = {
-        'logo_url': logo_url,
         'contracts_data': contracts_data,
         'grand_total_payments': grand_total_payments.quantize(Decimal('0.01')),
         'grand_total_tax_collected': grand_total_tax_collected.quantize(Decimal('0.01')),

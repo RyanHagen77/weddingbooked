@@ -1,6 +1,4 @@
-
 from django.shortcuts import render
-
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from contracts.models import Contract, LeadSourceCategory, Location
@@ -16,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def lead_source_report(request):
-
     # Get date range, location, and period from request
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
@@ -25,13 +22,18 @@ def lead_source_report(request):
     date_range = request.GET.get('date_range', 'this_month')  # Added date_range for date selection
 
     # Use get_date_range function to get start and end dates for the selected date range
-    start_date, end_date = get_date_range(date_range)
+    start_date, end_date = get_date_range(date_range, start_date_str, end_date_str)
+
+    # Handle missing custom dates
+    if date_range == 'custom' and (not start_date or not end_date):
+        return render(request, 'reports/error.html', {
+            'message': 'Please provide both start and end dates for the custom date range.'
+        })
 
     # Filter contracts based on location and contract date
-    if location_id == 'all':
-        contracts = Contract.objects.filter(contract_date__range=(start_date, end_date))
-    else:
-        contracts = Contract.objects.filter(contract_date__range=(start_date, end_date), location_id=location_id)
+    contracts = Contract.objects.filter(contract_date__range=(start_date, end_date))
+    if location_id != 'all':
+        contracts = contracts.filter(location_id=location_id)
 
     # Function to generate a list of months in the date range
     def month_range(start_date, end_date):
@@ -68,6 +70,7 @@ def lead_source_report(request):
                     'total_count': total_count,
                     'booked_count': booked_count,
                 })
+
     elif period == 'weekly':
         for week_start in week_range(start_date, end_date):
             week_end = week_start + timedelta(days=6)

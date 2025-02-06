@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def revenue_report(request):
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     # Initialize variables
     today = datetime.today()
@@ -98,7 +97,6 @@ def revenue_report(request):
 
     # Context for the template
     context = {
-        'logo_url': logo_url,
         'start_date': start_date.strftime('%Y-%m-%d'),
         'end_date': end_date.strftime('%Y-%m-%d'),
         'selected_location': selected_location,

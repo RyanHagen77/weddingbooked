@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 def payments_due_report(request):
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     # Get date range and location from request
     start_date_str = request.GET.get('start_date')
@@ -80,7 +79,6 @@ def payments_due_report(request):
     locations = Location.objects.all()
 
     context = {
-        'logo_url': logo_url,
         'report_data': report_data,
         'start_date': start_date.strftime('%Y-%m-%d'),
         'end_date': end_date.strftime('%Y-%m-%d'),

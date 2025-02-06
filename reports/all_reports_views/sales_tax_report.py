@@ -23,7 +23,6 @@ def sales_tax_report(request):
     - Pre-event taxable products tied to their respective balance payments.
     - Post-event taxable products tied to their respective post-event payments.
     """
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     # Get start_date and end_date from the request
     start_date_str = request.GET.get('start_date')
@@ -98,7 +97,6 @@ def sales_tax_report(request):
     })
 
     context = {
-        'logo_url': logo_url,
         'start_date': start_date.strftime('%Y-%m-%d'),
         'end_date': end_date.strftime('%Y-%m-%d'),
         'report_data': report_data,

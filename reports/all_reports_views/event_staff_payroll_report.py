@@ -55,7 +55,6 @@ ROLE_DISPLAY_NAMES = {
 
 @login_required
 def event_staff_payroll_report(request):
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     selected_location = request.GET.get('location', 'all')
@@ -146,7 +145,6 @@ def event_staff_payroll_report(request):
     locations = Location.objects.all()
 
     context = {
-        'logo_url': logo_url,
         'start_date': start_date,
         'end_date': end_date,
         'selected_location': selected_location,

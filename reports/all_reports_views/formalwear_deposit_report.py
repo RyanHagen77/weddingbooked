@@ -20,7 +20,6 @@ User = get_user_model()
 
 @login_required
 def formalwear_deposit_report(request):
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     # Get the current date
     today = datetime.today()
@@ -61,7 +60,6 @@ def formalwear_deposit_report(request):
     locations = Location.objects.all()
 
     context = {
-        'logo_url': logo_url,
         'report_data': sorted(report_data, key=lambda x: x['event_date']),
         'start_date': start_date,
         'end_date': end_date,

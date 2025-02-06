@@ -20,7 +20,6 @@ User = get_user_model()
 
 @login_required
 def contacts_report(request):
-    logo_url = f"https://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
 
     # Get the current date
     today = datetime.today()
@@ -59,7 +58,6 @@ def contacts_report(request):
     locations = Location.objects.all()
 
     context = {
-        'logo_url': logo_url,
         'start_date': start_date,
         'end_date': end_date,
         'selected_location': selected_location,
