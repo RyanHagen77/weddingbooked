@@ -1,19 +1,19 @@
 # reports/urls.py
 from django.urls import path
 from . import views
-from reports.views.appointments_report import appointments_report
-from reports.views.lead_source_report import lead_source_report
-from reports.views.reception_venue_report import reception_venue_report
-from reports.views.revenue_report import revenue_report
-from reports.views.revenue_by_contract import revenue_by_contract
-from reports.views.deferred_revenue_report import deferred_revenue_report
-from reports.views.sales_detail_report import sales_detail_report
-from reports.views.sales_detail_by_contract import sales_detail_by_contract
-from reports.views.sales_tax_report import sales_tax_report
-from reports.views.event_staff_payroll_report import event_staff_payroll_report
-from reports.views.payments_due_report import payments_due_report
-from reports.views.formalwear_deposit_report import formalwear_deposit_report
-from reports.views.contacts_report import contacts_report
+from reports.all_reports_views.appointments_report import appointments_report
+from reports.all_reports_views.lead_source_report import lead_source_report
+from reports.all_reports_views.reception_venue_report import reception_venue_report
+from reports.all_reports_views.revenue_report import revenue_report
+from reports.all_reports_views.revenue_by_contract import revenue_by_contract
+from reports.all_reports_views.deferred_revenue_report import deferred_revenue_report
+from reports.all_reports_views.sales_detail_report import sales_detail_report
+from reports.all_reports_views.sales_detail_by_contract import sales_detail_by_contract
+from reports.all_reports_views.sales_tax_report import sales_tax_report
+from reports.all_reports_views.event_staff_payroll_report import event_staff_payroll_report
+from reports.all_reports_views.payments_due_report import payments_due_report
+from reports.all_reports_views.formalwear_deposit_report import formalwear_deposit_report
+from reports.all_reports_views.contacts_report import contacts_report
 
 app_name = 'reports'
 
