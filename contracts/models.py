@@ -13,7 +13,6 @@ from django.db import transaction
 from bookings.constants import SERVICE_ROLE_MAPPING  # Adjust the import path as needed
 from services.models import ServiceType
 
-
 from communication.utils import send_contract_booked_email
 
 
@@ -291,7 +290,6 @@ class Contract(models.Model):
     additional_products = models.ManyToManyField('products.AdditionalProduct', through='products.ContractProduct',
                                                  related_name='contracts')
 
-
     # Calculated fields
     tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     tax_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -429,28 +427,12 @@ class Contract(models.Model):
             for contract_product in self.contract_products.all()
         )
 
-    def calculate_formalwear_subtotal(self):
-        """
-        Calculate the subtotal of all formalwear products associated with this contract.
-        """
-        return sum(
-            contract_formalwear.formalwear_product.rental_price * contract_formalwear.quantity
-            for contract_formalwear in self.formalwear_contracts.all()
-        )
-
     def calculate_tax(self):
-        """
-        Calculate tax based on taxable products and formalwear rentals.
-        """
         taxable_amount = sum(
             contract_product.product.price * contract_product.quantity
             for contract_product in self.contract_products.all()
             if contract_product.product.is_taxable
-        ) + sum(
-            contract_formalwear.formalwear_product.rental_price * contract_formalwear.quantity
-            for contract_formalwear in self.formalwear_contracts.all()
         )
-
         tax_rate = self.location.tax_rate if self.location else Decimal('0.00')
         return taxable_amount * tax_rate / 100
 
@@ -458,15 +440,10 @@ class Contract(models.Model):
         return sum(fee.amount for fee in self.servicefees.all())
 
     def calculate_total_product_cost(self):
-        """
-        Calculate total cost of all additional products and formalwear rentals, including tax.
-        """
         product_subtotal = self.calculate_product_subtotal()
-        formalwear_subtotal = self.calculate_formalwear_subtotal()
         tax_amount = self.calculate_tax()
-        total_cost = product_subtotal + formalwear_subtotal + tax_amount
+        total_cost = product_subtotal + tax_amount
         return total_cost.quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
-
 
     def calculate_total_service_cost(self):
         total_service_cost = sum([
@@ -478,15 +455,10 @@ class Contract(models.Model):
         return total_service_cost.quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
 
     def calculate_total_cost(self):
-        """
-        Calculate the total cost of the contract, including services, formalwear, products, tax, and discounts.
-        """
         total_service_cost = self.calculate_total_service_cost()
         total_service_fees = self.calculate_total_service_fees()
         additional_products_cost = self.calculate_product_subtotal()
-        formalwear_cost = self.calculate_formalwear_subtotal()
-
-        subtotal = total_service_cost + additional_products_cost + formalwear_cost + total_service_fees
+        subtotal = total_service_cost + additional_products_cost + total_service_fees
         tax = self.calculate_tax()
         discounts = self.calculate_discount()
         total_cost = subtotal + tax - discounts
@@ -520,9 +492,9 @@ class Contract(models.Model):
     display_total_service_cost.short_description = "Total Service Cost"
 
     def display_product_subtotal(self):
-        return self.calculate_product_subtotal() + self.calculate_formalwear_subtotal()
+        return self.calculate_product_subtotal()
 
-    display_product_subtotal.short_description = "Product & Formalwear Subtotal"
+    display_product_subtotal.short_description = "Product Subtotal"
 
     def display_discounts(self):
         return self.calculate_discount()
