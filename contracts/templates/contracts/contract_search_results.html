@@ -9,6 +9,7 @@
                 <th>Photographer</th>
                 <th>Videographer</th>
                 <th>Photobooth</th>
+                <th>DJ</th>
                 <th>Sales Person</th>
                 <th>Status</th>
             </tr>
@@ -71,6 +72,21 @@
                         {% else %}
                             <span style="color: red;">Not Assigned</span>
                         {% endif %}
+                    {% endif %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if contract.dj_package %}
+                    {% if contract.dj1 %}
+                        {{ contract.dj1.get_full_name }}
+                    {% endif %}
+                    {% if contract.dj2 %}
+                        <br>{{ contract.dj2.get_full_name }}
+                    {% endif %}
+                    {% if not contract.dj1 and not contract.dj2 %}
+                        <span style="color: red;">Not Assigned</span>
                     {% endif %}
                 {% else %}
                     N/A

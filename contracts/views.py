@@ -70,8 +70,10 @@ def get_decimal(value):
     except (InvalidOperation, ValueError, TypeError):
         return Decimal('0.00')
 
+
 def success_view(request):
     return render(request, 'success.html')  # Replace 'success.html' with the actual template name for your success page
+
 
 @login_required
 def contract_search(request):
@@ -81,13 +83,6 @@ def contract_search(request):
     # Clear filters if the "clear" flag is in the query string
     if "clear" in request.GET:
         return redirect(request.path)  # Redirect to base URL to clear filters
-
-    # Apply ordering
-    order = request.GET.get('order', 'desc')
-    if order == 'asc':
-        contracts = contracts.order_by('event_date')
-    else:
-        contracts = contracts.order_by('-event_date')
 
     # Apply filters if the form is valid
     if form.is_valid():
@@ -109,25 +104,36 @@ def contract_search(request):
             contracts = contracts.filter(contract_date__range=[contract_date_start, contract_date_end])
 
         if form.cleaned_data.get('contract_number'):
-            contracts = contracts.filter(custom_contract_number__icontains=form.cleaned_data['contract_number'])
+            contracts = contracts.filter(
+                Q(custom_contract_number__icontains=form.cleaned_data['contract_number']) |
+                Q(old_contract_number__icontains=form.cleaned_data['contract_number'])
+            )
+
         if form.cleaned_data.get('primary_contact'):
             contracts = contracts.filter(client__primary_contact__icontains=form.cleaned_data['primary_contact'])
+
         if form.cleaned_data.get('status'):
             contracts = contracts.filter(status=form.cleaned_data['status'])
+
         if form.cleaned_data.get('csr'):
             contracts = contracts.filter(csr=form.cleaned_data['csr'])
 
-    # Apply search query
+    # **Quick Search Logic (`q` Parameter)**
     query = request.GET.get('q')
     if query:
         contracts = contracts.filter(
-            Q(custom_contract_number__icontains=query) |
-            Q(client__primary_contact__icontains=query) |
-            Q(client__partner_contact__icontains=query) |
-            Q(old_contract_number__icontains=query) |
-            Q(client__primary_email__icontains=query) |
-            Q(client__primary_phone1__icontains=query)
+            Q(custom_contract_number__icontains=query) |  # New ENet contract number
+            Q(old_contract_number__icontains=query) |  # Old ENet contract number
+            Q(client__primary_contact__icontains=query) |  # Primary client name
+            Q(client__partner_contact__icontains=query) |  # Partner name
+            Q(event_date__icontains=query) |  # Wedding date
+            Q(client__primary_email__icontains=query) |  # Email
+            Q(client__primary_phone1__icontains=query) |  # Primary phone
+            Q(client__primary_phone2__icontains=query)  # Secondary phone
         )
+
+    # **Always sort results by soonest event date**
+    contracts = contracts.order_by('event_date')
 
     # Paginate results
     paginator = Paginator(contracts, 25)  # Display 25 results per page
@@ -138,6 +144,7 @@ def contract_search(request):
         'form': form,
         'contracts': contracts,
     })
+
 
 @login_required
 def new_contract(request):

@@ -1,9 +1,8 @@
 from django.shortcuts import render
-from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from contracts.models import Contract, Location
 from django.db.models import Q
-from datetime import datetime, timedelta
+from datetime import timedelta
 from reports.reports_helpers import get_date_range, DATE_RANGE_DISPLAY
 from django.contrib.auth import get_user_model
 import calendar

@@ -33,7 +33,7 @@ class ContractSearchForm(forms.Form):
     ]
 
     location = forms.ModelChoiceField(queryset=Location.objects.all(), required=False)
-    ceremony_site = (forms.CharField(max_length=255, required=False))
+    ceremony_site = forms.CharField(max_length=255, required=False)
     reception_site = forms.CharField(max_length=255, required=False)
     event_date_start = forms.DateField(required=False, widget=DateInput(attrs={'type': 'date'}))
     event_date_end = forms.DateField(required=False, widget=DateInput(attrs={'type': 'date'}))
@@ -43,6 +43,7 @@ class ContractSearchForm(forms.Form):
     old_contract_number = forms.CharField(max_length=255, required=False, label="Old Contract Number")
     primary_contact = forms.CharField(max_length=100, required=False)
     status = forms.ChoiceField(choices=STATUS_CHOICES, required=False)
+
     csr = UserModelChoiceField(
         queryset=CustomUser.objects.filter(groups__name='Sales', is_active=True),
         required=False,
@@ -53,17 +54,22 @@ class ContractSearchForm(forms.Form):
         required=False,
         label="Photographer"
     )
-
     videographer = UserModelChoiceField(
         queryset=CustomUser.objects.filter(role__name='Videographer', is_active=True),
         required=False,
         label="Videographer"
     )
-
     photobooth_operator = UserModelChoiceField(
         queryset=CustomUser.objects.filter(role__name='Photobooth Operator', is_active=True),
         required=False,
         label="Photobooth Operator"
+    )
+
+    # 🔹 **Added DJ dropdown (same as other roles)**
+    dj = UserModelChoiceField(
+        queryset=CustomUser.objects.filter(role__name__in=['DJ1', 'DJ2'], is_active=True),
+        required=False,
+        label="DJ"
     )
 
     def __init__(self, *args, **kwargs):
@@ -87,6 +93,12 @@ class ContractSearchForm(forms.Form):
         ).values_list('staff', flat=True)
         self.fields['photobooth_operator'].queryset = CustomUser.objects.filter(
             id__in=photobooth_operator_ids).distinct()
+
+        # 🔹 **Set the queryset for DJs**
+        dj_ids = EventStaffBooking.objects.filter(
+            role__in=['DJ1', 'DJ2']
+        ).values_list('staff', flat=True)
+        self.fields['dj'].queryset = CustomUser.objects.filter(id__in=dj_ids).distinct()
 
 
 class NewContractForm(forms.ModelForm):
