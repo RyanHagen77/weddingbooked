@@ -6,9 +6,16 @@ from django.utils.safestring import mark_safe
 
 register = template.Library()
 
-@register.filter(name='multiply')
+@register.filter(name="multiply")
 def multiply(value, arg):
-    return float(value) * float(arg)
+    """Multiplies the given value by the argument, handling None and empty values."""
+    try:
+        # Convert empty or None values to 0
+        value = float(value) if value not in [None, ""] else 0
+        arg = float(arg) if arg not in [None, ""] else 0
+        return value * arg
+    except (ValueError, TypeError):
+        return 0  # Return 0 if multiplication fails
 
 @register.filter
 def get_location_name(locations, selected_location):

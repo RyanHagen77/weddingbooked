@@ -1,0 +1,32 @@
+{% load app_filters %}
+
+{% for form in formalwear_formset %}
+<tr>
+    <td>{{ form.id }} {{ form.formalwear_product }}</td>
+    <td>{{ form.instance.formalwear_product.get_rental_type_display }}</td>
+    <td>{{ form.instance.formalwear_product.size }}</td>
+    <td>
+        <input type="number" class="form-control text-center"
+               name="{{ form.quantity.html_name }}"
+               id="{{ form.quantity.id_for_label }}"
+               value="{{ form.quantity.value }}"
+               style="max-width: 70px;">
+    </td>
+    <td>
+        ${{ form.instance.formalwear_product.rental_price|multiply:form.quantity.value|floatformat:2 }}
+    </td>
+    <td>
+        ${{ form.instance.formalwear_product.deposit_amount|floatformat:2 }}
+    </td>
+    <td>
+        <input type="date" class="form-control"
+               name="{{ form.rental_return_date.html_name }}"
+               id="{{ form.rental_return_date.id_for_label }}"
+               value="{{ form.rental_return_date.value }}"
+               style="max-width: 150px;">
+    </td>
+    <td>{{ form.instance.added_on|date:"Y-m-d H:i"|default:"Not yet added" }}</td>
+    <td>{{ form.DELETE }}</td>
+</tr>
+{% endfor %}
+

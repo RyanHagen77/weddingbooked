@@ -30,6 +30,7 @@ urlpatterns = [
     path('bookings/', include('bookings.urls', namespace='bookings')),
     path('contracts/', include('contracts.urls', namespace='contracts')),
     path('documents/', include('documents.urls', namespace='documents')),
+    path('formalwear/', include('formalwear.urls', namespace='formalwear')),
     path('payments/', include('payments.urls', namespace='payments')),
     path('products/', include('products.urls', namespace='products')),
     path('reports/', include('reports.urls', namespace='reports')),

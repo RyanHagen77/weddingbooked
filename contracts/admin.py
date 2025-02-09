@@ -4,6 +4,7 @@ from contracts.models import (Client, LeadSourceCategory, Contract, TaxRate,
                      DiscountRule, Location, ServiceFeeType, ServiceFee, ChangeLog)
 from bookings.models import EventStaffBooking, Availability
 from documents.models import ContractAgreement, RiderAgreement
+from formalwear.models import FormalwearProduct
 from payments.models import Payment, PaymentPurpose, PaymentSchedule, SchedulePayment
 from products.models import AdditionalProduct, ContractProduct
 from services.models import (AdditionalEventStaffOption, ContractOvertime, EngagementSessionOption,
@@ -63,6 +64,25 @@ class AdditionalProductAdmin(admin.ModelAdmin):
     search_fields = ('name', 'description')
     list_filter = ('is_active', 'is_taxable',)
 
+@admin.register(FormalwearProduct)
+class FormalwearProductAdmin(admin.ModelAdmin):
+    list_display = ('name', 'rental_type', 'brand', 'size', 'rental_price', 'deposit_amount', 'version_number', 'is_available')
+    search_fields = ('name', 'brand', 'rental_type', 'size', 'default_text', 'rider')
+    list_filter = ('rental_type', 'is_available')
+    ordering = ('name',)
+    readonly_fields = ('version_number',)  # Prevent manual editing of version
+
+    fieldsets = (
+        ('General Info', {
+            'fields': ('name', 'rental_type', 'brand', 'size', 'is_available')
+        }),
+        ('Pricing & Rental Details', {
+            'fields': ('rental_price', 'deposit_amount', 'version_number')
+        }),
+        ('Contract Details', {
+            'fields': ('default_text', 'rider')
+        }),
+    )
 
 @admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):

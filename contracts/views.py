@@ -23,13 +23,11 @@ from django.core.paginator import Paginator
 
 # DRF Imports
 from rest_framework import viewsets
-from rest_framework.response import Response
-
-from .serializers import ServiceFeeSerializer
 
 # Models
 from bookings.models import EventStaffBooking
 from communication.models import UnifiedCommunication, Task
+from formalwear.models import ContractFormalwearProduct
 
 
 from .models import Contract, Discount, TaxRate, ChangeLog, ServiceFee
@@ -48,6 +46,7 @@ from .forms import (
     ContractSearchForm, NewContractForm, ContractInfoEditForm,
     ContractClientEditForm, ContractEventEditForm, ContractServicesForm, ServiceFeeFormSet
 )
+from formalwear.forms import ContractFormalwearProductFormSet
 
 # Serializers
 from .serializers import ContractSerializer
@@ -336,6 +335,8 @@ def contract_detail(request, id):
     photobooth_cost = contract.calculate_photobooth_cost()
 
     products_formset = ContractProductFormset(instance=contract, prefix='contract_products')
+    formalwear_formset = ContractFormalwearProductFormSet(queryset=ContractFormalwearProduct.objects.filter(contract=contract))
+
     product_subtotal = contract.calculate_product_subtotal()
     package_discount_amount = contract.calculate_package_discount()
     sunday_discount_amount = contract.calculate_sunday_discount()
@@ -406,6 +407,7 @@ def contract_detail(request, id):
         'photobooth_cost': photobooth_cost,
         'products_formset': products_formset,
         'product_subtotal': product_subtotal,
+        'formalwear_formset': formalwear_formset,
         'schedule_id': schedule_id,
         'schedule_form': schedule_form,
         'schedule_payment_formset': schedule_payment_formset,
