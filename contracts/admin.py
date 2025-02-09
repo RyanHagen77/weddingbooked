@@ -66,15 +66,15 @@ class AdditionalProductAdmin(admin.ModelAdmin):
 
 @admin.register(FormalwearProduct)
 class FormalwearProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'rental_type', 'brand', 'size', 'rental_price', 'deposit_amount', 'version_number', 'is_available')
+    list_display = ('name', 'rental_type', 'brand', 'size', 'rental_price', 'deposit_amount', 'version_number', 'is_active')
     search_fields = ('name', 'brand', 'rental_type', 'size', 'default_text', 'rider')
-    list_filter = ('rental_type', 'is_available')
+    list_filter = ('rental_type', 'is_active')
     ordering = ('name',)
     readonly_fields = ('version_number',)  # Prevent manual editing of version
 
     fieldsets = (
         ('General Info', {
-            'fields': ('name', 'rental_type', 'brand', 'size', 'is_available')
+            'fields': ('name', 'rental_type', 'brand', 'size', 'is_active')
         }),
         ('Pricing & Rental Details', {
             'fields': ('rental_price', 'deposit_amount', 'version_number')

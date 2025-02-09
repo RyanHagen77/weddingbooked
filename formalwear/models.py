@@ -16,7 +16,7 @@ class FormalwearProduct(models.Model):
     size = models.CharField(max_length=50, null=True, blank=True)
     rental_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     deposit_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    is_available = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
     version_number = models.PositiveIntegerField(default=1, help_text="Version of the product.")
 
     # 🔹 Keep default text at the product level (applies to all rentals)
