@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-
+from contracts.models import Contract
 
 class FormalwearProduct(models.Model):
     RENTAL_TYPE_CHOICES = [
@@ -19,41 +19,45 @@ class FormalwearProduct(models.Model):
     is_available = models.BooleanField(default=True)
     version_number = models.PositiveIntegerField(default=1, help_text="Version of the product.")
 
+    # 🔹 Keep default text at the product level (applies to all rentals)
+    default_text = models.TextField(blank=True, null=True, help_text="Default instructions for rental.")
+
+    # 🔹 Keep rider at the product level (applies to all rentals)
+    rider = models.TextField(blank=True, null=True, help_text="Contract-specific rider terms.")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         """
-        Automatically increments version when price changes.
+        Automatically increments version when price or deposit changes.
         """
         if self.pk:
             old_product = FormalwearProduct.objects.get(pk=self.pk)
-            if old_product.rental_price != self.rental_price or old_product.deposit_amount != self.deposit_amount:
-                self.version_number += 1
+            if (
+                old_product.rental_price != self.rental_price or
+                old_product.deposit_amount != self.deposit_amount
+            ):
+                self.version_number += 1  # Auto-increment version
+
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.name} (v{self.version_number}) - {self.get_rental_type_display()} - {self.brand} - {self.size}"
+        return f"{self.name}"
 
 
 class ContractFormalwearProduct(models.Model):
-    contract = models.ForeignKey('contracts.Contract', on_delete=models.CASCADE, related_name="formalwear_contracts")
-    formalwear_product = models.ForeignKey('FormalwearProduct', on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
-    rental_start_date = models.DateField()
-    rental_return_date = models.DateField()
+    contract = models.ForeignKey(
+        Contract,
+        on_delete=models.CASCADE,
+        related_name="formalwear_contracts"  # ✅ Make sure this matches what `calculate_formalwear_subtotal` is using
+    )
+    formalwear_product = models.ForeignKey("formalwear.FormalwearProduct", on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    rental_start_date = models.DateField(null=True, blank=True)
+    rental_return_date = models.DateField(null=True, blank=True)
     returned = models.BooleanField(default=False)
-
-    # Store the version of the product used at the time of contract
-    product_version = models.PositiveIntegerField()
-
-    def save(self, *args, **kwargs):
-        """
-        Before saving, ensure the correct version number of the product is stored.
-        """
-        if not self.product_version:
-            self.product_version = self.formalwear_product.version_number
-        super().save(*args, **kwargs)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.formalwear_product.name} (v{self.product_version}) - Qty: {self.quantity} - Contract {self.contract.custom_contract_number}"
+        return f"{self.contract} - {self.formalwear_product} (Qty: {self.quantity})"
