@@ -103,9 +103,14 @@
                     <button type="button" class="btn btn-dusty-pink" id="save-formalwear-btn">
                         Update Formalwear
                     </button>
-                    <div class="text-right total-product-cost-container">
-                        <p><strong>Total Formalwear Cost:</strong> <span id="total-formalwear-product-cost">$0.00</span></p>
-                    </div>
+                <div class="text-right total-product-cost-container">
+                    <p>
+                        <strong>Total Formalwear Cost:</strong>
+                        <span id="total-formalwear-product-cost">
+                            ${{ contract.calculate_formalwear_subtotal|floatformat:2 }}
+                        </span>
+                    </p>
+                </div>
                 </form>
             </div>
         </div>
