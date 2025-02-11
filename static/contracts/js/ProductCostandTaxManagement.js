@@ -1,4 +1,4 @@
-import { contractData } from './utilities.js'; // Adjust the path as needed
+import { contractData } from '../../utilities.js'; // Adjust the path as needed
 
 console.log("Product Cost and Tax Management.js loaded and executed!");
 

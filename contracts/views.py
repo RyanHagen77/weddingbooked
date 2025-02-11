@@ -46,7 +46,7 @@ from .forms import (
     ContractSearchForm, NewContractForm, ContractInfoEditForm,
     ContractClientEditForm, ContractEventEditForm, ContractServicesForm, ServiceFeeFormSet
 )
-from formalwear.forms import ContractFormalwearProductFormSet
+from formalwear.forms import ContractFormalwearProductFormset
 
 # Serializers
 from .serializers import ContractSerializer
@@ -335,7 +335,7 @@ def contract_detail(request, id):
     photobooth_cost = contract.calculate_photobooth_cost()
 
     products_formset = ContractProductFormset(instance=contract, prefix='contract_products')
-    formalwear_formset = ContractFormalwearProductFormSet(queryset=ContractFormalwearProduct.objects.filter(contract=contract))
+    formalwear_formset = ContractFormalwearProductFormset(instance=contract, prefix='formalwear_contracts')
 
     product_subtotal = contract.calculate_product_subtotal()
     package_discount_amount = contract.calculate_package_discount()

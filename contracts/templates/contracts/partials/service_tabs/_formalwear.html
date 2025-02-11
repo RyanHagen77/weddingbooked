@@ -1,153 +1,113 @@
-{% load app_filters %}
-
+<!-- Formalwear Tab Content -->
 <div class="tab-pane fade" id="formalwear">
     <div class="row">
         <div class="col-12">
-            <h4>Formalwear Rentals</h4>
-            <form method="post" action="{% url 'formalwear:save_formalwear' contract_id=contract.contract_id %}" id="formalwear-form">
-                {% csrf_token %}
-                {{ formalwear_formset.management_form }}
-                <table id="formalwear-table" class="table table-bordered table-hover">
-                    <thead>
-                        <tr>
-                            <th style="width: 20%;">Formalwear</th>
-                            <th style="width: 5%;">Type</th>
-                            <th style="width: 5%;">Size</th>
-                            <th style="width: 13%;">Qty</th>
-                            <th style="width: 12%;">Rental Price</th>
-                            <th style="width: 12%;">Deposit</th>
-                            <th style="width: 15%;">Return Date</th>
-                            <th style="width: 10%;">Added On</th>
-                            <th style="width: 8%;">Remove</th>
-                        </tr>
-                    </thead>
-                    <tbody id="formalwear-table-body">
-                        {% for form in formalwear_formset %}
-                        <tr class="formalwear-row">
-                            <td>
-                                <select name="{{ form.formalwear_product.html_name }}" id="{{ form.formalwear_product.id_for_label }}" class="formalwear-dropdown">
-                                    <option value="">---------</option>
-                                    {% for product in form.fields.formalwear_product.queryset %}
+            <div id="formalwear-section" class="mt-4">
+                <form method="post" action="{% url 'formalwear:save_formalwear' id=contract.contract_id %}" id="formalwear-form">
+                    {% csrf_token %}
+                    {% load app_filters %}
+                    <input type="hidden" id="contract-id" value="{{ contract.contract_id }}">
+                    {{ formalwear_formset.management_form }}
+                    <table id="formalwear-table" class="table table-bordered table-hover">
+                        <thead class="table-bordered">
+                            <tr>
+                                <th class="formalwear-column" style="width: 20%;">Formalwear</th>
+                                <th class="type-column" style="width: 5%;">Type</th>
+                                <th class="size-column" style="width: 5%;">Size</th>
+                                <th class="quantity-column" style="width: 13%;">Qty</th>
+                                <th class="rental-price-column" style="width: 12%;">Rental Price</th>
+                                <th class="deposit-column" style="width: 12%;">Deposit</th>
+                                <th class="return-date-column" style="width: 15%;">Return Date</th>
+                                <th class="added-on-column" style="width: 10%;">Added On</th>
+                                <th class="remove-column" style="width: 8%;">Remove</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for form in formalwear_formset %}
+                            <tr class="formalwear-row">
+                                <td>
+                                    {{ form.id.as_hidden }}
+                                    <select name="{{ form.formalwear_product.html_name }}" id="{{ form.formalwear_product.id_for_label }}" class="formalwear-dropdown">
+                                        <option value="">Select Formalwear</option>
+                                        {% for product in form.fields.formalwear_product.queryset %}
                                         <option value="{{ product.id }}"
                                                 data-rental-price="{{ product.rental_price }}"
                                                 data-deposit="{{ product.deposit_amount }}"
+                                                data-type="{{ product.get_rental_type_display }}"
+                                                data-size="{{ product.size }}"
                                                 {% if form.instance.formalwear_product and form.instance.formalwear_product.id == product.id %}selected{% endif %}>
-                                            {{ product.name }}
+                                            {{ product.name }} - ${{ product.rental_price }}
                                         </option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-                            <td class="rental-type">
-                                {% if form.instance.formalwear_product %}{{ form.instance.formalwear_product.get_rental_type_display }}{% else %}-{% endif %}
-                            </td>
-                            <td class="size">
-                                {% if form.instance.formalwear_product %}{{ form.instance.formalwear_product.size }}{% else %}-{% endif %}
-                            </td>
-                            <td>
-                                <input type="number" class="form-control text-center"
-                                       name="{{ form.quantity.html_name }}"
-                                       id="{{ form.quantity.id_for_label }}"
-                                       value="{{ form.quantity.value|default_if_none:1 }}"
-                                       style="max-width: 70px;">
-                            </td>
-                            <td class="rental-price">
-                                {% if form.instance.formalwear_product %}
-                                    ${{ form.instance.formalwear_product.rental_price|multiply:form.quantity.value|floatformat:2 }}
-                                {% else %}
-                                    $0.00
-                                {% endif %}
-                            </td>
-                            <td class="deposit-amount">
-                                {% if form.instance.formalwear_product %}
-                                    ${{ form.instance.formalwear_product.deposit_amount|floatformat:2 }}
-                                {% else %}
-                                    $0.00
-                                {% endif %}
-                            </td>
-                            <td>
-                                <input type="date" class="form-control"
-                                       name="{{ form.rental_return_date.html_name }}"
-                                       id="{{ form.rental_return_date.id_for_label }}"
-                                       value="{{ form.rental_return_date.value|default_if_none:'' }}"
-                                       style="max-width: 150px;">
-                            </td>
-                            <td>{{ form.instance.added_on|date:"Y-m-d H:i"|default:"Not yet added" }}</td>
-                            <td>{{ form.DELETE }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <button type="button" class="btn btn-dusty-pink" id="add-formalwear-btn">
-                    Add Another Formalwear Item
-                </button>
-                <button type="submit" class="btn btn-dusty-pink">
-                    Update Formalwear
-                </button>
-            </form>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td class="rental-type" data-field="rental_type">
+                                    {% if form.instance.formalwear_product %}
+                                        {{ form.instance.formalwear_product.get_rental_type_display }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td class="size">
+                                    {% if form.instance.formalwear_product %}
+                                        {{ form.instance.formalwear_product.size }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control text-center"
+                                           name="{{ form.quantity.html_name }}"
+                                           id="{{ form.quantity.id_for_label }}"
+                                           value="{{ form.quantity.value|default_if_none:1 }}"
+                                           style="max-width: 70px;">
+                                </td>
+                                <td class="rental-price">
+                                    {% if form.instance.formalwear_product %}
+                                        ${{ form.instance.formalwear_product.rental_price|multiply:form.quantity.value|floatformat:2 }}
+                                    {% else %}
+                                        $0.00
+                                    {% endif %}
+                                </td>
+                                <td class="deposit-amount">
+                                    {% if form.instance.formalwear_product %}
+                                        ${{ form.instance.formalwear_product.deposit_amount|floatformat:2 }}
+                                    {% else %}
+                                        $0.00
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <input type="date" class="form-control"
+                                           name="{{ form.rental_return_date.html_name }}"
+                                           id="{{ form.rental_return_date.id_for_label }}"
+                                           value="{{ form.rental_return_date.value|default_if_none:'' }}"
+                                           style="max-width: 150px;">
+                                </td>
+                                <td>
+                                    {% if form.instance.created_at %}
+                                        {{ form.instance.created_at|date:"Y-m-d H:i" }}
+                                    {% else %}
+                                        Not yet added
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ form.DELETE }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <button type="button" class="btn btn-dusty-pink" id="add-formalwear-btn">
+                        Add Another Formalwear Item
+                    </button>
+                    <button type="button" class="btn btn-dusty-pink" id="save-formalwear-btn">
+                        Update Formalwear
+                    </button>
+                    <div class="text-right total-product-cost-container">
+                        <p><strong>Total Formalwear Cost:</strong> <span id="total-formalwear-product-cost">$0.00</span></p>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    function updatePrice(event) {
-        var dropdown = event.target;
-        var row = dropdown.closest("tr");
-        var rentalPriceCell = row.querySelector(".rental-price");
-        var depositAmountCell = row.querySelector(".deposit-amount");
-        var typeCell = row.querySelector(".rental-type");
-        var sizeCell = row.querySelector(".size");
-
-        var selectedOption = dropdown.options[dropdown.selectedIndex];
-
-        var rentalPrice = selectedOption.getAttribute("data-rental-price") || "0.00";
-        var depositAmount = selectedOption.getAttribute("data-deposit") || "0.00";
-        var type = selectedOption.getAttribute("data-type") || "-";
-        var size = selectedOption.getAttribute("data-size") || "-";
-
-        rentalPriceCell.innerText = `$${parseFloat(rentalPrice).toFixed(2)}`;
-        depositAmountCell.innerText = `$${parseFloat(depositAmount).toFixed(2)}`;
-        typeCell.innerText = type;
-        sizeCell.innerText = size;
-    }
-
-    function addFormalwear() {
-        var tableBody = document.getElementById("formalwear-table-body");
-        var totalForms = document.getElementById("id_form-TOTAL_FORMS");
-        var formIndex = Number(totalForms.value);
-
-        var firstRow = tableBody.querySelector(".formalwear-row");
-        var newRow = firstRow.cloneNode(true);
-
-        // Reset all input values in the cloned row
-        newRow.querySelectorAll("input, select").forEach(function(input) {
-            if (input.name) {
-                input.name = input.name.replace(/-\d+-/, `-${formIndex}-`);
-                input.id = input.id.replace(/-\d+-/, `-${formIndex}-`);
-                input.value = "";
-            }
-            if (input.tagName === "SELECT") {
-                input.selectedIndex = 0;
-            }
-        });
-
-        // Ensure default values
-        newRow.querySelector(".rental-price").innerText = "$0.00";
-        newRow.querySelector(".deposit-amount").innerText = "$0.00";
-        newRow.querySelector(".rental-type").innerText = "-";
-        newRow.querySelector(".size").innerText = "-";
-
-        var dropdown = newRow.querySelector("select[name*='formalwear_product']");
-        dropdown.addEventListener("change", updatePrice);
-
-        tableBody.appendChild(newRow);
-        totalForms.value = formIndex + 1;
-    }
-
-    document.querySelectorAll("select[name*='formalwear_product']").forEach(dropdown => {
-        dropdown.addEventListener("change", updatePrice);
-    });
-
-    document.getElementById("add-formalwear-btn").addEventListener("click", addFormalwear);
-});
-</script>

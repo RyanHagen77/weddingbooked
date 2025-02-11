@@ -1,6 +1,5 @@
-import { contractData } from '../../../contracts/js/utilities.js';
-// Import getTotalPayments from the payment helpers module.
-// Adjust the relative path as needed.
+
+// paymentScheduleManager.js
 import { getTotalPayments } from "../payments/paymentHelpers.js";
 
 /**
