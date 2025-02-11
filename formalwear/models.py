@@ -1,6 +1,5 @@
 from django.db import models
-from django.core.validators import MinValueValidator
-from contracts.models import Contract
+
 
 class FormalwearProduct(models.Model):
     RENTAL_TYPE_CHOICES = [
@@ -25,8 +24,6 @@ class FormalwearProduct(models.Model):
     # 🔹 Keep rider at the product level (applies to all rentals)
     rider = models.TextField(blank=True, null=True, help_text="Contract-specific rider terms.")
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         """
@@ -43,21 +40,51 @@ class FormalwearProduct(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.name}"
+        return f"{self.name} - ${self.price}"
 
 
 class ContractFormalwearProduct(models.Model):
+    """
+    Represents a formalwear product rental associated with a contract.
+
+    This model links a formalwear product (`FormalwearProduct`) to a contract, capturing details such as
+    the rental period, quantity, and return status. This allows the same formalwear item to be tracked
+    across multiple contracts with varying rental details.
+    """
     contract = models.ForeignKey(
-        Contract,
+        'contracts.Contract',
         on_delete=models.CASCADE,
-        related_name="formalwear_contracts"  # ✅ Make sure this matches what `calculate_formalwear_subtotal` is using
+        related_name="formalwear_contracts",  # ✅ Make sure this matches what `calculate_formalwear_subtotal` is using
+        help_text="The contract associated with this formalwear product rental."
     )
-    formalwear_product = models.ForeignKey("formalwear.FormalwearProduct", on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=1)
-    rental_start_date = models.DateField(null=True, blank=True)
-    rental_return_date = models.DateField(null=True, blank=True)
-    returned = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+    formalwear_product = models.ForeignKey(
+        FormalwearProduct,
+        on_delete=models.CASCADE,
+        related_name='formalwear_product',
+        help_text="The formalwear product being rented within the contract."
+    )
+    quantity = models.PositiveIntegerField(
+        default=1,
+        help_text="The number of units of the formalwear product being rented."
+    )
+    rental_start_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="The date when the rental period starts for this formalwear product."
+    )
+    rental_return_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="The date by which the formalwear product is expected to be returned."
+    )
+    returned = models.BooleanField(
+        default=False,
+        help_text="Indicates whether the formalwear product has been returned."
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="The date and time when this formalwear product rental was created."
+    )
 
     def __str__(self):
         return f"{self.contract} - {self.formalwear_product} (Qty: {self.quantity})"

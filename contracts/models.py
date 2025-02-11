@@ -437,8 +437,8 @@ class Contract(models.Model):
         Calculate the subtotal of all formalwear products associated with this contract.
         """
         return sum(
-            contract_formalwear.formalwear_product.rental_price * contract_formalwear.quantity
-            for contract_formalwear in self.formalwear_contracts.all()
+            contract_formalwear_product.formalwear_product.rental_price * contract_formalwear_product.quantity
+            for contract_formalwear_product in self.formalwear_contracts.all()
         )
 
     def calculate_tax(self):
