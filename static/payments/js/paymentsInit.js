@@ -137,6 +137,18 @@ document.addEventListener('DOMContentLoaded', () => {
     console.warn("Save Changes button not found.");
   }
 
+
+  const refreshButton = document.getElementById('refresh-payments-button');
+  if (refreshButton) {
+    refreshButton.addEventListener('click', function() {
+      console.log("Refresh button clicked. Reloading page...");
+      window.location.reload();
+    });
+  } else {
+    console.warn("Refresh button not found. Make sure it is rendered with id 'refresh-payments-button'.");
+  }
+
+
   // *** Receive Payment Modal Initialization ***
 
   // Initialize receive payment handler.

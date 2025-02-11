@@ -56,8 +56,12 @@ export function populateScheduleA(tbody) {
     const totalContractAmount = parseFloat(
         document.querySelector('.contract-total').getAttribute('data-contract-total')
     );
-    const depositAmount = parseFloat((totalContractAmount / 2).toFixed(2));
-    const balanceAmount = parseFloat((totalContractAmount - depositAmount).toFixed(2));
+
+    // Compute half, then simulate rounding to the nearest hundred.
+    const rawDeposit = totalContractAmount * 0.5;
+    // Divide by 100, round using Math.round (which rounds half up), then multiply by 100.
+    const depositAmount = Math.round(rawDeposit / 100) * 100;
+    const balanceAmount = totalContractAmount - depositAmount;
 
     // Use event_date from global contractData (make sure it's defined)
     const balanceDueDate = new Date(window.contractData.event_date);
@@ -70,6 +74,7 @@ export function populateScheduleA(tbody) {
     addScheduleRow(tbody, 'Deposit', 'Upon Booking', depositAmount, depositStatus);
     addScheduleRow(tbody, 'Balance Due', balanceDueDate.toISOString().slice(0, 10), balanceAmount, balanceStatus);
 }
+
 
 /**
  * Populates the table body for a custom schedule by fetching data via AJAX.

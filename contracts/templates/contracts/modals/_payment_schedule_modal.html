@@ -11,6 +11,7 @@
       </div>
       <div class="modal-body">
         <form id="scheduleForm" method="post" action="{% url 'payments:create_or_update_schedule' contract_id=contract.contract_id %}">
+          <input type="hidden" name="recalculate" id="recalculateFlag" value="true">
           {% csrf_token %}
           {{ schedule_payment_formset.management_form }}
           <hr>
