@@ -1,23 +1,15 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from contracts.models import Contract, Location, ServiceFee
-
-
+from contracts.models import Contract, Location
+from django.db.models import Sum, F
 from datetime import datetime
 import calendar
-from django.contrib.auth import get_user_model
-
 import logging
 
-# Logging setup
 logger = logging.getLogger(__name__)
 
-
-User = get_user_model()
-
 @login_required
-def formalwear_deposit_report(request):
-
+def formalwear_deposit_report_new(request):
     # Get the current date
     today = datetime.today()
     first_day_of_month = today.replace(day=1)
@@ -37,14 +29,20 @@ def formalwear_deposit_report(request):
         filters['location_id'] = selected_location
 
     report_data = []
-    if start_date or end_date or selected_location != 'all':
-        contracts = Contract.objects.filter(**filters).distinct().order_by('event_date')
+    contracts = Contract.objects.filter(**filters).distinct().order_by('event_date')
 
-        for contract in contracts:
-            formal_wear_deposit_exists = ServiceFee.objects.filter(contract=contract,
-                                                                   fee_type__name='Formal Wear Deposit').exists()
+    for contract in contracts:
+        # Get all formalwear line items for this contract
+        formalwear_qs = contract.formalwear_contracts.all()
+        if formalwear_qs.exists():
+            # Calculate the total deposit for the contract:
+            # Multiply each line item's quantity by its formalwear product's deposit_amount.
+            deposit_sum = formalwear_qs.aggregate(
+                total_deposit=Sum(F('quantity') * F('formalwear_product__deposit_amount'))
+            )['total_deposit'] or 0
 
-            if formal_wear_deposit_exists:
+            # Include this contract if there's a nonzero deposit amount.
+            if deposit_sum > 0:
                 report_data.append({
                     'event_date': contract.event_date,
                     'custom_contract_number': contract.custom_contract_number,
@@ -52,6 +50,7 @@ def formalwear_deposit_report(request):
                     'primary_contact': contract.client.primary_contact,
                     'primary_email': contract.client.primary_email,
                     'primary_phone1': contract.client.primary_phone1,
+                    'deposit_sum': deposit_sum,  # Include the deposit total for display
                 })
 
     locations = Location.objects.all()

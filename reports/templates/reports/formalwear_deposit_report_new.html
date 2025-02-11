@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load static %}
+{% load app_filters %}
+
+{% block content %}
+<div class="outer-container">
+    <div class="search-results">
+        <h4>Formal Wear Deposit Report</h4>
+        <button onclick="history.back()" class="btn-dusty-pink">Go Back</button>
+
+        <form method="get" class="report-form">
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
+            <label for="location">Location:</label>
+            <select id="location" name="location">
+                <option value="all" {% if selected_location == 'all' %}selected{% endif %}>All Locations</option>
+                {% for location in locations %}
+                <option value="{{ location.id }}" {% if selected_location == location.id|stringformat:"s" %}selected{% endif %}>{{ location.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn-dusty-pink">Generate Report</button>
+        </form>
+
+        <div class="search-results">
+            <h6>
+                Formal Wear Deposit Report 
+                {% if start_date %}from {{ start_date }}{% endif %} 
+                {% if end_date %}to {{ end_date }}{% endif %} 
+                for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}
+            </h6>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Event Date</th>
+                        <th>Contract Number</th>
+                        <th>Primary Contact</th>
+                        <th>Primary Email</th>
+                        <th>Primary Phone</th>
+                        <th>Deposit Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if report_data %}
+                        {% for data in report_data %}
+                        <tr>
+                            <td>{{ data.event_date }}</td>
+                            <td><a href="{{ data.contract_link }}">{{ data.custom_contract_number }}</a></td>
+                            <td>{{ data.primary_contact }}</td>
+                            <td>{{ data.primary_email }}</td>
+                            <td>{{ data.primary_phone1 }}</td>
+                            <td>${{ data.deposit_sum|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6">No results found for the selected criteria.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
