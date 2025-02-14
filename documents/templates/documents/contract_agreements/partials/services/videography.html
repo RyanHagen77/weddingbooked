@@ -1,0 +1,65 @@
+<!-- Videography Services Section -->
+{% load group_tags %}
+{% if contract.videography_package or contract.videography_additional or overtime_options_by_service_type.Videography %}
+    <tr>
+        <td colspan="6" style="font-weight: bold; text-align: left; padding-top: 20px; padding-bottom: 10px;">Videography Services</td>
+    </tr>
+
+    <!-- Videography Package -->
+    {% if contract.videography_package %}
+    <tr>
+        <td style="width: 52%; padding-top: 0; padding-bottom: 0;">{{ package_texts.videography|safe }}</td>
+        <td style="width: 8%;">{{ contract.videography_package.hours }}</td>
+        <td style="width: 10%;">${{ contract.videography_package.price }}</td>
+                <td style="width: 10%;">
+            {% if videography_discount %}
+                ${{ videography_discount|floatformat:"2" }}
+            {% else %}
+                $0.00
+            {% endif %}
+        </td>
+        <td style="width: 10%;">
+            {% if videography_discount %}
+                ${{ contract.videography_package.price|subtract:videography_discount|floatformat:"2" }}
+            {% else %}
+                ${{ contract.videography_package.price }}
+            {% endif %}
+        </td>
+        <td style="width: 10%;">${{ contract.videography_package.deposit }}</td>
+
+    </tr>
+    {% endif %}
+
+    <!-- Additional Videographer -->
+    {% if contract.videography_additional %}
+    <tr>
+        <td style="width: 52%; padding-top: 0; padding-bottom: 0;">{{ additional_services_texts.videography_additional|safe }}</td>
+        <td style="width: 8%;">{{ contract.videography_additional.hours }}</td>
+        <td style="width: 10%;">${{ contract.videography_additional.price }}</td>
+        <td style="width: 10%;">
+            {% if contract.videography_additional.discount %}
+                ${{ contract.videography_additional.discount }}
+            {% else %}
+                $0.00
+            {% endif %}
+        </td>
+        <td style="width: 10%;">
+            {% if contract.videography_additional.discount %}
+                ${{ contract.videography_additional.price|subtract:contract.videography_additional.discount|floatformat:"2" }}
+            {% else %}
+                ${{ contract.videography_additional.price }}
+            {% endif %}
+        </td>
+        <td style="width: 10%;">${{ contract.videography_additional.deposit }}</td>
+    </tr>
+    {% endif %}
+
+    <!-- Overtime Options (Videography) -->
+    {% for overtime_option in overtime_options_by_service_type.Videography %}
+    <tr>
+        <td style="width: 52%;">Overtime (Videography) - {{ overtime_option.role }}</td>
+        <td style="width: 8%;">{{ overtime_option.hours }}</td>
+        <td style="width: 10%;">${{ overtime_option.total_cost|floatformat:"2" }}</td>
+    </tr>
+    {% endfor %}
+{% endif %}

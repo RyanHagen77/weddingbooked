@@ -1,0 +1,50 @@
+<!-- Discounts Table -->
+{% if package_discount or sunday_discount or other_discounts %}
+<div class="discounts-details">
+    <h3>Discounts Applied</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <th style="text-align: left; padding: 8px; border: 1px solid #ddd;">Discount Type</th>
+            <th style="text-align: left; padding: 8px; border: 1px solid #ddd;">Memo</th>
+            <th style="text-align: right; padding: 8px; border: 1px solid #ddd;">Amount</th>
+        </tr>
+
+        <!-- Package Discount -->
+        {% if package_discount %}
+        <tr>
+            <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">Bundle Discount</td>
+            <td style="text-align: left; padding: 8px; border: 1px solid #ddd;"></td>
+            <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">-${{ package_discount|floatformat:"2" }}</td>
+        </tr>
+        {% endif %}
+
+        <!-- Sunday Discount -->
+        {% if sunday_discount %}
+        <tr>
+            <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">Sunday Discount</td>
+            <td style="text-align: left; padding: 8px; border: 1px solid #ddd;"></td>
+            <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">-${{ sunday_discount|floatformat:"2" }}</td>
+        </tr>
+        {% endif %}
+
+        <!-- Other Discounts -->
+        {% for discount in other_discounts %}
+        <tr>
+            <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">Other</td>
+            <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">{{ discount.memo }}</td>
+            <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">-${{ discount.amount|floatformat:"2" }}</td>
+        </tr>
+        {% endfor %}
+
+        <!-- Total Discounts -->
+        <tr>
+            <td colspan="2" style="text-align: right; padding: 8px; border: 1px solid #ddd;">
+                <strong>Total Discounts:</strong>
+            </td>
+            <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">
+                ${{ total_discount|floatformat:"2" }}
+            </td>
+        </tr>
+    </table>
+</div>
+{% endif %}

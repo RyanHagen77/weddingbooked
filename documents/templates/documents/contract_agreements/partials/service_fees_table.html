@@ -1,0 +1,36 @@
+<!-- service_fee_details_table.html -->
+{% load group_tags %}
+
+{% if service_fees %}
+<div class="fee-details">
+    <h3>Service Fees</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <th style="text-align: left; padding: 8px; border: 1px solid #ddd;">Fee Type</th>
+            <th style="text-align: left; padding: 8px; border: 1px solid #ddd;">Applied Date</th>
+            <th style="text-align: right; padding: 8px; border: 1px solid #ddd;">Amount</th>
+        </tr>
+        {% for fee in service_fees %}
+        <tr>
+            <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">{{ fee.fee_type }}</td>
+            <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">{{ fee.applied_date }}</td>
+            <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${{ fee.amount|floatformat:"2" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3" style="text-align: center; padding: 8px; border: 1px solid #ddd;">
+                No service fees applied.
+            </td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="2" style="text-align: right; padding: 8px; border: 1px solid #ddd;">
+                <strong>Service Fees Total:</strong>
+            </td>
+            <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">
+                ${{ service_fees_total|floatformat:"2" }}
+            </td>
+        </tr>
+    </table>
+</div>
+{% endif %}

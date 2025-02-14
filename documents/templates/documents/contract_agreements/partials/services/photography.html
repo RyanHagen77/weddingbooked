@@ -1,0 +1,110 @@
+<!-- Photography Services Section -->
+{% load group_tags %}
+{% if contract.photography_package or contract.photography_additional or contract.engagement_session or overtime_options_by_service_type.Photography %}
+    <tr>
+        <td colspan="6" style="font-weight: bold; text-align: left; padding-top: 20px; padding-bottom: 10px;">Photography Services</td>
+    </tr>
+
+    <!-- Photography Package -->
+    {% if contract.photography_package %}
+    <tr>
+        <td class="single-spacing-bullets" style="width: 52%; padding-top: 0; padding-bottom: 0;">
+            {{ package_texts.photography|safe }}
+        </td>
+        <td style="width: 8%;">{{ contract.photography_package.hours }}</td>
+        <td style="width: 10%;">${{ contract.photography_package.price }}</td>
+        <td style="width: 10%;">
+            {% if photography_discount %}
+                ${{ photography_discount|floatformat:"2" }}
+            {% else %}
+                $0.00
+            {% endif %}
+        </td>
+        <td style="width: 10%;">
+            {% if photography_discount %}
+                ${{ contract.photography_package.price|subtract:photography_discount|floatformat:"2" }}
+            {% else %}
+                ${{ contract.photography_package.price }}
+            {% endif %}
+        </td>
+        <td style="width: 10%;">${{ contract.photography_package.deposit }}</td>
+    </tr>
+
+    {% endif %}
+
+    <!-- Additional Photographer -->
+    {% if contract.photography_additional %}
+    <tr>
+        <td style="width: 52%; padding-top: 0; padding-bottom: 0;">{{ additional_services_texts.photography_additional|safe }}</td>
+        <td style="width: 8%;">{{ contract.photography_additional.hours }}</td>
+        <td style="width: 10%;">${{ contract.photography_additional.price }}</td>
+        <td style="width: 10%;">
+            {% if contract.photography_additional.discount %}
+                ${{ contract.photography_additional.discount }}
+            {% else %}
+                $0.00
+            {% endif %}
+        </td>
+        <td style="width: 10%;">
+            {% if contract.photography_additional.discount %}
+                ${{ contract.photography_additional.price|subtract:contract.photography_additional.discount|floatformat:"2" }}
+            {% else %}
+                ${{ contract.photography_additional.price }}
+            {% endif %}
+        </td>
+        <td style="width: 10%;">${{ contract.photography_additional.deposit }}</td>
+    </tr>
+    {% endif %}
+
+    <!-- Engagement Session -->
+    {% if contract.engagement_session %}
+    <tr>
+        <td style="width: 52%;">{{ contract.engagement_session.name }}</td>
+        <td style="width: 8%;">{{ contract.engagement_session.hours }}</td>
+        <td style="width: 10%;">${{ contract.engagement_session.price }}</td>
+        <td style="width: 10%;">${{ contract.engagement_session.deposit }}</td>
+        <td style="width: 10%;">
+            {% if contract.engagement_session.discount %}
+                ${{ contract.engagement_session.discount }}
+            {% else %}
+                $0.00
+            {% endif %}
+        </td>
+        <td style="width: 10%;">
+            {% if contract.engagement_session.discount %}
+                ${{ contract.engagement_session.price|subtract:contract.engagement_session.discount|floatformat:"2" }}
+            {% else %}
+                ${{ contract.engagement_session.price }}
+            {% endif %}
+        </td>
+    </tr>
+    {% endif %}
+
+    <!-- Overtime Options (Photography) -->
+    {% for overtime_option in overtime_options_by_service_type.Photography %}
+    <tr>
+        <td style="width: 52%;">Overtime (Photography) - {{ overtime_option.role }}</td>
+        <td style="width: 8%;">{{ overtime_option.hours }}</td>
+        <td style="width: 10%;">${{ overtime_option.total_cost|floatformat:"2" }}</td>
+    </tr>
+    {% endfor %}
+{% endif %}
+
+<!-- Add this to control the bullet point spacing -->
+
+<style>
+.single-spacing-bullets ul {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 20px;
+    line-height: 1.0; /* Adjust line height */
+    white-space: pre-line; /* Preserve line breaks without extra spacing */
+}
+
+.single-spacing-bullets li {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    line-height: 1.0; /* Keep line spacing tight */
+}
+
+</style>

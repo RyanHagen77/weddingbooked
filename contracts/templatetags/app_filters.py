@@ -1,4 +1,4 @@
-# your_app/templatetags/app_filters.py
+# contracts/templatetags/app_filters.py
 from django import template
 from decimal import Decimal
 import json

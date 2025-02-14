@@ -1,0 +1,43 @@
+<!-- product_details_table.html -->
+{% load group_tags %}
+
+{% if contract.contract_products.all %}
+<div class="product-details">
+    <h3>Products</h3>
+    <table>
+        <tr>
+            <th>Product Name</th>
+            <th>Description</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Total Price</th>
+        </tr>
+        {% for product in contract.contract_products.all %}
+        <tr>
+            <td>{{ product.product.name|strip_year }}</td>
+            <td>{{ product.product.description }}</td>
+            <td>{{ product.quantity }}</td>
+            <td>${{ product.product.price|floatformat:2 }}</td>
+            <td>${{ product.quantity|multiply:product.product.price|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="4" style="text-align: right;"><strong>Product Subtotal:</strong></td>
+            <td>${{ product_subtotal|floatformat:"2" }}</td>
+        </tr>
+        <tr>
+            <td colspan="4" style="text-align: right;"><strong>Tax Rate:</strong></td>
+            <td>{{ tax_rate|floatformat:"2" }}%</td>
+        </tr>
+        <tr>
+            <td colspan="4" style="text-align: right;"><strong>Tax Amount:</strong></td>
+            <td>${{ tax_amount|floatformat:"2" }}</td>
+        </tr>
+        <tr>
+            <td colspan="4" style="text-align: right;"><strong>Total with Tax:</strong></td>
+            <td>${{ product_subtotal_with_tax|floatformat:"2" }}</td>
+        </tr>
+    </table>
+</div>
+
+{% endif %}

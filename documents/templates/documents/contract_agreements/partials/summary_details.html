@@ -1,0 +1,64 @@
+<!-- summary_details.html -->
+<div class="summary-details">
+    <h3>Summary</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">Service Total:</td>
+            <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">
+                ${{ contract.calculate_total_service_cost|floatformat:"2" }}
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">Product Total with Tax:</td>
+            <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">
+                ${{ product_subtotal_with_tax|floatformat:"2" }}
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">Formalwear Total:</td>
+            <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${{ formalwear_subtotal|floatformat:"2" }}</td>
+        </tr>
+
+        <tr>
+            <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">Service Fees Total:</td>
+            <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">
+                ${{ contract.calculate_total_service_fees|floatformat:"2" }}
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">Total Discounts:</td>
+            <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">
+                -${{ contract.display_discounts|floatformat:"2" }}
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left; padding: 8px; border: 1px solid #ddd;"><strong>Grand Total:</strong></td>
+            <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">
+                <strong>${{ contract.display_total_cost|floatformat:"2" }}</strong>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">Amount Paid:</td>
+            <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">
+                ${{ contract.amount_paid|floatformat:"2" }}
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">
+                <strong>Balance Due:</strong>
+            </td>
+            <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">
+                <strong>${{ balance_due|floatformat:"2" }}</strong>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">
+                <strong>Due Date:</strong>
+            </td>
+            <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">
+                <strong>{{ due_date }}</strong>
+            </td>
+        </tr>
+    </table>
+</div>

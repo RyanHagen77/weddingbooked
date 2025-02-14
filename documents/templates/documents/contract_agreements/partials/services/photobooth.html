@@ -1,0 +1,65 @@
+<!-- Photobooth Services Section -->
+{% load group_tags %}
+{% if contract.photobooth_package or contract.photobooth_additional or overtime_options_by_service_type.Photobooth %}
+    <tr>
+        <td colspan="7" style="font-weight: bold; text-align: left; padding-top: 20px; padding-bottom: 10px;">Photobooth Services</td>
+    </tr>
+
+    <!-- Photobooth Package -->
+    {% if contract.photobooth_package %}
+    <tr>
+        <td style="width: 52%; padding-top: 0; padding-bottom: 0;">{{ package_texts.photobooth|safe }}</td>
+        <td style="width: 8%;">{{ contract.photobooth_package.hours }}</td>
+        <td style="width: 10%;">${{ contract.photobooth_package.price }}</td>
+        <td style="width: 10%;">${{ contract.photobooth_package.deposit }}</td>
+        <td style="width: 10%;">
+            {% if photobooth_discount %}
+                ${{ photobooth_discount|floatformat:"2" }}
+            {% else %}
+                $0.00
+            {% endif %}
+        </td>
+        <td style="width: 10%;">
+            {% if photobooth_discount %}
+                ${{ contract.photobooth_package.price|subtract:photobooth_discount|floatformat:"2" }}
+            {% else %}
+                ${{ contract.photobooth_package.price }}
+            {% endif %}
+        </td>
+    </tr>
+    {% endif %}
+
+    <!-- Additional Photobooth -->
+    {% if contract.photobooth_additional %}
+    <tr>
+        <td style="width: 52%; padding-top: 0; padding-bottom: 0;">{{ additional_services_texts.photobooth_additional|safe }}</td>
+        <td style="width: 8%;">{{ contract.photobooth_additional.hours }}</td>
+        <td style="width: 10%;">${{ contract.photobooth_additional.price }}</td>
+        <td style="width: 10%;">
+            {% if contract.photobooth_additional.discount %}
+                ${{ contract.photobooth_additional.discount }}
+            {% else %}
+                $0.00
+            {% endif %}
+        </td>
+        <td style="width: 10%;">
+            {% if contract.photobooth_additional.discount %}
+                ${{ contract.photobooth_additional.price|subtract:contract.photobooth_additional.discount|floatformat:"2" }}
+            {% else %}
+                ${{ contract.photobooth_additional.price }}
+            {% endif %}
+        </td>
+        <td style="width: 10%;">${{ contract.photobooth_additional.deposit }}</td>
+
+    </tr>
+    {% endif %}
+
+    <!-- Iterate over overtime options for Photobooth -->
+    {% for overtime_option in overtime_options_by_service_type.Photobooth %}
+    <tr>
+        <td style="width: 52%;">Overtime (Photobooth) - {{ overtime_option.role }}</td>
+        <td style="width: 8%;">{{ overtime_option.hours }}</td>
+        <td style="width: 10%;">${{ overtime_option.total_cost|floatformat:"2" }}</td>
+    </tr>
+    {% endfor %}
+{% endif %}

@@ -1,5 +1,5 @@
 from django.contrib import admin
-
+from ckeditor.widgets import CKEditorWidget
 from contracts.models import (Client, LeadSourceCategory, Contract, TaxRate,
                      DiscountRule, Location, ServiceFeeType, ServiceFee, ChangeLog)
 from bookings.models import EventStaffBooking, Availability
@@ -25,11 +25,12 @@ class ServiceTypeAdmin(admin.ModelAdmin):
 
 @admin.register(Package)
 class PackageAdmin(admin.ModelAdmin):
-    list_display = ('name', 'is_active', 'price', 'service_type', 'default_text', 'rider_text', 'package_notes')
-    search_fields = ('name', 'default_text', 'package_notes')
-    list_filter = ('service_type',)
-    list_editable = ('is_active',)
-
+    class Meta:
+        model = Package
+        fields = '__all__'
+        widgets = {
+            'default_text': CKEditorWidget(),  # Use CKEditor for the `default_text` field
+        }
 @admin.register(AdditionalEventStaffOption)
 class AdditionalEventStaffOptionAdmin(admin.ModelAdmin):
     list_display = ('name', 'is_active', 'price', 'service_type', 'default_text', 'rider_text', 'package_notes')

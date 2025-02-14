@@ -1,0 +1,30 @@
+{% load group_tags %}
+{% if contract.formalwear_contracts.all %}
+<div class="formalwear-details">
+    <h3>Formalwear Rentals</h3>
+    <table>
+        <tr>
+            <th>Item</th>
+            <th colspan="3" style="text-align: left; padding: 8px; border: 1px solid #ddd;">Terms</th>
+            <th>Deposit</th>
+            <th>Quantity</th>
+            <th>Total Price</th>
+        </tr>
+        {% for formalwear in formalwear_details %}
+        <tr>
+            <td>{{ formalwear.product_name }}</td>
+            <td colspan="3" style="text-align: left; padding: 8px; border: 1px solid #ddd;">{{ formalwear.default_text }}</td>
+            <td>${{ formalwear.deposit_amount|floatformat:"2" }}</td>
+            <td>{{ formalwear.quantity }}</td>
+            <td>
+                ${{ formalwear.quantity|multiply:formalwear.rental_price|floatformat:"2" }}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="8" style="text-align: center;">No formalwear rentals.</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}

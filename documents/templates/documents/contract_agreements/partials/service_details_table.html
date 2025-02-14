@@ -1,0 +1,31 @@
+<table style="width: 100%; border-collapse: collapse;">
+    <tr>
+        <th style="width: 52%; text-align: left;">Description</th>
+        <th style="width: 8%; text-align: left;">Hours</th>
+        <th style="width: 10%; text-align: left;">Retail Price</th>
+        <th style="width: 10%; text-align: left;">Discount</th>
+        <th style="width: 10%; text-align: left;">Your Price</th>
+        <th style="width: 10%; text-align: left;">Deposit Due</th>
+    </tr>
+
+    <!-- Services -->
+
+    {% include "documents/contract_***REMOVED***.html" %}
+    {% include "documents/contract_***REMOVED***.html" %}
+    {% include "documents/contract_agreements/partials/services/dj.html" %}
+    {% include "documents/contract_agreements/partials/services/photobooth.html" %}
+
+    <tr>
+        <td colspan="5" style="text-align: right;"><strong>Service Total:</strong></td>
+        <td>${{ total_service_cost }}</td>
+    </tr>
+    <tr>
+        <td colspan="5" style="text-align: right;"><strong>Bundle Discounts:</strong></td>
+        <td>${{ package_discount }}</td>
+    </tr>
+    <tr>
+        <td colspan="5" style="text-align: right;"><strong>Deposit Due to Book:</strong></td>
+        <td>${{ deposit_due_to_book|floatformat:"2" }}</td>
+    </tr>
+</table>
+

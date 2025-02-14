@@ -1,0 +1,66 @@
+<!-- DJ Services Section -->
+{% load group_tags %}
+{% if contract.dj_package or contract.dj_additional or overtime_options_by_service_type.Dj %}
+    <tr>
+        <td colspan="7" style="font-weight: bold; text-align: left; padding-top: 20px; padding-bottom: 10px;">DJ Services</td>
+    </tr>
+
+    <!-- DJ Package -->
+    {% if contract.dj_package %}
+    <tr>
+        <td style="width: 52%; padding-top: 0; padding-bottom: 0;">{{ package_texts.dj|safe }}</td>
+        <td style="width: 8%;">{{ contract.dj_package.hours }}</td>
+        <td style="width: 10%;">${{ contract.dj_package.price }}</td>
+        <td style="width: 10%;">
+            {% if dj_discount %}
+                ${{ dj_discount|floatformat:"2" }}
+            {% else %}
+                $0.00
+            {% endif %}
+        </td>
+        <td style="width: 10%;">
+            {% if dj_discount %}
+                ${{ contract.dj_package.price|subtract:dj_discount|floatformat:"2" }}
+            {% else %}
+                ${{ contract.dj_package.price }}
+            {% endif %}
+        </td>
+        <td style="width: 10%;">${{ contract.dj_package.deposit }}</td>
+
+    </tr>
+    {% endif %}
+
+    <!-- Additional DJ -->
+    {% if contract.dj_additional %}
+    <tr>
+        <td style="width: 52%; padding-top: 0; padding-bottom: 0;">{{ additional_services_texts.dj_additional|safe }}</td>
+        <td style="width: 8%;">{{ contract.dj_additional.hours }}</td>
+        <td style="width: 10%;">${{ contract.dj_additional.price }}</td>
+        <td style="width: 10%;">${{ contract.dj_additional.deposit }}</td>
+        <td style="width: 10%;">
+            {% if contract.dj_additional.discount %}
+                ${{ contract.dj_additional.discount }}
+            {% else %}
+                $0.00
+            {% endif %}
+        </td>
+        <td style="width: 10%;">
+            {% if contract.dj_additional.discount %}
+                ${{ contract.dj_additional.price|subtract:contract.dj_additional.discount|floatformat:"2" }}
+            {% else %}
+                ${{ contract.dj_additional.price }}
+            {% endif %}
+        </td>
+    </tr>
+    {% endif %}
+
+    <!-- Iterate over overtime options for DJ -->
+    {% for overtime_option in overtime_options_by_service_type.Dj %}
+    <tr>
+        <td style="width: 52%;">Overtime (DJ) - {{ overtime_option.role }}</td>
+        <td style="width: 8%;">{{ overtime_option.hours }}</td>
+        <td style="width: 10%;">${{ overtime_option.total_cost|floatformat:"2" }}</td>
+    </tr>
+    {% endfor %}
+{% endif %}
+
