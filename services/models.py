@@ -2,6 +2,7 @@
 
 from django.db import models
 from django.conf import settings
+from ckeditor.fields import RichTextField
 
 from bookings.constants import SERVICE_ROLE_MAPPING  # Adjust the import path as needed
 
@@ -22,8 +23,8 @@ class Package(models.Model):
     deposit = models.DecimalField(max_digits=8, decimal_places=2, verbose_name="Deposit Amount")
     service_type = models.ForeignKey('ServiceType', on_delete=models.CASCADE, null=True, blank=True, related_name='packages')
     hours = models.IntegerField(verbose_name="Hours", default=0)
-    default_text = models.TextField(blank=True, help_text="Default text for the package")
-    rider_text = models.TextField(blank=True, help_text="Rider for the package")
+    default_text = RichTextField(blank=True, help_text="Default text for the package")
+    rider_text = RichTextField(blank=True, help_text="Rider text for the package")
     package_notes = models.TextField(blank=True, help_text="Additional notes for the package")
 
     def __str__(self):
@@ -38,8 +39,8 @@ class AdditionalEventStaffOption(models.Model):
     deposit = models.DecimalField(max_digits=8, decimal_places=2, verbose_name="Deposit Amount")
     service_type = models.ForeignKey('ServiceType', on_delete=models.CASCADE, null=True, blank=True, related_name='event_staff_options')
     hours = models.IntegerField(verbose_name="Hours", default=0)
-    default_text = models.TextField(blank=True, help_text="Default text for the staff option")
-    rider_text = models.TextField(blank=True, help_text="Rider for the package")
+    default_text = RichTextField(blank=True, help_text="Default text for the additional option")
+    rider_text = RichTextField(blank=True, help_text="Rider text for the additional option")
     package_notes = models.TextField(blank=True, help_text="Additional notes for the staff option")
 
     def __str__(self):
@@ -51,8 +52,8 @@ class EngagementSessionOption(models.Model):
     is_active = models.BooleanField(default=True, verbose_name="Active")
     price = models.DecimalField(max_digits=8, decimal_places=2)
     deposit = models.DecimalField(max_digits=8, decimal_places=2, verbose_name="Deposit Amount")
-    default_text = models.TextField(blank=True, help_text="Default text for the package")
-    rider_text = models.TextField(blank=True, help_text="Rider for the package")
+    default_text = RichTextField(blank=True, help_text="Default text for the engagement session")
+    rider_text = RichTextField(blank=True, help_text="Rider text for engagement session")
     package_notes = models.TextField(blank=True, help_text="Additional notes for the package")
     service_type = models.ForeignKey('ServiceType', on_delete=models.CASCADE, null=True, blank=True, related_name='engagement_session_options')
 

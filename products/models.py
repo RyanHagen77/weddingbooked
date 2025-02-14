@@ -1,6 +1,7 @@
 #products/models.py
 
 from django.db import models
+from ckeditor.fields import RichTextField
 
 class AdditionalProduct(models.Model):
     """
@@ -20,10 +21,7 @@ class AdditionalProduct(models.Model):
     )
     is_taxable = models.BooleanField(default=False, help_text="Indicates whether this product is taxable.")
     notes = models.TextField(blank=True, null=True, help_text="Additional internal notes about the product.")
-    default_text = models.TextField(
-        blank=True,
-        help_text="Default text or instructions associated with this product. This can be used for contracts."
-    )
+    default_text = RichTextField(blank=True, help_text="Default text for the product")
     is_active = models.BooleanField(default=True, verbose_name="Active", help_text="Indicates if this product is active.")
 
     def __str__(self):
@@ -33,10 +31,6 @@ class AdditionalProduct(models.Model):
 class ContractProduct(models.Model):
     """
     Represents a specific product or service added to a contract.
-
-    This model links a product (`AdditionalProduct`) to a contract, allowing for customization of product details
-    like quantity and special notes specific to that contract. This enables the same product to be reused across
-    multiple contracts with different configurations.
     """
     contract = models.ForeignKey(
         'contracts.Contract',
@@ -67,10 +61,9 @@ class ContractProduct(models.Model):
     def get_product_price(self):
         """
         Returns the price of the product from the `AdditionalProduct` model.
-
-        This is useful for calculating totals or displaying product details in the context of a contract.
         """
         return self.product.price
 
     def __str__(self):
-        return f"{self.contract} - {self.product} - Qty: {self.quantity}"
+        contract_id = self.contract.custom_contract_number if hasattr(self.contract, 'custom_contract_number') else str(self.contract.pk)
+        return f"Contract #{contract_id} - {self.product.name} - Qty: {self.quantity}"

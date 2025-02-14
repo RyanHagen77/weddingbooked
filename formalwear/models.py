@@ -1,5 +1,5 @@
 from django.db import models
-
+from ckeditor.fields import RichTextField
 
 class FormalwearProduct(models.Model):
     RENTAL_TYPE_CHOICES = [
@@ -19,10 +19,10 @@ class FormalwearProduct(models.Model):
     version_number = models.PositiveIntegerField(default=1, help_text="Version of the product.")
 
     # 🔹 Keep default text at the product level (applies to all rentals)
-    default_text = models.TextField(blank=True, null=True, help_text="Default instructions for rental.")
+    default_text = RichTextField(blank=True, null=True, help_text="Default text for the formalwear product")
 
     # 🔹 Keep rider at the product level (applies to all rentals)
-    rider = models.TextField(blank=True, null=True, help_text="Contract-specific rider terms.")
+    rider = RichTextField(blank=True, null=True, help_text="Rider text for the formalwear product")
 
 
     def save(self, *args, **kwargs):
@@ -40,7 +40,7 @@ class FormalwearProduct(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.name} - ${self.price}"
+        return f"{self.name} - ${self.rental_price}"
 
 
 class ContractFormalwearProduct(models.Model):
