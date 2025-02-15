@@ -16,7 +16,7 @@
             <td colspan="3" style="text-align: left; padding: 8px; border: 1px solid #ddd;">{{ formalwear.default_text }}</td>
             <td>${{ formalwear.deposit_amount|floatformat:"2" }}</td>
             <td>{{ formalwear.quantity }}</td>
-            <td>
+            <td style="text-align: right;">
                 ${{ formalwear.quantity|multiply:formalwear.rental_price|floatformat:"2" }}
             </td>
         </tr>
