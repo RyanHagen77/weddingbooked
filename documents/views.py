@@ -676,12 +676,40 @@ def view_submitted_contract(request, contract_id, version_number):
     }
 
     return render(request, 'documents/view_submitted_contract.html', context)
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.urls import reverse
+from datetime import timedelta
+from collections import defaultdict
+from io import BytesIO
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from weasyprint import HTML
+from .models import Contract, ContractAgreement, RiderAgreement, ContractDocument
+from .forms import ContractAgreementForm
+from decimal import Decimal
+
 @login_required
 def client_contract_and_rider_agreement(request, contract_id):
     contract = get_object_or_404(Contract, pk=contract_id)
     domain = 'enet2.com'
     logo_url = f'{settings.MEDIA_URL}logo/Final_Logo.png'
     company_signature_url = f'{domain}{settings.MEDIA_URL}signatures/company_signature.png'
+
+    # Prepare the initial context for the template
+    context = {
+        'contract': contract,
+        'logo_url': logo_url,
+        'company_signature_url': company_signature_url,
+        'client_info': {
+            'primary_contact': contract.client.primary_contact if contract.client else 'N/A',
+            'primary_email': contract.client.primary_email if contract.client else 'N/A',
+            'primary_phone': contract.client.primary_phone1 if contract.client else 'N/A',
+            'partner_contact': contract.client.partner_contact if contract.client else 'N/A',
+        },
+    }
 
     if request.method == 'POST':
         form = ContractAgreementForm(request.POST)
@@ -725,15 +753,11 @@ def client_contract_and_rider_agreement(request, contract_id):
             total_discount = contract.calculate_discount()
             due_date = contract.event_date - timedelta(days=60)
 
-
             # Calculate other discounts and their amounts
             other_discounts = contract.other_discounts.all()
             package_discount = contract.calculate_package_discount()
             sunday_discount = contract.calculate_sunday_discount()
             other_discount_total = sum([discount.amount for discount in other_discounts])
-
-            # Calculate the total package discount
-            package_discount = contract.calculate_package_discount()
 
             # Get the selected services for package discounts
             selected_services = []
@@ -748,10 +772,7 @@ def client_contract_and_rider_agreement(request, contract_id):
 
             # Calculate the discount per service for the package discount
             num_services = len(selected_services)
-            if num_services > 0:
-                discount_per_service = package_discount / num_services
-            else:
-                discount_per_service = Decimal('0.00')
+            discount_per_service = package_discount / num_services if num_services > 0 else Decimal('0.00')
 
             # Apply the calculated discount to each service
             photography_discount = discount_per_service if contract.photography_package else Decimal('0.00')
@@ -866,25 +887,17 @@ def client_contract_and_rider_agreement(request, contract_id):
             latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
             rider_agreements = RiderAgreement.objects.filter(contract=contract)
 
-            # Build context
-            context = {
-                'contract': contract,
-                'client_info': {
-                    'primary_contact': contract.client.primary_contact if contract.client else 'N/A',
-                    'primary_email': contract.client.primary_email if contract.client else 'N/A',
-                    'primary_phone': contract.client.primary_phone1 if contract.client else 'N/A',
-                    'partner_contact': contract.client.partner_contact if contract.client else 'N/A',
-                },
-                'logo_url': logo_url,
-                'company_signature_url': company_signature_url,
-                'package_texts': package_texts,
-                'rider_texts': rider_texts,
-                'additional_services_texts': additional_services_texts,
-                'additional_staff': additional_staff,
-                'total_overtime_cost': total_overtime_cost,
-                'overtime_options_by_service_type': overtime_options_by_service_type,
-                'ROLE_DISPLAY_NAMES': ROLE_DISPLAY_NAMES,
-                'formalwear_details': formalwear_details,
+            # Add data to context
+            context.update({
+                'photography_discount': photography_discount,
+                'videography_discount': videography_discount,
+                'dj_discount': dj_discount,
+                'photobooth_discount': photobooth_discount,
+                'total_discount': total_discount,
+                'due_date': due_date.strftime('%B %d, %Y'),
+                'rider_agreements': rider_agreements,
+                'first_agreement': first_agreement,
+                'latest_agreement': latest_agreement,
                 'product_subtotal': product_subtotal,
                 'formalwear_subtotal': formalwear_subtotal,
                 'product_subtotal_with_tax': product_subtotal_with_tax,
@@ -893,28 +906,15 @@ def client_contract_and_rider_agreement(request, contract_id):
                 'total_service_cost': total_service_cost,
                 'tax_rate': tax_rate_percentage,
                 'tax_amount': tax_amount,
-                'total_discount': total_discount,
-                'package_discount': package_discount,
-                'sunday_discount': sunday_discount,
-                'other_discounts': other_discounts,
-                'other_discount_total': other_discount_total,
                 'total_cost_after_discounts': total_cost_after_discounts,
                 'deposit_due_to_book': deposit_due_to_book,
                 'grand_total': grand_total,
                 'amount_paid': amount_paid,
                 'balance_due': balance_due,
-                'due_date': due_date.strftime('%B %d, %Y'),
-                'rider_agreements': rider_agreements,
-                'first_agreement': first_agreement,
-                'latest_agreement': latest_agreement,
-                'photography_discount': photography_discount,
-                'videography_discount': videography_discount,
-                'dj_discount': dj_discount,
-                'photobooth_discount': photobooth_discount,
-            }
+            })
 
             # Generate PDF
-            html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html')
+            html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
             pdf_file = HTML(string=html_string).write_pdf()
 
             # Save PDF
@@ -944,6 +944,7 @@ def client_contract_and_rider_agreement(request, contract_id):
                 'message': 'You\'re all set, thank you!',
                 'portal_url': portal_url
             })
+
         else:
             portal_url = reverse('client_portal', args=[contract_id])
 
@@ -952,7 +953,8 @@ def client_contract_and_rider_agreement(request, contract_id):
                 'portal_url': portal_url
             })
 
-    return render(request, 'documents/client_contract_and_rider_agreement.html')
+    return render(request, 'documents/client_contract_and_rider_agreement.html', context)
+
 
 
 
