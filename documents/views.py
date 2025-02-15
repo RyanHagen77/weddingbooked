@@ -914,7 +914,7 @@ def client_contract_and_rider_agreement(request, contract_id):
             }
 
             # Generate PDF
-            html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
+            html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html')
             pdf_file = HTML(string=html_string).write_pdf()
 
             # Save PDF
@@ -952,7 +952,7 @@ def client_contract_and_rider_agreement(request, contract_id):
                 'portal_url': portal_url
             })
 
-    return render(request, 'documents/client_contract_and_rider_agreement.html', context)
+    return render(request, 'documents/client_contract_and_rider_agreement.html')
 
 
 
