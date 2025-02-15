@@ -27,10 +27,15 @@
         </tr>
         {% endif %}
 
-        <!-- Other Discounts -->
+                <!-- Other Discounts -->
         {% for discount in other_discounts %}
         <tr>
-            <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">Other</td>
+            <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">
+                Other
+                {% if discount.service_type and discount.service_type.name != 'NonServiceType' %}
+                    ({{ discount.service_type.name }})
+                {% endif %}
+            </td>
             <td style="text-align: left; padding: 8px; border: 1px solid #ddd;">{{ discount.memo }}</td>
             <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">-${{ discount.amount|floatformat:"2" }}</td>
         </tr>

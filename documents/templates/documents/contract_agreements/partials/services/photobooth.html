@@ -11,7 +11,6 @@
         <td style="width: 52%; padding-top: 0; padding-bottom: 0;">{{ package_texts.photobooth|safe }}</td>
         <td style="width: 8%;">{{ contract.photobooth_package.hours }}</td>
         <td style="width: 10%;">${{ contract.photobooth_package.price }}</td>
-        <td style="width: 10%;">${{ contract.photobooth_package.deposit }}</td>
         <td style="width: 10%;">
             {% if photobooth_discount %}
                 ${{ photobooth_discount|floatformat:"2" }}
@@ -26,6 +25,7 @@
                 ${{ contract.photobooth_package.price }}
             {% endif %}
         </td>
+        <td style="width: 10%;">${{ contract.photobooth_package.deposit }}</td>
     </tr>
     {% endif %}
 
