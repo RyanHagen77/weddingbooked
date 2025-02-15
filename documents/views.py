@@ -257,7 +257,7 @@ def generate_contract_pdf(request, contract_id):
 
     # Render HTML to string using your main template
     html_string = render_to_string(
-        'documents/contract_agreements/analog_signature_page/contract_agreement.html',
+        'documents/contract_agreements/contract_agreement.html',
         context
     )
 
