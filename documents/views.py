@@ -776,7 +776,7 @@ def client_contract_and_rider_agreement(request, contract_id):
     product_subtotal_with_tax = product_subtotal + tax_amount  # Add tax to product subtotal
     total_service_cost = contract.calculate_total_service_cost()  # Calculate the total service cost
 
-    context = {
+    context.update({
         'total_discount': total_discount,
         'due_date': due_date.strftime('%B %d, %Y'),
         'photography_discount': photography_discount,
@@ -795,7 +795,7 @@ def client_contract_and_rider_agreement(request, contract_id):
         'tax_amount': tax_amount,
         'product_subtotal_with_tax': product_subtotal_with_tax,
         'total_service_cost': total_service_cost,
-    }
+    })
 
     if request.method == 'POST':
         form = ContractAgreementForm(request.POST)
