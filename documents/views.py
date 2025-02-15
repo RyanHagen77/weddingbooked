@@ -65,7 +65,6 @@ def generate_contract_pdf(request, contract_id):
     contract = get_object_or_404(Contract, pk=contract_id)
     domain = 'enet2.com'
     logo_url = f'{settings.MEDIA_URL}logo/Final_Logo.png'
-    company_signature_url = f'https://{domain}{settings.MEDIA_URL}signatures/company_signature.png'
 
     # Calculate the total discount
     total_discount = contract.calculate_discount()
@@ -219,7 +218,6 @@ def generate_contract_pdf(request, contract_id):
             'partner_contact': contract.client.partner_contact if contract.client else 'N/A',
         },
         'logo_url': logo_url,
-        'company_signature_url': company_signature_url,
         'package_texts': package_texts,
         'additional_services_texts': additional_services_texts,
         'additional_staff': additional_staff,
@@ -682,8 +680,9 @@ def view_submitted_contract(request, contract_id, version_number):
 @login_required
 def client_contract_and_rider_agreement(request, contract_id):
     contract = get_object_or_404(Contract, pk=contract_id)
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
-    company_signature_url = f"http://{request.get_host()}{settings.MEDIA_URL}essence_signature/EssenceSignature.png"
+    domain = 'enet2.com'
+    logo_url = f'{settings.MEDIA_URL}logo/Final_Logo.png'
+    company_signature_url = f'{domain}{settings.MEDIA_URL}signatures/company_signature.png'
 
     if request.method == 'POST':
         form = ContractAgreementForm(request.POST)
@@ -721,80 +720,192 @@ def client_contract_and_rider_agreement(request, contract_id):
                 else:
                     print(f"Missing signature for {rider}")
 
-            # Initialize an empty dictionary to store overtime options grouped by service type
+            # Calculate the total discount
+            total_discount = contract.calculate_discount()
+
+            # Calculate the due date (60 days before the event date)
+            due_date = contract.event_date - timedelta(days=60)
+
+            # Other discounts and their names (assuming you have a method for other discounts or a list)
+            other_discounts = contract.other_discounts.all()  # Assuming 'other_discounts' is a related field or a method on the contract
+
+            # Add the individual discount amounts to context
+            package_discount = contract.calculate_package_discount()  # Example method for package discount
+            sunday_discount = contract.calculate_sunday_discount()  # Example method for Sunday discount
+            other_discount_total = sum(
+                [discount.amount for discount in other_discounts])  # Summing up all other discounts
+
+            # Calculate the total package discount
+            package_discount = contract.calculate_package_discount()
+
+            # Get the selected services for package discounts
+            selected_services = []
+            if contract.photography_package:
+                selected_services.append('photography')
+            if contract.videography_package:
+                selected_services.append('videography')
+            if contract.dj_package:
+                selected_services.append('dj')
+            if contract.photobooth_package:
+                selected_services.append('photobooth')
+
+            # Calculate the discount per service for the package discount
+            num_services = len(selected_services)
+            if num_services > 0:
+                discount_per_service = package_discount / num_services
+            else:
+                discount_per_service = Decimal('0.00')
+
+            # Apply the calculated discount to each service
+            photography_discount = discount_per_service if contract.photography_package else Decimal('0.00')
+            videography_discount = discount_per_service if contract.videography_package else Decimal('0.00')
+            dj_discount = discount_per_service if contract.dj_package else Decimal('0.00')
+            photobooth_discount = discount_per_service if contract.photobooth_package else Decimal('0.00')
+
+            # Package texts (No linebreaks)
+            package_texts = {
+                'photography': contract.photography_package.default_text if contract.photography_package else None,
+                'videography': contract.videography_package.default_text if contract.videography_package else None,
+                'dj': contract.dj_package.default_text if contract.dj_package else None,
+                'photobooth': contract.photobooth_package.default_text if contract.photobooth_package else None,
+            }
+
+            # Additional services text processing (No linebreaks)
+            additional_services_texts = {
+                'photography_additional': contract.photography_additional.default_text if contract.photography_additional else None,
+                'videography_additional': contract.videography_additional.default_text if contract.videography_additional else None,
+                'dj_additional': contract.dj_additional.default_text if contract.dj_additional else None,
+                'photobooth_additional': contract.photobooth_additional.default_text if contract.photobooth_additional else None,
+            }
+
+            # Additional staff
+            additional_staff = defaultdict(list)
+            for staff_option in [contract.photography_additional, contract.videography_additional,
+                                 contract.dj_additional,
+                                 contract.photobooth_additional]:
+                if staff_option:
+                    additional_staff[staff_option.service_type.name].append({
+                        'name': staff_option.name,
+                        'service_type': staff_option.service_type.name,
+                        'price': staff_option.price,
+                        'hours': staff_option.hours,
+                        'default_text': staff_option.default_text,
+                    })
+
+            # Process overtime options
             overtime_options_by_service_type = {}
-
-            # Initialize total overtime cost
             total_overtime_cost = 0
-
-            # Iterate over each overtime option
             for contract_overtime in contract.overtimes.all():
                 service_type = contract_overtime.overtime_option.service_type.name
-                if service_type in overtime_options_by_service_type:
-                    overtime_options_by_service_type[service_type].append({
-                        'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role,
-                                                       contract_overtime.overtime_option.role),
-                        'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
-                        'hours': contract_overtime.hours,
-                    })
-                else:
-                    overtime_options_by_service_type[service_type] = [{
-                        'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role,
-                                                       contract_overtime.overtime_option.role),
-                        'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
-                        'hours': contract_overtime.hours,
-                    }]
-
-            for service_type, options in overtime_options_by_service_type.items():
+                option_data = {
+                    'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role,
+                                                   contract_overtime.overtime_option.role),
+                    'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
+                    'hours': contract_overtime.hours,
+                }
+                overtime_options_by_service_type.setdefault(service_type, []).append(option_data)
+            for options in overtime_options_by_service_type.values():
                 for option in options:
                     option['total_cost'] = option['hours'] * option['rate_per_hour']
                     total_overtime_cost += option['total_cost']
 
-            package_texts = {
-                'photography': linebreaks(contract.photography_package.default_text) if contract.photography_package else None,
-                'videography': linebreaks(contract.videography_package.default_text) if contract.videography_package else None,
-                'dj': linebreaks(contract.dj_package.default_text) if contract.dj_package else None,
-                'photobooth': linebreaks(contract.photobooth_package.default_text) if contract.photobooth_package else None,
-            }
+                # Add formalwear products with their default text to the context
+            formalwear_details = []
 
-            additional_services_texts = {
-                'photography_additional': linebreaks(contract.photography_additional.default_text) if contract.photography_additional else None,
-                'videography_additional': linebreaks(contract.videography_additional.default_text) if contract.videography_additional else None,
-                'dj_additional': linebreaks(contract.dj_additional.default_text) if contract.dj_additional else None,
-                'photobooth_additional': linebreaks(contract.photobooth_additional.default_text) if contract.photobooth_additional else None,
-            }
+            for formalwear_contract in contract.formalwear_contracts.all():
+                formalwear_details.append({
+                    'product_name': formalwear_contract.formalwear_product.name,
+                    'default_text': formalwear_contract.formalwear_product.default_text,
+                    'rental_price': formalwear_contract.formalwear_product.rental_price,
+                    'deposit_amount': formalwear_contract.formalwear_product.deposit_amount,
+                    'quantity': formalwear_contract.quantity,
+                })
 
-            rider_texts = {
-                'photography': linebreaks(contract.photography_package.rider_text) if contract.photography_package else None,
-                'photography_additional': linebreaks(contract.photography_additional.rider_text) if contract.photography_additional else None,
-                'engagement_session': linebreaks(contract.engagement_session.rider_text) if contract.engagement_session else None,
-                'videography': linebreaks(contract.videography_package.rider_text) if contract.videography_package else None,
-                'videography_additional': linebreaks(contract.videography_additional.rider_text) if contract.videography_additional else None,
-                'dj': linebreaks(contract.dj_package.rider_text) if contract.dj_package else None,
-                'dj_additional': linebreaks(contract.dj_additional.rider_text) if contract.dj_additional else None,
-                'photobooth': linebreaks(contract.photobooth_package.rider_text) if contract.photobooth_package else None,
-                'photobooth_additional': linebreaks(contract.photobooth_additional.rider_text) if contract.photobooth_additional else None,
-            }
+            # Calculate totals
+            product_subtotal = contract.calculate_product_subtotal()
+            formalwear_subtotal = contract.calculate_formalwear_subtotal()
+            tax_rate_percentage = float(contract.tax_rate)
+            tax_amount = contract.calculate_tax()
+            product_subtotal_with_tax = product_subtotal + tax_amount
 
             total_service_cost = contract.calculate_total_service_cost()
-            total_discount = contract.calculate_discount()
             total_cost_after_discounts = contract.calculate_total_service_cost_after_discounts()
+            grand_total = contract.calculate_total_cost()
 
+            # Calculate the total deposit for each service
+            deposit_due_to_book = Decimal('0.00')
+
+            if contract.photography_package:
+                deposit_due_to_book += contract.photography_package.deposit
+            if contract.videography_package:
+                deposit_due_to_book += contract.videography_package.deposit
+            if contract.dj_package:
+                deposit_due_to_book += contract.dj_package.deposit
+            if contract.photobooth_package:
+                deposit_due_to_book += contract.photobooth_package.deposit
+
+            if contract.photography_additional:
+                deposit_due_to_book += contract.photography_additional.deposit
+            if contract.videography_additional:
+                deposit_due_to_book += contract.videography_additional.deposit
+            if contract.dj_additional:
+                deposit_due_to_book += contract.dj_additional.deposit
+            if contract.photobooth_additional:
+                deposit_due_to_book += contract.photobooth_additional.deposit
+
+            # Pre-calculate payments totals to avoid recursion in templates
+            amount_paid = sum(payment.amount for payment in contract.payments.all()) or Decimal('0.00')
+            balance_due = max(Decimal('0.00'), grand_total - amount_paid)
+
+            # Get the first and latest agreements and rider agreements
+            first_agreement = ContractAgreement.objects.filter(contract=contract).order_by('version_number').first()
+            latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
+            rider_agreements = RiderAgreement.objects.filter(contract=contract)
+
+            # Build the context with the necessary discount data
             context = {
                 'contract': contract,
+                'client_info': {
+                    'primary_contact': contract.client.primary_contact if contract.client else 'N/A',
+                    'primary_email': contract.client.primary_email if contract.client else 'N/A',
+                    'primary_phone': contract.client.primary_phone1 if contract.client else 'N/A',
+                    'partner_contact': contract.client.partner_contact if contract.client else 'N/A',
+                },
                 'logo_url': logo_url,
                 'company_signature_url': company_signature_url,
-                'latest_agreement': agreement,
-                'rider_agreements': rider_agreements,
                 'package_texts': package_texts,
                 'additional_services_texts': additional_services_texts,
-                'rider_texts': rider_texts,
-                'total_service_cost': total_service_cost,
-                'total_discount': total_discount,
-                'total_cost_after_discounts': total_cost_after_discounts,
-                'overtime_options_by_service_type': overtime_options_by_service_type,
+                'additional_staff': additional_staff,
                 'total_overtime_cost': total_overtime_cost,
+                'overtime_options_by_service_type': overtime_options_by_service_type,
                 'ROLE_DISPLAY_NAMES': ROLE_DISPLAY_NAMES,
+                'formalwear_details': formalwear_details,
+                'product_subtotal': product_subtotal,
+                'formalwear_subtotal': formalwear_subtotal,
+                'product_subtotal_with_tax': product_subtotal_with_tax,
+                'service_fees': contract.servicefees.all(),
+                'service_fees_total': contract.calculate_total_service_fees(),
+                'total_service_cost': total_service_cost,
+                'tax_rate': tax_rate_percentage,
+                'tax_amount': tax_amount,
+                'total_discount': total_discount,
+                'package_discount': package_discount,
+                'sunday_discount': sunday_discount,
+                'other_discounts': other_discounts,  # This will include the other discounts' details
+                'other_discount_total': other_discount_total,
+                'total_cost_after_discounts': total_cost_after_discounts,
+                'deposit_due_to_book': deposit_due_to_book,
+                'grand_total': grand_total,
+                'amount_paid': amount_paid,
+                'balance_due': balance_due,
+                'due_date': due_date.strftime('%B %d, %Y'),  # Format the due date
+                'rider_agreements': rider_agreements,
+                'first_agreement': first_agreement,
+                'latest_agreement': latest_agreement,
+                'photography_discount': photography_discount,
+                'videography_discount': videography_discount,
+                'dj_discount': dj_discount,
+                'photobooth_discount': photobooth_discount,
             }
 
             # Generate PDF
@@ -919,7 +1030,7 @@ def client_contract_and_rider_agreement(request, contract_id):
             'form': form,
         }
 
-        return render(request, 'documents/client_contract_and_rider_agreement.html', context)
+        return render(request, 'documents/client_contract_agreement.html', context)
 
 
 @login_required
