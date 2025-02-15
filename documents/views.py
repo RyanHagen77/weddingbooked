@@ -775,6 +775,10 @@ def client_contract_and_rider_agreement(request, contract_id):
     tax_amount = contract.calculate_tax()  # Calculate the tax amount
     product_subtotal_with_tax = product_subtotal + tax_amount  # Add tax to product subtotal
     total_service_cost = contract.calculate_total_service_cost()  # Calculate the total service cost
+    grand_total = contract.calculate_total_cost()
+    amount_paid = sum(payment.amount for payment in contract.payments.all()) or Decimal('0.00')
+    balance_due = max(Decimal('0.00'), grand_total - amount_paid)
+
 
     context.update({
         'total_discount': total_discount,
@@ -791,10 +795,14 @@ def client_contract_and_rider_agreement(request, contract_id):
         'deposit_due_to_book': deposit_due_to_book,
         'product_subtotal': product_subtotal,
         'formalwear_subtotal': formalwear_subtotal,
-        'tax_rate_percentage': tax_rate_percentage,
+        'tax_rate': tax_rate_percentage,
         'tax_amount': tax_amount,
+        'amount_paid': amount_paid,
+        'balance_due': balance_due,
+        'grand_total': grand_total,
         'product_subtotal_with_tax': product_subtotal_with_tax,
         'total_service_cost': total_service_cost,
+
     })
 
     if request.method == 'POST':
