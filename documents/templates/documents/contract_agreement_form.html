@@ -274,6 +274,7 @@
     </style>
 </head>
 <body>
+<form id="contract-form" method="post" action="{% url 'documents:contract_agreement' contract.contract_id %}">
     {% load group_tags %}
     <!-- Header Section -->
     {% include "documents/contract_agreements/partials/header.html" %}
@@ -628,7 +629,6 @@
         <button type="button" onclick="sendEmail()" class="submit-btn">Send Email</button>
     </div>
 </form>
-
 <script>
     function sendEmail() {
         var form = document.getElementById('contract-form');

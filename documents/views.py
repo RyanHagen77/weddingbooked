@@ -454,6 +454,7 @@ def contract_agreement(request, contract_id):
             'primary_phone': contract.client.primary_phone1 if contract.client else 'N/A',
             'partner_contact': contract.client.partner_contact if contract.client else 'N/A',
         },
+        'form': form,
         'logo_url': logo_url,
         'package_texts': package_texts,
         'additional_services_texts': additional_services_texts,
