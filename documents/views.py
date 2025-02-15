@@ -697,6 +697,42 @@ def client_contract_and_rider_agreement(request, contract_id):
         },
     }
 
+    # Calculate the total deposit for each service
+    deposit_due_to_book = Decimal('0.00')
+
+    if contract.photography_package:
+        deposit_due_to_book += contract.photography_package.deposit
+    if contract.videography_package:
+        deposit_due_to_book += contract.videography_package.deposit
+    if contract.dj_package:
+        deposit_due_to_book += contract.dj_package.deposit
+    if contract.photobooth_package:
+        deposit_due_to_book += contract.photobooth_package.deposit
+
+    if contract.photography_additional:
+        deposit_due_to_book += contract.photography_additional.deposit
+    if contract.videography_additional:
+        deposit_due_to_book += contract.videography_additional.deposit
+    if contract.dj_additional:
+        deposit_due_to_book += contract.dj_additional.deposit
+    if contract.photobooth_additional:
+        deposit_due_to_book += contract.photobooth_additional.deposit
+
+    # Get service fees and the total amount for the service fees
+    service_fees = contract.servicefees.all()
+    service_fees_total = contract.calculate_total_service_fees()
+
+    # Get formalwear details
+    formalwear_details = []
+    for formalwear_contract in contract.formalwear_contracts.all():
+        formalwear_details.append({
+            'product_name': formalwear_contract.formalwear_product.name,
+            'default_text': formalwear_contract.formalwear_product.default_text,
+            'rental_price': formalwear_contract.formalwear_product.rental_price,
+            'deposit_amount': formalwear_contract.formalwear_product.deposit_amount,
+            'quantity': formalwear_contract.quantity,
+        })
+
     # Calculate other contract-related data for use in the template
     total_discount = contract.calculate_discount()
     due_date = contract.event_date - timedelta(days=60)
@@ -737,6 +773,10 @@ def client_contract_and_rider_agreement(request, contract_id):
         'photobooth_discount': photobooth_discount,
         'package_discount': package_discount,
         'sunday_discount': sunday_discount,
+        'service_fees': service_fees,
+        'service_fees_total': service_fees_total,
+        'formalwear_details': formalwear_details,
+        'deposit_due_to_book': deposit_due_to_book
     })
 
     if request.method == 'POST':
