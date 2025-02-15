@@ -9,7 +9,7 @@ path('contract_agreement/<int:contract_id>/', views.contract_agreement, name='co
 path('client_contract_agreement/<int:contract_id>/', views.client_contract_agreement,
      name='client_contract_agreement'),
 path('view_submitted_contract/<int:contract_id>/', views.view_submitted_contract, name='view_submitted_contract'),
-path('client_contract_and_rider_agreement/<int:contract_id>/', views.client_contract_and_rider_agreement,
+path('client_contract_and_rider_agreement/<int:contract_id>/', views.client_contract_agreement,
           name='client_contract_and_rider_agreement'),
 path('client_rider_agreement/<int:contract_id>/<str:rider_type>/', views.client_rider_agreement,
      name='client_rider_agreement'),
