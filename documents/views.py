@@ -789,6 +789,7 @@ def client_contract_and_rider_agreement(request, contract_id):
         'photobooth_discount': photobooth_discount,
         'package_discount': package_discount,
         'sunday_discount': sunday_discount,
+        'other_discounts': other_discounts,
         'service_fees': service_fees,
         'service_fees_total': service_fees_total,
         'formalwear_details': formalwear_details,
