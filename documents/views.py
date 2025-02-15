@@ -778,6 +778,18 @@ def client_contract_and_rider_agreement(request, contract_id):
                 'photobooth_additional': contract.photobooth_additional.default_text if contract.photobooth_additional else None,
             }
 
+            rider_texts = {
+                'photography': contract.photography_package.rider_text if contract.photography_package else None,
+                'photography_additional': contract.photography_additional.rider_text if contract.photography_additional else None,
+                'engagement_session': contract.engagement_session.rider_text if contract.engagement_session else None,
+                'videography': contract.videography_package.rider_text if contract.videography_package else None,
+                'videography_additional': contract.videography_additional.rider_text if contract.videography_additional else None,
+                'dj': contract.dj_package.rider_text if contract.dj_package else None,
+                'dj_additional': contract.dj_additional.rider_text if contract.dj_additional else None,
+                'photobooth': contract.photobooth_package.rider_text if contract.photobooth_package else None,
+                'photobooth_additional': contract.photobooth_additional.rider_text if contract.photobooth_additional else None,
+            }
+
             # Additional staff
             additional_staff = defaultdict(list)
             for staff_option in [contract.photography_additional, contract.videography_additional,
@@ -874,6 +886,7 @@ def client_contract_and_rider_agreement(request, contract_id):
                 'logo_url': logo_url,
                 'company_signature_url': company_signature_url,
                 'package_texts': package_texts,
+                'rider_texts': rider_texts,
                 'additional_services_texts': additional_services_texts,
                 'additional_staff': additional_staff,
                 'total_overtime_cost': total_overtime_cost,
