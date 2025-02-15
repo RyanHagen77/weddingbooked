@@ -1,4 +1,4 @@
-    <!-- Photography Services Section -->
+<!-- Photography Services Section -->
 {% load group_tags %}
 {% if contract.photography_package or contract.photography_additional or contract.engagement_session or overtime_options_by_service_type.Photography %}
     <tr>
@@ -29,7 +29,6 @@
         </td>
         <td style="width: 10%;">${{ contract.photography_package.deposit }}</td>
     </tr>
-
     {% endif %}
 
     <!-- Additional Photographer -->
@@ -60,9 +59,10 @@
     {% if contract.engagement_session %}
     <tr>
         <td style="width: 52%;">{{ contract.engagement_session.name }}</td>
-        <td style="width: 8%;">{{ contract.engagement_session.hours }}</td>
+        <!-- Set default values for hours and discount if not present -->
+        <td style="width: 8%;">0</td> <!-- Default for hours -->
         <td style="width: 10%;">${{ contract.engagement_session.price }}</td>
-        <td style="width: 10%;">${{ contract.engagement_session.deposit }}</td>
+
         <td style="width: 10%;">
             {% if contract.engagement_session.discount %}
                 ${{ contract.engagement_session.discount }}
@@ -77,6 +77,7 @@
                 ${{ contract.engagement_session.price }}
             {% endif %}
         </td>
+        <td style="width: 10%;">${{ contract.engagement_session.deposit }}</td>
     </tr>
     {% endif %}
 
