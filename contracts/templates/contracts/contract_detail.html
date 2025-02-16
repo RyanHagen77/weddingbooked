@@ -30,7 +30,7 @@
                     <div class="d-flex align-items-center">
                         <a href="{% url 'documents:generate_contract_pdf' contract_id=contract.contract_id %}" class="section-link small-text" target="_blank">Print Contract</a>
                         <span class="mx-2 section-divider">|</span>
-                        <a href="{% url 'documents:contract_agreement' contract_id=contract.contract_id %}" class="section-link small-text" target="_blank">View Contract</a>
+                        <a href="{% url 'documents:contract_agreement_preview' contract_id=contract.contract_id %}" class="section-link small-text" target="_blank">View Contract</a>
                         <span class="mx-2 section-divider">|</span>
                         <a href="{% url 'communication:send_portal_access' contract_id=contract.contract_id %}" class="section-link small-text" id="give-portal-access-btn">Give Portal Access</a>
                     </div>

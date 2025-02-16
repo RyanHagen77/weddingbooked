@@ -274,7 +274,7 @@
     </style>
 </head>
 <body>
-<form id="contract-form" method="post" action="{% url 'documents:contract_agreement' contract.contract_id %}">
+<form id="contract-form" method="post" action="{% url 'documents:contract_agreement_preview' contract.contract_id %}">
     {% load group_tags %}
     <!-- Header Section -->
     {% include "documents/contract_agreements/partials/header.html" %}
