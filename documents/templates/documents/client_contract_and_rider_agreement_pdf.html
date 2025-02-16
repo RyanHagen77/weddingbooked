@@ -384,7 +384,19 @@
     <div class="divider"></div>
 
     <!-- Signature Section -->
-    {% include "documents/contract_agreements/partials/analog_signature_section.html" %}
+        <!-- Main Contract Signature -->
+    <div class="contract-details">
+        <div style="text-align: left;">
+            <p><strong>Signature:</strong> {{ latest_agreement.initials }}</p>
+            <img src="{{ latest_agreement.signature }}" alt="Contract Signature" class="signature-img">
+            <p><strong>Date Created:</strong> {{ latest_agreement.created_at|date:"Y-m-d H:i:s" }}</p>
+        </div>
+            <!-- Main Contract Signature -->
+        <div style="text-align: left;">
+            <label>Essence Rep Signature:</label>
+            <img src="{{ company_signature_url }}" alt="company_signature" class="signature-img">
+        </div>
+    </div>
 
     <div class="divider"></div>
 
@@ -393,14 +405,6 @@
         {{ contract.custom_text|default_if_none:"" }}
     </div>
 
-    <!-- Main Contract Signature -->
-    <div class="contract-details">
-        <div style="text-align: left;">
-            <p><strong>Signature:</strong> {{ latest_agreement.initials }}</p>
-            <img src="{{ latest_agreement.signature }}" alt="Contract Signature" class="signature-img">
-            <p><strong>Date Created:</strong> {{ latest_agreement.created_at|date:"Y-m-d H:i:s" }}</p>
-        </div>
-    </div>
 
     <!-- Rider Agreements -->
     {% for rider in rider_agreements %}
