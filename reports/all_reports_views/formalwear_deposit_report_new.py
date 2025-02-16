@@ -63,4 +63,4 @@ def formalwear_deposit_report_new(request):
         'locations': locations,
     }
 
-    return render(request, 'reports/formal_wear_deposit_report.html', context)
+    return render(request, 'reports/formalwear_deposit_report_new.html', context)
