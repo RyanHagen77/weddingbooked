@@ -550,7 +550,7 @@ def contract_and_rider_agreement(request, contract_id):
 
     # Constants and URLs
     logo_url = f'{settings.MEDIA_URL}logo/Final_Logo.png'
-    company_signature_url = f'{settings.MEDIA_URL}signatures/company_signature.png'
+    company_signature_url = f'{settings.MEDIA_URL}contract_signatures/EssenceSignature.png'
 
     # Prepare client info context
     client_info = {
@@ -807,7 +807,7 @@ def contract_and_rider_agreement(request, contract_id):
 def view_rider_agreements(request, contract_id):
     contract = get_object_or_404(Contract, pk=contract_id)
     rider_agreements = RiderAgreement.objects.filter(contract=contract)
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
+    logo_url = f"{settings.MEDIA_URL}logo/Final_Logo.png"
 
     package_texts = {
         'photography': linebreaks(contract.photography_package.default_text) if contract.photography_package else None,
