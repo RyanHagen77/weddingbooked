@@ -109,75 +109,72 @@
             width: 48%;
             margin-bottom: 5px;
         }
-.agreement-details {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    padding: 10px 10px; /* Reduced top and bottom padding to 5px */
-    background-color: #f4f4f4; /* Light gray background */
-    border-radius: 8px; /* Rounded corners for the whole section */
-    border: 1px solid #ddd; /* Border around the section */
-}
+        .agreement-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 10px 10px; /* Reduced top and bottom padding to 5px */
+            background-color: #f4f4f4; /* Light gray background */
+            border-radius: 8px; /* Rounded corners for the whole section */
+            border: 1px solid #ddd; /* Border around the section */
+        }
 
-.left-column, .right-column {
-    width: 48%; /* Take up nearly half the space */
-}
+        .left-column, .right-column {
+            width: 48%; /* Take up nearly half the space */
+        }
 
-.client-info-box, .ceremony-reception-box {
-    background-color: #fff;
-    padding: 10px 10px; /* Reduced padding for a more compact look */
-    border-radius: 12px; /* Rounded corners for boxes */
-    border: 1px solid #ddd; /* Light border around boxes */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start; /* Align content to the top */
-    height: 100%; /* Ensure boxes stretch fully */
-}
+        .client-info-box, .ceremony-reception-box {
+            background-color: #fff;
+            padding: 10px 10px; /* Reduced padding for a more compact look */
+            border-radius: 12px; /* Rounded corners for boxes */
+            border: 1px solid #ddd; /* Light border around boxes */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Align content to the top */
+            height: 100%; /* Ensure boxes stretch fully */
+        }
 
-.info-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5px; /* Reduced margin between rows */
-}
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px; /* Reduced margin between rows */
+        }
 
-.info-row strong {
-    font-size: 12px;
-    color: #333;
-}
+        .info-row strong {
+            font-size: 12px;
+            color: #333;
+        }
 
-.info-row span {
-    font-size: 12px;
-    color: #555;
-}
+        .info-row span {
+            font-size: 12px;
+            color: #555;
+        }
 
-.ceremony-reception-box .info-row {
-    text-align: left; /* Align text to left for other fields */
-}
+        .ceremony-reception-box .info-row {
+            text-align: left; /* Align text to left for other fields */
+        }
 
-.ceremony-reception-box .info-row span {
-    text-align: right; /* Align the city/state to the right */
-}
+        .ceremony-reception-box .info-row span {
+            text-align: right; /* Align the city/state to the right */
+        }
 
-@media (max-width: 600px) {
-    .agreement-details {
-        flex-direction: column;
-        align-items: center;
-    }
+        @media (max-width: 600px) {
+            .agreement-details {
+                flex-direction: column;
+                align-items: center;
+            }
 
-    .left-column, .right-column {
-        width: 100%;
-        margin-bottom: 20px;
-    }
+            .left-column, .right-column {
+                width: 100%;
+                margin-bottom: 20px;
+            }
 
-    .client-info-box, .ceremony-reception-box {
-        width: 100%;
-    }
-}
-
-
-
-        table {
+            .client-info-box, .ceremony-reception-box {
+                width: 100%;
+            }
+        }
+                table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
@@ -297,76 +294,69 @@
                 order: initial;
             }
         }
-
-
     </style>
-</head>
+    </head>
+    <body>
+        {% load group_tags %}
+        <!-- Header Section -->
+        {% include "documents/contract_agreements/partials/header.html" %}
 
-    </style>
-</head>
-<body>
-    {% load group_tags %}
-    <!-- Header Section -->
-    {% include "documents/contract_agreements/partials/header.html" %}
+        <div class="divider"></div>
 
-    <div class="divider"></div>
+        <!-- Contract Agreement Description -->
+    <!-- Agreement Section -->
+    <div class="agreement-description">
+        <strong>Contractual Agreement</strong>
+    </div>
+    <div class="agreement-engage">
+        <p>I (we) hereby engage Essence Weddings to render services as follows:</p>
+    </div>
 
-    <!-- Contract Agreement Description -->
-<!-- Agreement Section -->
-<div class="agreement-description">
-    <strong>Contractual Agreement</strong>
-</div>
-<div class="agreement-engage">
-    <p>I (we) hereby engage Essence Weddings to render services as follows:</p>
-</div>
-
-<!-- Agreement Details (Client and Event Info) -->
-<div class="agreement-details">
-    <div class="left-column">
-        <div class="client-info-box">
-            <div class="info-row">
-                <strong>Primary Contact:</strong>
-                <span>{{ contract.client.primary_contact }}</span>
-            </div>
-            <div class="info-row">
-                <strong>Email:</strong>
-                <span>{{ contract.client.primary_email }}</span>
-            </div>
-            <div class="info-row">
-                <strong>Phone:</strong>
-                <span>{{ contract.client.primary_phone1 }}</span>
-            </div>
-            {% if contract.client.partner_contact %}
+    <!-- Agreement Details (Client and Event Info) -->
+    <div class="agreement-details">
+        <div class="left-column">
+            <div class="client-info-box">
                 <div class="info-row">
-                    <strong>Partner Contact:</strong>
-                    <span>{{ contract.client.partner_contact }}</span>
+                    <strong>Primary Contact:</strong>
+                    <span>{{ contract.client.primary_contact }}</span>
                 </div>
-            {% endif %}
-        </div>
-    </div>
-    <div class="right-column">
-        <div class="ceremony-reception-box">
-            <div class="info-row">
-                <strong>Contract No.:</strong>
-                <span>{{ contract.custom_contract_number }}</span>
-            </div>
-            <div class="info-row">
-                <strong>Wedding Date:</strong>
-                <span>{{ contract.event_date }}</span>
-            </div>
-            <div class="info-row">
-                <strong>Ceremony Site:</strong>
-                <span>{{ contract.ceremony_site }}</span>
-            </div>
-            <div class="info-row">
-                <strong>Reception Site:</strong>
-                <span>{{ contract.reception_site }}</span>
+                <div class="info-row">
+                    <strong>Email:</strong>
+                    <span>{{ contract.client.primary_email }}</span>
+                </div>
+                <div class="info-row">
+                    <strong>Phone:</strong>
+                    <span>{{ contract.client.primary_phone1 }}</span>
+                </div>
+                {% if contract.client.partner_contact %}
+                    <div class="info-row">
+                        <strong>Partner Contact:</strong>
+                        <span>{{ contract.client.partner_contact }}</span>
+                    </div>
+                {% endif %}
             </div>
         </div>
+        <div class="right-column">
+            <div class="ceremony-reception-box">
+                <div class="info-row">
+                    <strong>Contract No.:</strong>
+                    <span>{{ contract.custom_contract_number }}</span>
+                </div>
+                <div class="info-row">
+                    <strong>Wedding Date:</strong>
+                    <span>{{ contract.event_date }}</span>
+                </div>
+                <div class="info-row">
+                    <strong>Ceremony Site:</strong>
+                    <span>{{ contract.ceremony_site }}</span>
+                </div>
+                <div class="info-row">
+                    <strong>Reception Site:</strong>
+                    <span>{{ contract.reception_site }}</span>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
-
-
 
     <div class="divider"></div>
 
