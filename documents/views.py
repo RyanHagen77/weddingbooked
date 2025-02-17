@@ -598,189 +598,7 @@ def contract_and_rider_agreement(request, contract_id):
                 else:
                     print(f"Missing signature for {rider}")
 
-            # Initialize an empty dictionary to store overtime options grouped by service type
-            overtime_options_by_service_type = {}
 
-            # Initialize total overtime cost
-            total_overtime_cost = 0
-
-            # Iterate over each overtime option
-            for contract_overtime in contract.overtimes.all():
-                service_type = contract_overtime.overtime_option.service_type.name
-                if service_type in overtime_options_by_service_type:
-                    overtime_options_by_service_type[service_type].append({
-                        'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role,
-                                                       contract_overtime.overtime_option.role),
-                        'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
-                        'hours': contract_overtime.hours,
-                    })
-                else:
-                    overtime_options_by_service_type[service_type] = [{
-                        'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role,
-                                                       contract_overtime.overtime_option.role),
-                        'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
-                        'hours': contract_overtime.hours,
-                    }]
-
-            for service_type, options in overtime_options_by_service_type.items():
-                for option in options:
-                    option['total_cost'] = option['hours'] * option['rate_per_hour']
-                    total_overtime_cost += option['total_cost']
-
-            # Prepare client info context
-            client_info = {
-                'primary_contact': contract.client.primary_contact if contract.client else 'N/A',
-                'primary_email': contract.client.primary_email if contract.client else 'N/A',
-                'primary_phone': contract.client.primary_phone1 if contract.client else 'N/A',
-                'partner_contact': contract.client.partner_contact if contract.client else 'N/A',
-            }
-
-            # Calculate deposit due at booking
-            deposit_due_to_book = Decimal('0.00')
-            deposit_due_to_book += sum([package.deposit for package in [
-                contract.photography_package,
-                contract.videography_package,
-                contract.dj_package,
-                contract.photobooth_package,
-                contract.photography_additional,
-                contract.videography_additional,
-                contract.dj_additional,
-                contract.photobooth_additional,
-                contract.engagement_session
-            ] if package])
-
-            # Get service fees and total
-            service_fees = contract.servicefees.all()
-            service_fees_total = contract.calculate_total_service_fees()
-
-            # Get formalwear details
-            formalwear_details = [
-                {
-                    'product_name': formalwear_contract.formalwear_product.name,
-                    'default_text': formalwear_contract.formalwear_product.default_text,
-                    'rental_price': formalwear_contract.formalwear_product.rental_price,
-                    'deposit_amount': formalwear_contract.formalwear_product.deposit_amount,
-                    'quantity': formalwear_contract.quantity,
-                }
-                for formalwear_contract in contract.formalwear_contracts.all()
-            ]
-
-            # Discounts and totals
-            total_discount = contract.calculate_discount()
-            due_date = contract.event_date - timedelta(days=60)
-            other_discounts = contract.other_discounts.all()
-            package_discount = contract.calculate_package_discount()
-            sunday_discount = contract.calculate_sunday_discount()
-            other_discount_total = sum([discount.amount for discount in other_discounts])
-
-            # Calculate the total package discount
-            selected_services = []
-            if contract.photography_package:
-                selected_services.append('photography')
-            if contract.videography_package:
-                selected_services.append('videography')
-            if contract.dj_package:
-                selected_services.append('dj')
-            if contract.photobooth_package:
-                selected_services.append('photobooth')
-
-            # Calculate the discount per service for the package discount
-            discount_per_service = Decimal('0.00')
-            num_services = len(selected_services)
-            if num_services > 0:
-                discount_per_service = package_discount / num_services
-
-            # Apply the calculated discount to each service
-            service_discounts = {
-                'photography': discount_per_service if contract.photography_package else Decimal('0.00'),
-                'videography': discount_per_service if contract.videography_package else Decimal('0.00'),
-                'dj': discount_per_service if contract.dj_package else Decimal('0.00'),
-                'photobooth': discount_per_service if contract.photobooth_package else Decimal('0.00')
-            }
-
-            # Calculate other totals
-            product_subtotal = contract.calculate_product_subtotal()
-            formalwear_subtotal = contract.calculate_formalwear_subtotal()
-            tax_rate_percentage = float(contract.tax_rate)
-            tax_amount = contract.calculate_tax()
-            product_subtotal_with_tax = product_subtotal + tax_amount
-            total_service_cost = contract.calculate_total_service_cost()
-            grand_total = contract.calculate_total_cost()
-            amount_paid = sum(payment.amount for payment in contract.payments.all()) or Decimal('0.00')
-            balance_due = max(Decimal('0.00'), grand_total - amount_paid)
-
-            # Get the first and latest agreements and rider agreements
-            first_agreement = ContractAgreement.objects.filter(contract=contract).order_by('version_number').first()
-            latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
-            rider_agreements = RiderAgreement.objects.filter(contract=contract)
-
-            package_texts = {
-                'photography': contract.photography_package.default_text if contract.photography_package else None,
-                'videography': contract.videography_package.default_text if contract.videography_package else None,
-                'dj': contract.dj_package.default_text if contract.dj_package else None,
-                'photobooth': contract.photobooth_package.default_text if contract.photobooth_package else None,
-            }
-
-            # Additional services text processing (No linebreaks)
-            additional_services_texts = {
-                'photography_additional': contract.photography_additional.default_text if contract.photography_additional else None,
-                'videography_additional': contract.videography_additional.default_text if contract.videography_additional else None,
-                'dj_additional': contract.dj_additional.default_text if contract.dj_additional else None,
-                'photobooth_additional': contract.photobooth_additional.default_text if contract.photobooth_additional else None,
-            }
-
-            # Additional staff
-            additional_staff = defaultdict(list)
-            for staff_option in [contract.photography_additional, contract.videography_additional,
-                                 contract.dj_additional,
-                                 contract.photobooth_additional]:
-                if staff_option:
-                    additional_staff[staff_option.service_type.name].append({
-                        'name': staff_option.name,
-                        'service_type': staff_option.service_type.name,
-                        'price': staff_option.price,
-                        'hours': staff_option.hours,
-                        'default_text': staff_option.default_text,
-                    })
-
-            form = ContractAgreementForm()
-
-            # Update context with calculated values
-            context.update({
-                'contract': contract,
-                'logo_url': logo_url,
-                'company_signature_url': company_signature_url,
-                'client_info': client_info,
-                'total_discount': total_discount,
-                'due_date': due_date.strftime('%B %d, %Y'),
-                'service_discounts': service_discounts,
-                'package_discount': package_discount,
-                'sunday_discount': sunday_discount,
-                'other_discounts': other_discounts,
-                'photography_discount': service_discounts['photography'],
-                'videography_discount': service_discounts['videography'],
-                'dj_discount': service_discounts['dj'],
-                'photobooth_discount': service_discounts['photobooth'],
-                'service_fees': service_fees,
-                'service_fees_total': service_fees_total,
-                'formalwear_details': formalwear_details,
-                'deposit_due_to_book': deposit_due_to_book,
-                'product_subtotal': product_subtotal,
-                'formalwear_subtotal': formalwear_subtotal,
-                'tax_rate': tax_rate_percentage,
-                'tax_amount': tax_amount,
-                'amount_paid': amount_paid,
-                'balance_due': balance_due,
-                'grand_total': grand_total,
-                'product_subtotal_with_tax': product_subtotal_with_tax,
-                'total_service_cost': total_service_cost,
-                'rider_agreements': rider_agreements,
-                'first_agreement': first_agreement,
-                'latest_agreement': latest_agreement,
-                'package_texts': package_texts,
-                'additional_service_texts': additional_services_texts,
-                'form': form,
-            })
             # Generate PDF
             html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
             pdf_file = HTML(string=html_string).write_pdf()
@@ -820,6 +638,188 @@ def contract_and_rider_agreement(request, contract_id):
             })
 
     else:
+        overtime_options_by_service_type = {}
+
+        # Initialize total overtime cost
+        total_overtime_cost = 0
+
+        # Iterate over each overtime option
+        for contract_overtime in contract.overtimes.all():
+            service_type = contract_overtime.overtime_option.service_type.name
+            if service_type in overtime_options_by_service_type:
+                overtime_options_by_service_type[service_type].append({
+                    'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role,
+                                                   contract_overtime.overtime_option.role),
+                    'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
+                    'hours': contract_overtime.hours,
+                })
+            else:
+                overtime_options_by_service_type[service_type] = [{
+                    'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role,
+                                                   contract_overtime.overtime_option.role),
+                    'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
+                    'hours': contract_overtime.hours,
+                }]
+
+        for service_type, options in overtime_options_by_service_type.items():
+            for option in options:
+                option['total_cost'] = option['hours'] * option['rate_per_hour']
+                total_overtime_cost += option['total_cost']
+
+        # Prepare client info context
+        client_info = {
+            'primary_contact': contract.client.primary_contact if contract.client else 'N/A',
+            'primary_email': contract.client.primary_email if contract.client else 'N/A',
+            'primary_phone': contract.client.primary_phone1 if contract.client else 'N/A',
+            'partner_contact': contract.client.partner_contact if contract.client else 'N/A',
+        }
+
+        # Calculate deposit due at booking
+        deposit_due_to_book = Decimal('0.00')
+        deposit_due_to_book += sum([package.deposit for package in [
+            contract.photography_package,
+            contract.videography_package,
+            contract.dj_package,
+            contract.photobooth_package,
+            contract.photography_additional,
+            contract.videography_additional,
+            contract.dj_additional,
+            contract.photobooth_additional,
+            contract.engagement_session
+        ] if package])
+
+        # Get service fees and total
+        service_fees = contract.servicefees.all()
+        service_fees_total = contract.calculate_total_service_fees()
+
+        # Get formalwear details
+        formalwear_details = [
+            {
+                'product_name': formalwear_contract.formalwear_product.name,
+                'default_text': formalwear_contract.formalwear_product.default_text,
+                'rental_price': formalwear_contract.formalwear_product.rental_price,
+                'deposit_amount': formalwear_contract.formalwear_product.deposit_amount,
+                'quantity': formalwear_contract.quantity,
+            }
+            for formalwear_contract in contract.formalwear_contracts.all()
+        ]
+
+        # Discounts and totals
+        total_discount = contract.calculate_discount()
+        due_date = contract.event_date - timedelta(days=60)
+        other_discounts = contract.other_discounts.all()
+        package_discount = contract.calculate_package_discount()
+        sunday_discount = contract.calculate_sunday_discount()
+        other_discount_total = sum([discount.amount for discount in other_discounts])
+
+        # Calculate the total package discount
+        selected_services = []
+        if contract.photography_package:
+            selected_services.append('photography')
+        if contract.videography_package:
+            selected_services.append('videography')
+        if contract.dj_package:
+            selected_services.append('dj')
+        if contract.photobooth_package:
+            selected_services.append('photobooth')
+
+        # Calculate the discount per service for the package discount
+        discount_per_service = Decimal('0.00')
+        num_services = len(selected_services)
+        if num_services > 0:
+            discount_per_service = package_discount / num_services
+
+        # Apply the calculated discount to each service
+        service_discounts = {
+            'photography': discount_per_service if contract.photography_package else Decimal('0.00'),
+            'videography': discount_per_service if contract.videography_package else Decimal('0.00'),
+            'dj': discount_per_service if contract.dj_package else Decimal('0.00'),
+            'photobooth': discount_per_service if contract.photobooth_package else Decimal('0.00')
+        }
+
+        # Calculate other totals
+        product_subtotal = contract.calculate_product_subtotal()
+        formalwear_subtotal = contract.calculate_formalwear_subtotal()
+        tax_rate_percentage = float(contract.tax_rate)
+        tax_amount = contract.calculate_tax()
+        product_subtotal_with_tax = product_subtotal + tax_amount
+        total_service_cost = contract.calculate_total_service_cost()
+        grand_total = contract.calculate_total_cost()
+        amount_paid = sum(payment.amount for payment in contract.payments.all()) or Decimal('0.00')
+        balance_due = max(Decimal('0.00'), grand_total - amount_paid)
+
+        # Get the first and latest agreements and rider agreements
+        first_agreement = ContractAgreement.objects.filter(contract=contract).order_by('version_number').first()
+        latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
+        rider_agreements = RiderAgreement.objects.filter(contract=contract)
+
+        package_texts = {
+            'photography': contract.photography_package.default_text if contract.photography_package else None,
+            'videography': contract.videography_package.default_text if contract.videography_package else None,
+            'dj': contract.dj_package.default_text if contract.dj_package else None,
+            'photobooth': contract.photobooth_package.default_text if contract.photobooth_package else None,
+        }
+
+        # Additional services text processing (No linebreaks)
+        additional_services_texts = {
+            'photography_additional': contract.photography_additional.default_text if contract.photography_additional else None,
+            'videography_additional': contract.videography_additional.default_text if contract.videography_additional else None,
+            'dj_additional': contract.dj_additional.default_text if contract.dj_additional else None,
+            'photobooth_additional': contract.photobooth_additional.default_text if contract.photobooth_additional else None,
+        }
+
+        # Additional staff
+        additional_staff = defaultdict(list)
+        for staff_option in [contract.photography_additional, contract.videography_additional,
+                             contract.dj_additional,
+                             contract.photobooth_additional]:
+            if staff_option:
+                additional_staff[staff_option.service_type.name].append({
+                    'name': staff_option.name,
+                    'service_type': staff_option.service_type.name,
+                    'price': staff_option.price,
+                    'hours': staff_option.hours,
+                    'default_text': staff_option.default_text,
+                })
+
+        form = ContractAgreementForm()
+
+        # Update context with calculated values
+        context.update({
+            'contract': contract,
+            'logo_url': logo_url,
+            'company_signature_url': company_signature_url,
+            'client_info': client_info,
+            'total_discount': total_discount,
+            'due_date': due_date.strftime('%B %d, %Y'),
+            'service_discounts': service_discounts,
+            'package_discount': package_discount,
+            'sunday_discount': sunday_discount,
+            'other_discounts': other_discounts,
+            'photography_discount': service_discounts['photography'],
+            'videography_discount': service_discounts['videography'],
+            'dj_discount': service_discounts['dj'],
+            'photobooth_discount': service_discounts['photobooth'],
+            'service_fees': service_fees,
+            'service_fees_total': service_fees_total,
+            'formalwear_details': formalwear_details,
+            'deposit_due_to_book': deposit_due_to_book,
+            'product_subtotal': product_subtotal,
+            'formalwear_subtotal': formalwear_subtotal,
+            'tax_rate': tax_rate_percentage,
+            'tax_amount': tax_amount,
+            'amount_paid': amount_paid,
+            'balance_due': balance_due,
+            'grand_total': grand_total,
+            'product_subtotal_with_tax': product_subtotal_with_tax,
+            'total_service_cost': total_service_cost,
+            'rider_agreements': rider_agreements,
+            'first_agreement': first_agreement,
+            'latest_agreement': latest_agreement,
+            'package_texts': package_texts,
+            'additional_service_texts': additional_services_texts,
+            'form': form,
+        })
 
         return render(request, 'documents/client_contract_and_rider_agreement.html', context)
 
