@@ -544,7 +544,7 @@ def view_submitted_contract(request, contract_id, version_number):
 
 
 @login_required
-def client_contract_and_rider_agreement(request, contract_id):
+def contract_and_rider_agreement(request, contract_id):
     contract = get_object_or_404(Contract, pk=contract_id)
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
     company_signature_url = f"http://{request.get_host()}{settings.MEDIA_URL}essence_signature/EssenceSignature.png"
