@@ -616,6 +616,7 @@ def contract_and_rider_agreement(request, contract_id):
         'photobooth': discount_per_service if contract.photobooth_package else Decimal('0.00')
     }
 
+
     # Calculate other totals
     product_subtotal = contract.calculate_product_subtotal()
     formalwear_subtotal = contract.calculate_formalwear_subtotal()
@@ -660,6 +661,7 @@ def contract_and_rider_agreement(request, contract_id):
         'rider_agreements': rider_agreements,
         'first_agreement': first_agreement,
         'latest_agreement': latest_agreement,
+
     }
 
     # Handle POST request
@@ -756,20 +758,23 @@ def contract_and_rider_agreement(request, contract_id):
             'overtime_options_by_service_type': overtime_options_by_service_type,
             'total_overtime_cost': total_overtime_cost,
             'ROLE_DISPLAY_NAMES': ROLE_DISPLAY_NAMES,
-            # Package texts (No linebreaks)
             'package_texts': {
-                'photography': contract.photography_package.default_text if contract.photography_package else None,
-                'videography': contract.videography_package.default_text if contract.videography_package else None,
-                'dj': contract.dj_package.default_text if contract.dj_package else None,
-                'photobooth': contract.photobooth_package.default_text if contract.photobooth_package else None,
+                'photography': linebreaks(
+                    contract.photography_package.default_text) if contract.photography_package else None,
+                'videography': linebreaks(
+                    contract.videography_package.default_text) if contract.videography_package else None,
+                'dj': linebreaks(contract.dj_package.default_text) if contract.dj_package else None,
+                'photobooth': linebreaks(
+                    contract.photobooth_package.default_text) if contract.photobooth_package else None,
             },
-
-            # Additional services text processing (No linebreaks)
-            'additional_services_texts':{
-                'photography_additional': contract.photography_additional.default_text if contract.photography_additional else None,
-                'videography_additional': contract.videography_additional.default_text if contract.videography_additional else None,
-                'dj_additional': contract.dj_additional.default_text if contract.dj_additional else None,
-                'photobooth_additional': contract.photobooth_additional.default_text if contract.photobooth_additional else None,
+            'additional_services_texts': {
+                'photography_additional': linebreaks(
+                    contract.photography_additional.default_text) if contract.photography_additional else None,
+                'videography_additional': linebreaks(
+                    contract.videography_additional.default_text) if contract.videography_additional else None,
+                'dj_additional': linebreaks(contract.dj_additional.default_text) if contract.dj_additional else None,
+                'photobooth_additional': linebreaks(
+                    contract.photobooth_additional.default_text) if contract.photobooth_additional else None,
             },
             'rider_texts': {
                 'photography': linebreaks(
@@ -797,7 +802,6 @@ def contract_and_rider_agreement(request, contract_id):
         })
 
         return render(request, 'documents/client_contract_and_rider_agreement.html', context)
-
 
 
 def view_rider_agreements(request, contract_id):
