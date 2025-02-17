@@ -813,7 +813,7 @@ def contract_and_rider_agreement(request, contract_id):
 
     else:
 
-        return render(request, 'documents/contract_and_rider_agreement.html')
+        return render(request, 'documents/client_contract_and_rider_agreement.html')
 
 
 def view_rider_agreements(request, contract_id):
