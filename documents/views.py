@@ -623,7 +623,6 @@ def contract_and_rider_agreement(request, contract_id):
         'photobooth': discount_per_service if contract.photobooth_package else Decimal('0.00')
     }
 
-
     # Calculate other totals
     product_subtotal = contract.calculate_product_subtotal()
     formalwear_subtotal = contract.calculate_formalwear_subtotal()
@@ -703,8 +702,6 @@ def contract_and_rider_agreement(request, contract_id):
         'latest_agreement': latest_agreement,
         'package_texts': package_texts,
         'additional_service_texts': additional_services_texts,
-
-
     }
 
     # Handle POST request
@@ -738,9 +735,10 @@ def contract_and_rider_agreement(request, contract_id):
             # Generate PDF and send email
             html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
             pdf_file = HTML(string=html_string).write_pdf()
-            pdf_name = f"contract_{contract_id}_agreement.pdf"
+            pdf_name = f"contract_{contract_id}_agreement_v{agreement.version_number}.pdf"  # Include version number
             path = default_storage.save(f"contract_documents/{pdf_name}", ContentFile(pdf_file))
 
+            # Attach to contract document section
             ContractDocument.objects.create(
                 contract=contract,
                 document=path,
@@ -827,6 +825,7 @@ def contract_and_rider_agreement(request, contract_id):
         })
 
         return render(request, 'documents/client_contract_and_rider_agreement.html', context)
+
 
 
 def view_rider_agreements(request, contract_id):
