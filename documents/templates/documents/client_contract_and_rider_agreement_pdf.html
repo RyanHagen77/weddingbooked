@@ -357,9 +357,11 @@
             </div>
         </div>
     </div>
+
     <div class="left-column">
         <p><strong>Photographer Choice:</strong> {{ latest_agreement.photographer_choice.get_full_name }}</p>
     </div>
+
     <div class="divider"></div>
 
     <!-- Service Details Table -->
@@ -391,12 +393,12 @@
         <div style="text-align: left;">
             <p><strong>Signature:</strong> {{ latest_agreement.initials }}</p>
             <img src="{{ latest_agreement.signature }}" alt="Contract Signature" class="signature-img">
+            <p><strong>Date Created:</strong> {{ latest_agreement.created_at|date:"Y-m-d H:i:s" }}</p>
         </div>
             <!-- Main Contract Signature -->
         <div style="text-align: left;">
             <label>Essence Rep Signature:</label>
             <img src="{{ company_signature_url }}" alt="company_signature" class="signature-img">
-            <p><strong>Date Created:</strong> {{ latest_agreement.created_at|date:"Y-m-d H:i:s" }}</p>
         </div>
     </div>
 
