@@ -703,76 +703,76 @@ def contract_and_rider_agreement(request, contract_id):
         'additional_service_texts': additional_services_texts,
     }
 
-    # Handle POST request
-    import time  # Import time module for sleep function
+    from django.db import transaction
 
     # Handle POST request
     if request.method == 'POST':
         form = ContractAgreementForm(request.POST)
         if form.is_valid():
-            # Create the agreement but don't save it yet
-            agreement = form.save(commit=False)
-            agreement.contract = contract
-            agreement.signature = form.cleaned_data['main_signature']
-            agreement.photographer_choice = form.cleaned_data['photographer_choice']
+            # Begin a transaction to ensure agreement is saved correctly
+            with transaction.atomic():
+                # Create the agreement but don't save it yet
+                agreement = form.save(commit=False)
+                agreement.contract = contract
+                agreement.signature = form.cleaned_data['main_signature']
+                agreement.photographer_choice = form.cleaned_data['photographer_choice']
 
-            # Fetch the latest agreement version and set the new version number
-            latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
-            agreement.version_number = (latest_agreement.version_number + 1) if latest_agreement else 1
+                # Fetch the latest agreement version and set the new version number
+                latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by(
+                    '-version_number').first()
+                agreement.version_number = (latest_agreement.version_number + 1) if latest_agreement else 1
 
-            # Save the agreement after setting the version_number
-            agreement.save()
+                # Save the agreement to commit the changes to the database
+                agreement.save()
 
-            # Introducing a short delay (e.g., 2 seconds)
-            time.sleep(2)
+                # Handle Rider Agreements
+                for rider in ['photography', 'photography_additional', 'videography', 'videography_additional', 'dj',
+                              'dj_additional', 'photobooth', 'photobooth_additional']:
+                    signature = request.POST.get(f'signature_{rider}')
+                    if signature:
+                        RiderAgreement.objects.create(
+                            contract=contract,
+                            rider_type=rider,
+                            signature=signature,
+                            client_name=request.POST.get(f'client_name_{rider}'),
+                            agreement_date=request.POST.get(f'agreement_date_{rider}'),
+                            notes=request.POST.get(f'notes_{rider}'),
+                            rider_text=request.POST.get(f'rider_text_{rider}')
+                        )
 
-            # Handle Rider Agreements
-            for rider in ['photography', 'photography_additional', 'videography', 'videography_additional', 'dj',
-                          'dj_additional', 'photobooth', 'photobooth_additional']:
-                signature = request.POST.get(f'signature_{rider}')
-                if signature:
-                    RiderAgreement.objects.create(
-                        contract=contract,
-                        rider_type=rider,
-                        signature=signature,
-                        client_name=request.POST.get(f'client_name_{rider}'),
-                        agreement_date=request.POST.get(f'agreement_date_{rider}'),
-                        notes=request.POST.get(f'notes_{rider}'),
-                        rider_text=request.POST.get(f'rider_text_{rider}')
-                    )
+                # Fetch the latest agreement version after saving to ensure it's correct
+                latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by(
+                    '-version_number').first()
 
-            # Fetch the latest agreement version after saving to ensure it's correct
-            latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
+                # Generate PDF and send email
+                html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
+                pdf_file = HTML(string=html_string).write_pdf()
+                pdf_name = f"contract_{contract_id}_agreement_v{latest_agreement.version_number}.pdf"  # Use the latest version
+                path = default_storage.save(f"contract_documents/{pdf_name}", ContentFile(pdf_file))
 
-            # Generate PDF and send email
-            html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
-            pdf_file = HTML(string=html_string).write_pdf()
-            pdf_name = f"contract_{contract_id}_agreement_v{latest_agreement.version_number}.pdf"  # Use the latest version
-            path = default_storage.save(f"contract_documents/{pdf_name}", ContentFile(pdf_file))
+                ContractDocument.objects.create(
+                    contract=contract,
+                    document=path,
+                    is_client_visible=True,
+                )
 
-            ContractDocument.objects.create(
-                contract=contract,
-                document=path,
-                is_client_visible=True,
-            )
+                # Email the PDF to the client
+                client_email = contract.client.primary_email
+                email = EmailMessage(
+                    subject="Your Contract Agreement",
+                    body="Please find attached your signed contract agreement.",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[client_email],
+                )
+                email.attach(pdf_name, pdf_file, 'application/pdf')
+                email.send()
 
-            # Email the PDF to the client
-            client_email = contract.client.primary_email
-            email = EmailMessage(
-                subject="Your Contract Agreement",
-                body="Please find attached your signed contract agreement.",
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[client_email],
-            )
-            email.attach(pdf_name, pdf_file, 'application/pdf')
-            email.send()
-
-            # Redirect to status page with success message
-            portal_url = reverse('users:client_portal', args=[contract_id])
-            return render(request, 'contracts/status_page.html', {
-                'message': 'You\'re all set, thank you!',
-                'portal_url': portal_url
-            })
+                # Redirect to status page with success message
+                portal_url = reverse('users:client_portal', args=[contract_id])
+                return render(request, 'contracts/status_page.html', {
+                    'message': 'You\'re all set, thank you!',
+                    'portal_url': portal_url
+                })
 
         else:
             # Handle form errors
