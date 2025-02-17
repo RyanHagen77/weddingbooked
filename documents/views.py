@@ -552,8 +552,8 @@ def view_submitted_contract(request, contract_id, version_number):
 def contract_and_rider_agreement(request, contract_id):
     # Fetch contract object
     contract = get_object_or_404(Contract, pk=contract_id)
-    logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
-    company_signature_url = f"http://{request.get_host()}{settings.MEDIA_URL}essence_signature/EssenceSignature.png"
+    logo_url = f"{settings.MEDIA_URL}logo/Final_Logo.png"
+    company_signature_url = f"{settings.MEDIA_URL}essence_signature/EssenceSignature.png"
 
     # Prepare context dictionary
     context = {
@@ -818,7 +818,30 @@ def contract_and_rider_agreement(request, contract_id):
             'latest_agreement': latest_agreement,
             'package_texts': package_texts,
             'additional_service_texts': additional_services_texts,
+            'rider_texts': {
+                'photography': linebreaks(
+                    contract.photography_package.rider_text) if contract.photography_package else None,
+                'photography_additional': linebreaks(
+                    contract.photography_additional.rider_text) if contract.photography_additional else None,
+                'engagement_session': linebreaks(
+                    contract.engagement_session.rider_text) if contract.engagement_session else None,
+                'videography': linebreaks(
+                    contract.videography_package.rider_text) if contract.videography_package else None,
+                'videography_additional': linebreaks(
+                    contract.videography_additional.rider_text) if contract.videography_additional else None,
+                'dj': linebreaks(contract.dj_package.rider_text) if contract.dj_package else None,
+                'dj_additional': linebreaks(contract.dj_additional.rider_text) if contract.dj_additional else None,
+                'photobooth': linebreaks(
+                    contract.photobooth_package.rider_text) if contract.photobooth_package else None,
+                'photobooth_additional': linebreaks(
+                    contract.photobooth_additional.rider_text) if contract.photobooth_additional else None,
+            },
             'form': form,
+            'photographer_choices': [
+                contract.prospect_photographer1,
+                contract.prospect_photographer2,
+                contract.prospect_photographer3
+            ]
         })
 
         return render(request, 'documents/client_contract_and_rider_agreement.html', context)
