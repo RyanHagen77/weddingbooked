@@ -667,7 +667,6 @@ def contract_and_rider_agreement(request, contract_id):
                 'default_text': staff_option.default_text,
             })
 
-
     # Update context with calculated values
     context = {
         'contract': contract,
@@ -704,6 +703,7 @@ def contract_and_rider_agreement(request, contract_id):
         'additional_service_texts': additional_services_texts,
     }
 
+
     # Handle POST request
     if request.method == 'POST':
         form = ContractAgreementForm(request.POST)
@@ -714,10 +714,15 @@ def contract_and_rider_agreement(request, contract_id):
             agreement.signature = form.cleaned_data['main_signature']
             agreement.photographer_choice = form.cleaned_data['photographer_choice']
 
-            # Fetch the latest agreement version
+            # Save the agreement first before fetching the latest version
+            agreement.save()  # Save the agreement first to persist changes
+
+            # Fetch the latest agreement version after saving it
             latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
-            agreement.version_number = (latest_agreement.version_number + 1) if latest_agreement else 1
-            agreement.save()  # Save the agreement to commit the changes
+
+            # Save the agreement version number if it was not previously set
+            agreement.version_number = latest_agreement.version_number + 1 if latest_agreement else 1
+            agreement.save()  # Commit the updated version number
 
             # Handle Rider Agreements
             for rider in ['photography', 'photography_additional', 'videography', 'videography_additional', 'dj',
@@ -734,12 +739,10 @@ def contract_and_rider_agreement(request, contract_id):
                         rider_text=request.POST.get(f'rider_text_{rider}')
                     )
 
-            # Fetch the latest agreement version after saving to ensure it's correct
-            latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
-
-            # Generate PDF and send email
+            # Generate PDF with the latest agreement version
             html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
             pdf_file = HTML(string=html_string).write_pdf()
+
             pdf_name = f"contract_{contract_id}_agreement_v{latest_agreement.version_number}.pdf"  # Use the latest version
             path = default_storage.save(f"contract_documents/{pdf_name}", ContentFile(pdf_file))
 
@@ -749,7 +752,7 @@ def contract_and_rider_agreement(request, contract_id):
                 is_client_visible=True,
             )
 
-            # Email the PDF
+            # Email the PDF to the client
             client_email = contract.client.primary_email
             email = EmailMessage(
                 subject="Your Contract Agreement",
@@ -760,7 +763,7 @@ def contract_and_rider_agreement(request, contract_id):
             email.attach(pdf_name, pdf_file, 'application/pdf')
             email.send()
 
-            # Redirect to status page
+            # Redirect to status page with success message
             portal_url = reverse('users:client_portal', args=[contract_id])
             return render(request, 'contracts/status_page.html', {
                 'message': 'You\'re all set, thank you!',
@@ -768,7 +771,7 @@ def contract_and_rider_agreement(request, contract_id):
             })
 
         else:
-            # Return error if form is invalid
+            # Handle form errors
             portal_url = reverse('client_portal', args=[contract_id])
             return render(request, 'contracts/status_page.html', {
                 'message': 'There was an error submitting the agreements.',
@@ -829,6 +832,7 @@ def contract_and_rider_agreement(request, contract_id):
         })
 
         return render(request, 'documents/client_contract_and_rider_agreement.html', context)
+
 
 
 
