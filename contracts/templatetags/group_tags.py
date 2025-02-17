@@ -40,14 +40,12 @@ def multiply(value, arg):
 @register.filter
 def strip_year(value):
     """
-    Removes a space followed by four digits at the end of the string.
-    Example: "Wedding 2023" becomes "Wedding"
+    Removes a four-digit year followed by a space at the start of the string.
+    Example: "2024 name of product" becomes "name of product"
     """
     try:
-        # Convert the value to a string.
         value_str = str(value)
-        # Use a regex to remove a trailing four-digit year preceded by whitespace.
-        # Adjust the regex if your format is different.
-        return re.sub(r'\s\d{4}$', '', value_str)
+        # Remove a 4-digit year followed by a space at the start of the string
+        return re.sub(r'^\d{4}\s', '', value_str)
     except Exception:
-        return value  # On error, return the original valueturn value
+        return value  # Return the original value if something goes wrong

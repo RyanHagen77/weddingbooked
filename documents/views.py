@@ -598,15 +598,22 @@ def contract_and_rider_agreement(request, contract_id):
     sunday_discount = contract.calculate_sunday_discount()
     other_discount_total = sum([discount.amount for discount in other_discounts])
 
-    # Calculate the discount per service for package discount
-    selected_services = [service for service, package in {
-        'photography': contract.photography_package,
-        'videography': contract.videography_package,
-        'dj': contract.dj_package,
-        'photobooth': contract.photobooth_package
-    }.items() if package]
+    # Calculate the total package discount
+    selected_services = []
+    if contract.photography_package:
+        selected_services.append('photography')
+    if contract.videography_package:
+        selected_services.append('videography')
+    if contract.dj_package:
+        selected_services.append('dj')
+    if contract.photobooth_package:
+        selected_services.append('photobooth')
 
-    discount_per_service = package_discount / len(selected_services) if selected_services else Decimal('0.00')
+    # Calculate the discount per service for the package discount
+    discount_per_service = Decimal('0.00')
+    num_services = len(selected_services)
+    if num_services > 0:
+        discount_per_service = package_discount / num_services
 
     # Apply the calculated discount to each service
     service_discounts = {
