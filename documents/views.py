@@ -703,28 +703,24 @@ def contract_and_rider_agreement(request, contract_id):
         'additional_service_texts': additional_services_texts,
     }
 
-
     # Handle POST request
     if request.method == 'POST':
         form = ContractAgreementForm(request.POST)
         if form.is_valid():
-            # Save the agreement and increment version number
+            # Create the agreement but don't save it yet
             agreement = form.save(commit=False)
             agreement.contract = contract
             agreement.signature = form.cleaned_data['main_signature']
             agreement.photographer_choice = form.cleaned_data['photographer_choice']
 
-            # Save the agreement first before fetching the latest version
-            agreement.save()  # Save the agreement first to persist changes
-
-            # Fetch the latest agreement version after saving it
+            # Fetch the latest agreement version and set the new version number
             latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
+            agreement.version_number = (latest_agreement.version_number + 1) if latest_agreement else 1
 
-            # Save the agreement version number if it was not previously set
-            agreement.version_number = latest_agreement.version_number + 1 if latest_agreement else 1
-            agreement.save()  # Commit the updated version number
+            # Save the agreement after setting the version_number
+            agreement.save()
 
-            # Handle Rider Agreements
+            # Handle Rider Agreements (Save riders after the main contract agreement)
             for rider in ['photography', 'photography_additional', 'videography', 'videography_additional', 'dj',
                           'dj_additional', 'photobooth', 'photobooth_additional']:
                 signature = request.POST.get(f'signature_{rider}')
@@ -739,7 +735,10 @@ def contract_and_rider_agreement(request, contract_id):
                         rider_text=request.POST.get(f'rider_text_{rider}')
                     )
 
-            # Generate PDF with the latest agreement version
+            # Fetch the latest agreement version after saving to ensure it's correct
+            latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
+
+            # Generate PDF and send email
             html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
             pdf_file = HTML(string=html_string).write_pdf()
 
@@ -777,6 +776,7 @@ def contract_and_rider_agreement(request, contract_id):
                 'message': 'There was an error submitting the agreements.',
                 'portal_url': portal_url
             })
+
 
     else:
         # Handle GET request
