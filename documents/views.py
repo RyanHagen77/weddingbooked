@@ -548,6 +548,20 @@ def view_submitted_contract(request, contract_id, version_number):
     return render(request, 'documents/view_submitted_contract.html', context)
 
 
+from django.db import transaction
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from weasyprint import HTML
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
+from django.conf import settings
+from django.utils.html import linebreaks
+from collections import defaultdict
+from decimal import Decimal
+from .models import Contract, ContractAgreement, RiderAgreement, ContractDocument
+from .forms import ContractAgreementForm
+
+
 @login_required
 def contract_and_rider_agreement(request, contract_id):
     # Fetch contract object
@@ -555,7 +569,7 @@ def contract_and_rider_agreement(request, contract_id):
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
     company_signature_url = f"http://{request.get_host()}{settings.MEDIA_URL}essence_signature/EssenceSignature.png"
 
-    context = []
+    context = {}  # Initialize an empty context to avoid UnboundLocalError
 
     if request.method == 'POST':
         form = ContractAgreementForm(request.POST)
@@ -563,7 +577,7 @@ def contract_and_rider_agreement(request, contract_id):
             agreement = form.save(commit=False)
             agreement.contract = contract
             agreement.signature = form.cleaned_data['main_signature']
-            agreement.photographer_choice = form.cleaned_data['photographer_choice']  # Save photographer choice
+            agreement.photographer_choice = form.cleaned_data['photographer_choice']
 
             latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
             agreement.version_number = latest_agreement.version_number + 1 if latest_agreement else 1
@@ -590,8 +604,6 @@ def contract_and_rider_agreement(request, contract_id):
                         rider_text=rider_text
                     )
                     rider_agreements.append(rider_agreement)
-                else:
-                    print(f"Missing signature for {rider}")
 
             # Calculate overtime options
             overtime_options_by_service_type = {}
@@ -734,7 +746,7 @@ def contract_and_rider_agreement(request, contract_id):
                     })
 
             # Update context with calculated values
-            context = {
+            context.update({
                 'contract': contract,
                 'logo_url': logo_url,
                 'company_signature_url': company_signature_url,
@@ -767,8 +779,7 @@ def contract_and_rider_agreement(request, contract_id):
                 'latest_agreement': latest_agreement,
                 'package_texts': package_texts,
                 'additional_service_texts': additional_services_texts,
-                'form': form,
-            }
+            })
 
             # Generate PDF
             html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
@@ -800,7 +811,6 @@ def contract_and_rider_agreement(request, contract_id):
                 'message': 'You\'re all set, thank you!',
                 'portal_url': portal_url
             })
-
         else:
             portal_url = reverse('client_portal', args=[contract_id])
             return render(request, 'contracts/status_page.html', {
@@ -812,6 +822,7 @@ def contract_and_rider_agreement(request, contract_id):
         form = ContractAgreementForm()
 
         return render(request, 'documents/client_contract_and_rider_agreement.html', context)
+
 
 
 def view_rider_agreements(request, contract_id):
