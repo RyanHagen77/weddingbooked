@@ -704,6 +704,9 @@ def contract_and_rider_agreement(request, contract_id):
     }
 
     # Handle POST request
+    import time  # Import time module for sleep function
+
+    # Handle POST request
     if request.method == 'POST':
         form = ContractAgreementForm(request.POST)
         if form.is_valid():
@@ -720,7 +723,10 @@ def contract_and_rider_agreement(request, contract_id):
             # Save the agreement after setting the version_number
             agreement.save()
 
-            # Handle Rider Agreements (Save riders after the main contract agreement)
+            # Introducing a short delay (e.g., 2 seconds)
+            time.sleep(2)
+
+            # Handle Rider Agreements
             for rider in ['photography', 'photography_additional', 'videography', 'videography_additional', 'dj',
                           'dj_additional', 'photobooth', 'photobooth_additional']:
                 signature = request.POST.get(f'signature_{rider}')
@@ -741,7 +747,6 @@ def contract_and_rider_agreement(request, contract_id):
             # Generate PDF and send email
             html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
             pdf_file = HTML(string=html_string).write_pdf()
-
             pdf_name = f"contract_{contract_id}_agreement_v{latest_agreement.version_number}.pdf"  # Use the latest version
             path = default_storage.save(f"contract_documents/{pdf_name}", ContentFile(pdf_file))
 
@@ -776,6 +781,7 @@ def contract_and_rider_agreement(request, contract_id):
                 'message': 'There was an error submitting the agreements.',
                 'portal_url': portal_url
             })
+
 
 
     else:
