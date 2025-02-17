@@ -1,6 +1,6 @@
 
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_GET
+from django.db import transaction
 from datetime import timedelta
 from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.conf import settings
@@ -543,6 +543,8 @@ def view_submitted_contract(request, contract_id, version_number):
     return render(request, 'documents/view_submitted_contract.html', context)
 
 
+
+
 @login_required
 def contract_and_rider_agreement(request, contract_id):
     # Fetch contract object
@@ -709,59 +711,60 @@ def contract_and_rider_agreement(request, contract_id):
         form = ContractAgreementForm(request.POST)
         if form.is_valid():
             # Save the agreement and increment version number
-            agreement = form.save(commit=False)
-            agreement.contract = contract
-            agreement.signature = form.cleaned_data['main_signature']
-            agreement.photographer_choice = form.cleaned_data['photographer_choice']
-            latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
-            agreement.version_number = (latest_agreement.version_number + 1) if latest_agreement else 1
-            agreement.save()
+            with transaction.atomic():  # Ensures the DB operations are committed first
+                agreement = form.save(commit=False)
+                agreement.contract = contract
+                agreement.signature = form.cleaned_data['main_signature']
+                agreement.photographer_choice = form.cleaned_data['photographer_choice']
+                latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
+                agreement.version_number = (latest_agreement.version_number + 1) if latest_agreement else 1
+                agreement.save()
 
-            # Handle Rider Agreements
-            for rider in ['photography', 'photography_additional', 'videography', 'videography_additional', 'dj',
-                          'dj_additional', 'photobooth', 'photobooth_additional']:
-                signature = request.POST.get(f'signature_{rider}')
-                if signature:
-                    RiderAgreement.objects.create(
-                        contract=contract,
-                        rider_type=rider,
-                        signature=signature,
-                        client_name=request.POST.get(f'client_name_{rider}'),
-                        agreement_date=request.POST.get(f'agreement_date_{rider}'),
-                        notes=request.POST.get(f'notes_{rider}'),
-                        rider_text=request.POST.get(f'rider_text_{rider}')
-                    )
+                # Handle Rider Agreements
+                for rider in ['photography', 'photography_additional', 'videography', 'videography_additional', 'dj',
+                              'dj_additional', 'photobooth', 'photobooth_additional']:
+                    signature = request.POST.get(f'signature_{rider}')
+                    if signature:
+                        RiderAgreement.objects.create(
+                            contract=contract,
+                            rider_type=rider,
+                            signature=signature,
+                            client_name=request.POST.get(f'client_name_{rider}'),
+                            agreement_date=request.POST.get(f'agreement_date_{rider}'),
+                            notes=request.POST.get(f'notes_{rider}'),
+                            rider_text=request.POST.get(f'rider_text_{rider}')
+                        )
 
-            # Generate PDF and send email
-            html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
-            pdf_file = HTML(string=html_string).write_pdf()
-            pdf_name = f"contract_{contract_id}_agreement_v{agreement.version_number}.pdf"  # Include version number
-            path = default_storage.save(f"contract_documents/{pdf_name}", ContentFile(pdf_file))
+                # Generate PDF and send email
+                html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
+                pdf_file = HTML(string=html_string).write_pdf()
+                pdf_name = f"contract_{contract_id}_agreement_v{agreement.version_number}.pdf"  # Include version number
+                path = default_storage.save(f"contract_documents/{pdf_name}", ContentFile(pdf_file))
 
-            # Attach to contract document section
-            ContractDocument.objects.create(
-                contract=contract,
-                document=path,
-                is_client_visible=True,
-            )
+                # Attach to contract document section
+                ContractDocument.objects.create(
+                    contract=contract,
+                    document=path,
+                    is_client_visible=True,
+                )
 
-            # Email the PDF
-            client_email = contract.client.primary_email
-            email = EmailMessage(
-                subject="Your Contract Agreement",
-                body="Please find attached your signed contract agreement.",
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[client_email],
-            )
-            email.attach(pdf_name, pdf_file, 'application/pdf')
-            email.send()
+                # Email the PDF
+                client_email = contract.client.primary_email
+                email = EmailMessage(
+                    subject="Your Contract Agreement",
+                    body="Please find attached your signed contract agreement.",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[client_email],
+                )
+                email.attach(pdf_name, pdf_file, 'application/pdf')
+                email.send()
 
-            # Redirect to status page
-            portal_url = reverse('users:client_portal', args=[contract_id])
-            return render(request, 'contracts/status_page.html', {
-                'message': 'You\'re all set, thank you!',
-                'portal_url': portal_url
-            })
+                # Redirect to status page
+                portal_url = reverse('users:client_portal', args=[contract_id])
+                return render(request, 'contracts/status_page.html', {
+                    'message': 'You\'re all set, thank you!',
+                    'portal_url': portal_url
+                })
 
         else:
             # Return error if form is invalid
@@ -825,6 +828,7 @@ def contract_and_rider_agreement(request, contract_id):
         })
 
         return render(request, 'documents/client_contract_and_rider_agreement.html', context)
+
 
 
 
