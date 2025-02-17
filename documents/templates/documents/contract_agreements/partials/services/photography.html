@@ -58,7 +58,7 @@
     <!-- Engagement Session -->
     {% if contract.engagement_session %}
     <tr>
-        <td style="width: 52%;">{{ contract.engagement_session.name }}</td>
+        <td style="width: 52%;">{{ contract.engagement_session.name|strip_year }}</td>
         <!-- Set default values for hours and discount if not present -->
         <td style="width: 8%;">0</td> <!-- Default for hours -->
         <td style="width: 10%;">${{ contract.engagement_session.price }}</td>

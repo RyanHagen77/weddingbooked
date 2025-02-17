@@ -633,6 +633,35 @@ def contract_and_rider_agreement(request, contract_id):
     latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
     rider_agreements = RiderAgreement.objects.filter(contract=contract)
 
+    package_texts = {
+        'photography': contract.photography_package.default_text if contract.photography_package else None,
+        'videography': contract.videography_package.default_text if contract.videography_package else None,
+        'dj': contract.dj_package.default_text if contract.dj_package else None,
+        'photobooth': contract.photobooth_package.default_text if contract.photobooth_package else None,
+    }
+
+    # Additional services text processing (No linebreaks)
+    additional_services_texts = {
+        'photography_additional': contract.photography_additional.default_text if contract.photography_additional else None,
+        'videography_additional': contract.videography_additional.default_text if contract.videography_additional else None,
+        'dj_additional': contract.dj_additional.default_text if contract.dj_additional else None,
+        'photobooth_additional': contract.photobooth_additional.default_text if contract.photobooth_additional else None,
+    }
+
+    # Additional staff
+    additional_staff = defaultdict(list)
+    for staff_option in [contract.photography_additional, contract.videography_additional, contract.dj_additional,
+                         contract.photobooth_additional]:
+        if staff_option:
+            additional_staff[staff_option.service_type.name].append({
+                'name': staff_option.name,
+                'service_type': staff_option.service_type.name,
+                'price': staff_option.price,
+                'hours': staff_option.hours,
+                'default_text': staff_option.default_text,
+            })
+
+
     # Update context with calculated values
     context = {
         'contract': contract,
@@ -661,6 +690,9 @@ def contract_and_rider_agreement(request, contract_id):
         'rider_agreements': rider_agreements,
         'first_agreement': first_agreement,
         'latest_agreement': latest_agreement,
+        'package_texts': package_texts,
+        'additional_service_texts': additional_services_texts,
+
 
     }
 
@@ -758,24 +790,6 @@ def contract_and_rider_agreement(request, contract_id):
             'overtime_options_by_service_type': overtime_options_by_service_type,
             'total_overtime_cost': total_overtime_cost,
             'ROLE_DISPLAY_NAMES': ROLE_DISPLAY_NAMES,
-            'package_texts': {
-                'photography': linebreaks(
-                    contract.photography_package.default_text) if contract.photography_package else None,
-                'videography': linebreaks(
-                    contract.videography_package.default_text) if contract.videography_package else None,
-                'dj': linebreaks(contract.dj_package.default_text) if contract.dj_package else None,
-                'photobooth': linebreaks(
-                    contract.photobooth_package.default_text) if contract.photobooth_package else None,
-            },
-            'additional_services_texts': {
-                'photography_additional': linebreaks(
-                    contract.photography_additional.default_text) if contract.photography_additional else None,
-                'videography_additional': linebreaks(
-                    contract.videography_additional.default_text) if contract.videography_additional else None,
-                'dj_additional': linebreaks(contract.dj_additional.default_text) if contract.dj_additional else None,
-                'photobooth_additional': linebreaks(
-                    contract.photobooth_additional.default_text) if contract.photobooth_additional else None,
-            },
             'rider_texts': {
                 'photography': linebreaks(
                     contract.photography_package.rider_text) if contract.photography_package else None,
