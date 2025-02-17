@@ -548,26 +548,14 @@ def view_submitted_contract(request, contract_id, version_number):
     return render(request, 'documents/view_submitted_contract.html', context)
 
 
-from django.db import transaction
-from django.core.mail import EmailMessage
-from django.template.loader import render_to_string
-from weasyprint import HTML
-from django.shortcuts import get_object_or_404, render
-from django.urls import reverse
-from django.conf import settings
-from django.utils.html import linebreaks
-from collections import defaultdict
-from decimal import Decimal
-from .models import Contract, ContractAgreement, RiderAgreement, ContractDocument
-from .forms import ContractAgreementForm
-
-
 @login_required
 def contract_and_rider_agreement(request, contract_id):
     # Fetch contract object
     contract = get_object_or_404(Contract, pk=contract_id)
     logo_url = f"http://{request.get_host()}{settings.MEDIA_URL}logo/Final_Logo.png"
     company_signature_url = f"http://{request.get_host()}{settings.MEDIA_URL}essence_signature/EssenceSignature.png"
+
+    context = []
 
     if request.method == 'POST':
         form = ContractAgreementForm(request.POST)
