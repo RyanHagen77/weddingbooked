@@ -1,4 +1,6 @@
 from django import forms
+from django.core.exceptions import ValidationError
+
 from bookings.models import EventStaffBooking
 from contracts.models import (Contract, LeadSourceCategory, Client, Discount, Location,
                               ServiceFee)
@@ -9,6 +11,7 @@ from django.forms.widgets import DateInput
 from django.forms import inlineformset_factory
 from django.contrib.auth import get_user_model
 import re
+
 
 phone_validator = RegexValidator(
     regex=r'^\d{3}-\d{3}-\d{4}$',

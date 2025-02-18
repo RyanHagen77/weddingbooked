@@ -680,6 +680,9 @@
         var mainSignaturePad = new SignaturePad(document.getElementById('signature-pad-main'));
         signaturePads['main'] = mainSignaturePad;
 
+        var additionalSignaturePad = new SignaturePad(document.getElementById('signature-pad-photography-additional'));
+        signaturePads['photography_additional'] = additionalSignaturePad;
+
         var padElements = document.querySelectorAll('canvas[id^="signature-pad-"]');
         padElements.forEach(function (canvas) {
             var padName = canvas.id.replace('signature-pad-', '');

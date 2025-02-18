@@ -1,18 +1,45 @@
 <tr>
     <td colspan="5"><strong>Prospect Photographers</strong></td>
 </tr>
-{% for photographer in prospect_photographers %}
+
 <tr>
-    <td>{{ photographer.label }}</td>
-    <td colspan="3">{{ photographer.name|default:"None" }}</td>
+    <td>{{ prospect_photographer1.label }}</td>
+    <td colspan="3">{{ prospect_photographer1.name }}</td>
     <td>
         <button type="button" class="btn btn-dusty-pink book-button"
                 data-toggle="modal" data-target="#bookingModal"
-                data-role="{{ photographer.key }}"
+                data-role="{{ prospect_photographer1.key }}"
                 data-service-type="Photography"
-                data-staff-id="{{ photographer.staff_id|default:'' }}">
+                data-staff-id="{{ prospect_photographer1.staff_id }}">
             Assign
         </button>
     </td>
 </tr>
-{% endfor %}
+
+<tr>
+    <td>{{ prospect_photographer2.label }}</td>
+    <td colspan="3">{{ prospect_photographer2.name }}</td>
+    <td>
+        <button type="button" class="btn btn-dusty-pink book-button"
+                data-toggle="modal" data-target="#bookingModal"
+                data-role="{{ prospect_photographer2.key }}"
+                data-service-type="Photography"
+                data-staff-id="{{ prospect_photographer2.staff_id }}">
+            Assign
+        </button>
+    </td>
+</tr>
+
+<tr>
+    <td>{{ prospect_photographer3.label }}</td>
+    <td colspan="3">{{ prospect_photographer3.name }}</td>
+    <td>
+        <button type="button" class="btn btn-dusty-pink book-button"
+                data-toggle="modal" data-target="#bookingModal"
+                data-role="{{ prospect_photographer3.key }}"
+                data-service-type="Photography"
+                data-staff-id="{{ prospect_photographer3.staff_id }}">
+            Assign
+        </button>
+    </td>
+</tr>

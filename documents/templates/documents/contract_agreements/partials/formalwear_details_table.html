@@ -1,5 +1,5 @@
 {% load group_tags %}
-{% if contract.formalwear_contracts.all %}
+{% if formalwear_contracts %}
 <div class="formalwear-details">
     <h3>Formalwear Rentals</h3>
     <table>
@@ -10,14 +10,14 @@
             <th>Quantity</th>
             <th>Total Price</th>
         </tr>
-        {% for formalwear in formalwear_details %}
+        {% for formalwear in formalwear_contracts %}
         <tr>
-            <td>{{ formalwear.product_name }}</td>
-            <td colspan="3" style="text-align: left; padding: 8px; border: 1px solid #ddd;">{{ formalwear.default_text }}</td>
-            <td>${{ formalwear.deposit_amount|floatformat:"2" }}</td>
+            <td>{{ formalwear.formalwear_product.name }}</td>
+            <td colspan="3" style="text-align: left; padding: 8px; border: 1px solid #ddd;">{{ formalwear.formalwear_product.default_text }}</td>
+            <td>${{ formalwear.formalwear_product.deposit_amount|floatformat:"2" }}</td>
             <td>{{ formalwear.quantity }}</td>
             <td style="text-align: right;">
-                ${{ formalwear.quantity|multiply:formalwear.rental_price|floatformat:"2" }}
+                ${{ formalwear.quantity|multiply:formalwear.formalwear_product.rental_price|floatformat:"2" }}
             </td>
         </tr>
         {% empty %}

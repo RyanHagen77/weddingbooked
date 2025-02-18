@@ -308,26 +308,26 @@ def contract_detail(request, id):
     )
 
     # Prepare resolved data for prospect photographers
-    prospect_photographers = [
-        {
-            'label': 'Prospect Photographer 1',
-            'name': getattr(contract.prospect_photographer1, 'get_full_name', lambda: "None")(),
-            'staff_id': getattr(contract.prospect_photographer1, 'id', None),
-            'key': 'PROSPECT1',
-        },
-        {
-            'label': 'Prospect Photographer 2',
-            'name': getattr(contract.prospect_photographer2, 'get_full_name', lambda: "None")(),
-            'staff_id': getattr(contract.prospect_photographer2, 'id', None),
-            'key': 'PROSPECT2',
-        },
-        {
-            'label': 'Prospect Photographer 3',
-            'name': getattr(contract.prospect_photographer3, 'get_full_name', lambda: "None")(),
-            'staff_id': getattr(contract.prospect_photographer3, 'id', None),
-            'key': 'PROSPECT3',
-        },
-    ]
+    prospect_photographer1 = {
+        'label': 'Prospect Photographer 1',
+        'name': getattr(contract.prospect_photographer1, 'get_full_name', lambda: "None")() or "None",
+        'staff_id': getattr(contract.prospect_photographer1, 'id', None),
+        'key': 'PROSPECT1',
+    }
+
+    prospect_photographer2 = {
+        'label': 'Prospect Photographer 2',
+        'name': getattr(contract.prospect_photographer2, 'get_full_name', lambda: "None")() or "None",
+        'staff_id': getattr(contract.prospect_photographer2, 'id', None),
+        'key': 'PROSPECT2',
+    }
+
+    prospect_photographer3 = {
+        'label': 'Prospect Photographer 3',
+        'name': getattr(contract.prospect_photographer3, 'get_full_name', lambda: "None")() or "None",
+        'staff_id': getattr(contract.prospect_photographer3, 'id', None),
+        'key': 'PROSPECT3',
+    }
 
     photography_cost = contract.calculate_photography_cost()
     videography_cost = contract.calculate_videography_cost()
@@ -369,7 +369,9 @@ def contract_detail(request, id):
         'contract_info_edit_form': contract_info_edit_form,
         'packages': photography_packages,
         'photography_packages': photography_packages,
-        'prospect_photographers': prospect_photographers,
+        'prospect_photographer1': prospect_photographer1,
+        'prospect_photographer2': prospect_photographer2,
+        'prospect_photographer3': prospect_photographer3,
         'videography_packages': videography_packages,
         'dj_packages': photography_packages,
         'booking_form': booking_form,
@@ -493,9 +495,6 @@ def edit_services(request, id):
                     EngagementSessionOption.objects.get(pk=request.POST.get('engagement_session'))
                     if request.POST.get('engagement_session') else None
                 )
-                contract.prospect_photographer1 = request.POST.get('prospect_photographer1') or None
-                contract.prospect_photographer2 = request.POST.get('prospect_photographer2') or None
-                contract.prospect_photographer3 = request.POST.get('prospect_photographer3') or None
 
             elif section == 'videography':
                 contract.videography_package = (
