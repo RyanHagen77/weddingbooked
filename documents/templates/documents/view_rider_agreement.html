@@ -1,323 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Contract Agreement</title>
-    <style>
-        body {
-            font-family: 'Merriweather', sans-serif;
-            padding: 0;
-            margin: 0;
-        }
-        .contract-header {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        .column {
-            flex: 1;
-            min-width: 100px;
-        }
-        .divider {
-            border-top: 1px solid #000;
-            margin: 20px 0;
-        }
-        .text-box {
-            border: 1px solid #000;
-            min-height: 40px;
-            margin-bottom: 20px;
-            padding: 10px;
-        }
-        .logo {
-            width: 100%;
-            text-align: center;
-        }
-        .logo img {
-            width: 250px;
-            height: auto;
-        }
-        .contact-info {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            padding-top: 10px;
-            padding-bottom: 10px;
-        }
-        .office-info {
-            text-align: left;
-            font-size: 9pt;
-            flex: 1;
-        }
-        .address-info {
-            text-align: right;
-            font-size: 9pt;
-            flex: 1;
-        }
-        .contract-date {
-            font-size: 9pt;
-            margin-top: 5px;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        .payment-info {
-            flex: 1;
-            font-size: 9pt;
-            text-align: center;
-            order: 2;
-        }
-        .payment-info strong {
-            font-weight: bold;
-        }
-        .company-info {
-            flex: 1;
-            font-size: 9pt;
-            text-align: right;
-            margin-bottom: 20px;
-            font-weight: bold;
-            order: 1;
-        }
-        .product-details {
-            flex: 1;
-            font-size: 9pt;
-            text-align: center;
-            margin-bottom: 20px;
-            order: 3;
-        }
-        .essence-rep strong {
-            font-weight: bold;
-        }
-        .rep-details strong {
-            font-weight: bold;
-        }
-        .agreement-details {
-            font-size: 9pt;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-        }
-        .agreement-description {
-            font-size: 12pt;
-            text-align: center;
-            margin-top: 5px;
-        }
-        .agreement-engage {
-            font-size: 9pt;
-            margin-top: 5px;
-            text-align: center;
-        }
-        .left-column, .right-column {
-            width: 48%;
-            margin-bottom: 5px;
-        }
-        .agreement-details {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding: 10px 10px; /* Reduced top and bottom padding to 5px */
-            background-color: #f4f4f4; /* Light gray background */
-            border-radius: 8px; /* Rounded corners for the whole section */
-            border: 1px solid #ddd; /* Border around the section */
-        }
+  <meta charset="UTF-8">
+  <title>Contract Agreement</title>
+  <style>
+    /* Global styles */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Merriweather', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
 
-        .left-column, .right-column {
-            width: 48%; /* Take up nearly half the space */
-        }
+    /* Header & Divider */
+    .divider {
+      border-top: 1px solid #ccc;
+      margin: 30px 0;
+    }
+    .logo {
+      text-align: center;
+      margin: 30px 0;
+    }
+    .logo img {
+      width: 250px;
+      height: auto;
+    }
+    .contact-info {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      font-size: 9pt;
+    }
+    .office-info {
+      text-align: left;
+    }
+    .address-info {
+      text-align: right;
+    }
 
-        .client-info-box, .ceremony-reception-box {
-            background-color: #fff;
-            padding: 10px 10px; /* Reduced padding for a more compact look */
-            border-radius: 12px; /* Rounded corners for boxes */
-            border: 1px solid #ddd; /* Light border around boxes */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start; /* Align content to the top */
-            height: 100%; /* Ensure boxes stretch fully */
-        }
+    /* Agreement Header */
+    .contract-agreement {
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px; /* Reduced margin between rows */
-        }
+    /* Contract Details Box */
+    .contract-details {
+      border: 1px solid #ddd;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+      background-color: #fafafa;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .contract-details h2 {
+      margin-top: 0;
+    }
+    .rider-text {
+      font-size: 9pt;
+      margin: 10px 0;
+    }
 
-        .info-row strong {
-            font-size: 12px;
-            color: #333;
-        }
+    /* Back Link Button */
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 15px;
+      background-color: #007BFF;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 3px;
+      transition: background-color 0.3s ease;
+    }
+    .back-link:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header Section -->
+    {% include "documents/contract_agreements/partials/header.html" %}
+    <div class="divider"></div>
 
-        .info-row span {
-            font-size: 12px;
-            color: #555;
-        }
-
-        .ceremony-reception-box .info-row {
-            text-align: left; /* Align text to left for other fields */
-        }
-
-        .ceremony-reception-box .info-row span {
-            text-align: right; /* Align the city/state to the right */
-        }
-
-        @media (max-width: 600px) {
-            .agreement-details {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .left-column, .right-column {
-                width: 100%;
-                margin-bottom: 20px;
-            }
-
-            .client-info-box, .ceremony-reception-box {
-                width: 100%;
-            }
-        }
-                table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-            vertical-align: top;
-        }
-        th {
-            background-color: #f2f2f2;
-            font-size: 13px;
-        }
-        td {
-            font-size: 12px;
-        }
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-        tr:hover {
-            background-color: #ddd;
-        }
-        .signature-box {
-            width: 200px; /* Adjust width as needed */
-            height: 50px; /* Adjust height as needed */
-            margin-top: 10px; /* Space above the box */
-        }
-        .default-text {
-            font-size: 9pt;
-            font-style: italic;
-        }
-        .signature-wrapper {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
-        }
-        .signature-section {
-            flex: 1;
-            margin: 0 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .signature-section label {
-            padding-bottom: 10px;
-        }
-        .signature-section img, .signature-placeholder {
-            border: 1px solid #000;
-            width: 100%;
-            height: 100px;
-        }
-        .main-signature-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .main-signature-section label {
-            margin-bottom: 10px;
-        }
-        .main-signature-section img {
-            border: 1px solid #000;
-            width: 400px;
-            height: 100px;
-        }
-        .rider-inputs {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            margin-bottom: 20px;
-        }
-        .rider-inputs label {
-            width: 100%;
-            margin-top: 10px;
-        }
-        .rider-inputs input {
-            width: calc(50% - 20px);
-            max-width: 400px;
-            margin-bottom: 10px;
-        }
-        .submit-btn {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            display: block;
-            width: 100%;
-            max-width: 300px;
-            margin: 20px auto;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        .rider-text {
-            font-size: 7pt;
-        }
-        @media (max-width: 600px) {
-            .contract-header {
-                flex-direction: column;
-                align-items: center;
-            }
-            .agreement-details {
-                flex-direction: column;
-                align-items: center;
-            }
-            .left-column, .right-column {
-                width: 100%;
-            }
-            .client-info-box, .ceremony-reception-box {
-                width: 100%;
-            }
-            .payment-info, .company-info, .essence-rep {
-                text-align: center;
-                margin-bottom: 20px;
-                order: initial;
-            }
-        }
-    </style>
-    </head>
-    <body>
-        {% load group_tags %}
-        <!-- Header Section -->
-        {% include "documents/contract_agreements/partials/header.html" %}
-
-        <div class="divider"></div>
-
-    <div class="contract-agreement" style="text-align: center;">
-        <strong>Rider Agreements</strong>
+    <!-- Rider Agreements Header -->
+    <div class="contract-agreement">
+      <strong>Rider Agreements</strong>
     </div>
 
+    <!-- Rider Agreements Loop -->
     {% for rider in rider_agreements %}
     <div class="contract-details">
-        <h2>{{ rider.rider_type|title }} Rider Agreement</h2>
-        <div class="rider-text">{{ rider.rider_text|safe }}</div>
-        <p><strong>Client Name:</strong> {{ rider.client_name }}</p>
-        <p><strong>Date:</strong> {{ rider.agreement_date }}</p>
-        <img src="{{ rider.signature }}" alt="{{ rider.rider_type|title }} Signature" class="signature-img">
+      <h2>{{ rider.rider_type|title }} Rider Agreement</h2>
+      <div class="rider-text">{{ rider.rider_text|safe }}</div>
+      <p><strong>Client Name:</strong> {{ rider.client_name }}</p>
+      <p><strong>Date:</strong> {{ rider.agreement_date }}</p>
+      <img src="{{ rider.signature }}" alt="{{ rider.rider_type|title }} Signature" class="signature-img">
     </div>
     <div class="divider"></div>
     {% endfor %}
 
-    <a href="{% url 'contracts:contract_detail' contract.contract_id %}" class="back-link">Back to Contract Details</a>
+    <!-- Back Link -->
+    <a href="{% url 'contracts:contract_detail' contract.contract_id %}" class="back-link">
+      Back to Contract Details
+    </a>
+  </div>
 </body>
 </html>
