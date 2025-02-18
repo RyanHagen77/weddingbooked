@@ -13,7 +13,7 @@
         {% for formalwear in formalwear_contracts %}
         <tr>
             <td>{{ formalwear.formalwear_product.name }}</td>
-            <td colspan="3" style="text-align: left; padding: 8px; border: 1px solid #ddd;">{{ formalwear.formalwear_product.default_text }}</td>
+            <td colspan="3" style="text-align: left; padding: 8px; border: 1px solid #ddd;">{{ formalwear.formalwear_product.default_text|safe }}</td>
             <td>${{ formalwear.formalwear_product.deposit_amount|floatformat:"2" }}</td>
             <td>{{ formalwear.quantity }}</td>
             <td style="text-align: right;">
