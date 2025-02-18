@@ -1,24 +1,20 @@
 # contracts/views.py
 import logging
-
-# Django Imports
-from django.shortcuts import render,redirect
-
-from django.contrib.auth.decorators import login_required
-
-from django.db.models import Q
-from django.core.paginator import Paginator
-
-
 from contracts.models import Contract
-
-
 from contracts.forms import (
     ContractSearchForm
 )
 
+from datetime import datetime
+from django.db.models import Q
+from django.core.paginator import Paginator
+from django.shortcuts import redirect, render
+from django.contrib.auth.decorators import login_required
+
+
 # Logging setup
 logger = logging.getLogger(__name__)
+
 
 @login_required
 def contract_search(request):
@@ -33,7 +29,7 @@ def contract_search(request):
     order = request.GET.get('order', 'desc')
     contracts = contracts.order_by('event_date' if order == 'asc' else '-event_date')
 
-    # Apply filters if the form is valid
+    # Apply filters from the form if valid
     if form.is_valid():
         if form.cleaned_data.get('location'):
             contracts = contracts.filter(location=form.cleaned_data['location'])
@@ -65,10 +61,11 @@ def contract_search(request):
         if form.cleaned_data.get('dj'):
             contracts = contracts.filter(Q(dj1=form.cleaned_data['dj']) | Q(dj2=form.cleaned_data['dj']))
 
-    # Apply search query
+    # Apply quick search query
     query = request.GET.get('q')
     if query:
-        contracts = contracts.filter(
+        # Build the base Q object for text fields
+        q_filter = (
             Q(custom_contract_number__icontains=query) |
             Q(client__primary_contact__icontains=query) |
             Q(client__partner_contact__icontains=query) |
@@ -78,6 +75,21 @@ def contract_search(request):
             Q(dj1__get_full_name__icontains=query) |
             Q(dj2__get_full_name__icontains=query)
         )
+
+        # Try to parse the query as a date using multiple formats
+        parsed_date = None
+        for fmt in ['%Y-%m-%d', '%m/%d/%Y', '%d/%m/%Y', '%m-%d-%Y', '%d-%m-%Y']:
+            try:
+                parsed_date = datetime.strptime(query, fmt).date()
+                break
+            except ValueError:
+                continue
+
+        # If a valid date was parsed, add date filters to the query
+        if parsed_date:
+            q_filter |= Q(event_date=parsed_date) | Q(contract_date=parsed_date)
+
+        contracts = contracts.filter(q_filter)
 
     # Paginate results
     paginator = Paginator(contracts, 25)
