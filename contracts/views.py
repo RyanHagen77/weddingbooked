@@ -18,6 +18,8 @@ from django.http import JsonResponse, HttpResponseRedirect
 from django.db import transaction
 from django.db.models import Q
 from django.core.paginator import Paginator
+from datetime import datetime
+
 
 # Django Form Imports
 
@@ -79,11 +81,11 @@ def contract_search(request):
     form = ContractSearchForm(request.GET or None)
     contracts = Contract.objects.all()
 
-    # Clear filters if the "clear" flag is in the query string
+    # Clear filters if "clear" flag is in the query string.
     if "clear" in request.GET:
-        return redirect(request.path)  # Redirect to base URL to clear filters
+        return redirect(request.path)
 
-    # Apply filters if the form is valid
+    # Apply filters if the form is valid.
     if form.is_valid():
         if form.cleaned_data.get('location'):
             contracts = contracts.filter(location=form.cleaned_data['location'])
@@ -117,25 +119,63 @@ def contract_search(request):
         if form.cleaned_data.get('csr'):
             contracts = contracts.filter(csr=form.cleaned_data['csr'])
 
-    # **Quick Search Logic (`q` Parameter)**
+        # --- Photographer Filter ---
+        if form.cleaned_data.get('photographer'):
+            photographer = form.cleaned_data['photographer']
+            contracts = contracts.filter(
+                Q(photographer1_id=photographer.pk) | Q(photographer2_id=photographer.pk)
+            )
+
+        # --- Videographer Filter ---
+        if form.cleaned_data.get('videographer'):
+            videographer = form.cleaned_data['videographer']
+            contracts = contracts.filter(
+                Q(videographer1_id=videographer.pk) | Q(videographer2_id=videographer.pk)
+            )
+
+        # --- Photobooth Operator Filter ---
+        if form.cleaned_data.get('photobooth_operator'):
+            operator = form.cleaned_data['photobooth_operator']
+            contracts = contracts.filter(
+                Q(photobooth_op1_id=operator.pk) | Q(photobooth_op2_id=operator.pk)
+            )
+
+        # --- DJ Filter ---
+        if form.cleaned_data.get('dj'):
+            dj = form.cleaned_data['dj']
+            contracts = contracts.filter(
+                Q(dj1_id=dj.pk) | Q(dj2_id=dj.pk)
+            )
+
+    # Quick Search Logic (q Parameter)
     query = request.GET.get('q')
     if query:
-        contracts = contracts.filter(
-            Q(custom_contract_number__icontains=query) |  # New ENet contract number
-            Q(old_contract_number__icontains=query) |  # Old ENet contract number
-            Q(client__primary_contact__icontains=query) |  # Primary client name
-            Q(client__partner_contact__icontains=query) |  # Partner name
-            Q(event_date__icontains=query) |  # Wedding date
-            Q(client__primary_email__icontains=query) |  # Email
-            Q(client__primary_phone1__icontains=query) |  # Primary phone
-            Q(client__primary_phone2__icontains=query)  # Secondary phone
+        filters = (
+            Q(custom_contract_number__icontains=query) |
+            Q(old_contract_number__icontains=query) |
+            Q(client__primary_contact__icontains=query) |
+            Q(client__partner_contact__icontains=query) |
+            Q(client__primary_email__icontains=query) |
+            Q(client__primary_phone1__icontains=query) |
+            Q(client__primary_phone2__icontains=query)
         )
+        # Try to parse the query as a date in multiple formats.
+        date_obj = None
+        for fmt in ("%m/%d/%Y", "%m-%d-%Y"):
+            try:
+                date_obj = datetime.strptime(query, fmt).date()
+                break
+            except ValueError:
+                continue
+        if date_obj:
+            filters |= Q(event_date=date_obj)
+        contracts = contracts.filter(filters)
 
-    # **Always sort results by soonest event date**
+    # Always sort results by soonest event date.
     contracts = contracts.order_by('event_date')
 
-    # Paginate results
-    paginator = Paginator(contracts, 25)  # Display 25 results per page
+    # Paginate results.
+    paginator = Paginator(contracts, 25)
     page_number = request.GET.get('page')
     contracts = paginator.get_page(page_number)
 
@@ -143,6 +183,7 @@ def contract_search(request):
         'form': form,
         'contracts': contracts,
     })
+
 
 
 @login_required
