@@ -270,8 +270,8 @@ export default function Home() {
                           <p>There are four ways to pay your balance:</p>
                           <ul className="list-disc list-inside">
                             <li>Online with a credit card (There is a 3% credit/debit card fee)</li>
-                            <li>Mail a check payable to Essence Photo and Video (Send to 1224 Remington Rd, Schaumburg,
-                              IL, 60173)
+                            <li>Mail a check payable to Essence Photo and Video (Send to 1300 Remington Rd suite B,
+                              Schaumburg, IL 60173)
                             </li>
                             <li>Money Order payable to Essence Photo and Video (See address above)</li>
                             <li>In person with cash at any of our locations by appointment</li>
@@ -293,13 +293,7 @@ export default function Home() {
                           They will call you the week of your wedding to go over the details of the day.
                         </p>
                     )}
-                    {index === 5 && (
-                        <p className="mt-2 text-center">
-                          You can ask us via the chat window, located in the bottom right of the screen. Or click <a
-                            href="/chat" className="font-bold underline">here</a>
-                        </p>
-                    )}
-                  </div>
+                   </div>
                 </div>
             ))}
           </div>
