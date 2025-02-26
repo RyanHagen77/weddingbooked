@@ -10,7 +10,6 @@
     <!-- Bootstrap CSS (from CDN) -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
-
     <!-- jQuery is loaded in the base or here once -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
@@ -21,7 +20,7 @@
 {% block content %}
     <div data-contract-id="{{ contract.contract_id }}" data-payment-schedule-id="{{ contract.payment_schedule.id }}">
         <!-- Main Header Section -->
-        <header class="bg-cool-grey text-white py-1">
+        <header class="{% if contract.is_code_92 %}bg-danger{% else %}bg-cool-grey{% endif %} text-white py-1">
             <div class="container">
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center" id="header-event-date">

@@ -293,7 +293,12 @@ export default function Home() {
                           They will call you the week of your wedding to go over the details of the day.
                         </p>
                     )}
-                   </div>
+                    {index === 5 && (
+                        <p className="mt-2 text-center">
+                          You can send the event coordinator a message in the window below in the messages section.
+                        </p>
+                    )}
+                  </div>
                 </div>
             ))}
           </div>
