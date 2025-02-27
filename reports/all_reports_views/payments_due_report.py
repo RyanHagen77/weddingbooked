@@ -11,7 +11,6 @@ import logging
 # Logging setup
 logger = logging.getLogger(__name__)
 
-
 def payments_due_report(request):
     # Get date range and location from request
     start_date_str = request.GET.get('start_date')
@@ -74,11 +73,17 @@ def payments_due_report(request):
                 'contract_link': f"/contracts/{contract.contract_id}/"
             })
 
+    # Calculate total amount due and total number of line items
+    total_due = sum(item['amount_due'] for item in report_data)
+    total_items = len(report_data)
+
     # Fetch all locations for dropdown
     locations = Location.objects.all()
 
     context = {
         'report_data': report_data,
+        'total_due': total_due,
+        'total_items': total_items,
         'start_date': start_date.strftime('%Y-%m-%d'),
         'end_date': end_date.strftime('%Y-%m-%d'),
         'locations': locations,

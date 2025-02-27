@@ -24,7 +24,12 @@
         </form>
 
         <div class="search-results">
-            <h6>Payments Due Report for {% if start_date %}from {{ start_date }}{% endif %} {% if end_date %}to {{ end_date }}{% endif %} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
+            <h6>
+                Payments Due Report for
+                {% if start_date %}from {{ start_date }}{% endif %}
+                {% if end_date %}to {{ end_date }}{% endif %} for
+                {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}
+            </h6>
             <table>
                 <thead>
                     <tr>
@@ -41,7 +46,7 @@
                         {% for data in report_data %}
                         <tr>
                             <td>{{ data.event_date }}</td>
-                            <td>${{ data.amount_due }}</td>
+                            <td>${{ data.amount_due|floatformat:2 }}</td>
                             <td>{{ data.date_due }}</td>
                             <td>{{ data.primary_contact }}</td>
                             <td>{{ data.primary_phone1 }}</td>
@@ -54,6 +59,14 @@
                         </tr>
                     {% endif %}
                 </tbody>
+                {% if report_data %}
+                <tfoot>
+                    <tr>
+                        <td colspan="3"><strong>Total Line Items: {{ total_items }}</strong></td>
+                        <td colspan="3"><strong>Total Amount Due: ${{ total_due|floatformat:2 }}</strong></td>
+                    </tr>
+                </tfoot>
+                {% endif %}
             </table>
         </div>
     </div>
