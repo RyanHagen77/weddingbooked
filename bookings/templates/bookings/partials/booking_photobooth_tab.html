@@ -1,3 +1,4 @@
+{% load group_tags %}
 <div class="tab-pane" id="photobooth">
     <div class="service-category">
         <h3>Photobooth</h3>
@@ -5,7 +6,7 @@
             <thead>
                 <tr>
                     <th>Service</th>
-                    <th>Hours</th>
+                    <th>Hours (Base + Overtime)</th>
                     <th>Assigned Staff</th>
                     <th>Role</th> <!-- New Role Column -->
                 </tr>
@@ -14,16 +15,56 @@
                 <!-- Photobooth Package -->
                 <tr>
                     <td>{{ contract.photobooth_package.name }}</td>
-                    <td>{{ contract.photobooth_package.hours }}</td>
-                    <td id="assigned-photobooth-staff">{{ photobooth_op1.staff.get_full_name }}</td>
-                    <td>{{ photobooth_op1.get_role_display }}</td> <!-- Shows "Photobooth Operator 1" -->
+                    <td>
+                        {% if photobooth_op1 %}
+                            {% with overtime_total=overtime_entries|sum_overtime:"PHOTOBOOTH_OP1" %}
+                                {{ contract.photobooth_package.hours|add_float:overtime_total }}
+                            {% endwith %}
+                        {% else %}
+                            {{ contract.photobooth_package.hours }}
+                        {% endif %}
+                    </td>
+                    <td id="assigned-photobooth-staff">
+                        {% if photobooth_op1 %}
+                            {{ photobooth_op1.staff.get_full_name }}
+                        {% else %}
+                            Not Assigned
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if photobooth_op1 %}
+                            {{ photobooth_op1.get_role_display|pretty_role }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
                 </tr>
                 <!-- Additional Photobooth -->
                 <tr>
                     <td>{{ contract.photobooth_additional.name }}</td>
-                    <td>{{ contract.photobooth_additional.hours }}</td>
-                    <td id="assigned-photobooth">{{ photobooth_op2.staff.get_full_name }}</td>
-                    <td>{{ photobooth_op2.get_role_display }}</td> <!-- Shows "Photobooth Operator 2" -->
+                    <td>
+                        {% if photobooth_op2 %}
+                            {% with overtime_total=overtime_entries|sum_overtime:"PHOTOBOOTH_OP2" %}
+                                {{ contract.photobooth_additional.hours|add_float:overtime_total }}
+                            {% endwith %}
+                        {% else %}
+                            {{ contract.photobooth_additional.hours }}
+                        {% endif %}
+                    </td>
+                    <td id="assigned-photobooth">
+                        {% if photobooth_op2 %}
+                            {{ photobooth_op2.staff.get_full_name }}
+                        {% else %}
+                            Not Assigned
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if photobooth_op2 %}
+                            {{ photobooth_op2.get_role_display|pretty_role }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -39,9 +80,9 @@
             </thead>
             <tbody id="photoboothOvertimeEntriesDisplay" class="overtime-entries-display">
                 {% for overtime in overtime_entries %}
-                    {% if overtime.service_type == 'Photobooth' %}
+                    {% if overtime.overtime_option.service_type.name == 'Photobooth' %}
                         <tr>
-                            <td>{{ overtime.role }}</td>
+                            <td>{{ overtime.overtime_option.role|pretty_role }}</td>
                             <td>{{ overtime.hours }}</td>
                         </tr>
                     {% endif %}

@@ -3,6 +3,24 @@ import re
 register = template.Library()
 
 
+@register.filter
+def pretty_role(role_code):
+    """
+    Converts a role code (e.g. "PHOTOGRAPHER1") into a pretty, human-friendly format (e.g. "Photographer 1").
+    """
+    mapping = {
+        'PHOTOGRAPHER1': 'Photographer 1',
+        'PHOTOGRAPHER2': 'Photographer 2',
+        'ENGAGEMENT': 'Engagement',
+        'VIDEOGRAPHER1': 'Videographer 1',
+        'VIDEOGRAPHER2': 'Videographer 2',
+        'DJ1': 'DJ 1',
+        'DJ2': 'DJ 2',
+        'PHOTOBOOTH_OP1': 'Photobooth Operator 1',
+        'PHOTOBOOTH_OP2': 'Photobooth Operator 2',
+    }
+    return mapping.get(role_code, role_code.title())
+
 @register.filter(name='in_group')
 def in_group(user, group_name):
     """
@@ -49,3 +67,36 @@ def strip_year(value):
         return re.sub(r'^\d{4}\s', '', value_str)
     except Exception:
         return value  # Return the original value if something goes wrong
+
+
+@register.filter
+def sum_overtime(overtime_entries, role_code):
+    """
+    Sums the overtime hours from a list of overtime entries for a given role.
+    If an overtime entry has an overtime_option attribute, it uses that option's role.
+    """
+    total = 0
+    for entry in overtime_entries:
+        # If the entry is a dict, try to get its 'role' key.
+        if isinstance(entry, dict):
+            entry_role = entry.get('role')
+        # Otherwise, if it has an overtime_option attribute, use that.
+        elif hasattr(entry, 'overtime_option'):
+            entry_role = entry.overtime_option.role
+        else:
+            entry_role = getattr(entry, 'role', None)
+        if entry_role == role_code:
+            try:
+                total += float(entry.hours)
+            except (TypeError, ValueError):
+                continue
+    return total
+@register.filter
+def add_float(value, arg):
+    """
+    Converts both value and arg to float and returns their sum.
+    """
+    try:
+        return float(value) + float(arg)
+    except (TypeError, ValueError):
+        return value

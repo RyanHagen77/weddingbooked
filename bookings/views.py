@@ -451,6 +451,8 @@ def booking_detail(request, booking_id):
         'client_edit_form': ContractClientEditForm(instance=context['contract'].client),
         'event_edit_form': ContractEventEditForm(instance=context['contract']),
         'communication_form': BookingCommunicationForm(request.POST or None),
+        # Pass overtime entries from the contract.
+        'overtime_entries': context['contract'].overtimes.all(),
     })
 
     if request.method == 'POST' and context['communication_form'].is_valid():
@@ -464,6 +466,7 @@ def booking_detail(request, booking_id):
         return redirect('bookings:booking_detail', booking_id=booking_id)
 
     return render(request, 'bookings/booking_detail_office.html', context)
+
 
 
 @login_required
@@ -485,6 +488,7 @@ def booking_detail_staff(request, booking_id):
         'photobooth_op2': context['role_bookings'].get('PHOTOBOOTH_OP2'),
         'client_edit_form': ContractClientEditForm(instance=context['contract'].client),
         'event_edit_form': ContractEventEditForm(instance=context['contract']),
+        'overtime_entries': context['contract'].overtimes.all(),
     })
 
     return render(request, 'bookings/booking_detail_staff.html', context)
