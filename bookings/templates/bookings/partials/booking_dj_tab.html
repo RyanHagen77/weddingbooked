@@ -17,7 +17,7 @@
                     <td>{{ contract.dj_package.name }}</td>
                     <td>
                         {% if dj1 %}
-                            {% with overtime_total=overtime_entries|sum_overtime:"DJ1" %}
+                            {% with overtime_total=overtime_entries|sum_overtime:"Dj1" %}
                                 {{ contract.dj_package.hours|add_float:overtime_total }}
                             {% endwith %}
                         {% else %}
@@ -44,7 +44,7 @@
                     <td>{{ contract.dj_additional.name }}</td>
                     <td>
                         {% if dj2 %}
-                            {% with overtime_total=overtime_entries|sum_overtime:"DJ2" %}
+                            {% with overtime_total=overtime_entries|sum_overtime:"Dj2" %}
                                 {{ contract.dj_additional.hours|add_float:overtime_total }}
                             {% endwith %}
                         {% else %}
@@ -80,7 +80,7 @@
             </thead>
             <tbody id="djOvertimeEntriesDisplay" class="overtime-entries-display">
                 {% for overtime in overtime_entries %}
-                    {% if overtime.overtime_option.service_type.name == 'DJ' %}
+                    {% if overtime.overtime_option.service_type.name == 'Dj' %}
                         <tr>
                             <td>{{ overtime.overtime_option.role|pretty_role }}</td>
                             <td>{{ overtime.hours }}</td>
