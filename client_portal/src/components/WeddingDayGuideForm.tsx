@@ -67,16 +67,19 @@ interface WeddingDayGuideFormProps {
   contractId: string;
 }
 
-const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId }) => {
-  const { register, handleSubmit, setValue, getValues } = useForm<FormData>({
-    defaultValues: {} as FormData,
-  });
+  const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId }) => {
+    // Include errors from react-hook-form for validation
+    const { register, handleSubmit, setValue, getValues, formState: { errors } } = useForm<FormData>({
+      defaultValues: {} as FormData,
+    });
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  // New state for showing the warning modal
+  const [warningModal, setWarningModal] = useState<string | null>(null);
 
   useEffect(() => {
     if (contractId) {
@@ -129,109 +132,134 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   };
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-      setIsSubmitting(true);
-      setMessage(null);
-      const accessToken = localStorage.getItem('access_token');
-      // Add 'submit: true' to indicate this is a form submission
-      const payload = { ...data, contract: contractId, strict_validation: true, submit: true };
+    setIsSubmitting(true);
+    setMessage(null);
+    const accessToken = localStorage.getItem('access_token');
+    // Add 'submit: true' to indicate this is a form submission
+    const payload = { ...data, contract: contractId, strict_validation: true, submit: true };
 
-      try {
-        const response = await fetch(`https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        });
+    try {
+      const response = await fetch(`https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
 
-        if (response.ok) {
-          setFormSubmitted(true);
-          setIsSubmitted(true); // Ensure the guide is marked as submitted
-          setMessage('Form submitted successfully.');
-        } else {
-          setMessage('Failed to submit form. Please try again.');
-        }
-      } catch (error) {
-        setMessage('An error occurred while submitting the form.');
-        console.error('Error submitting form:', error);
-      } finally {
-        setIsSubmitting(false);
+      if (response.ok) {
+        setFormSubmitted(true);
+        setIsSubmitted(true); // Mark guide as submitted
+        setMessage('Form submitted successfully.');
+      } else {
+        setMessage('Failed to submit form. Please try again.');
       }
-    };
+    } catch (error) {
+      setMessage('An error occurred while submitting the form.');
+      console.error('Error submitting form:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-return (
-    <div className="bg-pistachio min-h-screen flex items-center justify-center py-8">
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-6xl w-full">
-        {isSubmitted ? (
-          <div className="text-center p-4 mb-6 bg-gray-100 rounded-lg">
-            <h2 className="font-bold text-lg">Wedding Day Guide Submitted</h2>
-            <p>This guide has already been submitted and cannot be modified.</p>
+  // onError callback to handle validation errors from react-hook-form
+  const onError = (errors: any) => {
+    const errorMessages = Object.values(errors)
+      .map((err: any) => err.message)
+      .filter(Boolean);
+    setWarningModal(`Missing required fields: ${errorMessages.join(', ')}`);
+  };
+
+  return (
+    <>
+      {/* Warning Modal */}
+      {warningModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full">
+            <h2 className="text-lg font-bold mb-4">Missing Required Fields</h2>
+            <p>{warningModal}</p>
+            <button
+              onClick={() => setWarningModal(null)}
+              className="mt-4 bg-black text-white py-2 px-4 rounded hover:bg-gray-800"
+            >
+              Close
+            </button>
           </div>
-        ) : (
-          <>
-            <h1 className="text-2xl font-bold mb-6 text-center">Wedding Day Guide</h1>
+        </div>
+      )}
+      <div className="bg-pistachio min-h-screen flex items-center justify-center py-8">
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-6xl w-full">
+          {isSubmitted ? (
             <div className="text-center p-4 mb-6 bg-gray-100 rounded-lg">
-              <h2 className="font-bold text-lg">Emergency Contact</h2>
-              <p>(847) 780-7092: Contact Essence with this number in case of any emergency on your wedding day.</p>
+              <h2 className="font-bold text-lg">Wedding Day Guide Submitted</h2>
+              <p>This guide has already been submitted and cannot be modified.</p>
             </div>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-gray-100 rounded-lg">
-                {/* General Info on the left */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Wedding Date:</label>
-                  <input
-                    type="date"
-                    {...register("event_date", { required: "Wedding Date is required" })}
-                    className="border p-2 rounded-lg w-full"
-                  />
-
-                  <label className="block text-sm font-medium text-gray-700">Partner 1:</label>
-                  <input
-                    type="text"
-                    {...register("primary_contact", { required: "Partner 1 name is required" })}
-                    className="border p-2 rounded-lg w-full"
-                  />
-
-                  <label className="block text-sm font-medium text-gray-700">Primary Email:</label>
-                  <input
-                    type="email"
-                    {...register("primary_email", { required: "Primary email is required" })}
-                    className="border p-2 rounded-lg w-full"
-                  />
-
-                  <label className="block text-sm font-medium text-gray-700">Primary Cell #:</label>
-                  <input
-                    type="tel"
-                    {...register("primary_phone", { required: "Primary cell number is required" })}
-                    className="border p-2 rounded-lg w-full"
-                  />
-                </div>
-
-                {/* Partner Info on the right */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Partner 2:</label>
-                  <input
-                    type="text"
-                    {...register("partner_contact", { required: "Partner 2 name is required" })}
-                    className="border p-2 rounded-lg w-full"
-                  />
-
-                  <label className="block text-sm font-medium text-gray-700">Partner Email:</label>
-                  <input
-                    type="email"
-                    {...register("partner_email", { required: "Partner email is required" })}
-                    className="border p-2 rounded-lg w-full"
-                  />
-
-                  <label className="block text-sm font-medium text-gray-700">Partner Cell #:</label>
-                  <input
-                    type="tel"
-                    {...register("partner_phone", { required: "Partner cell number is required" })}
-                    className="border p-2 rounded-lg w-full"
-                  />
-                </div>
+          ) : (
+            <>
+              <h1 className="text-2xl font-bold mb-6 text-center">Wedding Day Guide</h1>
+              <div className="text-center p-4 mb-6 bg-gray-100 rounded-lg">
+                <h2 className="font-bold text-lg">Emergency Contact</h2>
+                <p>(847) 780-7092: Contact Essence with this number in case of any emergency on your wedding day.</p>
               </div>
+              {/* Note the onSubmit now includes an onError callback */}
+              <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-gray-100 rounded-lg">
+                  {/* General Info on the left */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Wedding Date:</label>
+                    <input
+                      type="date"
+                      {...register("event_date", { required: "Wedding Date is required" })}
+                      className="border p-2 rounded-lg w-full"
+                    />
+
+                    <label className="block text-sm font-medium text-gray-700">Partner 1:</label>
+                    <input
+                      type="text"
+                      {...register("primary_contact", { required: "Partner 1 name is required" })}
+                      className="border p-2 rounded-lg w-full"
+                    />
+
+                    <label className="block text-sm font-medium text-gray-700">Primary Email:</label>
+                    <input
+                      type="email"
+                      {...register("primary_email", { required: "Primary email is required" })}
+                      className="border p-2 rounded-lg w-full"
+                    />
+
+                    <label className="block text-sm font-medium text-gray-700">Primary Cell #:</label>
+                    <input
+                      type="tel"
+                      {...register("primary_phone", { required: "Primary cell number is required" })}
+                      className="border p-2 rounded-lg w-full"
+                    />
+                  </div>
+
+                  {/* Partner Info on the right */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Partner 2:</label>
+                    <input
+                      type="text"
+                      {...register("partner_contact", { required: "Partner 2 name is required" })}
+                      className="border p-2 rounded-lg w-full"
+                    />
+
+                    <label className="block text-sm font-medium text-gray-700">Partner Email:</label>
+                    <input
+                      type="email"
+                      {...register("partner_email", { required: "Partner email is required" })}
+                      className="border p-2 rounded-lg w-full"
+                    />
+
+                    <label className="block text-sm font-medium text-gray-700">Partner Cell #:</label>
+                    <input
+                      type="tel"
+                      {...register("partner_phone", { required: "Partner cell number is required" })}
+                      className="border p-2 rounded-lg w-full"
+                    />
+                  </div>
+                </div>
               <div className="p-4 bg-gray-100 rounded-lg mb-6">
                 <h2 className="font-bold text-lg mb-2">For The Lead Photographer</h2>
                 <p>The photographer typically comes to the bride&rsquo;s dressing location 3 hours before the ceremony.</p>
@@ -722,44 +750,47 @@ return (
                 <label className="block text-sm font-medium text-gray-700">Placement:</label>
                 <input type="text" {...register("photo_booth_placement")} className="border p-2 rounded-lg w-full"/>
               </div>
-              {/* Warning Message */}
-              <div className="text-red-500 text-center">
-                Please note that once you submit this form, you will not be able to make any changes.
-              </div>
-              {message && (
-                <div
-                  className={`p-4 mb-6 text-center rounded-lg ${
-                    message.includes('successfully') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                  }`}
-                >
-                  {message}
+                {/* Warning note before submission */}
+                <div className="text-red-500 text-center">
+                  Please note that once you submit this form, you will not be able to make any changes.
                 </div>
-              )}
-              <div className="flex flex-col space-y-4">
-                {/* Save Button */}
-                <button
-                  type="button"
-                  onClick={handleSave} // This skips validation on save
-                  className="w-full bg-pink-300 text-white py-3 rounded-md hover:bg-pink-400 transition duration-200"
-                  disabled={isSaving}
-                >
-                  {isSaving ? "Saving..." : "Save"}
-                </button>
+                {message && (
+                  <div
+                    className={`p-4 mb-6 text-center rounded-lg ${
+                      message.includes('successfully')
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-red-100 text-red-700'
+                    }`}
+                  >
+                    {message}
+                  </div>
+                )}
+                <div className="flex flex-col space-y-4">
+                  {/* Save Button */}
+                  <button
+                    type="button"
+                    onClick={handleSave} // This skips validation on save
+                    className="w-full bg-pink-300 text-white py-3 rounded-md hover:bg-pink-400 transition duration-200"
+                    disabled={isSaving}
+                  >
+                    {isSaving ? "Saving..." : "Save"}
+                  </button>
 
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  className="w-full bg-pink-300 text-white py-3 rounded-md hover:bg-pink-400 transition duration-200"
-                  disabled={isSubmitting || formSubmitted} // Disable after form is submitted
-                >
-                  {isSubmitting ? "Submitting..." : "Submit"}
-                </button>
-              </div>
-            </form>
-          </>
-        )}
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    className="w-full bg-pink-300 text-white py-3 rounded-md hover:bg-pink-400 transition duration-200"
+                    disabled={isSubmitting || formSubmitted} // Disable after form is submitted
+                  >
+                    {isSubmitting ? "Submitting..." : "Submit"}
+                  </button>
+                </div>
+              </form>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

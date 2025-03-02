@@ -79,7 +79,6 @@
             border-radius: 4px;
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         }
-
         .forgot-password {
             display: block;
             margin-top: 10px;
@@ -87,13 +86,20 @@
             color: red; /* Red color */
             text-decoration: none; /* Remove underline */
         }
-
+        .show-password {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .show-password input {
+            margin-right: 8px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="logo">
-        <img src="{{ MEDIA_URL }}logo/Final_Logo.png" alt="Essence Logo">
+            <img src="{{ MEDIA_URL }}logo/Final_Logo.png" alt="Essence Logo">
         </div>
         <h2>Essence Staff Login</h2>
         <form method="post" action="">
@@ -103,6 +109,10 @@
             <input type="text" name="username" id="username" required>
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required>
+            <div class="show-password">
+                <input type="checkbox" id="show-password" onclick="togglePassword()">
+                <label for="show-password">Show Password</label>
+            </div>
             <button type="submit">Login</button>
             <a href="{% url 'users:password_reset' %}" class="forgot-password">Forgot Password?</a>
         </form>
@@ -114,5 +124,15 @@
             </ul>
         {% endif %}
     </div>
+    <script>
+        function togglePassword() {
+            var passwordInput = document.getElementById("password");
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+            } else {
+                passwordInput.type = "password";
+            }
+        }
+    </script>
 </body>
 </html>

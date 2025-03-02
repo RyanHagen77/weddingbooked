@@ -2,6 +2,13 @@
 {% block content %}
 <div class="container" style="display: flex;">
     <div style="flex: 1; display: flex; flex-direction: column; padding: 20px;">
+        <!-- Contact Information Section -->
+        <div>
+            <h4>Contact Information</h4>
+            <p><strong>Email:</strong> {{ staff_member.email }}</p>
+            <p><strong>Phone:</strong> {{ staff_member.primary_phone1 }}</p>
+        </div>
+        <!-- Days Off Section -->
         <div>
             <h4>Days Off</h4>
             <table id="daysOffList" class="styled-table">
