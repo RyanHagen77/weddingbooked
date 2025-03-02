@@ -29,6 +29,7 @@ interface Document {
 export default function Home() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
   const [photographers, setPhotographers] = useState<Photographer[]>([]);
+  const [showGuide, setShowGuide] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState<string>('');
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -147,6 +148,7 @@ export default function Home() {
     setMessages([]);
     setDocuments([]);
   };
+
 
 
   return (
