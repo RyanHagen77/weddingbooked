@@ -368,21 +368,19 @@ export default function Home() {
             <div className="border-t-2 border-lightpink mt-[6px]"></div>
           </div>
         </div>
-        <section id='wedding-planning-guide' className="text-center py-8 mb-[200px]">
+        <section id="wedding-planning-guide" className="text-center py-8 mb-[200px]">
           {contractId ? (
               formSubmitted ? (
                   <p className="text-lg text-red-500 font-semibold">
                     The Wedding Day Guide has been submitted and can no longer be edited.
                   </p>
               ) : (
-                  <a
-                      href={`/client_portal/wedding-day-guide/${contractId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-lg text-black font-semibold underline"
+                  <button
+                      onClick={() => window.open(`/client_portal/wedding-day-guide/${contractId}`, '_blank')}
+                      className="px-4 py-2 bg-lightpink-500 text-black text-lg font-semibold rounded hover:bg-blue-600 transition duration-200"
                   >
                     Please click here to fill out your wedding day guide for your team!
-                  </a>
+                  </button>
               )
           ) : (
               <p className="text-lg text-black font-semibold">
