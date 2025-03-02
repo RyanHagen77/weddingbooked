@@ -10,6 +10,7 @@ interface LoginProps {
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const { login } = useAuth();
 
@@ -27,7 +28,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       // Call login function to update the AuthContext
       login(access, refresh, contractId);
       onLogin(); // Notify parent that login was successful
-
     } catch (err) {
       console.error('Login error:', err);
       setError('Login failed. Please check your credentials.');
@@ -57,18 +57,32 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <div>
             <label htmlFor="password" className="block text-gray-700">Password:</label>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded mt-1"
               required
             />
+            <div className="flex items-center mt-2">
+              <input
+                type="checkbox"
+                id="showPassword"
+                checked={showPassword}
+                onChange={() => setShowPassword(!showPassword)}
+                className="mr-2"
+              />
+              <label htmlFor="showPassword" className="text-gray-700">Show Password</label>
+            </div>
           </div>
-          <button type="submit" className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition">Login</button>
+          <button type="submit" className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition">
+            Login
+          </button>
         </form>
         <div className="mt-4 text-center">
-          <a href="https://www.enet2.com/users/password_reset/" className="text-pink-700 hover:underline">Forgot Password?</a>
+          <a href="https://www.enet2.com/users/password_reset/" className="text-pink-700 hover:underline">
+            Forgot Password?
+          </a>
         </div>
       </div>
     </main>
