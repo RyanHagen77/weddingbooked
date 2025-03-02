@@ -42,7 +42,7 @@
                         {% if photographer1 %}
                             {{ photographer1.staff.get_full_name }}
                         {% else %}
-                            Not Assigned
+                            N/A
                         {% endif %}
                     </td>
                     <td>
@@ -69,7 +69,7 @@
                         {% if photographer2 %}
                             {{ photographer2.staff.get_full_name }}
                         {% else %}
-                            Not Assigned
+                            N/A
                         {% endif %}
                     </td>
                     <td>
@@ -96,7 +96,7 @@
                         {% if engagement_session %}
                             {{ engagement_session.staff.get_full_name }}
                         {% else %}
-                            Not Assigned
+                            N/A
                         {% endif %}
                     </td>
                     <td>
@@ -107,27 +107,6 @@
                         {% endif %}
                     </td>
                 </tr>
-            </tbody>
-        </table>
-
-    <!-- Overtime Details Section -->
-        <h4>Overtime Details</h4>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Role</th>
-                    <th>Hours</th>
-                </tr>
-            </thead>
-            <tbody id="photographyOvertimeEntriesDisplay" class="overtime-entries-display">
-                {% for overtime in overtime_entries %}
-                    {% if overtime.overtime_option.service_type.name == 'Photography' %}
-                        <tr>
-                            <td>{{ overtime.overtime_option.role|pretty_role }}</td>
-                            <td>{{ overtime.hours }}</td>
-                        </tr>
-                    {% endif %}
-                {% endfor %}
             </tbody>
         </table>
     </div>

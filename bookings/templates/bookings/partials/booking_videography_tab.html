@@ -28,7 +28,7 @@
                         {% if videographer1 %}
                             {{ videographer1.staff.get_full_name }}
                         {% else %}
-                            Not Assigned
+                            N/A
                         {% endif %}
                     </td>
                     <td>
@@ -55,7 +55,7 @@
                         {% if videographer2 %}
                             {{ videographer2.staff.get_full_name }}
                         {% else %}
-                            Not Assigned
+                            N/A
                         {% endif %}
                     </td>
                     <td>
@@ -66,27 +66,6 @@
                         {% endif %}
                     </td>
                 </tr>
-            </tbody>
-        </table>
-
-        <!-- Overtime Details Section for Videography -->
-        <h4>Videography Overtime Details</h4>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Role</th>
-                    <th>Hours</th>
-                </tr>
-            </thead>
-            <tbody id="videographyOvertimeEntriesDisplay" class="overtime-entries-display">
-                {% for overtime in overtime_entries %}
-                    {% if overtime.overtime_option.service_type.name == 'Videography' %}
-                        <tr>
-                            <td>{{ overtime.overtime_option.role|pretty_role }}</td>
-                            <td>{{ overtime.hours }}</td>
-                        </tr>
-                    {% endif %}
-                {% endfor %}
             </tbody>
         </table>
     </div>

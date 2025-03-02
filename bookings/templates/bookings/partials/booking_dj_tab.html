@@ -28,7 +28,7 @@
                         {% if dj1 %}
                             {{ dj1.staff.get_full_name }}
                         {% else %}
-                            Not Assigned
+                            N/A
                         {% endif %}
                     </td>
                     <td>
@@ -55,7 +55,7 @@
                         {% if dj2 %}
                             {{ dj2.staff.get_full_name }}
                         {% else %}
-                            Not Assigned
+                            N/A
                         {% endif %}
                     </td>
                     <td>
@@ -66,27 +66,6 @@
                         {% endif %}
                     </td>
                 </tr>
-            </tbody>
-        </table>
-
-        <!-- Overtime Details Section for DJ -->
-        <h4>DJ Overtime Details</h4>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Role</th>
-                    <th>Hours</th>
-                </tr>
-            </thead>
-            <tbody id="djOvertimeEntriesDisplay" class="overtime-entries-display">
-                {% for overtime in overtime_entries %}
-                    {% if overtime.overtime_option.service_type.name == 'Dj' %}
-                        <tr>
-                            <td>{{ overtime.overtime_option.role|pretty_role }}</td>
-                            <td>{{ overtime.hours }}</td>
-                        </tr>
-                    {% endif %}
-                {% endfor %}
             </tbody>
         </table>
     </div>
