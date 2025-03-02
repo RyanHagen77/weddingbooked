@@ -29,7 +29,6 @@ interface Document {
 export default function Home() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
   const [photographers, setPhotographers] = useState<Photographer[]>([]);
-  const [showGuide, setShowGuide] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState<string>('');
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -148,7 +147,6 @@ export default function Home() {
     setMessages([]);
     setDocuments([]);
   };
-
 
 
   return (
@@ -372,31 +370,25 @@ export default function Home() {
         </div>
         <section id="wedding-planning-guide" className="text-center py-8 mb-[200px]">
           {contractId ? (
-            formSubmitted ? (
-              <p className="text-lg text-red-500 font-semibold">
-                The Wedding Day Guide has been submitted and can no longer be edited.
-              </p>
-            ) : (
-                <>
-                  <p className="text-lg text-black font-semibold">
-                    Please click here to fill out your wedding day guide for your team!
+              formSubmitted ? (
+                  <p className="text-lg text-red-500 font-semibold">
+                    The Wedding Day Guide has been submitted and can no longer be edited.
                   </p>
-                  <button
-                      onClick={() => setShowGuide(true)}
-                      className="mt-4 px-6 py-3 bg-pistachio text-black text-lg font-semibold border-2 border-lightpink rounded hover:bg-opacity-90 transition duration-200"
-                  >
-                    Open Wedding Day Guide
-                  </button>
-                  {showGuide && (
-                      <div className="mt-6">
-                        {/* Replace the content below with your actual Wedding Day Guide form */}
-                        <p className="text-black">
-                          [Wedding Day Guide form/content appears here...]
-                        </p>
-                      </div>
-                  )}
-                </>
-            )
+              ) : (
+                  <>
+                    <p className="text-lg text-black font-semibold">
+                      Please click here to fill out your wedding day guide for your team!
+                    </p>
+                    <button
+                        onClick={() =>
+                            window.location.href = `/client_portal/wedding-day-guide/${contractId}`
+                        }
+                        className="mt-4 px-6 py-3 bg-pistachio text-black text-lg font-semibold border-2 border-lightpink rounded hover:bg-opacity-90 transition duration-200"
+                    >
+                      Open Wedding Day Guide
+                    </button>
+                  </>
+              )
           ) : (
               <p className="text-lg text-black font-semibold">
                 Contract ID not available. Please make sure you are logged in.
