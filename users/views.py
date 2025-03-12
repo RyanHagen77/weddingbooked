@@ -1,6 +1,6 @@
 
 from django.shortcuts import get_object_or_404, redirect, render
-from django.db.models import Q
+from django.db.models import Q, Case, When, BooleanField, Value
 from django.conf import settings
 from django.views.generic import ListView, CreateView, UpdateView
 from django.utils.timezone import now
@@ -9,6 +9,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth.views import (PasswordResetView, PasswordResetConfirmView, PasswordResetDoneView,
                                        PasswordResetCompleteView)
 
+from django.utils import timezone
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, get_user_model, login, logout
@@ -241,7 +242,15 @@ class OfficeStaffListView(ListView):
 @login_required
 def office_staff_dashboard(request, pk):
     staff_member = get_object_or_404(CustomUser, pk=pk)
-    incomplete_tasks = Task.objects.filter(assigned_to=request.user, is_completed=False).order_by('due_date')
+    today = timezone.now().date()
+    incomplete_tasks = Task.objects.filter(assigned_to=request.user, is_completed=False).annotate(
+        is_overdue=Case(
+            When(due_date__lt=today, then=Value(True)),
+            default=Value(False),
+            output_field=BooleanField()
+        )
+    ).order_by('-is_overdue', 'due_date')
+
     completed_tasks = Task.objects.filter(assigned_to=request.user, is_completed=True).order_by('due_date')
 
     context = {

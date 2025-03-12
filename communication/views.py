@@ -22,6 +22,8 @@ from .serializers import UnifiedCommunicationSerializer
 
 from django.utils.timezone import now
 from datetime import timedelta
+from django.db.models import Case, When, BooleanField, Value
+from django.utils import timezone
 
 from django.contrib.auth.models import User
 # Django Form Imports
@@ -275,8 +277,15 @@ def send_contract_and_rider_email_to_client(request, contract, rider_type=None, 
 
 @login_required
 def task_list(request):
-    # Fetch both completed and incomplete tasks
-    incomplete_tasks = Task.objects.filter(assigned_to=request.user, is_completed=False).order_by('due_date')
+    today = timezone.now().date()
+    incomplete_tasks = Task.objects.filter(assigned_to=request.user, is_completed=False).annotate(
+        is_overdue=Case(
+            When(due_date__lt=today, then=Value(True)),
+            default=Value(False),
+            output_field=BooleanField()
+        )
+    ).order_by('-is_overdue', 'due_date')
+
     completed_tasks = Task.objects.filter(assigned_to=request.user, is_completed=True).order_by('due_date')
 
     task_form = TaskForm()

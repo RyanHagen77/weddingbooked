@@ -1,6 +1,5 @@
-<!-- users/internal_task_list_snippet.html -->
 {% for task in incomplete_tasks %}
-<tr style="height: 30px;">
+<tr class="{% if task.is_overdue %}text-danger{% endif %}" style="height: 30px;">
     <td>{{ task.sender.username }}</td>
     <td>{{ task.created_at|date:"Y-m-d H:i" }}</td>
     <td>
