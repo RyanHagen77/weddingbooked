@@ -27,3 +27,4 @@ nohup.out
 
 # Ignore temp migrations directory
 temp_migrations/
+sendgrid.env
