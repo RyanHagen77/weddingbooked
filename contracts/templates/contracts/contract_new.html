@@ -112,6 +112,24 @@
                             <div class="error">{{ contract_form.status.errors }}</div>
                         {% endif %}
                     </div>
+                    <!-- Lead Source Category Field -->
+                    <div>
+                        {{ contract_form.lead_source_category.label_tag }} {{ contract_form.lead_source_category }}
+                        {% if contract_form.lead_source_category.errors %}
+                            <div class="error">{{ contract_form.lead_source_category.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Select the general category for the lead source (e.g., "Online", "Venue Referral").</small>
+                    </div>
+
+                    <!-- Lead Source Details Field -->
+                    <div>
+                        {{ contract_form.lead_source_details.label_tag }} {{ contract_form.lead_source_details }}
+                        {% if contract_form.lead_source_details.errors %}
+                            <div class="error">{{ contract_form.lead_source_details.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Enter specific details about the lead source (e.g., "The Knot", "XYZ Banquet Hall").</small>
+                    </div>
+
                     <div>
                         {{ contract_form.coordinator.label_tag }} {{ contract_form.coordinator }}
                         {% if contract_form.coordinator.errors %}
