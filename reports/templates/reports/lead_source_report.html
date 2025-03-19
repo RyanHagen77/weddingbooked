@@ -43,7 +43,7 @@
         </form>
 
         <div class="search-results">
-            <h6>{{ selected_period|title }} Lead Sources between {{ start_date }} and {{ end_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
+            <h6>{{ selected_period|title }} Lead Sources between {{ start_date }} and {{ end_date }}</h6>
             <table>
                 <thead>
                     <tr>
@@ -54,7 +54,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for data in report_data %}
+                    {% for data in page_obj %}
                     <tr>
                         <td>{{ data.period }}</td>
                         <td>{{ data.category }}</td>
@@ -64,23 +64,35 @@
                     {% endfor %}
                 </tbody>
             </table>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">First</a>
+                        <a href="?page={{ page_obj.previous_page_number }}&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">Previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">Next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">Last</a>
+                    {% endif %}
+                </span>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // Function to toggle the visibility of the custom date range inputs
     function toggleCustomDates() {
         const dateRange = document.getElementById("date_range").value;
-        const customDatesDiv = document.getElementById("custom-dates");
-        if (dateRange === "custom") {
-            customDatesDiv.style.display = "block";
-        } else {
-            customDatesDiv.style.display = "none";
-        }
+        document.getElementById("custom-dates").style.display = dateRange === "custom" ? "block" : "none";
     }
 
-    // Initial call to adjust visibility based on the current selection
     toggleCustomDates();
 </script>
 

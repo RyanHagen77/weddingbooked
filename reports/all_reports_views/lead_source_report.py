@@ -1,5 +1,5 @@
+from django.core.paginator import Paginator
 from django.shortcuts import render
-from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from contracts.models import Contract, LeadSourceCategory, Location
 from datetime import timedelta
@@ -11,41 +11,35 @@ import logging
 # Logging setup
 logger = logging.getLogger(__name__)
 
-
 @login_required
 def lead_source_report(request):
-    # Get date range, location, and period from request
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
     location_id = request.GET.get('location', 'all')
     period = request.GET.get('period', 'monthly')
-    date_range = request.GET.get('date_range', 'this_month')  # Added date_range for date selection
+    date_range = request.GET.get('date_range', 'this_month')  # Default selection
 
-    # Use get_date_range function to get start and end dates for the selected date range
+    # Get the start and end dates
     start_date, end_date = get_date_range(date_range, start_date_str, end_date_str)
 
-    # Handle missing custom dates
     if date_range == 'custom' and (not start_date or not end_date):
-        return render(request, 'reports/error.html', {
-            'message': 'Please provide both start and end dates for the custom date range.'
-        })
+        return render(request, 'reports/error.html', {'message': 'Please provide both start and end dates for the custom date range.'})
 
-    # Filter contracts based on location and contract date
+    # Filter contracts
     contracts = Contract.objects.filter(contract_date__range=(start_date, end_date))
     if location_id != 'all':
         contracts = contracts.filter(location_id=location_id)
 
-    # Function to generate a list of months in the date range
+    # Define period range functions
     def month_range(start_date, end_date):
         start_month = start_date.replace(day=1)
         end_month = end_date.replace(day=1)
         current_month = start_month
         while current_month <= end_month:
             yield current_month
-            next_month = current_month + timedelta(days=calendar.monthrange(current_month.year, current_month.month)[1])
-            current_month = next_month.replace(day=1)
+            current_month += timedelta(days=calendar.monthrange(current_month.year, current_month.month)[1])
+            current_month = current_month.replace(day=1)
 
-    # Function to generate a list of weeks in the date range
     def week_range(start_date, end_date):
         start_week = start_date - timedelta(days=start_date.weekday())
         end_week = end_date - timedelta(days=end_date.weekday())
@@ -54,7 +48,7 @@ def lead_source_report(request):
             yield current_week
             current_week += timedelta(days=7)
 
-    # Gather statistics based on the selected period
+    # Collect statistics
     report_data = []
     if period == 'monthly':
         for month_start in month_range(start_date, end_date):
@@ -86,18 +80,25 @@ def lead_source_report(request):
                     'booked_count': booked_count,
                 })
 
-    # Get all locations for the dropdown
+    # **Sort venues alphabetically**
+    report_data = sorted(report_data, key=lambda x: x['category'])
+
+    # **Paginate results (50 per page)**
+    paginator = Paginator(report_data, 50)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
     locations = Location.objects.all()
 
     context = {
-        'report_data': report_data,
+        'page_obj': page_obj,  # Paginated data
         'start_date': start_date.strftime('%Y-%m-%d'),
         'end_date': end_date.strftime('%Y-%m-%d'),
         'locations': locations,
         'selected_location': location_id,
         'selected_period': period,
-        'date_range': date_range,  # Passed to template to maintain selected range
-        'DATE_RANGE_DISPLAY': DATE_RANGE_DISPLAY,  # Pass the date range options to template
+        'date_range': date_range,
+        'DATE_RANGE_DISPLAY': DATE_RANGE_DISPLAY,
     }
 
     return render(request, 'reports/lead_source_report.html', context)

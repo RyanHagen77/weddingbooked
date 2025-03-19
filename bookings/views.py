@@ -490,6 +490,16 @@ def booking_detail_staff(request, booking_id):
         'event_edit_form': ContractEventEditForm(instance=context['contract']),
         'overtime_entries': context['contract'].overtimes.all(),
     })
+    # Include staff email and phone number in context
+    for key in ['photographer1', 'photographer2', 'engagement_session']:
+        staff_booking = context.get(key)
+        if staff_booking and staff_booking.staff:
+            context[key + '_email'] = getattr(staff_booking.staff, 'email', 'N/A')
+            context[key + '_phone'] = staff_booking.staff.phone_number if hasattr(staff_booking.staff,
+                                                                                  'phone_number') else "N/A"
+        else:
+            context[key + '_email'] = "N/A"
+            context[key + '_phone'] = "N/A"
 
     return render(request, 'bookings/booking_detail_staff.html', context)
 

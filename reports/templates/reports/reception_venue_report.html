@@ -17,7 +17,6 @@
                 <option value="custom" {% if date_range == "custom" %}selected{% endif %}>Custom</option>
             </select>
 
-            <!-- Custom date range inputs, hidden unless "Custom" is selected -->
             <div id="custom-dates" {% if date_range != "custom" %}style="display:none;"{% endif %}>
                 <label for="start_date">Start Date:</label>
                 <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
@@ -42,7 +41,7 @@
         </form>
 
         <div class="search-results">
-            <h6>Reception Venues between {{ start_date }} and {{ end_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
+            <h6>Reception Venues between {{ start_date }} and {{ end_date }}</h6>
             <table>
                 <thead>
                     <tr>
@@ -54,34 +53,37 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for data in report_data %}
+                    {% for data in page_obj %}
                     <tr>
                         <td>{{ data.reception_site }}</td>
                         <td>{{ data.event_date }}</td>
-                        <td>{{ data.custom_contract_number }}</td>
-                        <td>
-                            {{ data.primary_contact }}<br>
-                            {{ data.partner_contact }}
-                        </td>
+                        <td><a href="{{ data.contract_link }}" target="_blank">{{ data.custom_contract_number }}</a></td>
+                        <td>{{ data.primary_contact }}<br>{{ data.partner_contact }}</td>
                         <td>{{ data.status }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">First</a>
+                        <a href="?page={{ page_obj.previous_page_number }}&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">Previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">Next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">Last</a>
+                    {% endif %}
+                </span>
+            </div>
         </div>
     </div>
 </div>
-
-<script>
-// Function to toggle visibility of custom date range inputs
-function toggleCustomDates() {
-    const dateRange = document.getElementById("date_range").value;
-    const customDatesDiv = document.getElementById("custom-dates");
-    if (dateRange === "custom") {
-        customDatesDiv.style.display = "block";
-    } else {
-        customDatesDiv.style.display = "none";
-    }
-}
-</script>
 {% endblock %}

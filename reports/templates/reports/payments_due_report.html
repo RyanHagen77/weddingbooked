@@ -6,7 +6,7 @@
 <div class="outer-container">
     <div class="search-results">
         <h4>Payments Due Report</h4>
-        <button onclick="history.back()" class="btn-dusty-pink">Go Back</button>
+        <button onclick="history.back()" class="btn btn-dusty-pink">Go Back</button>
 
         <form method="get" class="report-form">
             <label for="start_date">Start Date:</label>
@@ -20,54 +20,73 @@
                 <option value="{{ location.id }}" {% if selected_location == location.id|stringformat:"s" %}selected{% endif %}>{{ location.name }}</option>
                 {% endfor %}
             </select>
-            <button type="submit" class="btn-dusty-pink">Generate Report</button>
+            <button type="submit" class="btn btn-dusty-pink">Generate Report</button>
         </form>
 
         <div class="search-results">
             <h6>
-                Payments Due Report for
+                Payments Due Report
                 {% if start_date %}from {{ start_date }}{% endif %}
-                {% if end_date %}to {{ end_date }}{% endif %} for
-                {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}
+                {% if end_date %}to {{ end_date }}{% endif %}
+                for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}
             </h6>
+
             <table>
                 <thead>
                     <tr>
-                        <th>Event Date</th>
-                        <th>Amount Due</th>
-                        <th>Date Due</th>
+                        <th>#</th>
+                        <th>Due Date</th>
+                        <th>Contract Number</th>
                         <th>Primary Contact</th>
                         <th>Primary Phone</th>
-                        <th>Contract Number</th>
+                        <th>Event Date</th>
+                        <th>Amount Due</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% if report_data %}
-                        {% for data in report_data %}
+                    {% if page_obj %}
+                        {% for data in page_obj %}
                         <tr>
-                            <td>{{ data.event_date }}</td>
-                            <td>${{ data.amount_due|floatformat:2 }}</td>
-                            <td>{{ data.date_due }}</td>
+                            <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
+                            <td>{{ data.date_due|date:"Y-m-d" }}</td>  <!-- Fix: Remove time, show only date -->
+                            <td><a href="{{ data.contract_link }}">{{ data.custom_contract_number }}</a></td>
                             <td>{{ data.primary_contact }}</td>
                             <td>{{ data.primary_phone1 }}</td>
-                            <td><a href="{{ data.contract_link }}">{{ data.custom_contract_number }}</a></td>
+                            <td>{{ data.event_date }}</td>
+                            <td>${{ data.amount_due|floatformat:2 }}</td>
                         </tr>
                         {% endfor %}
+                        <!-- Totals row -->
+                        <tr style="font-weight: bold;">
+                            <td colspan="6" align="right">Total Due:</td>
+                            <td>${{ total_due|floatformat:2 }}</td>
+                        </tr>
                     {% else %}
                         <tr>
-                            <td colspan="6">No payments due for the selected criteria.</td>
+                            <td colspan="7">No payments due for the selected criteria.</td>
                         </tr>
                     {% endif %}
                 </tbody>
-                {% if report_data %}
-                <tfoot>
-                    <tr>
-                        <td colspan="3"><strong>Total Line Items: {{ total_items }}</strong></td>
-                        <td colspan="3"><strong>Total Amount Due: ${{ total_due|floatformat:2 }}</strong></td>
-                    </tr>
-                </tfoot>
-                {% endif %}
             </table>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">First</a>
+                        <a href="?page={{ page_obj.previous_page_number }}&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">Previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">Next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">Last</a>
+                    {% endif %}
+                </span>
+            </div>
         </div>
     </div>
 </div>

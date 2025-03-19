@@ -31,6 +31,16 @@ def sum_values(queryset, attr):
         total += getattr(item, attr, Decimal('0.00'))
     return total
 
+@register.filter
+def sum_dict_values(data, key):
+    """Sum values from a list of dictionaries in Django templates."""
+    total = Decimal("0.00")
+    for item in data:
+        if isinstance(item, dict) and key in item:
+            total += Decimal(item[key])
+    return total.quantize(Decimal("0.01"))
+
+
 @register.filter(name='in_group')
 def in_group(user, group_name):
     return user.groups.filter(name=group_name).exists()

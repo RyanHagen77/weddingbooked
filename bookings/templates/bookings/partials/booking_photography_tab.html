@@ -25,8 +25,7 @@
                     <th>Role</th>
                 </tr>
             </thead>
-            <tbody>
-                <!-- Photography Package -->
+<tbody>
                 <tr>
                     <td>{{ contract.photography_package.name }}</td>
                     <td>
@@ -40,7 +39,9 @@
                     </td>
                     <td id="assigned-photographer1">
                         {% if photographer1 %}
-                            {{ photographer1.staff.get_full_name }}
+                            {{ photographer1.staff.get_full_name }}<br>
+                            <small>Email: {{ photographer1_email|default:"No Email Found" }}</small><br>
+                            <small>Phone: {{ photographer1_phone }}</small>
                         {% else %}
                             N/A
                         {% endif %}
@@ -53,7 +54,7 @@
                         {% endif %}
                     </td>
                 </tr>
-                <!-- Additional Photographer -->
+
                 <tr>
                     <td>{{ contract.photography_additional.name }}</td>
                     <td>
@@ -67,7 +68,9 @@
                     </td>
                     <td id="assigned-photographer2">
                         {% if photographer2 %}
-                            {{ photographer2.staff.get_full_name }}
+                            {{ photographer2.staff.get_full_name }}<br>
+                            <small>Email: {{ photographer2_email }}</small><br>
+                            <small>Phone: {{ photographer2_phone }}</small>
                         {% else %}
                             N/A
                         {% endif %}
@@ -80,7 +83,7 @@
                         {% endif %}
                     </td>
                 </tr>
-                <!-- Engagement Session -->
+
                 <tr>
                     <td>{{ contract.engagement_session.name }}</td>
                     <td>
@@ -94,7 +97,9 @@
                     </td>
                     <td id="engagement-session-staff">
                         {% if engagement_session %}
-                            {{ engagement_session.staff.get_full_name }}
+                            {{ engagement_session.staff.get_full_name }}<br>
+                            <small>Email: {{ engagement_session_email }}</small><br>
+                            <small>Phone: {{ engagement_session_phone }}</small>
                         {% else %}
                             N/A
                         {% endif %}

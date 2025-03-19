@@ -5,16 +5,14 @@
 {% block content %}
 <div class="outer-container">
     <div class="search-results">
-        <h4>Revenue Report</h4>
+        <h4>Payments Due Report</h4>
         <button onclick="history.back()" class="btn btn-dusty-pink">Go Back</button>
 
         <form method="get" class="report-form">
             <label for="start_date">Start Date:</label>
             <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
-
             <label for="end_date">End Date:</label>
             <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
-
             <label for="location">Location:</label>
             <select id="location" name="location">
                 <option value="all" {% if selected_location == 'all' %}selected{% endif %}>All Locations</option>
@@ -26,48 +24,72 @@
         </form>
 
         <div class="search-results">
-            <h6>Revenue between {{ start_date }} and {{ end_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
+            <h6>
+                Payments Due Report
+                {% if start_date %}from {{ start_date }}{% endif %}
+                {% if end_date %}to {{ end_date }}{% endif %}
+                for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}
+            </h6>
+
             <table>
                 <thead>
                     <tr>
-                        <th>Period Start</th>
-                        <th>Period End</th>
-                        <th>Deposits Received</th>
-                        <th>Other Payments</th>
-                        <th>Tax Collected</th>
-                        <th>Total Revenue</th>
+                        <th>#</th>
+                        <th>Event Date</th>
+                        <th>Amount Due</th>
+                        <th>Date Due</th>
+                        <th>Primary Contact</th>
+                        <th>Primary Phone</th>
+                        <th>Contract Number</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for data in report_data %}
-                    <tr>
-                        <td>
-                            {% if data.period_start != 'Totals' %}
-                            <a href="{% url 'reports:revenue_by_contract' %}?start_date={{ data.period_start }}&end_date={{ data.period_end }}&original_start_date={{ start_date }}&original_end_date={{ end_date }}&location={{ selected_location }}&group_by={{ group_by }}">
-                                {{ data.period_start }}
-                            </a>
-                            {% else %}
-                            Totals
-                            {% endif %}
-                        </td>
-                        <td>{{ data.period_end }}</td>
-                        <td>${{ data.deposits_received }}</td>
-                        <td>${{ data.other_payments }}</td>
-                        <td>${{ data.tax_collected }}</td>
-                        <td>${{ data.total_revenue }}</td>
-                    </tr>
-                    {% endfor %}
+                    {% if page_obj %}
+                        {% for data in page_obj %}
+                        <tr>
+                            <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
+                            <td>{{ data.event_date }}</td>
+                            <td>${{ data.amount_due|floatformat:2 }}</td>
+                            <td>{{ data.date_due }}</td>
+                            <td>{{ data.primary_contact }}</td>
+                            <td>{{ data.primary_phone1 }}</td>
+                            <td><a href="{{ data.contract_link }}">{{ data.custom_contract_number }}</a></td>
+                        </tr>
+                        {% endfor %}
+                        <!-- Totals row -->
+                        <tr style="font-weight: bold;">
+                            <td colspan="2" align="right">Total Line Items:</td>
+                            <td colspan="2">{{ total_items }}</td>
+                            <td colspan="2" align="right">Total Amount Due:</td>
+                            <td>${{ total_due|floatformat:2 }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7">No payments due for the selected criteria.</td>
+                        </tr>
+                    {% endif %}
                 </tbody>
             </table>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">First</a>
+                        <a href="?page={{ page_obj.previous_page_number }}&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">Previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">Next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">Last</a>
+                    {% endif %}
+                </span>
+            </div>
         </div>
     </div>
 </div>
-
-<script>
-function toggleCustomDates() {
-    const dateRange = document.getElementById("date_range").value;
-    const customDatesDiv = document.getElementById("custom-dates");
-    customDatesDiv.style.display = dateRange === "custom" ? "block" : "none";
-}
-</script>
 {% endblock %}

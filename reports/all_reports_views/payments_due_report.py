@@ -1,76 +1,71 @@
+from django.core.paginator import Paginator
 from django.shortcuts import render
-from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from payments.models import Payment
 from contracts.models import Contract, Location
-from datetime import timedelta, date
-from django.utils.dateparse import parse_date
-from payments.models import SchedulePayment
-from django.db.models import Q
+from django.db.models import Sum, F
+from datetime import datetime
 import calendar
 import logging
 
-# Logging setup
 logger = logging.getLogger(__name__)
 
+@login_required
 def payments_due_report(request):
-    # Get date range and location from request
-    start_date_str = request.GET.get('start_date')
-    end_date_str = request.GET.get('end_date')
-    location_id = request.GET.get('location', 'all')
-
-    # Default date range to the current month if not provided
-    today = date.today()
+    today = datetime.today()
     first_day_of_month = today.replace(day=1)
     last_day_of_month = today.replace(day=calendar.monthrange(today.year, today.month)[1])
 
-    # Parse start and end dates
-    start_date = parse_date(start_date_str) if start_date_str else first_day_of_month
-    end_date = parse_date(end_date_str) if end_date_str else last_day_of_month
+    # Get start_date and end_date from request or default to current month
+    start_date = request.GET.get('start_date', first_day_of_month.strftime('%Y-%m-%d'))
+    end_date = request.GET.get('end_date', last_day_of_month.strftime('%Y-%m-%d'))
+    selected_location = request.GET.get('location', 'all')
 
-    # Filter contracts by location
-    contract_filters = Q()
-    if location_id != 'all':
-        contract_filters &= Q(location_id=location_id)
-
-    # Optimize queries using select_related
-    contracts = Contract.objects.select_related('client', 'payment_schedule').filter(contract_filters)
-
-    # Get only custom schedule payments within the date range for custom schedules
-    custom_payments = SchedulePayment.objects.filter(
-        due_date__range=(start_date, end_date),
-        paid=False
-    ).select_related('schedule', 'schedule__contract')
+    filters = {}
+    if start_date:
+        filters['date__gte'] = start_date  # Payments filtered by payment date
+    if end_date:
+        filters['date__lte'] = end_date
+    if selected_location != 'all':
+        filters['contract__location_id'] = selected_location
 
     report_data = []
+    total_due = 0
+    total_items = 0
 
-    # Process only custom schedule payments
-    for payment in custom_payments:
-        contract = payment.schedule.contract
-        if payment.amount > 0:
+    # Fetch payments sorted by due date (ascending)
+    payments = Payment.objects.filter(**filters).select_related('contract__client').order_by('date')
+
+    for payment in payments:
+        contract = payment.contract
+        if contract:
             report_data.append({
                 'event_date': contract.event_date,
                 'amount_due': payment.amount,
-                'date_due': payment.due_date,
-                'primary_contact': contract.client.primary_contact,
-                'primary_phone1': contract.client.primary_phone1,
+                'date_due': payment.date,  # Sorted by this field
+                'primary_contact': contract.client.primary_contact if contract.client else '',
+                'primary_phone1': contract.client.primary_phone1 if contract.client else '',
                 'custom_contract_number': contract.custom_contract_number,
                 'contract_link': f"/contracts/{contract.contract_id}/"
             })
+            total_due += payment.amount
+            total_items += 1
 
-    # Calculate total amount due and total number of line items
-    total_due = sum(item['amount_due'] for item in report_data)
-    total_items = len(report_data)
+    # Implement pagination (50 results per page)
+    paginator = Paginator(report_data, 50)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
 
-    # Fetch all locations for dropdown
     locations = Location.objects.all()
 
     context = {
-        'report_data': report_data,
-        'total_due': total_due,
-        'total_items': total_items,
-        'start_date': start_date.strftime('%Y-%m-%d'),
-        'end_date': end_date.strftime('%Y-%m-%d'),
+        'page_obj': page_obj,  # Paginated results
+        'start_date': start_date,
+        'end_date': end_date,
+        'selected_location': selected_location,
         'locations': locations,
-        'selected_location': location_id,
+        'total_due': total_due,
+        'total_items': total_items,  # Pass total count
     }
 
     return render(request, 'reports/payments_due_report.html', context)

@@ -12,7 +12,6 @@ from reports.all_reports_views.sales_detail_by_contract import sales_detail_by_c
 from reports.all_reports_views.sales_tax_report import sales_tax_report
 from reports.all_reports_views.event_staff_payroll_report import event_staff_payroll_report
 from reports.all_reports_views.payments_due_report import payments_due_report
-from reports.all_reports_views.formalwear_deposit_report import formalwear_deposit_report
 from reports.all_reports_views.contacts_report import contacts_report
 from reports.all_reports_views.formalwear_deposit_report_new import formalwear_deposit_report_new
 
@@ -31,7 +30,6 @@ urlpatterns = [
     path('sales_taxes_report/', sales_tax_report, name='sales_tax_report'),
     path('event_staff_payroll/', event_staff_payroll_report, name='event_staff_payroll_report'),
     path('payments_due_report/', payments_due_report, name='payments_due_report'),
-    path('formalwear_deposit_report/', formalwear_deposit_report, name='formalwear_deposit_report'),
     path('formalwear_deposit_report_new/', formalwear_deposit_report_new, name='formalwear_deposit_report_new'),
     path('contacts_report/', contacts_report, name='contacts_report'),
         ]
