@@ -48,7 +48,7 @@
                         {% for data in page_obj %}
                         <tr>
                             <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
-                            <td>{{ data.date_due|date:"Y-m-d" }}</td>  <!-- Fix: Remove time, show only date -->
+                            <td>{{ data.date_due|date:"Y-m-d" }}</td>
                             <td><a href="{{ data.contract_link }}">{{ data.custom_contract_number }}</a></td>
                             <td>{{ data.primary_contact }}</td>
                             <td>{{ data.primary_phone1 }}</td>
@@ -63,7 +63,7 @@
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="7">No payments due for the selected criteria.</td>
+                            <td colspan="7">No outstanding payments for the selected criteria.</td>
                         </tr>
                     {% endif %}
                 </tbody>
@@ -73,8 +73,8 @@
             <div class="pagination">
                 <span class="step-links">
                     {% if page_obj.has_previous %}
-                        <a href="?page=1&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">First</a>
-                        <a href="?page={{ page_obj.previous_page_number }}&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">Previous</a>
+                        <a href="?page=1&{{ request.GET.urlencode }}">First</a>
+                        <a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}">Previous</a>
                     {% endif %}
 
                     <span class="current">
@@ -82,8 +82,8 @@
                     </span>
 
                     {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">Next</a>
-                        <a href="?page={{ page_obj.paginator.num_pages }}&{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">Last</a>
+                        <a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}">Next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}&{{ request.GET.urlencode }}">Last</a>
                     {% endif %}
                 </span>
             </div>
