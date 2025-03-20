@@ -31,7 +31,18 @@
                         <span class="mx-2 section-divider">|</span>
                         <a href="{% url 'documents:contract_agreement_preview' contract_id=contract.contract_id %}" class="section-link small-text" target="_blank">View Contract</a>
                         <span class="mx-2 section-divider">|</span>
-                        <a href="{% url 'communication:send_portal_access' contract_id=contract.contract_id %}" class="section-link small-text" id="give-portal-access-btn">Give Portal Access</a>
+                        <a href="{% url 'communication:send_portal_access' contract_id=contract.contract_id %}"
+                           class="section-link small-text"
+                           id="give-portal-access-btn"
+                           onclick="return confirmPortalAccess();">
+                           Give Portal Access
+                        </a>
+                        <script>
+                        function confirmPortalAccess() {
+                            return confirm("Are you sure you want to send portal access to the client?");
+                        }
+                        </script>
+
                     </div>
                     <div class="d-flex align-items-center">
                         <p class="mb-0 small-text">Contract ID: {{ contract.custom_contract_number }}</p>
