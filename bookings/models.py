@@ -32,30 +32,33 @@ class Availability(models.Model):
     @classmethod
     def get_available_staff_for_date(cls, date):
         """
-        Returns staff who are available for the given date.
+        Returns only active staff who are available for the given date and have a valid role.
         Staff with 'BOOKED' or 'PENDING' status are excluded from availability.
-        Staff with 'PROSPECT' status remain available.
         """
 
         weekday = date.weekday()
 
-        # Find staff who are unavailable on the specific date or have always-off days matching the weekday
+        # Find staff who are unavailable on the specific date or have always-off days
         unavailable_staff_ids = cls.objects.filter(
             Q(date=date, available=False) | Q(always_off_days__contains=[weekday])
         ).values_list('staff_id', flat=True)
 
-        # Find staff who are booked or pending on the specific date (PROSPECT is ignored)
+        # Find staff who are booked or pending on the specific date
         booked_or_pending_staff_ids = EventStaffBooking.objects.filter(
             contract__event_date=date,
-            status__in=['BOOKED', 'PENDING']  # Only BOOKED and PENDING block availability
+            status__in=['BOOKED', 'PENDING']
         ).values_list('staff_id', flat=True)
 
-        # Combine both unavailable and booked/pending staff IDs
+        # Combine all unavailable and booked/pending staff IDs
         all_unavailable_ids = set(unavailable_staff_ids) | set(booked_or_pending_staff_ids)
 
-        # Use CustomUser to exclude staff who are unavailable or booked
+        # Use CustomUser model to exclude unavailable staff and only include active ones
         customuser = get_user_model()
-        return customuser.objects.exclude(id__in=all_unavailable_ids)
+        return customuser.objects.filter(
+            is_active=True,  # Ensures the user is active
+            status='ACTIVE',  # Ensures the user is marked as ACTIVE in your model
+            role__isnull=False  # Ensures the user has a valid role
+        ).exclude(id__in=all_unavailable_ids)
 
 
 class Service(models.Model):
