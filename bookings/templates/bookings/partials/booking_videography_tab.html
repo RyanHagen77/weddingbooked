@@ -8,11 +8,10 @@
                     <th>Service</th>
                     <th>Hours (Base + Overtime)</th>
                     <th>Assigned Staff</th>
-                    <th>Role</th> <!-- New Role Column -->
+                    <th>Role</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- Videography Package -->
                 <tr>
                     <td>{{ contract.videography_package.name }}</td>
                     <td>
@@ -26,7 +25,9 @@
                     </td>
                     <td id="assigned-videographer1">
                         {% if videographer1 %}
-                            {{ videographer1.staff.get_full_name }}
+                            {{ videographer1.staff.get_full_name }}<br>
+                            <small>Email: {{ videographer1_email|default:"No Email Found" }}</small><br>
+                            <small>Phone: {{ videographer1_phone|default:"No Phone Found" }}</small>
                         {% else %}
                             N/A
                         {% endif %}
@@ -39,7 +40,6 @@
                         {% endif %}
                     </td>
                 </tr>
-                <!-- Additional Videographer -->
                 <tr>
                     <td>{{ contract.videography_additional.name }}</td>
                     <td>
@@ -53,7 +53,9 @@
                     </td>
                     <td id="assigned-videographer2">
                         {% if videographer2 %}
-                            {{ videographer2.staff.get_full_name }}
+                            {{ videographer2.staff.get_full_name }}<br>
+                            <small>Email: {{ videographer2_email|default:"No Email Found" }}</small><br>
+                            <small>Phone: {{ videographer2_phone|default:"No Phone Found" }}</small>
                         {% else %}
                             N/A
                         {% endif %}

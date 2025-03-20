@@ -1,19 +1,5 @@
 {% load group_tags %}
 <div class="tab-pane active" id="photography">
-    <form method="post" action="{% url 'contracts:edit_services' id=contract.contract_id %}">
-        {% csrf_token %}
-        <!-- Hidden Fields -->
-        <input type="hidden" id="contractId" value="{{ contract.contract_id }}">
-        <input type="hidden" id="id_event_date" value="{{ contract.event_date|date:'Y-m-d' }}">
-        <input type="hidden" id="discount" value="{{ initial_discount_value }}">
-        <input type="hidden" id="overtimeServiceType" value="">
-        <input type="hidden" name="section" value="{{ current_tab }}">
-        <input type="hidden" id="hiddenSavedPhotographyPackageId" value="{{ contract.photography_package_id }}">
-        <input type="hidden" id="hiddenSavedPhotographyAdditionalStaffId" value="{{ contract.photography_additional_id }}">
-        <input type="hidden" id="hiddenSavedEngagementSessionId" value="{{ contract.engagement_session_id }}">
-    </form>
-
-    <!-- Photography Services Section -->
     <div class="service-category">
         <h3>Photography</h3>
         <table class="table table-bordered">
@@ -25,14 +11,14 @@
                     <th>Role</th>
                 </tr>
             </thead>
-<tbody>
+            <tbody>
                 <tr>
                     <td>{{ contract.photography_package.name }}</td>
                     <td>
                         {% if photographer1 %}
-                        {% with overtime_total=overtime_entries|sum_overtime:"PHOTOGRAPHER1" %}
-                            {{ contract.photography_package.hours|add_float:overtime_total }}
-                        {% endwith %}
+                            {% with overtime_total=overtime_entries|sum_overtime:"PHOTOGRAPHER1" %}
+                                {{ contract.photography_package.hours|add_float:overtime_total }}
+                            {% endwith %}
                         {% else %}
                             {{ contract.photography_package.hours }}
                         {% endif %}
@@ -41,20 +27,19 @@
                         {% if photographer1 %}
                             {{ photographer1.staff.get_full_name }}<br>
                             <small>Email: {{ photographer1_email|default:"No Email Found" }}</small><br>
-                            <small>Phone: {{ photographer1_phone }}</small>
+                            <small>Phone: {{ photographer1_phone|default:"No Phone Found" }}</small>
                         {% else %}
                             N/A
                         {% endif %}
                     </td>
                     <td>
                         {% if photographer1 %}
-                            {{ photographer1.get_role_display }}
+                            {{ photographer1.get_role_display|pretty_role }}
                         {% else %}
                             N/A
                         {% endif %}
                     </td>
                 </tr>
-
                 <tr>
                     <td>{{ contract.photography_additional.name }}</td>
                     <td>
@@ -69,44 +54,15 @@
                     <td id="assigned-photographer2">
                         {% if photographer2 %}
                             {{ photographer2.staff.get_full_name }}<br>
-                            <small>Email: {{ photographer2_email }}</small><br>
-                            <small>Phone: {{ photographer2_phone }}</small>
+                            <small>Email: {{ photographer2_email|default:"No Email Found" }}</small><br>
+                            <small>Phone: {{ photographer2_phone|default:"No Phone Found" }}</small>
                         {% else %}
                             N/A
                         {% endif %}
                     </td>
                     <td>
                         {% if photographer2 %}
-                            {{ photographer2.get_role_display }}
-                        {% else %}
-                            N/A
-                        {% endif %}
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>{{ contract.engagement_session.name }}</td>
-                    <td>
-                        {% if engagement_session %}
-                            {% with overtime_total=overtime_entries|sum_overtime:"ENGAGEMENT" %}
-                                {{ contract.engagement_session.hours|add_float:overtime_total }}
-                            {% endwith %}
-                        {% else %}
-                            {{ contract.engagement_session.hours }}
-                        {% endif %}
-                    </td>
-                    <td id="engagement-session-staff">
-                        {% if engagement_session %}
-                            {{ engagement_session.staff.get_full_name }}<br>
-                            <small>Email: {{ engagement_session_email }}</small><br>
-                            <small>Phone: {{ engagement_session_phone }}</small>
-                        {% else %}
-                            N/A
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if engagement_session %}
-                            {{ engagement_session.get_role_display }}
+                            {{ photographer2.get_role_display|pretty_role }}
                         {% else %}
                             N/A
                         {% endif %}

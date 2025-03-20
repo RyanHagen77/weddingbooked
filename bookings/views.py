@@ -434,36 +434,62 @@ def get_booking_context(booking_id):
 @login_required
 def booking_detail(request, booking_id):
     """
-    Displays detailed information about a specific booking.
+    Displays detailed information about a specific booking on the office side.
     """
     context = get_booking_context(booking_id)
 
-    context.update({
-        'photographer1': context['role_bookings'].get('PHOTOGRAPHER1'),
-        'photographer2': context['role_bookings'].get('PHOTOGRAPHER2'),
-        'engagement_session': context['role_bookings'].get('ENGAGEMENT'),
-        'videographer1': context['role_bookings'].get('VIDEOGRAPHER1'),
-        'videographer2': context['role_bookings'].get('VIDEOGRAPHER2'),
-        'dj1': context['role_bookings'].get('DJ1'),
-        'dj2': context['role_bookings'].get('DJ2'),
-        'photobooth_op1': context['role_bookings'].get('PHOTOBOOTH_OP1'),
-        'photobooth_op2': context['role_bookings'].get('PHOTOBOOTH_OP2'),
-        'client_edit_form': ContractClientEditForm(instance=context['contract'].client),
-        'event_edit_form': ContractEventEditForm(instance=context['contract']),
-        'communication_form': BookingCommunicationForm(request.POST or None),
-        # Pass overtime entries from the contract.
-        'overtime_entries': context['contract'].overtimes.all(),
-    })
+    # Retrieve only "BOOKED" staff for this contract
+    booked_staff = EventStaffBooking.objects.filter(
+        contract=context['contract'],
+        status='BOOKED'
+    ).select_related('staff')
 
-    if request.method == 'POST' and context['communication_form'].is_valid():
+    # Initialize contact details for all relevant staff roles
+    role_details = {
+        'photographer1': 'PHOTOGRAPHER1',
+        'photographer2': 'PHOTOGRAPHER2',
+        'engagement_session': 'ENGAGEMENT',
+        'videographer1': 'VIDEOGRAPHER1',
+        'videographer2': 'VIDEOGRAPHER2',
+        'dj1': 'DJ1',
+        'dj2': 'DJ2',
+        'photobooth_op1': 'PHOTOBOOTH_OP1',
+        'photobooth_op2': 'PHOTOBOOTH_OP2',
+    }
+
+    # Initialize defaults
+    for key in role_details.keys():
+        context[key] = None
+        context[f"{key}_email"] = "N/A"
+        context[f"{key}_phone"] = "N/A"
+
+    # Populate roles with booked staff details
+    for booking in booked_staff:
+        role_key = next((k for k, v in role_details.items() if v == booking.role), None)
+        if role_key:
+            context[role_key] = booking
+            context[f"{role_key}_email"] = getattr(booking.staff, "email", "N/A")
+            context[f"{role_key}_phone"] = getattr(booking.staff, "primary_phone1", "N/A")
+
+    # Initialize communication form
+    communication_form = BookingCommunicationForm(request.POST or None)
+
+    if request.method == 'POST' and communication_form.is_valid():
         new_note = UnifiedCommunication.objects.create(
-            content=context['communication_form'].cleaned_data['message'],
+            content=communication_form.cleaned_data['message'],
             note_type=UnifiedCommunication.BOOKING,
             created_by=request.user,
             contract=context['contract'],
         )
         logger.info("New note created: %s by %s", new_note.content, new_note.created_by)
         return redirect('bookings:booking_detail', booking_id=booking_id)
+
+    context.update({
+        'client_edit_form': ContractClientEditForm(instance=context['contract'].client),
+        'event_edit_form': ContractEventEditForm(instance=context['contract']),
+        'communication_form': communication_form,
+        'overtime_entries': context['contract'].overtimes.all(),
+    })
 
     return render(request, 'bookings/booking_detail_office.html', context)
 
@@ -474,35 +500,54 @@ def booking_detail_staff(request, booking_id):
     """
     Displays a summary of booking details for staff members.
     """
-    context = get_booking_context(booking_id)
+    # Fetch contract details
+    contract = get_object_or_404(Contract, contract_id=booking_id)
 
-    context.update({
-        'photographer1': context['role_bookings'].get('PHOTOGRAPHER1'),
-        'photographer2': context['role_bookings'].get('PHOTOGRAPHER2'),
-        'engagement_session': context['role_bookings'].get('ENGAGEMENT'),
-        'videographer1': context['role_bookings'].get('VIDEOGRAPHER1'),
-        'videographer2': context['role_bookings'].get('VIDEOGRAPHER2'),
-        'dj1': context['role_bookings'].get('DJ1'),
-        'dj2': context['role_bookings'].get('DJ2'),
-        'photobooth_op1': context['role_bookings'].get('PHOTOBOOTH_OP1'),
-        'photobooth_op2': context['role_bookings'].get('PHOTOBOOTH_OP2'),
-        'client_edit_form': ContractClientEditForm(instance=context['contract'].client),
-        'event_edit_form': ContractEventEditForm(instance=context['contract']),
-        'overtime_entries': context['contract'].overtimes.all(),
-    })
-    # Include staff email and phone number in context
-    for key in ['photographer1', 'photographer2', 'engagement_session']:
-        staff_booking = context.get(key)
-        if staff_booking and staff_booking.staff:
-            context[key + '_email'] = getattr(staff_booking.staff, 'email', 'N/A')
-            context[key + '_phone'] = staff_booking.staff.phone_number if hasattr(staff_booking.staff,
-                                                                                  'phone_number') else "N/A"
-        else:
-            context[key + '_email'] = "N/A"
-            context[key + '_phone'] = "N/A"
+    # Retrieve only "BOOKED" staff for this contract
+    booked_staff = EventStaffBooking.objects.filter(
+        contract=contract,
+        status='BOOKED'
+    ).select_related('staff')
+
+    # Initialize context with defaults
+    context = {
+        'contract': contract,
+        'photographer1': None,
+        'photographer1_email': "N/A",
+        'photographer1_phone': "N/A",
+        'photographer2': None,
+        'photographer2_email': "N/A",
+        'photographer2_phone': "N/A",
+        'engagement_session': None,
+        'engagement_session_email': "N/A",
+        'engagement_session_phone': "N/A",
+    }
+
+    # Map booked staff to their roles and check for email/phone
+    for booking in booked_staff:
+        staff = booking.staff  # Extract staff user
+        email = getattr(staff, "email", "N/A")  # Get email or fallback to "N/A"
+        phone = getattr(staff, "primary_phone1", "N/A")  # Get phone or fallback to "N/A"
+
+        # Log staff details for debugging
+        logger.info(f"Booking Role: {booking.role} - Staff: {staff.get_full_name()} - Email: {email} - Phone: {phone}")
+
+        if booking.role == "PHOTOGRAPHER1":
+            context["photographer1"] = booking
+            context["photographer1_email"] = email
+            context["photographer1_phone"] = phone
+
+        elif booking.role == "PHOTOGRAPHER2":
+            context["photographer2"] = booking
+            context["photographer2_email"] = email
+            context["photographer2_phone"] = phone
+
+        elif booking.role == "ENGAGEMENT":
+            context["engagement_session"] = booking
+            context["engagement_session_email"] = email
+            context["engagement_session_phone"] = phone
 
     return render(request, 'bookings/booking_detail_staff.html', context)
-
 
 @login_required
 def booking_list(request):

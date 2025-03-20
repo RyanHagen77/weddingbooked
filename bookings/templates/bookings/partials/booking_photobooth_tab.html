@@ -8,7 +8,7 @@
                     <th>Service</th>
                     <th>Hours (Base + Overtime)</th>
                     <th>Assigned Staff</th>
-                    <th>Role</th> <!-- New Role Column -->
+                    <th>Role</th>
                 </tr>
             </thead>
             <tbody>
@@ -26,7 +26,9 @@
                     </td>
                     <td id="assigned-photobooth-staff">
                         {% if photobooth_op1 %}
-                            {{ photobooth_op1.staff.get_full_name }}
+                            {{ photobooth_op1.staff.get_full_name }}<br>
+                            <small>Email: {{ photobooth_op1_email|default:"No Email Found" }}</small><br>
+                            <small>Phone: {{ photobooth_op1_phone|default:"No Phone Found" }}</small>
                         {% else %}
                             N/A
                         {% endif %}
@@ -39,7 +41,8 @@
                         {% endif %}
                     </td>
                 </tr>
-                <!-- Additional Photobooth -->
+
+                <!-- Additional Photobooth Operator -->
                 <tr>
                     <td>{{ contract.photobooth_additional.name }}</td>
                     <td>
@@ -53,7 +56,9 @@
                     </td>
                     <td id="assigned-photobooth">
                         {% if photobooth_op2 %}
-                            {{ photobooth_op2.staff.get_full_name }}
+                            {{ photobooth_op2.staff.get_full_name }}<br>
+                            <small>Email: {{ photobooth_op2_email|default:"No Email Found" }}</small><br>
+                            <small>Phone: {{ photobooth_op2_phone|default:"No Phone Found" }}</small>
                         {% else %}
                             N/A
                         {% endif %}
