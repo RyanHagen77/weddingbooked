@@ -30,7 +30,7 @@ from django.contrib.sites.models import Site
                 }
                 subject = 'Confirmation Request for Upcoming Wedding'
                 message = render_to_string('communication/confirmation_request_email.html', context)
-                from_email = 'enetadmin@enet2.com'
+                from_email = 'EssenceWeddingsAdmin@enet2.com'
                 to_email = [staff.email]
 
                 send_mail(

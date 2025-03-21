@@ -174,7 +174,7 @@ class EventStaffBooking(models.Model):
         }
         subject = 'New Booking Assigned'
         message = render_to_string('communication/booking_assignment_email.html', context, request=request)
-        from_email = 'enetadmin@enet2.com'
+        from_email = 'EssenceWeddingsAdmin@enet2.com'
         to_email = [staff.email]
 
         send_mail(

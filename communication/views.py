@@ -58,7 +58,7 @@ def send_password_reset_email(user_email):
             form.save(
                 request=request,
                 use_https=True,
-                from_email='enetadmin@enet2.com',
+                from_email='EssenceWeddingsAdmin@enet2.com',
                 email_template_name='registration/password_reset_email.html',  # Ensure template matches your setup
                 extra_email_context={
                     'name': name,  # Pass the dynamically determined name
@@ -126,7 +126,7 @@ def send_contract_message_email(request, message, contract):
         send_mail(
             subject,
             message_body,
-            'enetadmin@enet2.com',  # Use a valid sender email address
+            'EssenceWeddingsAdmin@enet2.com',  # Use a valid sender email address
             [contract.coordinator.email],
             fail_silently=False,
         )
@@ -158,7 +158,7 @@ def send_email_to_client(request, message, contract):
             send_mail(
                 subject,
                 message_body,
-                'enetadmin@enet2.com',  # Replace with your sender email
+                'EssenceWeddingsAdminn@enet2.com',  # Replace with your sender email
                 [client_user.email],
                 fail_silently=False,
             )
@@ -182,7 +182,7 @@ def send_task_assignment_email(request, task):
         send_mail(
             subject,
             message,
-            'enetadmin@enet2.com',  # Your sending email
+            'EssenceWeddingsAdmin@enet2.com',  # Your sending email
             [task.assigned_to.email],
             fail_silently=False,
         )
@@ -223,7 +223,7 @@ def send_portal_access(request, contract_id):
             send_mail(
                 subject,
                 message,
-                'enetadmin@enet2.com',  # Your sending email
+                'EssenceWeddingsAdmin@enet2.com',  # Your sending email
                 [client.user.email],
                 fail_silently=False,
                 html_message=message,  # Include HTML message
@@ -267,7 +267,7 @@ def send_contract_and_rider_email_to_client(request, contract, rider_type=None, 
         send_mail(
             subject,
             f"{message}\n\nPlease log in here to sign the documents: {login_url}",
-            'enetadmin@enet2.com',  # Your sending email
+            'EssenceWeddingsAdmin@enet2.com',  # Your sending email
             [client_email],
             fail_silently=False,
         )
