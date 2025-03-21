@@ -10,36 +10,6 @@
         padding: 20px;
         margin: 0;
     }
-
-    .contract-header {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        margin-bottom: 10px;
-    }
-
-    .column {
-        flex: 1;
-        min-width: 100px;
-    }
-
-    .contact-info {
-        display: flex;
-        justify-content: space-between;
-        width: 100%;
-        padding-top: 10px;
-        padding-bottom: 10px;
-    }
-    .office-info {
-        text-align: left;
-        font-size: 9pt;
-        flex: 1;
-    }
-    .address-info {
-        text-align: right;
-        font-size: 9pt;
-        flex: 1;
-    }
     .agreement-description {
         font-size: 12pt;
         text-align: center;
@@ -63,10 +33,6 @@
         padding: 10px;
     }
 
-    .logo {
-        width: 100%;
-        text-align: center;
-    }
     .logo img {
         width: 250px;
         height: auto;
@@ -170,12 +136,6 @@
     tr:hover {
         background-color: #ddd;
     }
-
-    .default-text {
-        font-size: 9pt;
-        font-style: italic;
-    }
-
     .signature-wrapper {
         display: flex;
         justify-content: space-between;
@@ -674,24 +634,24 @@
 </style>
 
 <script>
+    // Object to store our signature pad instances
     var signaturePads = {};
 
     function initializeSignaturePads() {
-        var mainSignaturePad = new SignaturePad(document.getElementById('signature-pad-main'));
-        signaturePads['main'] = mainSignaturePad;
-
-        var additionalSignaturePad = new SignaturePad(document.getElementById('signature-pad-photography-additional'));
-        signaturePads['photography_additional'] = additionalSignaturePad;
-
+        // Select all canvases whose id starts with "signature-pad-"
         var padElements = document.querySelectorAll('canvas[id^="signature-pad-"]');
         padElements.forEach(function (canvas) {
-            var padName = canvas.id.replace('signature-pad-', '');
+            // Create a key by removing the prefix and replacing dashes with underscores.
+            var padName = canvas.id.replace('signature-pad-', '').replace(/-/g, '_');
+            // Initialize SignaturePad on the canvas
             var signaturePad = new SignaturePad(canvas);
             resizeCanvas(canvas);
+            // Store the instance in our signaturePads object using the normalized key
             signaturePads[padName] = signaturePad;
         });
     }
 
+    // Resize canvas for proper responsiveness
     function resizeCanvas(canvas) {
         var ratio = Math.max(window.devicePixelRatio || 1, 1);
         canvas.width = canvas.offsetWidth * ratio;
@@ -699,6 +659,7 @@
         canvas.getContext("2d").scale(ratio, ratio);
     }
 
+    // Reinitialize canvas sizes on window resize
     window.addEventListener('resize', function () {
         for (var padName in signaturePads) {
             if (signaturePads.hasOwnProperty(padName)) {
@@ -707,47 +668,53 @@
         }
     });
 
+    // Initialize signature pads once the DOM content is loaded
     document.addEventListener('DOMContentLoaded', function () {
         initializeSignaturePads();
     });
 
+    // On form submit, save signature data to hidden inputs
     document.getElementById('contract-form').onsubmit = function (e) {
-            if (signaturePads['main'].isEmpty()) {
-                alert('Please provide your signature for the main contract.');
-                e.preventDefault();
-                return false;
-            }
+        // Example check: ensure the main signature is not empty.
+        if (signaturePads['main'] && signaturePads['main'].isEmpty()) {
+            alert('Please provide your signature for the main contract.');
+            e.preventDefault();
+            return false;
+        }
 
-            // Set the hidden input values for each signature
+        // Set the hidden input values for each signature
+        if (signaturePads['main']) {
             document.getElementById('main_signature').value = signaturePads['main'].toDataURL();
-            if (signaturePads['photography']) {
-                document.getElementById('signature_photography').value = signaturePads['photography'].toDataURL();
-            }
-            if (signaturePads['photography_additional']) {
-                document.getElementById('signature_photography_additional').value = signaturePads['photography_additional'].toDataURL();
-            }
-            if (signaturePads['videography']) {
-                document.getElementById('signature_videography').value = signaturePads['videography'].toDataURL();
-            }
-            if (signaturePads['videography_additional']) {
-                document.getElementById('signature_videography_additional').value = signaturePads['videography_additional'].toDataURL();
-            }
-            if (signaturePads['dj']) {
-                document.getElementById('signature_dj').value = signaturePads['dj'].toDataURL();
-            }
-            if (signaturePads['dj_additional']) {
-                document.getElementById('signature_dj_additional').value = signaturePads['dj_additional'].toDataURL();
-            }
-            if (signaturePads['photobooth']) {
-                document.getElementById('signature_photobooth').value = signaturePads['photobooth'].toDataURL();
-            }
-            if (signaturePads['photobooth_additional']) {
-                document.getElementById('signature_photobooth_additional').value = signaturePads['photobooth_additional'].toDataURL();
-            }
+        }
+        if (signaturePads['photography'] && document.getElementById('signature_photography')) {
+            document.getElementById('signature_photography').value = signaturePads['photography'].toDataURL();
+        }
+        if (signaturePads['photography_additional'] && document.getElementById('signature_photography_additional')) {
+            document.getElementById('signature_photography_additional').value = signaturePads['photography_additional'].toDataURL();
+        }
+        if (signaturePads['videography'] && document.getElementById('signature_videography')) {
+            document.getElementById('signature_videography').value = signaturePads['videography'].toDataURL();
+        }
+        if (signaturePads['videography_additional'] && document.getElementById('signature_videography_additional')) {
+            document.getElementById('signature_videography_additional').value = signaturePads['videography_additional'].toDataURL();
+        }
+        if (signaturePads['dj'] && document.getElementById('signature_dj')) {
+            document.getElementById('signature_dj').value = signaturePads['dj'].toDataURL();
+        }
+        if (signaturePads['dj_additional'] && document.getElementById('signature_dj_additional')) {
+            document.getElementById('signature_dj_additional').value = signaturePads['dj_additional'].toDataURL();
+        }
+        if (signaturePads['photobooth'] && document.getElementById('signature_photobooth')) {
+            document.getElementById('signature_photobooth').value = signaturePads['photobooth'].toDataURL();
+        }
+        if (signaturePads['photobooth_additional'] && document.getElementById('signature_photobooth_additional')) {
+            document.getElementById('signature_photobooth_additional').value = signaturePads['photobooth_additional'].toDataURL();
+        }
 
-            return true;
-        };
+        return true;
+    };
 
+    // Function to clear a specific signature pad by its normalized key
     function clearSignaturePad(padName) {
         if (signaturePads[padName]) {
             signaturePads[padName].clear();
