@@ -181,15 +181,6 @@ export default function Home() {
                       element.scrollIntoView({behavior: 'smooth'});
                     }
                   }}
-                     className="font-sans font-thin cursor-pointer text-base sm:text-lg text-white block text-center">FAQ</a>
-                </div>
-                <div className="bg-black p-2 flex-1 hover:bg-gray-800">
-                  <a onClick={() => {
-                    const element = document.getElementById('photographers');
-                    if (element) {
-                      element.scrollIntoView({behavior: 'smooth'});
-                    }
-                  }}
                      className="font-sans font-thin cursor-pointer text-base sm:text-lg text-white block text-center">Photographers</a>
                 </div>
                 <div className="bg-black p-2 flex-1 hover:bg-gray-800">
@@ -199,17 +190,26 @@ export default function Home() {
                       element.scrollIntoView({behavior: 'smooth'});
                     }
                   }}
+                     className="font-sans font-thin cursor-pointer text-base sm:text-lg text-white block text-center">FAQ</a>
+                </div>
+                <div className="bg-black p-2 flex-1 hover:bg-gray-800">
+                  <a onClick={() => {
+                    const element = document.getElementById('photographers');
+                    if (element) {
+                      element.scrollIntoView({behavior: 'smooth'});
+                    }
+                  }}
                      className="font-sans font-thin cursor-pointer text-base sm:text-lg text-white block text-center whitespace-nowrap">Wedding
                     Planning Guide</a>
                 </div>
                 <div className="bg-black p-2 flex-1 hover:bg-gray-800">
                   <a onClick={() => {
-                    const element = document.getElementById('Chat');
+                    const element = document.getElementById('Messages');
                     if (element) {
                       element.scrollIntoView({behavior: 'smooth'});
                     }
                   }}
-                     className="font-sans font-thin cursor-pointer text-base sm:text-lg text-white block text-center">Chat</a>
+                     className="font-sans font-thin cursor-pointer text-base sm:text-lg text-white block text-center">Messages</a>
                 </div>
                 <div className="bg-black p-2 flex-1 hover:bg-gray-800">
                   <a onClick={() => {
@@ -218,12 +218,66 @@ export default function Home() {
                       element.scrollIntoView({behavior: 'smooth'});
                     }
                   }}
-                     className="font-sans font-thin cursor-pointer text-base sm:text-lg text-white block text-center">Downloads</a>
+                     className="font-sans font-thin cursor-pointer text-base sm:text-lg text-white block text-center">Files</a>
                 </div>
               </div>
             </nav>
           </div>
         </header>
+
+        <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
+          <div className="flex-1">
+            <div className="border-t-4 border-lightpink"></div>
+            <div className="border-t-2 border-lightpink mt-[6px]"></div>
+          </div>
+          <h2 className="px-16 text-5xl font-brittany">Photographers</h2>
+          <div className="flex-1">
+            <div className="border-t-4 border-lightpink"></div>
+            <div className="border-t-2 border-lightpink mt-[6px]"></div>
+          </div>
+        </div>
+
+
+        <section id="photographers" className="py-6 px-6 bg-pistachio">
+          <div className="py-20 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
+            {photographers.map(photographer => (
+                <div key={photographer.id}>
+                  <div className="text-center bg-white rounded-t-lg shadow-lg block">
+                    <a
+                        href={photographer.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="transition-transform duration-300 ease-in-out hover:scale-105 block"
+                    >
+                      {photographer.profile_picture && (
+                          <Image
+                              src={photographer.profile_picture || '/default-profile.jpg'} // Fallback to a default image
+                              alt={photographer.name || 'Photographer'}
+                              width={500}
+                              height={500}
+                              layout="responsive"
+                              objectFit="cover"
+                          />
+                      )}
+                    </a>
+                  </div>
+                  <div className="flex justify-center">
+                    <button
+                        className="w-[50%] bg-white text-dark-pistachio border-dark-pistachio py-2 my-4 flex justify-center items-center">
+                      <a
+                          href={photographer.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center"
+                      >
+                        View My Demo <span className="ml-2 text-lg">&rsaquo;</span>
+                      </a>
+                    </button>
+                  </div>
+                </div>
+            ))}
+          </div>
+        </section>
 
         <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
           <div className="flex-1">
@@ -304,58 +358,6 @@ export default function Home() {
           </div>
         </section>
 
-        <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
-          <div className="flex-1">
-            <div className="border-t-4 border-lightpink"></div>
-            <div className="border-t-2 border-lightpink mt-[6px]"></div>
-          </div>
-          <h2 className="px-16 text-5xl font-brittany">Photographers</h2>
-          <div className="flex-1">
-            <div className="border-t-4 border-lightpink"></div>
-            <div className="border-t-2 border-lightpink mt-[6px]"></div>
-          </div>
-        </div>
-
-        <section id="photographers" className="py-6 px-6 bg-pistachio">
-          <div className="py-20 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
-            {photographers.map(photographer => (
-                <div key={photographer.id}>
-                  <div className="text-center bg-white rounded-t-lg shadow-lg block">
-                    <a
-                        href={photographer.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="transition-transform duration-300 ease-in-out hover:scale-105 block"
-                    >
-                      {photographer.profile_picture && (
-                          <Image
-                              src={photographer.profile_picture || '/default-profile.jpg'} // Fallback to a default image
-                              alt={photographer.name || 'Photographer'}
-                              width={500}
-                              height={500}
-                              layout="responsive"
-                              objectFit="cover"
-                          />
-                      )}
-                    </a>
-                  </div>
-                  <div className="flex justify-center">
-                    <button
-                        className="w-[50%] bg-white text-dark-pistachio border-dark-pistachio py-2 my-4 flex justify-center items-center">
-                      <a
-                          href={photographer.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center"
-                      >
-                        View My Demo <span className="ml-2 text-lg">&rsaquo;</span>
-                      </a>
-                    </button>
-                  </div>
-                </div>
-            ))}
-          </div>
-        </section>
 
         <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
           <div className="flex-1">
@@ -368,39 +370,56 @@ export default function Home() {
             <div className="border-t-2 border-lightpink mt-[6px]"></div>
           </div>
         </div>
-        <section id="wedding-planning-guide" className="text-center py-8 mb-[200px]">
-          {contractId ? (
+        <main className="bg-white">
+          {/* Planning Guide Link Section */}
+          <section className="text-center px-4 mb-6">
+            <p className="text-black font-albert text-lg mb-2">
+              Need help planning?{' '}
+              <a
+                href="https://www.essenceweddings.com/wedding-planning"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-goodblue underline hover:text-dark-pistachio"
+              >
+                Click here to read our article on timing for your wedding day
+              </a>
+            </p>
+          </section>
+
+          <section id="wedding-planning-guide" className="text-center py-8 mb-[200px]">
+            {contractId ? (
               formSubmitted ? (
-                  <p className="text-lg text-red-500 font-semibold">
-                    The Wedding Day Guide has been submitted and can no longer be edited.
-                  </p>
+                <p className="text-lg text-red-500 font-semibold">
+                  The Wedding Day Guide has been submitted and can no longer be edited.
+                </p>
               ) : (
-                  <>
-                    <p className="text-lg text-black font-semibold">
-                      Please click here to fill out your wedding day guide for your team!
-                    </p>
-                    <button
-                        onClick={() =>
-                            window.location.href = `/client_portal/wedding-day-guide/${contractId}`
-                        }
-                        className="mt-4 px-6 py-3 bg-pistachio text-black text-lg font-semibold border-2 border-lightpink rounded hover:bg-opacity-90 transition duration-200"
-                    >
-                      Open Wedding Day Guide
-                    </button>
-                  </>
+                <>
+                  <p className="text-lg text-black font-semibold">
+                    Please click here to fill out your wedding day guide for your team!
+                  </p>
+                  <button
+                    onClick={() =>
+                      window.open(`/client_portal/wedding-day-guide/${contractId}`, '_blank')
+                    }
+                    className="mt-4 px-6 py-3 bg-pistachio text-black text-lg font-semibold border-2 border-lightpink rounded hover:bg-opacity-90 transition duration-200"
+                  >
+                    Open Wedding Day Guide
+                  </button>
+                </>
               )
-          ) : (
+            ) : (
               <p className="text-lg text-black font-semibold">
                 Contract ID not available. Please make sure you are logged in.
               </p>
-          )}
-        </section>
+            )}
+          </section>
+        </main>
         <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
           <div className="flex-1">
             <div className="border-t-4 border-lightpink"></div>
             <div className="border-t-2 border-lightpink mt-[6px]"></div>
           </div>
-          <h2 className="px-16 text-5xl font-brittany">Chat</h2>
+          <h2 className="px-16 text-5xl font-brittany">Messages</h2>
           <div className="flex-1">
             <div className="border-t-4 border-lightpink"></div>
             <div className="border-t-2 border-lightpink mt-[6px]"></div>
@@ -408,7 +427,7 @@ export default function Home() {
         </div>
 
         {/* Chat Section */}
-        <section id="Chat" className="p-6 text-black font-albert py-24 bg-lightpink bg-dot-grid">
+        <section id="Messages" className="p-6 text-black font-albert py-24 bg-lightpink bg-dot-grid">
           <form onSubmit={handlePostMessage}>
             <textarea
                 value={newMessage}
@@ -441,14 +460,14 @@ export default function Home() {
             <div className="border-t-4 border-lightpink"></div>
             <div className="border-t-2 border-lightpink mt-[6px]"></div>
           </div>
-          <h2 className="px-16 text-5xl font-brittany">Downloads</h2>
+          <h2 className="px-16 text-5xl font-brittany">Files</h2>
           <div className="flex-1">
             <div className="border-t-4 border-lightpink"></div>
             <div className="border-t-2 border-lightpink mt-[6px]"></div>
           </div>
         </div>
 
-        <section id="downloads" className="py-12 px-6 text-black bg-pistachio bg-dot-grid">
+        <section id="files" className="py-12 px-6 text-black bg-pistachio bg-dot-grid">
           <div className="max-w-4xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {isLoading ? (
