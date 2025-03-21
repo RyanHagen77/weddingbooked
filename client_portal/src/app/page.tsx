@@ -176,7 +176,7 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                 <div className="bg-black p-2 flex-1 hover:bg-gray-800">
                   <a onClick={() => {
-                    const element = document.getElementById('faq');
+                    const element = document.getElementById('photographers');
                     if (element) {
                       element.scrollIntoView({behavior: 'smooth'});
                     }
@@ -185,7 +185,7 @@ export default function Home() {
                 </div>
                 <div className="bg-black p-2 flex-1 hover:bg-gray-800">
                   <a onClick={() => {
-                    const element = document.getElementById('wedding-planning-guide');
+                    const element = document.getElementById('faq');
                     if (element) {
                       element.scrollIntoView({behavior: 'smooth'});
                     }
@@ -194,7 +194,7 @@ export default function Home() {
                 </div>
                 <div className="bg-black p-2 flex-1 hover:bg-gray-800">
                   <a onClick={() => {
-                    const element = document.getElementById('photographers');
+                    const element = document.getElementById('wedding-planning-guide');
                     if (element) {
                       element.scrollIntoView({behavior: 'smooth'});
                     }
@@ -213,7 +213,7 @@ export default function Home() {
                 </div>
                 <div className="bg-black p-2 flex-1 hover:bg-gray-800">
                   <a onClick={() => {
-                    const element = document.getElementById('downloads');
+                    const element = document.getElementById('files');
                     if (element) {
                       element.scrollIntoView({behavior: 'smooth'});
                     }
