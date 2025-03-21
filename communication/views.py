@@ -71,7 +71,6 @@ def send_password_reset_email(user_email):
         print("PasswordResetForm is invalid. Errors:", form.errors)
 
 
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_contract_messages(request, contract_id):  # `request` parameter added here
@@ -250,27 +249,42 @@ def send_contract_and_rider_email_to_client(request, contract, rider_type=None, 
     if only_contract:
         agreement_url = reverse('documents:client_contract_agreement', args=[contract.contract_id])
         subject = 'Sign Your Contract Agreement'
-        message = f'Please sign your contract agreement at the following link: {agreement_url}'
+        agreement_type = 'contract agreement'
     elif rider_type:
         agreement_url = reverse('documents:client_rider_agreement', args=[contract.contract_id, rider_type])
         subject = f'Sign Your {rider_type.replace("_", " ").capitalize()} Agreement'
-        message = (f'Please sign your {rider_type.replace("_", " ").capitalize()} agreement at the following link: '
-                   f'{agreement_url}')
+        agreement_type = f'{rider_type.replace("_", " ").capitalize()} agreement'
     else:
         agreement_url = reverse('documents:client_contract_and_rider_agreement', args=[contract.contract_id])
         subject = 'Sign Your Contract and Rider Agreements'
-        message = f'Please sign your contract and rider agreements at the following link: {agreement_url}'
+        agreement_type = 'contract and rider agreements'
 
-    login_url = f"https://{request.get_host()}{reverse('users:client_portal_login')}?{urlencode({'next': agreement_url})}"
+    # Build the login URL (so that after login, the client is directed to the correct document)
+    login_url = \
+        f"https://{request.get_host()}{reverse('users:client_portal_login')}?{urlencode({'next': agreement_url})}"
+
+    # Build the inline message for the email
+    inline_message = f"Please sign your {agreement_type} by clicking the button below."
+
+    context = {
+        'first_name': contract.client.primary_contact.split()[0] if contract.client.primary_contact else "Client",
+        'inline_message': inline_message,
+        'login_url': login_url,
+    }
+
+    # Render the email HTML message using the template
+    message_html = render_to_string('communication/contract_and_rider_email_to_client.html', context, request=request)
 
     try:
         send_mail(
             subject,
-            f"{message}\n\nPlease log in here to sign the documents: {login_url}",
-            'EssenceWeddingsAdmin@enet2.com',  # Your sending email
+            '',  # Optionally, you can include a plain text version if desired
+            'EssenceWeddingsAdmin@enet2.com',  # Your sending email address
             [client_email],
             fail_silently=False,
+            html_message=message_html,  # Sending the HTML email
         )
+        print("Email sent successfully")
     except Exception as e:
         print(f"Failed to send email to client: {e}")
 
@@ -298,6 +312,7 @@ def task_list(request):
         'logo_url': logo_url
     })
 
+
 @login_required
 def open_task_form(request, contract_id=None, note_id=None):
     initial_data = {
@@ -307,6 +322,7 @@ def open_task_form(request, contract_id=None, note_id=None):
     }
     form = TaskForm(initial=initial_data)
     return render(request, 'task_form.html', {'form': form})
+
 
 @require_POST
 @login_required
@@ -352,7 +368,8 @@ def create_task(request, contract_id=None, note_id=None):
         ).distinct().order_by('due_date')
 
         # Render the appropriate task list HTML snippet
-        task_list_template = 'contracts/partials/messages/_task_list_snippet.html' if task.task_type == 'contract' else 'users/internal_task_list_snippet.html'
+        task_list_template = 'contracts/partials/messages/_task_list_snippet.html' if task.task_type == 'contract' \
+            else 'users/internal_task_list_snippet.html'
         task_list_html = render_to_string(task_list_template, {'tasks': tasks}, request=request)
 
         return JsonResponse({'success': True, 'task_id': task.id, 'task_list_html': task_list_html})
@@ -374,7 +391,8 @@ def create_task_for_coordinator(sender, contract, message, content):
                 contract=contract,
                 note=message,
                 due_date=now() + timedelta(days=3),  # Example: Due in 3 days
-                description=f"Follow up on portal note: '{content[:50]}...'",  # Use the first 50 characters of the content
+                description=f"Follow up on portal note: '{content[:50]}...'",
+                # Use the first 50 characters of the content
                 task_type='contract'
             )
             print(f"Task created successfully: {task}")
@@ -407,7 +425,6 @@ def update_task(request, task_id):
         return JsonResponse({'success': False, 'errors': form.errors.as_json()})
 
 
-
 @login_required
 def get_tasks(request, contract_id=None):
     if contract_id:
@@ -421,6 +438,7 @@ def get_tasks(request, contract_id=None):
         request=request
     )
     return JsonResponse({'task_list_html': task_list_html})
+
 
 @login_required
 @require_POST

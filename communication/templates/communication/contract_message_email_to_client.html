@@ -1,14 +1,30 @@
 {% autoescape off %}
-Hello {{ first_name|default:"Client" }},
+<html>
+  <body>
+    <p>Hello {{ first_name|default:"Client" }},</p>
 
-Your coordinator has posted a new message for Contract {{ contract.custom_contract_number }}.
+    <p>Your coordinator has posted a new message for Contract {{ contract.custom_contract_number }}.</p>
 
-Message: {{ message.content }}
+    <p>Message: {{ message.content }}</p>
 
-Please log in to view and respond to the message:
+    <p>Please log in to view and respond to the message:</p>
 
-https://enet2.com/client_portal
+    <p>
+      <a href="https://enet2.com/client_portal" style="
+         display: inline-block;
+         background-color: #d9727a;
+         color: #ffffff;
+         padding: 10px 20px;
+         text-decoration: none;
+         border-radius: 5px;
+         font-size: 16px;
+      ">
+         Log In to Client Portal
+      </a>
+    </p>
 
-Best regards,
-Essence Weddings
+    <p>Best regards,<br>
+       Essence Weddings</p>
+  </body>
+</html>
 {% endautoescape %}

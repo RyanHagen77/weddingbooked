@@ -1,0 +1,26 @@
+{% autoescape off %}
+<html>
+  <body>
+    <p>Hello {{ first_name|default:"Client" }},</p>
+    
+    <p>{{ inline_message }}</p>
+    
+    <p>
+      <a href="{{ login_url }}" style="
+          display: inline-block;
+          background-color: #d9727a;
+          color: #ffffff;
+          padding: 10px 20px;
+          text-decoration: none;
+          border-radius: 5px;
+          font-size: 16px;
+      ">
+        Sign Documents
+      </a>
+    </p>
+    
+    <p>Best regards,<br>
+       Essence Weddings</p>
+  </body>
+</html>
+{% endautoescape %}
