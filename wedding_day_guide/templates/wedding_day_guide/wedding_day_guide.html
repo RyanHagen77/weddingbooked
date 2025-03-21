@@ -119,10 +119,14 @@
                                 <label class="field-title" for="id_ceremony_location">Ceremony Location:</label>
                                 {{ form.ceremony_site }}
                             </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_ceremony_start">Ceremony Times:</label>
-                                {{ form.ceremony_start }} to {{ form.ceremony_end }}
-                            </div>
+                                <div class="form-group">
+                                  <label class="field-title" for="id_ceremony_start">Ceremony Start:</label>
+                                  {{ form.ceremony_start }}
+                                </div>
+                                <div class="form-group">
+                                  <label class="field-title" for="id_ceremony_end">Ceremony End:</label>
+                                  {{ form.ceremony_end }}
+                                </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">

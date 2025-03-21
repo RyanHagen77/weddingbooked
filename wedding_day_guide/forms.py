@@ -6,6 +6,15 @@ class WeddingDayGuideForm(forms.ModelForm):
     class Meta:
         model = WeddingDayGuide
         fields = '__all__'  # Include all fields
+        widgets = {
+            'dressing_start_time': forms.TimeInput(format='%I:%M %p', attrs={'class': 'form-control'}),
+            'ceremony_start': forms.TimeInput(format='%I:%M %p', attrs={'class': 'form-control'}),
+            'ceremony_end': forms.TimeInput(format='%I:%M %p', attrs={'class': 'form-control'}),
+            'reception_start': forms.TimeInput(format='%I:%M %p', attrs={'class': 'form-control'}),
+            'reception_end': forms.TimeInput(format='%I:%M %p', attrs={'class': 'form-control'}),
+            'dinner_start': forms.TimeInput(format='%I:%M %p', attrs={'class': 'form-control'}),
+            'photographer2_start': forms.TimeInput(format='%I:%M %p', attrs={'class': 'form-control'}),
+        }
 
     def __init__(self, *args, **kwargs):
         self.strict_validation = kwargs.pop('strict_validation', False)
