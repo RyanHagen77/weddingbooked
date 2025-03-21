@@ -324,6 +324,7 @@ export default function Home() {
                           <p>There are four ways to pay your balance:</p>
                           <ul className="list-disc list-inside">
                             <li>Online with a credit card (There is a 3% credit/debit card fee)</li>
+                            <li>Online with an E-Check (There is a 5$ ACH fee)</li>
                             <li>Mail a check payable to Essence Photo and Video (Send to 1300 Remington Rd suite B,
                               Schaumburg, IL 60173)
                             </li>
