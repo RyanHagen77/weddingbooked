@@ -43,6 +43,7 @@ def generate_pdf(guide, contract, logger):
             contract=contract,
             document=path,
             is_client_visible=True,
+            is_event_staff_visible=True
         )
 
         logger.info("PDF generated and saved successfully for guide ID: %s, contract ID: %s", guide.pk,
