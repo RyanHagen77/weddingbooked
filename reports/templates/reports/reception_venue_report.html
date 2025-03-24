@@ -45,6 +45,7 @@
             <table>
                 <thead>
                     <tr>
+                        <th>#</th> <!-- Row Number Column -->
                         <th>Reception Site</th>
                         <th>Event Date</th>
                         <th>Contract Number</th>
@@ -55,6 +56,7 @@
                 <tbody>
                     {% for data in page_obj %}
                     <tr>
+                        <td>{{ page_obj.start_index|add:forloop.counter0 }}</td> <!-- Dynamic Row Number -->
                         <td>{{ data.reception_site }}</td>
                         <td>{{ data.event_date }}</td>
                         <td><a href="{{ data.contract_link }}" target="_blank">{{ data.custom_contract_number }}</a></td>
