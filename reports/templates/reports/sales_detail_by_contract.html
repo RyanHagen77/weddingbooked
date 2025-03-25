@@ -13,6 +13,7 @@
             <table>
                 <thead>
                     <tr>
+                        <th>#</th> <!-- New row number column -->
                         <th>Contract Number</th>
                         <th>Location</th>
                         <th>Service Sales</th>
@@ -27,6 +28,7 @@
                     {% if contract_data %}
                         {% for data in contract_data %}
                         <tr>
+                            <td>{{ forloop.counter }}</td> <!-- Add row number -->
                             <td><a href="{% url 'contracts:contract_detail' data.contract_id %}">{{ data.custom_contract_number }}</a></td>
                             <td>{{ data.location }}</td>
                             <td>${{ data.service_revenue|floatformat:2 }}</td>
@@ -39,13 +41,14 @@
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="8">No records found for the selected criteria.</td>
+                            <td colspan="9">No records found for the selected criteria.</td>
                         </tr>
                     {% endif %}
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th colspan="2">Totals</th>
+                        <th colspan="2">Totals</th> <!-- Adjusted colspan -->
+                        <th></th>
                         <th>${{ total_service_revenue|floatformat:2 }}</th>
                         <th>${{ total_products_revenue|floatformat:2 }}</th>
                         <th>${{ total_taxable_products_revenue|floatformat:2 }}</th>
