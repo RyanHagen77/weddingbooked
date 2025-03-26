@@ -490,7 +490,7 @@ def contract_and_rider_agreement(request, contract_id):
         email.send()
 
         portal_url = reverse('users:client_portal', args=[contract_id])
-        return render(request, 'contracts/status_page.html', {
+        return render(request, 'documents/status_page.html', {
             'message': 'You\'re all set, thank you!',
             'portal_url': portal_url
         })
