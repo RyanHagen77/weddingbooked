@@ -158,7 +158,7 @@ class CustomPasswordResetView(PasswordResetView):
         print("CustomPasswordResetView dispatch method called")
         return super().dispatch(*args, **kwargs)
     template_name = "users/registration/password_reset.html"
-    email_template_name = "users/registration/password_reset_email.html"
+    email_template_name = "communication/password_reset_email.html"
     subject_template_name = "users/registration/password_reset_subject.txt"
     success_url = reverse_lazy('users:password_reset_done')
 
