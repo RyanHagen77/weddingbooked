@@ -6,6 +6,7 @@ from django.views.generic import ListView, CreateView, UpdateView
 from django.utils.timezone import now
 from django.urls import reverse_lazy
 from rest_framework import serializers
+from django.contrib.auth.models import update_last_login
 
 from django.contrib.auth.views import (PasswordResetView, PasswordResetConfirmView, PasswordResetDoneView,
                                        PasswordResetCompleteView)
@@ -31,7 +32,6 @@ import json
 from django.contrib import messages
 
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 import logging
 
@@ -71,9 +71,11 @@ def user_login_view(request):
     # Render the login template if the request is not a POST request or if authentication failed
     return render(request, 'users/login.html', {'next': request.GET.get('next', '')})
 
+
 def user_logout_view(request):
     logout(request)
     return redirect('users:login')
+
 
 def custom_login(request):
     user = get_user_model()  # Use the custom user model
@@ -118,6 +120,7 @@ def custom_login(request):
     print(f"Next URL on GET: {next_url}")  # Debugging
     return render(request, 'users/client_portal_login.html', {'next': next_url})
 
+
 def custom_logout(request):
     logout(request)
     response = redirect('users:client_portal_login')  # Redirect to the login page or any other page
@@ -129,44 +132,45 @@ def custom_logout(request):
 
 User = get_user_model()
 
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = 'email'
 
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        # Add custom claims
-        try:
-            client = Client.objects.get(user=user)
-            contract = Contract.objects.get(client=client)
-            token['contract_id'] = contract.contract_id
-        except (Client.DoesNotExist, Contract.DoesNotExist):
-            token['contract_id'] = None
-        return token
+class CustomTokenObtainPairSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
-        email = attrs.get("email")
-        password = attrs.get("password")
+        email = attrs.get('email')
+        password = attrs.get('password')
 
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            raise serializers.ValidationError("Invalid email or password")
+            raise serializers.ValidationError('Invalid email or password.')
 
         if not user.check_password(password):
-            raise serializers.ValidationError("Invalid email or password")
+            raise serializers.ValidationError('Invalid email or password.')
 
-        self.user = user
-        data = super().validate({
-            "username": user.username,  # still needed internally by parent class
-            "password": password
-        })
+        if not user.is_active:
+            raise serializers.ValidationError('User account is disabled.')
 
-        refresh = self.get_token(user)
-        data['refresh'] = str(refresh)
-        data['access'] = str(refresh.access_token)
-        data['contract_id'] = refresh['contract_id']
-        return data
+        # Token creation
+        from rest_framework_simplejwt.tokens import RefreshToken
+        refresh = RefreshToken.for_user(user)
+
+        # Add contract_id as a claim
+        try:
+            client = Client.objects.get(user=user)
+            contract = Contract.objects.get(client=client)
+            refresh['contract_id'] = contract.contract_id
+        except (Client.DoesNotExist, Contract.DoesNotExist):
+            refresh['contract_id'] = None
+
+        update_last_login(None, user)
+
+        return {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'contract_id': refresh['contract_id']
+        }
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
