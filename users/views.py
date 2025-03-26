@@ -5,6 +5,7 @@ from django.conf import settings
 from django.views.generic import ListView, CreateView, UpdateView
 from django.utils.timezone import now
 from django.urls import reverse_lazy
+from rest_framework import serializers
 
 from django.contrib.auth.views import (PasswordResetView, PasswordResetConfirmView, PasswordResetDoneView,
                                        PasswordResetCompleteView)
@@ -129,6 +130,8 @@ def custom_logout(request):
 User = get_user_model()
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = 'email'
+
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
@@ -142,13 +145,29 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
     def validate(self, attrs):
-        data = super().validate(attrs)
-        refresh = self.get_token(self.user)
+        email = attrs.get("email")
+        password = attrs.get("password")
 
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Invalid email or password")
+
+        if not user.check_password(password):
+            raise serializers.ValidationError("Invalid email or password")
+
+        self.user = user
+        data = super().validate({
+            "username": user.username,  # still needed internally by parent class
+            "password": password
+        })
+
+        refresh = self.get_token(user)
         data['refresh'] = str(refresh)
         data['access'] = str(refresh.access_token)
         data['contract_id'] = refresh['contract_id']
         return data
+
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer

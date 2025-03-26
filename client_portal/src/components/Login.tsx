@@ -8,7 +8,7 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
-  const [username, setUsername] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
@@ -18,10 +18,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     e.preventDefault();
 
     try {
-      const response = await axios.post('https://www.enet2.com/users/api/token/', {
-        username,
-        password,
-      });
+        const response = await axios.post('https://www.enet2.com/users/api/token/', {
+          email,
+          password,
+        });
 
       const { access, refresh, contract_id: contractId } = response.data;
 
@@ -46,18 +46,18 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <div>
             <label htmlFor="username" className="block text-gray-700">Email:</label>
             <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded mt-1"
-              required
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded mt-1"
+                required
             />
           </div>
           <div>
             <label htmlFor="password" className="block text-gray-700">Password:</label>
             <input
-              type={showPassword ? "text" : "password"}
+                type={showPassword ? "text" : "password"}
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
