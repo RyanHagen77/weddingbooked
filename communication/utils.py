@@ -5,12 +5,15 @@ from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlencode
 from django.http import HttpRequest
-from django.contrib.auth.models import User
 from django.contrib.auth.forms import PasswordResetForm
+from django.core.exceptions import ImproperlyConfigured
+from django.contrib.auth import get_user_model
 
 
 def send_password_reset_email(user_email):
     print(f"Starting to send password reset email to: {user_email}")
+
+    User = get_user_model()
     try:
         user = User.objects.get(email=user_email)
     except User.DoesNotExist:
@@ -23,8 +26,8 @@ def send_password_reset_email(user_email):
     form = PasswordResetForm({'email': user_email})
     if form.is_valid():
         request = HttpRequest()
-        request.META['SERVER_NAME'] = '127.0.0.1'
-        request.META['SERVER_PORT'] = '8000'
+        request.META['SERVER_NAME'] = 'www.enet2.com'  # Use domain name here
+        request.META['SERVER_PORT'] = '443'  # HTTPS default port
 
         try:
             form.save(
@@ -36,8 +39,10 @@ def send_password_reset_email(user_email):
                 extra_email_context={'name': name},
             )
             print("Password reset email sent successfully.")
+        except ImproperlyConfigured as e:
+            print(f"Email backend not configured properly: {e}")
         except Exception as e:
-            print(f"Failed to send password reset email due to: {e}")
+            print(f"Failed to send password reset email: {e}")
     else:
         print("PasswordResetForm is invalid. Errors:", form.errors)
 

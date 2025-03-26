@@ -153,12 +153,15 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
+
 class CustomPasswordResetView(PasswordResetView):
     def dispatch(self, *args, **kwargs):
         print("CustomPasswordResetView dispatch method called")
         return super().dispatch(*args, **kwargs)
+
     template_name = "users/registration/password_reset.html"
-    email_template_name = "communication/password_reset_email.html"
+    email_template_name = "communication/password_reset_email.txt"  # plain text fallback
+    html_email_template_name = "communication/password_reset_email.html"  # your styled HTML
     subject_template_name = "users/registration/password_reset_subject.txt"
     success_url = reverse_lazy('users:password_reset_done')
 
@@ -217,7 +220,7 @@ def client_portal(request, contract_id):
 
             # Send an email notification to the coordinator
             if contract.coordinator:
-                send_contract_message_email(request, message, contract)
+                send_contract_message_email_to_coordinator(request, message, contract)
 
             return redirect('users:client_portal', contract_id=contract.contract_id)
 
