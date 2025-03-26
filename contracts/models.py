@@ -307,6 +307,12 @@ class Contract(models.Model):
     def __str__(self):
         return self.custom_contract_number or f"Contract {self.contract_id}"
 
+    def check_and_complete(self):
+        """Automatically mark contract as completed if event date has passed and status is still 'booked'."""
+        if self.status == self.BOOKED and self.event_date < timezone.now().date():
+            self.status = self.COMPLETED
+            self.save(update_fields=['status'])
+
     def get_lead_source_display(self):
         if self.lead_source_category and self.lead_source_details:
             return f"{self.lead_source_category.name}: {self.lead_source_details}"
