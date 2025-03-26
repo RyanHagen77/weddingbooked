@@ -4,7 +4,7 @@ from django.core.paginator import Paginator
 
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-
+from datetime import datetime, timedelta
 from django.shortcuts import get_object_or_404, redirect, render
 from django.db.models import Q, F, Value, CharField
 from django.db.models.functions import Concat
@@ -44,7 +44,6 @@ def booking_search(request):
     form = BookingSearchForm(request.GET)
     bookings = EventStaffBooking.objects.all()
 
-    # Apply filters if the form is valid
     if form.is_valid():
         if form.cleaned_data.get("booking_q"):
             query = form.cleaned_data["booking_q"]
@@ -73,15 +72,20 @@ def booking_search(request):
         if form.cleaned_data.get("status_filter"):
             bookings = bookings.filter(status=form.cleaned_data["status_filter"])
 
-        # Apply sorting
         sort_by = form.cleaned_data.get("sort_by")
         order = form.cleaned_data.get("order", "asc")
         if sort_by:
             sort_expression = sort_by if order == "asc" else f"-{sort_by}"
             bookings = bookings.order_by(sort_expression)
 
-    # Paginate results
-    paginator = Paginator(bookings, 25)  # Display 25 results per page
+    # Apply default date filter if no user-supplied range
+    if not form.is_bound or not (form.is_valid() and (
+        form.cleaned_data.get("event_date_start") or form.cleaned_data.get("event_date_end")
+    )):
+        one_week_ago = datetime.today().date() - timedelta(days=7)
+        bookings = bookings.filter(contract__event_date__gte=one_week_ago)
+
+    paginator = Paginator(bookings, 25)
     page_number = request.GET.get("page")
     bookings = paginator.get_page(page_number)
 

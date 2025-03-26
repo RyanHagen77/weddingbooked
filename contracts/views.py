@@ -169,6 +169,11 @@ def contract_search(request):
             filters |= Q(event_date=date_obj)
         contracts = contracts.filter(filters)
 
+    if not form.is_bound or not (
+            form.is_valid() and (form.cleaned_data.get('event_date_start') or form.cleaned_data.get('event_date_end'))):
+        one_week_ago = datetime.today().date() - timedelta(days=7)
+        contracts = contracts.filter(event_date__gte=one_week_ago)
+
     # Always sort results by soonest event date.
     contracts = contracts.order_by('event_date')
 
