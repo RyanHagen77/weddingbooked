@@ -1,0 +1,12 @@
+Hello {{ first_name }},
+
+Your coordinator has posted a new message for Contract {{ contract.custom_contract_number }}.
+
+Message:
+{{ message.content }}
+
+Please log in to respond:
+https://enet2.com/client_portal
+
+Best regards,
+Essence Weddings Team

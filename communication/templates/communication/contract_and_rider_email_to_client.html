@@ -1,10 +1,10 @@
-{% autoescape off %}
+<!DOCTYPE html>
 <html>
-  <body>
+  <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
     <p>Hello {{ first_name|default:"Client" }},</p>
-    
+
     <p>{{ inline_message }}</p>
-    
+
     <p>
       <a href="{{ login_url }}" style="
           display: inline-block;
@@ -14,13 +14,14 @@
           text-decoration: none;
           border-radius: 5px;
           font-size: 16px;
+          font-weight: bold;
       ">
         Sign Documents
       </a>
     </p>
-    
+
     <p>Best regards,<br>
        Essence Weddings</p>
   </body>
 </html>
-{% endautoescape %}
+

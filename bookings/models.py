@@ -3,24 +3,16 @@
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import get_user_model
-from bookings.constants import SERVICE_ROLE_MAPPING  # Adjust the import path as needed
+from bookings.constants import SERVICE_ROLE_MAPPING
 
 
 class Availability(models.Model):
-    staff = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
-    date = models.DateField(blank=True, null=True)  # Nullable for recurrent unavailability
+    staff = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    date = models.DateField(blank=True, null=True)
     available = models.BooleanField(default=True)
-    always_off_days = models.JSONField(default=list)  # Stores weekdays as integers, e.g., [0, 6]
-
-    objects = models.Manager()  # Default manager
+    always_off_days = models.JSONField(default=list)
 
     def __str__(self):
         if self.date:
@@ -31,45 +23,32 @@ class Availability(models.Model):
 
     @classmethod
     def get_available_staff_for_date(cls, date):
-        """
-        Returns only active staff who are available for the given date and have a valid role.
-        Staff with 'BOOKED' or 'PENDING' status are excluded from availability.
-        """
-
         weekday = date.weekday()
 
-        # Find staff who are unavailable on the specific date or have always-off days
         unavailable_staff_ids = cls.objects.filter(
             Q(date=date, available=False) | Q(always_off_days__contains=[weekday])
         ).values_list('staff_id', flat=True)
 
-        # Find staff who are booked or pending on the specific date
         booked_or_pending_staff_ids = EventStaffBooking.objects.filter(
             contract__event_date=date,
             status__in=['BOOKED', 'PENDING']
         ).values_list('staff_id', flat=True)
 
-        # Combine all unavailable and booked/pending staff IDs
         all_unavailable_ids = set(unavailable_staff_ids) | set(booked_or_pending_staff_ids)
 
-        # Use CustomUser model to exclude unavailable staff and only include active ones
         customuser = get_user_model()
         return customuser.objects.filter(
-            is_active=True,  # Ensures the user is active
-            status='ACTIVE',  # Ensures the user is marked as ACTIVE in your model
-            role__isnull=False  # Ensures the user has a valid role
+            is_active=True,
+            status='ACTIVE',
+            role__isnull=False
         ).exclude(id__in=all_unavailable_ids)
 
 
 class Service(models.Model):
-    role_identifier = models.CharField(max_length=30)  # Match this with ROLE_CHOICES in EventStaffBooking
+    role_identifier = models.CharField(max_length=30)
     name = models.CharField(max_length=100)
     hourly_rate = models.DecimalField(max_digits=5, decimal_places=2)
     is_taxable = models.BooleanField(default=False)
-
-
-class EventStaffBookingManager(models.Manager):
-    pass
 
 
 class EventStaffBooking(models.Model):
@@ -77,7 +56,7 @@ class EventStaffBooking(models.Model):
         ('PROSPECT', 'Prospect'),
         ('PENDING', 'Pending'),
         ('BOOKED', 'Booked'),
-        ('CLEARED', 'Cleared'),  # Assuming 'Cleared' status is needed as referenced in the clear method
+        ('CLEARED', 'Cleared'),
     )
 
     ROLE_CHOICES = (
@@ -92,8 +71,7 @@ class EventStaffBooking(models.Model):
         ('PHOTOBOOTH_OP2', 'Photobooth Operator 2'),
         ('PROSPECT1', 'Prospect Photographer 1'),
         ('PROSPECT2', 'Prospect Photographer 2'),
-        ('PROSPECT3', 'Prospect Photographer 3')
-        # ... add any other roles you might have ...
+        ('PROSPECT3', 'Prospect Photographer 3'),
     )
 
     HOURS_CHOICES = (
@@ -104,10 +82,7 @@ class EventStaffBooking(models.Model):
     )
 
     role = models.CharField(max_length=30, choices=ROLE_CHOICES)
-    staff = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
+    staff = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     contract = models.ForeignKey('contracts.Contract', on_delete=models.CASCADE)
     hours_booked = models.PositiveIntegerField(choices=HOURS_CHOICES, null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
@@ -115,18 +90,15 @@ class EventStaffBooking(models.Model):
     booking_notes = models.TextField(blank=True, null=True)
 
     class Meta:
-        ordering = ['contract__event_date', 'role']  # Default ordering
+        ordering = ['contract__event_date', 'role']
 
     def save(self, *args, **kwargs):
-        # Check if the request is provided and set it as an attribute
         request = kwargs.pop('request', None)
         if request:
             self._request = request
 
-        # Get the original booking if it exists
         if not self._state.adding:
             original = EventStaffBooking.objects.get(pk=self.pk)
-            # Check if the status has changed
             if original.status != self.status:
                 self.handle_status_change(original.status, self.status)
 
@@ -134,7 +106,6 @@ class EventStaffBooking(models.Model):
         self.update_contract_role()
 
     def handle_status_change(self, old_status, new_status):
-        # Handle availability updates
         if old_status not in ['PENDING', 'BOOKED'] and new_status in ['PENDING', 'BOOKED']:
             Availability.objects.update_or_create(
                 staff=self.staff,
@@ -154,45 +125,23 @@ class EventStaffBooking(models.Model):
                 defaults={'available': True}
             )
 
-        # Send email only for BOOKED status, and avoid duplication
-        if old_status != 'BOOKED' and new_status == 'BOOKED' and not getattr(self, '_email_sent', False):
-            self.send_booking_email(self._request, self.staff, self.contract, self.get_role_display(), is_update=False)
-            self._email_sent = True  # Prevent duplicate emails
-
-    def send_booking_email(self, request, staff, contract, role, is_update):
-        # Ensure email is only sent for 'BOOKED' status
-        if self.status != 'BOOKED':
-            print(f"Email not sent because status is {self.status}")
-            return  # Exit early if status is not 'BOOKED'
-
-        context = {
-            'user': staff,
-            'contract': contract,
-            'role': role,
-            'domain': get_current_site(request).domain,
-            'is_update': is_update,
-        }
-        subject = 'New Booking Assigned'
-        message = render_to_string('communication/booking_assignment_email.html', context, request=request)
-        from_email = 'EssenceWeddingsAdmin@enet2.com'
-        to_email = [staff.email]
-
-        send_mail(
-            subject,
-            message,
-            from_email,
-            to_email,
-            fail_silently=False,
-        )
+        if old_status != 'BOOKED' and new_status == 'BOOKED':
+            from communication.utils import send_booking_assignment_email
+            if hasattr(self, '_request'):
+                send_booking_assignment_email(
+                    request=self._request,
+                    staff=self.staff,
+                    contract=self.contract,
+                    role=self.get_role_display(),
+                    is_update=False
+                )
 
     def clear(self):
-        """Clears the current booking by changing its status to 'CLEARED'."""
         self.status = 'CLEARED'
         self.save()
 
     @classmethod
     def update_or_create_booking(cls, contract, old_staff, new_staff):
-        """Updates or creates a booking for a staff member."""
         if old_staff:
             try:
                 old_booking = cls.objects.get(contract=contract, staff=old_staff)
@@ -201,15 +150,13 @@ class EventStaffBooking(models.Model):
                 pass
 
         if new_staff:
-            new_booking, created = cls.objects.update_or_create(
+            new_booking, _ = cls.objects.update_or_create(
                 contract=contract, staff=new_staff,
-                defaults={'status': 'PENDING', 'hours_booked': None})  # Update with appropriate defaults
+                defaults={'status': 'PENDING', 'hours_booked': None})
             return new_booking
 
     def add_communication(self, content, user):
-        """Adds a new communication for this booking."""
-        from communication.models import UnifiedCommunication  # Lazy import
-
+        from communication.models import UnifiedCommunication
         UnifiedCommunication.objects.create(
             content=content,
             note_type='booking',
@@ -219,27 +166,24 @@ class EventStaffBooking(models.Model):
         )
 
     def get_communications(self):
-        """Fetches all communications for this booking."""
-        from communication.models import UnifiedCommunication  # Lazy import
-
-        return UnifiedCommunication.objects.filter(content_type=ContentType.objects.get_for_model(self),
-                                                   object_id=self.pk)
+        from communication.models import UnifiedCommunication
+        return UnifiedCommunication.objects.filter(
+            content_type=ContentType.objects.get_for_model(self),
+            object_id=self.pk
+        )
 
     def delete(self, *args, **kwargs):
-        # Before deleting, clear the contract role
         self.clear_contract_role()
-        super().delete(*args, **kwargs)  # Call the superclass method to delete the object
+        super().delete(*args, **kwargs)
 
     def clear_contract_role(self):
-        # Clear the role in the contract when the booking is deleted or cleared
-        role_field = SERVICE_ROLE_MAPPING.get(self.role, None)
+        role_field = SERVICE_ROLE_MAPPING.get(self.role)
         if role_field and hasattr(self.contract, role_field):
             setattr(self.contract, role_field, None)
             self.contract.save()
 
     def update_contract_role(self):
-        # Update the contract role when saving or clearing the booking
-        role_field = SERVICE_ROLE_MAPPING.get(self.role, None)
+        role_field = SERVICE_ROLE_MAPPING.get(self.role)
         if role_field:
             if self.status == 'CLEARED' or not self.staff:
                 setattr(self.contract, role_field, None)

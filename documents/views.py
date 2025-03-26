@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from datetime import timedelta
 from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.conf import settings
-from communication.views import send_contract_and_rider_email_to_client
+from communication.utils import send_contract_and_rider_email_to_client
 from .forms import ContractAgreementForm, ContractDocumentForm
 from .models import ContractDocument, ContractAgreement, RiderAgreement
 from contracts.models import Contract

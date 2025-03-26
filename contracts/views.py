@@ -20,7 +20,6 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from datetime import datetime
 
-
 # Django Form Imports
 
 # DRF Imports
@@ -29,7 +28,6 @@ from rest_framework import viewsets
 # Models
 from bookings.models import EventStaffBooking
 from communication.models import UnifiedCommunication, Task
-from formalwear.models import ContractFormalwearProduct
 
 
 from .models import Contract, Discount, TaxRate, ChangeLog, ServiceFee
@@ -54,7 +52,7 @@ from formalwear.forms import ContractFormalwearProductFormset
 from .serializers import ContractSerializer
 
 # Views from other apps
-from communication.views import send_email_to_client
+from communication.utils import send_contract_message_email_to_client
 from payments.views import create_schedule_a_payments
 
 # Logging setup
@@ -317,7 +315,7 @@ def contract_detail(request, id):
             # Check if the sender is an employee and the note type is PORTAL
             if request.user.user_type == 'employee' and new_message.note_type == UnifiedCommunication.PORTAL:
                 print("Employee sent a PORTAL type message. Triggering email...")
-                send_email_to_client(request, new_message, contract)
+                send_contract_message_email_to_client(request, new_message, contract)
             else:
                 print(f"Email not triggered. User Type: {request.user.user_type}, Note Type: {new_message.note_type}")
 
@@ -597,6 +595,7 @@ def edit_services(request, id):
         'services_form': form,
     }
     return render(request, 'contracts/edit_services.html', context)
+
 
 def get_contract_data(request, id):
     contract = get_object_or_404(Contract, pk=id)

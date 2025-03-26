@@ -1,0 +1,14 @@
+Hello {{ user.first_name|default:"Team Member" }},
+
+You have been booked! Please see the details below:
+
+Contract ID: {{ contract.custom_contract_number }}
+Event Date: {{ contract.event_date }}
+Ceremony Location: {{ contract.ceremony_site|default:"TBD" }}
+Reception Location: {{ contract.reception_site|default:"TBD" }}
+Role: {{ role }}
+
+If you have any questions, please reach out to the event coordinator.
+
+Best regards,
+Essence Weddings

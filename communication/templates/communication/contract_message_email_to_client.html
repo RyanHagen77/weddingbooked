@@ -1,13 +1,13 @@
-{% autoescape off %}
+<!DOCTYPE html>
 <html>
-  <body>
+  <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
     <p>Hello {{ first_name|default:"Client" }},</p>
 
-    <p>Your coordinator has posted a new message for Contract {{ contract.custom_contract_number }}.</p>
+    <p>Your coordinator has posted a new message for Contract <strong>{{ contract.custom_contract_number }}</strong>.</p>
 
-    <p>Message: {{ message.content }}</p>
+    <p><strong>Message:</strong><br>{{ message.content }}</p>
 
-    <p>Please log in to view and respond to the message:</p>
+    <p>Please click below to log in and respond:</p>
 
     <p>
       <a href="https://enet2.com/client_portal" style="
@@ -18,8 +18,9 @@
          text-decoration: none;
          border-radius: 5px;
          font-size: 16px;
+         font-weight: bold;
       ">
-         Log In to Client Portal
+        Go to Client Portal
       </a>
     </p>
 
@@ -27,4 +28,3 @@
        Essence Weddings</p>
   </body>
 </html>
-{% endautoescape %}

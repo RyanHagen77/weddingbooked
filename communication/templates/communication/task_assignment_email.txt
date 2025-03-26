@@ -1,0 +1,12 @@
+Hello {{ user.first_name|default:"Team Member" }},
+
+You have been assigned a new task:
+
+Title: {{ task.description }}
+Due Date: {{ task.due_date|date:"F d, Y" }}
+
+To view and manage your task, please log in:
+https://{{ domain }}/users/login/
+
+Thank you,
+Essence Weddings Admin

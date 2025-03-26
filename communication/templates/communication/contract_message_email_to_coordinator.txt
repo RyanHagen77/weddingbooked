@@ -1,0 +1,12 @@
+Hello {{ user.first_name|default:"Team" }},
+
+A new message has been posted for Contract {{ contract.custom_contract_number }}.
+
+Message:
+{{ message.content }}
+
+You can view the contract and respond in the CRM:
+https://enet2.com/contracts/{{ contract.contract_id }}/
+
+Best regards,
+Essence Weddings

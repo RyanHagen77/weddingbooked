@@ -1,0 +1,9 @@
+Hello {{ first_name|default:"Client" }},
+
+{{ inline_message }}
+
+To sign your documents, please log in here:
+{{ login_url }}
+
+Best regards,
+Essence Weddings

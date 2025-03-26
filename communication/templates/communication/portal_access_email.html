@@ -1,25 +1,29 @@
-{% autoescape off %}
-Hi {{ first_name }},
+<!DOCTYPE html>
+<html>
+  <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <p>Hi {{ first_name }},</p>
 
-Welcome to Essence Weddings! We're thrilled to have you join us.
+    <p>Welcome to Essence Weddings! We're thrilled to have you join us.</p>
 
-To get started, please click the button below to set your password and access your personalized portal:
+    <p>To get started, please click the button below to set your password and access your personalized portal:</p>
 
-<a href="{{ password_reset_url }}" style="
-    display: inline-block;
-    background-color: #d9727a;
-    color: #ffffff;
-    padding: 10px 20px;
-    text-decoration: none;
-    border-radius: 5px;
-    font-size: 16px;
-">
-  Set Your Password
-</a>
-<br>
+    <p>
+      <a href="{{ password_reset_url }}" style="
+          display: inline-block;
+          background-color: #d9727a;
+          color: #ffffff;
+          padding: 10px 20px;
+          text-decoration: none;
+          border-radius: 5px;
+          font-size: 16px;
+      ">
+        Set Your Password
+      </a>
+    </p>
 
-If you need assistance or have any questions, feel free to reach out. We're here to help make your wedding truly unforgettable.
+    <p>If you need assistance or have any questions, feel free to reach out. We're here to help make your wedding truly unforgettable.</p>
 
-Warm regards,
-The Essence Weddings Team
-{% endautoescape %}
+    <p>Warm regards,<br>
+       The Essence Weddings Team</p>
+  </body>
+</html>

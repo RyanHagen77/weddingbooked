@@ -5,7 +5,7 @@
 <div class="outer-container">
     <div class="search-results">
         <h4>Revenue by Contract</h4>
-        <button onclick="history.back()" class="btn-dusty-pink">Go Back</button>
+        <button onclick="history.back()" class="btn btn-dusty-pink">Go Back</button>
 
         <form method="get" class="report-form">
             <label for="start_date">Start Date:</label>
@@ -18,7 +18,7 @@
             <select id="location" name="location">
                 <option value="all" {% if selected_location == 'all' %}selected{% endif %}>All Locations</option>
                 {% for location in locations %}
-                <option value="{{ location.id }}" {% if selected_location == location.id|stringformat:"s" %}selected{% endif %}>{{ location.name }}</option>
+                    <option value="{{ location.id }}" {% if selected_location == location.id|stringformat:"s" %}selected{% endif %}>{{ location.name }}</option>
                 {% endfor %}
             </select>
 
@@ -26,74 +26,73 @@
         </form>
 
         <div class="search-results">
-        <h6>Revenue between {{ start_date }} and {{ end_date }} for {% if selected_location == 'all' %}all locations{% else %}{{ locations|get_location_name:selected_location }}{% endif %}</h6>
-        <table>
-        <table>
-            <thead>
-                <tr>
-                    <th>Custom Contract ID</th>
-                    <th>Location</th>
-                    <th>Payment Date</th>
-                    <th>Payment Amount</th>
-                    <th>Payment Purpose</th>
-                    <th>Total Payments</th>
-                    <th>Total Tax Collected</th>
-                    <th>Total Revenue</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for data in contracts_data %}
-                <tr>
-                    <td rowspan="{{ data.payments|length }}">
-                        <a href="{% url 'contracts:contract_detail' data.contract_id %}">
-                            {{ data.custom_contract_number }}
-                        </a>
-                    </td>
-                    <td rowspan="{{ data.payments|length }}">{{ data.location }}</td>
-                    <td>{{ data.payments.0.date }}</td>
-                    <td>
-                        ${{ data.payments.0.amount }}
-                        {% if data.payments.0.tax_collected > 0 %}
-                            (<span class="tax-amount">${{ data.payments.0.tax_collected }}</span>)
-                        {% endif %}
-                    </td>
-                    <td>{{ data.payments.0.purpose }}</td>
-                    <td rowspan="{{ data.payments|length }}">
-                        <strong>${{ data.total_payments }}</strong>
-                    </td>
-                    <td rowspan="{{ data.payments|length }}">
-                        <strong>${{ data.total_tax_collected }}</strong>
-                    </td>
-                    <td rowspan="{{ data.payments|length }}">
-                        <strong>${{ data.total_revenue }}</strong>
-                    </td>
-                </tr>
-                {% for payment in data.payments|slice:"1:" %}
-                <tr>
-                    <td>{{ payment.date }}</td>
-                    <td>
-                        ${{ payment.amount }}
-                        {% if payment.tax_collected > 0 %}
-                            (<span class="tax-amount">${{ payment.tax_collected }}</span>)
-                        {% endif %}
-                    </td>
-                    <td>{{ payment.purpose }}</td>
-                </tr>
-                {% endfor %}
-                {% endfor %}
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="5" style="text-align: right;"><strong>Grand Totals:</strong></td>
-                    <td><strong>${{ grand_total_payments }}</strong></td>
-                    <td><strong>${{ grand_total_tax_collected }}</strong></td>
-                    <td><strong>${{ grand_total_revenue }}</strong></td>
-                </tr>
-            </tfoot>
-        </table>
+            <h6>Revenue between {{ start_date }} and {{ end_date }} for
+                {% if selected_location == 'all' %}
+                    all locations
+                {% else %}
+                    {{ locations|get_location_name:selected_location }}
+                {% endif %}
+            </h6>
 
-
-
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Custom Contract ID</th>
+                        <th>Location</th>
+                        <th>Payment Date</th>
+                        <th>Payment Amount</th>
+                        <th>Payment Purpose</th>
+                        <th>Total Payments</th>
+                        <th>Total Tax Collected</th>
+                        <th>Total Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in contracts_data %}
+                    <tr>
+                        <td rowspan="{{ data.payments|length }}">{{ forloop.counter }}</td>
+                        <td rowspan="{{ data.payments|length }}">
+                            <a href="{% url 'contracts:contract_detail' data.contract_id %}">
+                                {{ data.custom_contract_number }}
+                            </a>
+                        </td>
+                        <td rowspan="{{ data.payments|length }}">{{ data.location }}</td>
+                        <td>{{ data.payments.0.date }}</td>
+                        <td>
+                            ${{ data.payments.0.amount }}
+                            {% if data.payments.0.tax_collected > 0 %}
+                                (<span class="tax-amount">${{ data.payments.0.tax_collected }}</span>)
+                            {% endif %}
+                        </td>
+                        <td>{{ data.payments.0.purpose }}</td>
+                        <td rowspan="{{ data.payments|length }}"><strong>${{ data.total_payments }}</strong></td>
+                        <td rowspan="{{ data.payments|length }}"><strong>${{ data.total_tax_collected }}</strong></td>
+                        <td rowspan="{{ data.payments|length }}"><strong>${{ data.total_revenue }}</strong></td>
+                    </tr>
+                    {% for payment in data.payments|slice:"1:" %}
+                    <tr>
+                        <td>{{ payment.date }}</td>
+                        <td>
+                            ${{ payment.amount }}
+                            {% if payment.tax_collected > 0 %}
+                                (<span class="tax-amount">${{ payment.tax_collected }}</span>)
+                            {% endif %}
+                        </td>
+                        <td>{{ payment.purpose }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="6" style="text-align: right;"><strong>Grand Totals:</strong></td>
+                        <td><strong>${{ grand_total_payments }}</strong></td>
+                        <td><strong>${{ grand_total_tax_collected }}</strong></td>
+                        <td><strong>${{ grand_total_revenue }}</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
     </div>
 </div>

@@ -1,13 +1,11 @@
 import logging
-from datetime import datetime
 
-from django.utils.dateparse import parse_date
 from django.core.paginator import Paginator
 
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 
-from django.shortcuts import get_object_or_404, redirect, render, reverse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.db.models import Q, F, Value, CharField
 from django.db.models.functions import Concat
 from django.contrib.auth.decorators import login_required
@@ -18,8 +16,10 @@ from rest_framework.permissions import IsAuthenticated
 from bookings.forms import BookingSearchForm, EventStaffBookingForm
 from bookings.models import EventStaffBooking, Availability
 from bookings.constants import SERVICE_ROLE_MAPPING
+from bookings.helpers import parse_date_safe
 from communication.models import UnifiedCommunication
 from communication.forms import BookingCommunicationForm
+from communication.utils import send_booking_assignment_email
 from contracts.models import Contract, ChangeLog
 from contracts.forms import ContractClientEditForm, ContractEventEditForm
 from users.models import Role
@@ -37,34 +37,6 @@ ROLE_TO_SERVICE_TYPE = {
     'PHOTOBOOTH_OP1': 'Photobooth',
     'PHOTOBOOTH_OP2': 'Photobooth',
 }
-
-
-# Helper Functions
-
-
-def parse_date_safe(date_str, field_name="date"):
-    """
-    Safely parses a date string into a date object.
-    Returns None if parsing fails.
-    """
-    try:
-        return datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else None
-    except ValueError:
-        logger.error("Invalid %s format: %s", field_name, date_str)
-        return None
-
-
-def validate_date_range(start_date, end_date):
-    """
-    Validates and returns a date range tuple.
-    Returns None if either date is invalid or the range is logically incorrect.
-    """
-    start = parse_date_safe(start_date, "start_date")
-    end = parse_date_safe(end_date, "end_date")
-    if start and end and start <= end:
-        return start, end
-    logger.error("Invalid date range: %s to %s", start_date, end_date)
-    return None
 
 
 @login_required
@@ -307,6 +279,12 @@ def manage_staff_assignments(request, contract_id):
         booking._request = request
         booking.save()
 
+        # Send booking email directly if status is BOOKED
+        if status == 'BOOKED':
+            logger.info("Triggering booking email for %s", staff.get_full_name())
+            if status == 'BOOKED':
+                send_booking_assignment_email(request, staff, contract, booking.get_role_display(), is_update)
+
         logger.info("Booking saved successfully.")
 
         booking.update_contract_role()
@@ -493,7 +471,6 @@ def booking_detail(request, booking_id):
     })
 
     return render(request, 'bookings/booking_detail_office.html', context)
-
 
 
 @login_required

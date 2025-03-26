@@ -18,7 +18,7 @@ from .forms import OfficeStaffForm
 from documents.models import ContractAgreement, RiderAgreement
 from communication.models import UnifiedCommunication
 from communication.forms import TaskForm, CommunicationForm
-from communication.views import send_contract_message_email
+from communication.utils import send_contract_message_email_to_coordinator
 from contracts.models import Contract, Client
 from bookings.models import EventStaffBooking, Availability
 from communication.models import Task

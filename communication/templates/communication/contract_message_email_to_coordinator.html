@@ -1,13 +1,30 @@
-{% autoescape off %}
-Hello {{ contract.coordinator.first_name|default:"Coordinator" }},
+<!DOCTYPE html>
+<html>
+  <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <p>Hello {{ contract.coordinator.first_name|default:"Coordinator" }},</p>
 
-A new message has been posted for Contract {{ contract.custom_contract_number }} by {{ user.get_full_name|default:user.username }}.
+    <p>A new message has been posted for Contract <strong>{{ contract.custom_contract_number }}</strong> by {{ user.get_full_name|default:user.username }}.</p>
 
-Message: {{ message.content }}
+    <p><strong>Message:</strong><br>{{ message.content }}</p>
 
-Please log in to view and respond to the message:
+    <p>Please click below to view and respond:</p>
 
+    <p>
+      <a href="https://enet2.com/contracts/{{ contract.contract_id }}/" style="
+         display: inline-block;
+         background-color: #d9727a;
+         color: #ffffff;
+         padding: 10px 20px;
+         text-decoration: none;
+         border-radius: 5px;
+         font-size: 16px;
+         font-weight: bold;
+      ">
+        View Contract Details
+      </a>
+    </p>
 
-Best regards,
-eNet 2.0 Admin
-{% endautoescape %}
+    <p>Best regards,<br>
+       eNet 2.0 Admin</p>
+  </body>
+</html>

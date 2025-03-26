@@ -1,14 +1,22 @@
-Hello {{ user.first_name }},
+<!DOCTYPE html>
+<html>
+  <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <p>Hello {{ user.first_name|default:"Team Member" }},</p>
 
-You have been booked! Please see the details below:
+    <p><strong>You have been booked!</strong> Please see the details below:</p>
 
-Contract ID: {{ contract.custom_contract_number }}
-Event Date: {{ contract.event_date }}
-Ceremony Location: {{ contract.ceremony_site }}
-Reception Location: {{ contract.reception_site }}
-Role: {{ role }}
+    <ul>
+      <li><strong>Contract ID:</strong> {{ contract.custom_contract_number }}</li>
+      <li><strong>Event Date:</strong> {{ contract.event_date }}</li>
+      <li><strong>Ceremony Location:</strong> {{ contract.ceremony_site|default:"TBD" }}</li>
+      <li><strong>Reception Location:</strong> {{ contract.reception_site|default:"TBD" }}</li>
+      <li><strong>Role:</strong> {{ role }}</li>
+    </ul>
 
-If you have any questions, please reach out to the event coordinator.
+    <p>Please reach out to the event coordinator if you have any questions.</p>
 
-Best regards,
-Essence Weddings
+    <p>Best regards,<br>
+    Essence Weddings</p>
+  </body>
+</html>
+
