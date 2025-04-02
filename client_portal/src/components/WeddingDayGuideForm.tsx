@@ -249,23 +249,25 @@ return (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Dressing Location:</label>
                     <input
-                      type="text"
-                      {...register("dressing_location", { required: "Dressing location is required" })}
-                      className="border p-2 rounded-lg w-full"
+                        type="text"
+                        {...register("dressing_location", {required: "Dressing location is required"})}
+                        className="border p-2 rounded-lg w-full"
                     />
                     <label className="block text-sm font-medium text-gray-700">Start Time:</label>
                     <input
-                      type="time"
-                      {...register("dressing_start_time", {
-                        required: "Start time is required",
-                        validate: (value) =>
-                          value?.length >= 4 || "Please select a complete time using the time picker"
-                      })}
-                      className="border p-2 rounded-lg w-full"
+                        type="time"
+                        {...register("dressing_start_time", {
+                          required: "Start time is required",
+                          validate: (value) =>
+                              value?.length >= 4 || "Please select a complete time using the time picker"
+                        })}
+                        className="border p-2 rounded-lg w-full"
                     />
                     {errors.dressing_start_time && (
-                      <p className="text-red-500 text-sm mt-1">{errors.dressing_start_time.message}</p>
+                        <p className="text-red-500 text-sm mt-1">{errors.dressing_start_time.message}</p>
                     )}
+                    <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
+
 
                   </div>
                   <div>
