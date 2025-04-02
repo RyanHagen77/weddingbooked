@@ -98,35 +98,38 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
     }
   }, [contractId, setValue]);
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    setMessage(null);
-    const accessToken = localStorage.getItem('access_token');
-    const data = getValues();
-    const payload = { ...data, contract: contractId, strict_validation: false };
+const handleSave: SubmitHandler<FormData> = async (data) => {
+  setIsSaving(true);
+  setMessage(null);
+  const accessToken = localStorage.getItem('access_token');
+  const payload = { ...data, contract: contractId, strict_validation: false };
 
-    try {
-      const response = await fetch(`https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`, {
+  try {
+    const response = await fetch(
+      `https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`,
+      {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        setMessage('Form saved successfully.');
-      } else {
-        setMessage('Failed to save form. Please try again.');
       }
-    } catch (error) {
-      setMessage('An error occurred while saving the form.');
-      console.error('Error saving form:', error);
-    } finally {
-      setIsSaving(false);
+    );
+
+    if (response.ok) {
+      setMessage('Form saved successfully.');
+    } else {
+      const errorData = await response.json();
+      setMessage(errorData?.detail || 'Failed to save form. Please fix the errors above.');
     }
-  };
+  } catch (error) {
+    console.error('Error saving form:', error);
+    setMessage('An error occurred while saving the form.');
+  } finally {
+    setIsSaving(false);
+  }
+};
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
       setIsSubmitting(true);
@@ -246,9 +249,17 @@ return (
                     <label className="block text-sm font-medium text-gray-700">Start Time:</label>
                     <input
                       type="time"
-                      {...register("dressing_start_time", { required: "Start time is required" })}
+                      {...register("dressing_start_time", {
+                        required: "Start time is required",
+                        validate: (value) =>
+                          value?.length >= 4 || "Please select a complete time using the time picker"
+                      })}
                       className="border p-2 rounded-lg w-full"
                     />
+                    {errors.dressing_start_time && (
+                      <p className="text-red-500 text-sm mt-1">{errors.dressing_start_time.message}</p>
+                    )}
+
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Dressing Address:</label>
@@ -735,32 +746,33 @@ return (
                   {message}
                 </div>
               )}
-              <div className="flex flex-col space-y-4">
-                {/* Save Button */}
-                <button
+            <div className="flex flex-col space-y-4">
+              {/* Save Button */}
+              <button
                   type="button"
-                  onClick={handleSave} // This skips validation on save
+                  onClick={handleSubmit(handleSave)} // ✅ Validates before running handleSave
                   className="w-full bg-pink-300 text-white py-3 rounded-md hover:bg-pink-400 transition duration-200"
                   disabled={isSaving}
-                >
-                  {isSaving ? "Saving..." : "Save"}
-                </button>
+              >
+                {isSaving ? "Saving..." : "Save"}
+              </button>
 
-                {/* Submit Button */}
-                <button
+              {/* Submit Button */}
+              <button
                   type="submit"
                   className="w-full bg-pink-300 text-white py-3 rounded-md hover:bg-pink-400 transition duration-200"
-                  disabled={isSubmitting || formSubmitted} // Disable after form is submitted
-                >
-                  {isSubmitting ? "Submitting..." : "Submit"}
-                </button>
-              </div>
+                  disabled={isSubmitting || formSubmitted}
+              >
+                {isSubmitting ? "Submitting..." : "Submit"}
+              </button>
+            </div>
+
             </form>
           </>
         )}
       </div>
     </div>
-  );
+);
 };
 
 export default WeddingDayGuideForm;
