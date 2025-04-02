@@ -239,23 +239,33 @@ return (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Dressing Location:</label>
                     <input
-                      type="text"
-                      {...register("dressing_location", { required: "Dressing location is required" })}
-                      className="border p-2 rounded-lg w-full"
+                        type="text"
+                        {...register("dressing_location", {required: "Dressing location is required"})}
+                        className="border p-2 rounded-lg w-full"
                     />
-                    <label className="block text-sm font-medium text-gray-700">Start Time:</label>
+
+                    <label className="block text-sm font-medium text-gray-700 mt-4">Start Time:</label>
                     <input
-                      type="time"
-                      {...register("dressing_start_time", { required: "Start time is required" })}
-                      className="border p-2 rounded-lg w-full"
+                        type="time"
+                        step="60"
+                        {...register("dressing_start_time", {
+                          required: "Start time is required",
+                          validate: (value) =>
+                              /^([01]\d|2[0-3]):([0-5]\d)$/.test(value) || "Please enter a valid time (e.g., 13:30 for 1:30 PM)"
+                        })}
+                        className="border p-2 rounded-lg w-full"
                     />
+                    {errors.dressing_start_time && (
+                        <p className="text-red-500 text-sm mt-1">{errors.dressing_start_time.message}</p>
+                    )}
+                    <small className="text-gray-500">Please use 24-hour format (e.g., 13:30 for 1:30 PM)</small>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Dressing Address:</label>
                     <input
-                      type="text"
-                      {...register("dressing_address", { required: "Dressing address is required" })}
-                      className="border p-2 rounded-lg w-full"
+                        type="text"
+                        {...register("dressing_address", {required: "Dressing address is required"})}
+                        className="border p-2 rounded-lg w-full"
                     />
                   </div>
                 </div>
@@ -268,9 +278,9 @@ return (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Ceremony Location:</label>
                     <input
-                      type="text"
-                      {...register("ceremony_site", { required: "Ceremony location is required" })}
-                      className="border p-2 rounded-lg w-full"
+                        type="text"
+                        {...register("ceremony_site", {required: "Ceremony location is required"})}
+                        className="border p-2 rounded-lg w-full"
                     />
 
                     <label className="block text-sm font-medium text-gray-700">Ceremony Times:</label>

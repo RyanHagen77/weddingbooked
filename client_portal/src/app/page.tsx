@@ -349,9 +349,24 @@ export default function Home() {
                         </p>
                     )}
                     {index === 5 && (
-                        <p className="mt-2 text-center">
+                      <div className="mt-2 text-center">
+                        <p className="mb-4">
                           You can send the event coordinator a message in the window below in the messages section.
                         </p>
+
+                        {/* Planning Guide Link Section */}
+                        <p className="text-black font-albert text-lg">
+                          Need help planning?{' '}
+                          <a
+                            href="https://www.essenceweddings.com/wedding-planning"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-goodblue underline hover:text-dark-pistachio"
+                          >
+                            Click here to read our article on timing for your wedding day
+                          </a>
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>
