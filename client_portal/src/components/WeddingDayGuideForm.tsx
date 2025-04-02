@@ -369,9 +369,9 @@ return (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Reception Address:</label>
                     <input
-                      type="text"
-                      {...register("reception_address", { required: "Reception address is required" })}
-                      className="border p-2 rounded-lg w-full"
+                        type="text"
+                        {...register("reception_address", {required: "Reception address is required"})}
+                        className="border p-2 rounded-lg w-full"
                     />
 
                     <label className="block text-sm font-medium text-gray-700">Dinner Start Time:</label>
@@ -389,6 +389,21 @@ return (
                     )}
                     <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
 
+                    <label className="block text-sm font-medium text-gray-700">Reception Ends:</label>
+                    <input
+                        type="time"
+                        {...register("reception_end", {
+                          required: "Reception end time is required",
+                          validate: (value) =>
+                              value?.length >= 4 || "Please enter a full time including AM or PM"
+                        })}
+                        className="border p-2 rounded-lg w-full"
+                    />
+                    {errors.reception_end && (
+                        <p className="text-red-500 text-sm mt-1">{errors.reception_end.message}</p>
+                    )}
+                    <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
+
 
                     <p>It is recommended that you seat your photographer/videographer in the room for dinner so that we
                       don&rsquo;t miss anything</p>
@@ -396,7 +411,7 @@ return (
                     <input
                         type="text"
                         {...register("staff_table")} // Not required
-                      className="border p-2 rounded-lg w-full"
+                        className="border p-2 rounded-lg w-full"
                     />
                   </div>
                 </div>
