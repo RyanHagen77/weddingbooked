@@ -68,7 +68,13 @@ interface WeddingDayGuideFormProps {
 }
 
 const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId }) => {
-  const { register, handleSubmit, setValue, getValues } = useForm<FormData>({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    getValues,
+    formState: { errors },
+  } = useForm<FormData>({
     defaultValues: {} as FormData,
   });
 
