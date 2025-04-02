@@ -1,11 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useForm, SubmitHandler, Controller } from 'react-hook-form';
-import ReactTimePicker from 'react-time-picker';
-import 'react-time-picker/dist/TimePicker.css';
-import 'react-clock/dist/Clock.css';
-
+import { useForm, SubmitHandler } from 'react-hook-form';
 
 interface FormData {
   event_date: string;
@@ -72,17 +68,9 @@ interface WeddingDayGuideFormProps {
 }
 
 const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId }) => {
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    getValues,
-    control,
-    formState: { errors },
-  } = useForm<FormData>({
+  const { register, handleSubmit, setValue, getValues } = useForm<FormData>({
     defaultValues: {} as FormData,
   });
-
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -247,55 +235,43 @@ return (
               <div className="p-4 bg-gray-100 rounded-lg mb-6">
                 <h2 className="font-bold text-lg mb-2">For The Lead Photographer</h2>
                 <p>The photographer typically comes to the bride&rsquo;s dressing location 3 hours before the ceremony.</p>
-
                 <div className="grid grid-cols-2 gap-4">
-                  {/* Left column */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Dressing Location:</label>
                     <input
-                        type="text"
-                        {...register("dressing_location", {required: "Dressing location is required"})}
-                        className="border p-2 rounded-lg w-full"
+                      type="text"
+                      {...register("dressing_location", { required: "Dressing location is required" })}
+                      className="border p-2 rounded-lg w-full"
                     />
-
-                    <label className="block text-sm font-medium text-gray-700 mt-4">Start Time:</label>
-                    <Controller
-                        name="dressing_start_time"
-                        control={control}
-                        rules={{
-                          required: "Start time is required",
-                          validate: (value) =>
-                              value && value.length >= 4 ? true : "Please select a complete start time with AM/PM"
-                        }}
-                        render={({field}) => (
-                            <ReactTimePicker
-                                {...field}
-                                onChange={field.onChange}
-                                value={field.value || ""}
-                                disableClock={true}
-                                clearIcon={null}
-                                format="h:mm a"
-                                className="w-full p-2 border border-gray-300 rounded-lg"
-                            />
-                        )}
+                    <label className="block text-sm font-medium text-gray-700 mt-4">Start Time (hh:mm AM/PM):</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 1:30 PM"
+                      {...register("dressing_start_time", {
+                        required: "Start time is required",
+                        validate: (value) => {
+                          if (!value) return "Start time is required";
+                          const regex = /^(0?[1-9]|1[0-2]):[0-5][0-9]\s?(AM|PM)$/i;
+                          return regex.test(value.trim()) || "Please enter a valid time (e.g. 1:30 PM)";
+                        }
+                      })}
+                      className="border p-2 rounded-lg w-full"
                     />
                     {errors.dressing_start_time && (
-                        <p className="text-red-500 text-sm mt-1">{errors.dressing_start_time.message}</p>
+                      <p className="text-red-500 text-sm mt-1">{errors.dressing_start_time.message}</p>
                     )}
-                    <small className="text-gray-500">Be sure to include hours and AM/PM.</small>
                   </div>
-
-                  {/* Right column */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Dressing Address:</label>
                     <input
-                        type="text"
-                        {...register("dressing_address", {required: "Dressing address is required"})}
-                        className="border p-2 rounded-lg w-full"
+                      type="text"
+                      {...register("dressing_address", { required: "Dressing address is required" })}
+                      className="border p-2 rounded-lg w-full"
                     />
                   </div>
                 </div>
               </div>
+
               {/* Ceremony Location Section */}
               <div className="p-4 bg-gray-100 rounded-lg mb-6">
                 <h2 className="font-bold text-lg mb-2">Ceremony Location</h2>
@@ -303,36 +279,36 @@ return (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Ceremony Location:</label>
                     <input
-                        type="text"
-                        {...register("ceremony_site", {required: "Ceremony location is required"})}
-                        className="border p-2 rounded-lg w-full"
+                      type="text"
+                      {...register("ceremony_site", { required: "Ceremony location is required" })}
+                      className="border p-2 rounded-lg w-full"
                     />
 
                     <label className="block text-sm font-medium text-gray-700">Ceremony Times:</label>
                     <input
-                        type="time"
-                        {...register("ceremony_start", {required: "Ceremony start time is required"})}
-                        className="border p-2 rounded-lg w-full"
+                      type="time"
+                      {...register("ceremony_start", { required: "Ceremony start time is required" })}
+                      className="border p-2 rounded-lg w-full"
                     />
                     <span>to</span>
                     <input
-                        type="time"
-                        {...register("ceremony_end", {required: "Ceremony end time is required"})}
-                        className="border p-2 rounded-lg w-full"
+                      type="time"
+                      {...register("ceremony_end", { required: "Ceremony end time is required" })}
+                      className="border p-2 rounded-lg w-full"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Ceremony Address:</label>
                     <input
-                        type="text"
-                        {...register("ceremony_address", {required: "Ceremony address is required"})}
-                        className="border p-2 rounded-lg w-full"
+                      type="text"
+                      {...register("ceremony_address", { required: "Ceremony address is required" })}
+                      className="border p-2 rounded-lg w-full"
                     />
 
                     <label className="block text-sm font-medium text-gray-700">Ceremony Phone #:</label>
                     <input
-                        type="tel"
-                        {...register("ceremony_phone", { required: "Ceremony phone number is required" })}
+                      type="tel"
+                      {...register("ceremony_phone", { required: "Ceremony phone number is required" })}
                       className="border p-2 rounded-lg w-full"
                     />
                   </div>
