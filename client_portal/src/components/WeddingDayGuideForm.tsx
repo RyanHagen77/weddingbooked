@@ -292,17 +292,26 @@ return (
                     />
 
                     <label className="block text-sm font-medium text-gray-700">Ceremony Times:</label>
+
                     <input
                       type="time"
                       {...register("ceremony_start", { required: "Ceremony start time is required" })}
                       className="border p-2 rounded-lg w-full"
                     />
-                    <span>to</span>
+                    {errors.ceremony_start && (
+                      <p className="text-red-500 text-sm mt-1">{errors.ceremony_start.message}</p>
+                    )}
+
+                    <span className="block text-center my-1">to</span>
+
                     <input
                       type="time"
                       {...register("ceremony_end", { required: "Ceremony end time is required" })}
                       className="border p-2 rounded-lg w-full"
                     />
+                    {errors.ceremony_end && (
+                      <p className="text-red-500 text-sm mt-1">{errors.ceremony_end.message}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Ceremony Address:</label>
@@ -337,9 +346,18 @@ return (
                     <label className="block text-sm font-medium text-gray-700">Cocktail Start Time:</label>
                     <input
                       type="time"
-                      {...register("reception_start", { required: "Cocktail start time is required" })}
+                      {...register("reception_start", {
+                        required: "Cocktail start time is required",
+                        validate: (value) =>
+                          value?.length >= 4 || "Please select a complete time using the time picker"
+                      })}
                       className="border p-2 rounded-lg w-full"
                     />
+                    {errors.reception_start && (
+                      <p className="text-red-500 text-sm mt-1">{errors.reception_start.message}</p>
+                    )}
+                    <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
+
 
                     <label className="block text-sm font-medium text-gray-700">Reception Phone #:</label>
                     <input
@@ -358,23 +376,26 @@ return (
 
                     <label className="block text-sm font-medium text-gray-700">Dinner Start Time:</label>
                     <input
-                      type="time"
-                      {...register("dinner_start", { required: "Dinner start time is required" })}
-                      className="border p-2 rounded-lg w-full"
+                        type="time"
+                        {...register("dinner_start", {
+                          required: "Dinner start time is required",
+                          validate: (value) =>
+                              value?.length >= 4 || "Please enter a full time including AM or PM"
+                        })}
+                        className="border p-2 rounded-lg w-full"
                     />
+                    {errors.dinner_start && (
+                        <p className="text-red-500 text-sm mt-1">{errors.dinner_start.message}</p>
+                    )}
+                    <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
 
-                    <label className="block text-sm font-medium text-gray-700">Reception Ends:</label>
-                    <input
-                      type="time"
-                      {...register("reception_end", { required: "Reception end time is required" })}
-                      className="border p-2 rounded-lg w-full"
-                    />
 
-                    <p>It is recommended that you seat your photographer/videographer in the room for dinner so that we don&rsquo;t miss anything</p>
+                    <p>It is recommended that you seat your photographer/videographer in the room for dinner so that we
+                      don&rsquo;t miss anything</p>
                     <label className="block text-sm font-medium text-gray-700">Table #:</label>
                     <input
-                      type="text"
-                      {...register("staff_table")} // Not required
+                        type="text"
+                        {...register("staff_table")} // Not required
                       className="border p-2 rounded-lg w-full"
                     />
                   </div>
