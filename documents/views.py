@@ -425,7 +425,7 @@ def contract_and_rider_agreement(request, contract_id):
             'company_signature_url': company_signature_url,
             'first_agreement': first_agreement,
             'latest_agreement': latest_agreement,
-            'rider_agremments': rider_agreements,
+            'rider_agreements': rider_agreements,
             'package_texts': package_texts,
             'additional_services_texts': additional_services_texts,
             'rider_texts': rider_texts,
@@ -791,7 +791,7 @@ def client_contract_agreement(request, contract_id):
         latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
 
         # Generate PDF and send email
-        html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
+        html_string = render_to_string('documents/client_contract_agreement_pdf.html', context)
         pdf_file = HTML(string=html_string).write_pdf()
         pdf_name = f"contract_{contract_id}_agreement_v{latest_agreement.version_number}.pdf"  # Use the latest version
         path = default_storage.save(f"contract_documents/{pdf_name}", ContentFile(pdf_file))
