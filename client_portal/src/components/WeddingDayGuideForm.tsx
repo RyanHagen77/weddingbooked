@@ -68,18 +68,9 @@ interface WeddingDayGuideFormProps {
 }
 
 const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId }) => {
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    getValues,
-    control,
-    formState: { errors },
-  } = useForm<FormData>({
+  const { register, handleSubmit, setValue, getValues } = useForm<FormData>({
     defaultValues: {} as FormData,
-    mode: "onBlur", // or "onChange" if you want real-time validation feedback
   });
-
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -252,23 +243,12 @@ return (
                       {...register("dressing_location", { required: "Dressing location is required" })}
                       className="border p-2 rounded-lg w-full"
                     />
-                    <label className="block text-sm font-medium text-gray-700 mt-4">Start Time (hh:mm AM/PM):</label>
+                    <label className="block text-sm font-medium text-gray-700">Start Time:</label>
                     <input
-                      type="text"
-                      placeholder="e.g. 1:30 PM"
-                      {...register("dressing_start_time", {
-                        required: "Start time is required",
-                        validate: (value) => {
-                          if (!value) return "Start time is required";
-                          const regex = /^(0?[1-9]|1[0-2]):[0-5][0-9]\s?(AM|PM)$/i;
-                          return regex.test(value.trim()) || "Please enter a valid time (e.g. 1:30 PM)";
-                        }
-                      })}
+                      type="time"
+                      {...register("dressing_start_time", { required: "Start time is required" })}
                       className="border p-2 rounded-lg w-full"
                     />
-                    {errors.dressing_start_time && (
-                      <p className="text-red-500 text-sm mt-1">{errors.dressing_start_time.message}</p>
-                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Dressing Address:</label>
