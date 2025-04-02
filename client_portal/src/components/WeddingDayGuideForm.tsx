@@ -1,7 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm, SubmitHandler, Controller } from 'react-hook-form';
+import ReactTimePicker from 'react-time-picker';
+import 'react-time-picker/dist/TimePicker.css';
+import 'react-clock/dist/Clock.css';
+
 
 interface FormData {
   event_date: string;
@@ -73,10 +77,12 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
     handleSubmit,
     setValue,
     getValues,
+    control,
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {} as FormData,
   });
+
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -250,21 +256,26 @@ return (
                         className="border p-2 rounded-lg w-full"
                     />
 
-                    <label className="block text-sm font-medium text-gray-700 mt-4">Start Time:</label>
-                    <input
-                        type="time"
-                        step="60"
-                        {...register("dressing_start_time", {
-                          required: "Start time is required",
-                          validate: (value) =>
-                              /^([01]\d|2[0-3]):([0-5]\d)$/.test(value) || "Please enter a valid time (e.g., 13:30 for 1:30 PM)"
-                        })}
-                        className="border p-2 rounded-lg w-full"
-                    />
-                    {errors.dressing_start_time && (
-                        <p className="text-red-500 text-sm mt-1">{errors.dressing_start_time.message}</p>
+                  <label className="block text-sm font-medium text-gray-700 mt-4">Start Time:</label>
+                  <Controller
+                    name="dressing_start_time"
+                    control={control}
+                    rules={{ required: "Start time is required" }}
+                    render={({ field }) => (
+                      <ReactTimePicker
+                        {...field}
+                        onChange={field.onChange}
+                        value={field.value}
+                        disableClock={true}
+                        format="h:mm a" // shows AM/PM format
+                        className="w-full p-2 border border-gray-300 rounded-lg"
+                      />
                     )}
-                    <small className="text-gray-500">Please use 24-hour format (e.g., 13:30 for 1:30 PM)</small>
+                  />
+                  {errors.dressing_start_time && (
+                    <p className="text-red-500 text-sm mt-1">{errors.dressing_start_time.message}</p>
+                  )}
+
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Dressing Address:</label>
