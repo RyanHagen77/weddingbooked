@@ -70,6 +70,22 @@ interface WeddingDayGuideFormProps {
   contractId: string;
 }
 
+const format24HourTo12Hour = (time24: string): string => {
+  const [hourStr, minuteStr] = time24.split(':');
+  let hour = parseInt(hourStr, 10);
+  const minute = parseInt(minuteStr, 10);
+  const isPM = hour >= 12;
+
+  if (hour === 0) hour = 12;
+  else if (hour > 12) hour -= 12;
+
+  const formattedHour = hour.toString();
+  const formattedMinute = minute.toString().padStart(2, '0');
+  const ampm = isPM ? 'PM' : 'AM';
+
+  return `${formattedHour}:${formattedMinute} ${ampm}`;
+};
+
 const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId }) => {
   const {
     register,
@@ -125,16 +141,9 @@ useEffect(() => {
         });
 
         // Safely convert 24hr string like "14:00:00" to "2:00 PM"
-        if (data.dressing_start_time) {
-          const [hourStr, minuteStr] = data.dressing_start_time.split(':');
-          let hour = parseInt(hourStr);
-          const minute = parseInt(minuteStr);
-          const isPM = hour >= 12;
-          const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-          const ampm = isPM ? 'PM' : 'AM';
-          const formatted = `${displayHour}:${minute.toString().padStart(2, '0')} ${ampm}`;
-          setDressingStartTime(formatted);
-        }
+      if (data.dressing_start_time) {
+        setDressingStartTime(format24HourTo12Hour(data.dressing_start_time));
+      }
 
         setIsSubmitted(data.submitted || false);
       })
