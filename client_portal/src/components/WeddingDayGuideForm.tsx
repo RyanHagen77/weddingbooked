@@ -5,10 +5,6 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 
 import TimeInput from '@/components/TimeInput'; // Adjust path if needed
 
-const [dressingStartTime, setDressingStartTime] = useState<string | null>(null);
-
-
-
 
 interface FormData {
   event_date: string;
