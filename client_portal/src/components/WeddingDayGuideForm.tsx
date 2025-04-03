@@ -297,8 +297,6 @@ return (
                       const [time, modifier] = val.split(' ');
                       let [hours, minutes] = time.split(':').map(Number);
 
-                      if (modifier === 'PM' && hours < 12) hours += 12;
-                      if (modifier === 'AM' && hours === 12) hours = 0;
 
                       const time24 = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
                       setDressingStartRaw(time24);
