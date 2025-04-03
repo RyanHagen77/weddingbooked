@@ -114,8 +114,7 @@ const handleSave = async () => {
   const isValid = await trigger(); // Triggers field-level validation
 
   if (!isValid) {
-    // Re-read formState after trigger
-    const currentErrors = getValues(); // You could also destructure getValues, or re-call useFormState if needed
+    const currentErrors = getValues();
     const firstErrorField = Object.keys(currentErrors).find(
       (key) => !!(document.querySelector(`[name="${key}"]`) && errors[key])
     );
@@ -133,7 +132,17 @@ const handleSave = async () => {
 
   const accessToken = localStorage.getItem("access_token");
   const data = getValues();
-  const payload = { ...data, contract: contractId, strict_validation: false };
+
+  // Clean optional time fields to avoid backend format errors
+  const cleanTimeField = (value: string) => (value?.trim() === "" ? null : value);
+
+  const payload = {
+    ...data,
+    contract: contractId,
+    strict_validation: false,
+    photographer2_start: cleanTimeField(data.photographer2_start),
+    // Add more optional time fields here if needed
+  };
 
   try {
     const response = await fetch(
@@ -160,6 +169,7 @@ const handleSave = async () => {
     setIsSaving(false);
   }
 };
+
 
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
