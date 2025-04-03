@@ -494,12 +494,13 @@ return (
                     <label className="block text-sm font-medium text-gray-700">Starting Time:</label>
                     <input
                         type="time"
-                        {...register("photographer2_start")}
+                        {...register("photographer2_start", {required: false})}
                         className="border p-2 rounded-lg w-full"
                     />
                     <small className="text-gray-500">
                       Be sure to include hours and AM or PM if filled out.
                     </small>
+
 
                   </div>
                 </div>
