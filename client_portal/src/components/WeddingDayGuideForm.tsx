@@ -341,7 +341,9 @@ return (
                     />
 
                     {/* Reception Start Time */}
-                    <label className="block text-sm font-medium text-gray-700 mt-4">Cocktail Start Time:</label>
+                    <label className="block text-sm font-medium text-gray-700 mt-4">
+                      Cocktail Start Time:
+                    </label>
                     <input
                       type="text"
                       {...register("reception_start")}
