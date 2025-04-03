@@ -68,15 +68,17 @@ interface WeddingDayGuideFormProps {
 }
 
 const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId }) => {
-const {
-  register,
-  handleSubmit,
-  setValue,
-  formState: { errors },
-} = useForm<FormData>({
-  defaultValues: {} as FormData,
-  mode: "onBlur", // or "onChange" if you want real-time validation feedback
-});
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    getValues,
+    trigger,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: {} as FormData,
+  });
+
 
 
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -105,10 +107,20 @@ const {
     }
   }, [contractId, setValue]);
 
-const handleSave: SubmitHandler<FormData> = async (data) => {
+const handleSave = async () => {
   setIsSaving(true);
   setMessage(null);
+
+  const isValid = await trigger(); // this will validate the whole form
+
+  if (!isValid) {
+    setMessage("Please check the highlighted fields before saving.");
+    setIsSaving(false);
+    return;
+  }
+
   const accessToken = localStorage.getItem('access_token');
+  const data = getValues();
   const payload = { ...data, contract: contractId, strict_validation: false };
 
   try {
@@ -117,7 +129,7 @@ const handleSave: SubmitHandler<FormData> = async (data) => {
       {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
@@ -125,18 +137,18 @@ const handleSave: SubmitHandler<FormData> = async (data) => {
     );
 
     if (response.ok) {
-      setMessage('Form saved successfully.');
+      setMessage("Form saved successfully.");
     } else {
-      const errorData = await response.json();
-      setMessage(errorData?.detail || 'Failed to save form. Please fix the errors above.');
+      setMessage("Failed to save form. Please try again.");
     }
   } catch (error) {
-    console.error('Error saving form:', error);
-    setMessage('An error occurred while saving the form.');
+    console.error("Error saving form:", error);
+    setMessage("An error occurred while saving the form.");
   } finally {
     setIsSaving(false);
   }
 };
+
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
       setIsSubmitting(true);
@@ -479,7 +491,7 @@ return (
                     {errors.photographer2_start && (
                         <p className="text-red-500 text-sm mt-1">{errors.photographer2_start.message}</p>
                     )}
-                    <small className="text-gray-500">Optional, but be sure to include hours and AM or PM if filled
+                    <small className="text-gray-500">Be sure to include hours and AM or PM if filled
                       out.</small>
                   </div>
                 </div>
