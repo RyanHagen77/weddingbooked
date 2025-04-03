@@ -68,15 +68,16 @@ interface WeddingDayGuideFormProps {
 }
 
 const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId }) => {
-const {
-  register,
-  handleSubmit,
-  setValue,
-  formState: { errors },
-} = useForm<FormData>({
-  defaultValues: {} as FormData,
-  mode: "onBlur", // or "onChange" if you want real-time validation feedback
-});
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    getValues,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: {} as FormData,
+    mode: "onBlur",
+  });
 
 
   const [isSubmitted, setIsSubmitted] = useState(false);
