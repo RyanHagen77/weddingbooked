@@ -468,7 +468,19 @@ return (
                            className="border p-2 rounded-lg w-full"/>
 
                     <label className="block text-sm font-medium text-gray-700">Starting Time:</label>
-                    <input type="time" {...register("photographer2_start")} className="border p-2 rounded-lg w-full"/>
+                    <input
+                        type="time"
+                        {...register("photographer2_start", {
+                          validate: (value) =>
+                              !value || value.length >= 4 || "Please select a complete time using the time picker"
+                        })}
+                        className="border p-2 rounded-lg w-full"
+                    />
+                    {errors.photographer2_start && (
+                        <p className="text-red-500 text-sm mt-1">{errors.photographer2_start.message}</p>
+                    )}
+                    <small className="text-gray-500">Optional, but be sure to include hours and AM or PM if filled
+                      out.</small>
                   </div>
                 </div>
               </div>

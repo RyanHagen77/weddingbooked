@@ -109,7 +109,7 @@ def send_portal_access(request, contract_id):
             send_mail(
                 subject,
                 message,
-                'EssenceWeddingsAdmin@enet2.com',  # Your sending email
+                'EssenceWeddings@enet2.com',  # Your sending email
                 [client.user.email],
                 fail_silently=False,
                 html_message=message,  # Include HTML message
