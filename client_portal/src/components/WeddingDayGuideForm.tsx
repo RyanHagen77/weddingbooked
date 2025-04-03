@@ -287,12 +287,15 @@ return (
 
                     <StyledTimePicker
                       label="Start Time"
-                      value={dressingStartTime}
-                      onChange={(val) => {
-                        setDressingStartTime(val); // val is already in "HH:mm" (24-hour format)
-                        setValue('dressing_start_time', val, { shouldValidate: false });
+                      value={dressingStartTime}      // shown in the UI
+                      rawValue={dressingStartRaw}    // passed into Timekeeper
+                      onChange={(formatted12, formatted24) => {
+                        setDressingStartTime(formatted12); // UI text
+                        setDressingStartRaw(formatted24);  // Timekeeper + DB
+                        setValue('dressing_start_time', formatted24, { shouldValidate: false });
                       }}
                     />
+
 
                     <input
                       type="hidden"
