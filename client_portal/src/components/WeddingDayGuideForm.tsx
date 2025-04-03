@@ -111,16 +111,19 @@ const handleSave = async () => {
   setIsSaving(true);
   setMessage(null);
 
-  const isValid = await trigger();
+  const isValid = await trigger(); // Triggers field-level validation
 
   if (!isValid) {
-    // Find the first error field and focus on it
-    const firstErrorField = Object.keys(errors)[0];
+    // Re-read formState after trigger
+    const currentErrors = getValues(); // You could also destructure getValues, or re-call useFormState if needed
+    const firstErrorField = Object.keys(currentErrors).find(
+      (key) => !!(document.querySelector(`[name="${key}"]`) && errors[key])
+    );
+
     const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
-    if (errorElement && typeof (errorElement as HTMLElement).focus === 'function') {
+    if (errorElement && typeof (errorElement as HTMLElement).focus === "function") {
       (errorElement as HTMLElement).focus();
-      // Optional: scroll into view
-      errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
     setMessage("Please check the highlighted fields before saving.");
@@ -157,6 +160,7 @@ const handleSave = async () => {
     setIsSaving(false);
   }
 };
+
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
       setIsSubmitting(true);
@@ -838,7 +842,7 @@ return (
               {/* Save Button */}
               <button
                   type="button"
-                  onClick={handleSubmit(handleSave)} // ✅ Validates before running handleSave
+                  onClick={handleSave} // ✅ Don't wrap with handleSubmit
                   className="w-full bg-pink-300 text-white py-3 rounded-md hover:bg-pink-400 transition duration-200"
                   disabled={isSaving}
               >
