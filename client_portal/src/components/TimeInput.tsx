@@ -17,6 +17,9 @@ const parseTimeTo12Hour = (timeStr: string): string => {
   const minute = parseInt(minuteStr)
   const isPM = hour >= 12
 
+  if (hour === 0) hour = 12
+  else if (hour > 12) hour -= 12
+
   const hourStrFormatted = hour.toString()
   const minuteStrFormatted = minute.toString().padStart(2, '0')
   const ampm = isPM ? 'PM' : 'AM'
