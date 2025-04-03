@@ -82,7 +82,9 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   });
 
   // Time field states for TimeInput components
-  const [dressingStartTime, setDressingStartTime] = useState('12:00pm')
+  const [dressingStartRaw, setDressingStartRaw] = useState('14:00'); // 24-hr string, for the picker
+  const [dressingStartTime, setDressingStartTime] = useState('2:00 PM'); // Display string
+
 
 
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -109,15 +111,21 @@ useEffect(() => {
 
         // Safely convert 24hr string like "14:00:00" to "2:00 PM"
       if (data.dressing_start_time) {
+        // 24-hour value from API (e.g. "14:00:00" or "14:00")
         const [hourStr, minuteStr] = data.dressing_start_time.split(':');
         let hour = parseInt(hourStr);
         const minute = parseInt(minuteStr);
         const isPM = hour >= 12;
 
+        const formattedDisplay = `${(hour % 12) || 12}:${minute.toString().padStart(2, '0')} ${isPM ? 'PM' : 'AM'}`;
+        const raw = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
 
-        const formatted = `${hour}:${minute.toString().padStart(2, '0')} ${isPM ? 'PM' : 'AM'}`;
-        setDressingStartTime(formatted);
+        setDressingStartTime(formattedDisplay);  // for visible label
+        setDressingStartRaw(raw);                // for Timekeeper input
+        setValue('dressing_start_time', raw);   // for submission
       }
+
+
         setIsSubmitted(data.submitted || false);
       })
       .catch((error) => {
@@ -281,19 +289,26 @@ return (
                         className="border p-2 rounded-lg w-full"
                     />
 
-                    <StyledTimePicker
-                      label="Start Time"
-                      value={dressingStartTime}
-                      onChange={(val) => {
-                        setDressingStartTime(val); // val is already in "HH:mm" (24-hour format)
-                        setValue('dressing_start_time', val, { shouldValidate: false });
-                      }}
-                    />
+                  <StyledTimePicker
+                    label="Start Time"
+                    value={dressingStartRaw} // this should be the 24-hr string
+                    displayValue={dressingStartTime} // optional prop to show 12hr format in text
+                    onChange={(val) => {
+                      const [time, modifier] = val.split(' ');
+                      let [hours, minutes] = time.split(':').map(Number);
 
-                    <input
-                      type="hidden"
-                      {...register("dressing_start_time")}
-                    />
+                      if (modifier === 'PM' && hours < 12) hours += 12;
+                      if (modifier === 'AM' && hours === 12) hours = 0;
+
+                      const time24 = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                      setDressingStartRaw(time24);
+                      setDressingStartTime(val);
+                      setValue('dressing_start_time', time24, { shouldValidate: false });
+                    }}
+                  />
+
+                  <input type="hidden" {...register("dressing_start_time")} />
+
 
                   </div>
                   <div>

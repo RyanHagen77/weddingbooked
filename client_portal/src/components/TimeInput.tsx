@@ -6,16 +6,20 @@ import { FaRegClock } from 'react-icons/fa'
 
 interface Props {
   label: string
-  value: string
+  value: string            // 24-hour format like "14:00"
+  displayValue?: string    // Optional: 12-hour format like "2:00 PM"
   onChange: (value: string) => void
 }
 
-// Converts "14:00" → "2:00 PM"
+// Convert "14:00" → "2:00 PM"
 const parseTimeTo12Hour = (timeStr: string): string => {
   const [hourStr, minuteStr] = timeStr.split(':')
   let hour = parseInt(hourStr)
   const minute = parseInt(minuteStr)
   const isPM = hour >= 12
+
+  if (hour === 0) hour = 12
+  else if (hour > 12) hour -= 12
 
   const hourStrFormatted = hour.toString()
   const minuteStrFormatted = minute.toString().padStart(2, '0')
@@ -24,13 +28,14 @@ const parseTimeTo12Hour = (timeStr: string): string => {
   return `${hourStrFormatted}:${minuteStrFormatted} ${ampm}`
 }
 
-export default function StyledTimePicker({ label, value, onChange }: Props) {
+export default function StyledTimePicker({ label, value, displayValue, onChange }: Props) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
     <div className="mb-4 relative">
       <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
 
+      {/* Clock button and visible time */}
       <div className="flex items-center space-x-2">
         <button
           type="button"
@@ -39,17 +44,20 @@ export default function StyledTimePicker({ label, value, onChange }: Props) {
         >
           <FaRegClock />
         </button>
+
+        {/* Display formatted time */}
         <span className="text-gray-700 text-sm">
-          {value ? parseTimeTo12Hour(value) : 'Select Time'}
+          {displayValue || parseTimeTo12Hour(value)}
         </span>
       </div>
 
+      {/* Time picker popover */}
       {isOpen && (
         <div className="absolute z-50 bg-white border rounded shadow-lg mt-2">
           <Timekeeper
             time={value || '12:00'}
             onChange={(newTime) => {
-              onChange(newTime.formatted24) // store in "HH:mm"
+              onChange(newTime.formatted12)
             }}
             onDoneClick={() => setIsOpen(false)}
             switchToMinuteOnHourSelect
