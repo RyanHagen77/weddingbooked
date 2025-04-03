@@ -278,14 +278,19 @@ return (
                         className="border p-2 rounded-lg w-full"
                     />
 
-                  <StyledTimePicker
-                    label="Start Time"
-                    value={dressingStartTime}
-                    onChange={(val) => {
-                      setDressingStartTime(val)
-                      setValue('dressing_start_time', val, { shouldValidate: false })
-                    }}
-                  />
+                    <StyledTimePicker
+                        label="Start Time"
+                        value={dressingStartTime}
+                        onChange={(val) => {
+                          setDressingStartTime(val)
+                          setValue('dressing_start_time', val, {shouldValidate: false})
+                        }}
+                    />
+                    <input
+                        type="hidden"
+                        {...register("dressing_start_time")}
+                    />
+
 
                   </div>
                   <div>
