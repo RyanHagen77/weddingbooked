@@ -119,7 +119,7 @@ useEffect(() => {
           // Format "14:00:00" → "2:00 PM"
           const time = new Date(`1970-01-01T${data.dressing_start_time}`);
           const formatted = time.toLocaleTimeString('en-US', {
-            hour: '2-digit',
+            hour: 'numeric',
             minute: '2-digit',
             hour12: true,
           });
@@ -292,8 +292,23 @@ return (
                         label="Start Time"
                         value={dressingStartTime}
                         onChange={(val) => {
-                          setDressingStartTime(val)
-                          setValue('dressing_start_time', val, {shouldValidate: false})
+                          setDressingStartTime(val);
+
+                          // Convert "2:00 PM" to "14:00"
+                          const [time, modifier] = val.split(' ');
+                          let [hours, minutes] = time.split(':').map(Number);
+
+                          if (modifier === 'PM' && hours < 12) {
+                            hours += 12;
+                          }
+                          if (modifier === 'AM' && hours === 12) {
+                            hours = 0;
+                          }
+
+                          const time24 = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+
+                          // This is what gets saved in the hidden input
+                          setValue('dressing_start_time', time24, { shouldValidate: false });
                         }}
                     />
                     <input
