@@ -102,7 +102,7 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
 
 useEffect(() => {
   if (contractId) {
-    const accessToken = localStorage.getItem('access_token')
+    const accessToken = localStorage.getItem('access_token');
     fetch(`https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -112,17 +112,27 @@ useEffect(() => {
       .then((response) => response.json())
       .then((data: FormData) => {
         Object.keys(data).forEach((key) => {
-          setValue(key as keyof FormData, data[key as keyof FormData], { shouldValidate: false })
-        })
+          setValue(key as keyof FormData, data[key as keyof FormData], { shouldValidate: false });
+        });
 
-        setDressingStartTime(
-          typeof data.dressing_start_time === 'string' && data.dressing_start_time.match(/^\d{1,2}:\d{2} ?[APap][Mm]$/)
-            ? data.dressing_start_time
-            : '12:00 PM'
-        )
-      })
+        if (data.dressing_start_time) {
+          // Format "14:00:00" → "2:00 PM"
+          const time = new Date(`1970-01-01T${data.dressing_start_time}`);
+          const formatted = time.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+          });
+          setDressingStartTime(formatted);
+        } else {
+          setDressingStartTime('12:00 PM');
+        }
+
+        setIsSubmitted(data.submitted || false);
+      });
   }
-}, [contractId, setValue])
+}, [contractId, setValue]);
+
 
 
   const handleSave = async () => {
