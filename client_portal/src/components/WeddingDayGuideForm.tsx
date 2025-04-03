@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 
-import Timekeeper from 'react-timekeeper'
+import StyledTimePicker from '@/components/StyledTimePicker'
 
 
 interface FormData {
@@ -270,14 +270,14 @@ return (
                         className="border p-2 rounded-lg w-full"
                     />
 
-                    <Timekeeper
-                      time={dressingStartTime}
-                      onChange={(newTime) => {
-                        setDressingStartTime(newTime.formatted12)
-                        setValue('dressing_start_time', newTime.formatted12, { shouldValidate: false })
-                      }}
-                      switchToMinuteOnHourSelect
-                    />
+                  <StyledTimePicker
+                    label="Start Time"
+                    value={dressingStartTime}
+                    onChange={(val) => {
+                      setDressingStartTime(val)
+                      setValue('dressing_start_time', val, { shouldValidate: false })
+                    }}
+                  />
 
                   </div>
                   <div>
