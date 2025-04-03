@@ -75,15 +75,20 @@ interface WeddingDayGuideFormProps {
 }
 
 const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId }) => {
-  const [dressingStartTime, setDressingStartTime] = useState<string | null>(null);
-
   const {
     register,
     handleSubmit,
     getValues,
     setValue,
     formState: { errors },
-  } = useForm<FormData>({...})
+  } = useForm<FormData>({
+    defaultValues: {} as FormData,
+    mode: 'onSubmit',
+  });
+
+  // Time field states for TimeInput components
+  const [dressingStartTime, setDressingStartTime] = useState<string | null>(null);
+
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
