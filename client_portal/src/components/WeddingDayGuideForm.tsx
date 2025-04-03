@@ -82,8 +82,7 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   });
 
   // Time field states for TimeInput components
-  const [dressingStartTime, setDressingStartTime] = useState('2:00 PM'); // for display
-  const [dressingStartRaw, setDressingStartRaw] = useState('14:00');
+  const [dressingStartTime, setDressingStartTime] = useState('12:00pm')
 
 
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -119,7 +118,6 @@ useEffect(() => {
         const formatted = `${hour}:${minute.toString().padStart(2, '0')} ${isPM ? 'PM' : 'AM'}`;
         setDressingStartTime(formatted);
       }
-
         setIsSubmitted(data.submitted || false);
       })
       .catch((error) => {
@@ -285,15 +283,12 @@ return (
 
                     <StyledTimePicker
                       label="Start Time"
-                      value={dressingStartTime}      // shown in the UI
-                      rawValue={dressingStartRaw}    // passed into Timekeeper
-                      onChange={(formatted12, formatted24) => {
-                        setDressingStartTime(formatted12); // UI text
-                        setDressingStartRaw(formatted24);  // Timekeeper + DB
-                        setValue('dressing_start_time', formatted24, { shouldValidate: false });
+                      value={dressingStartTime}
+                      onChange={(val) => {
+                        setDressingStartTime(val); // val is already in "HH:mm" (24-hour format)
+                        setValue('dressing_start_time', val, { shouldValidate: false });
                       }}
                     />
-
 
                     <input
                       type="hidden"
