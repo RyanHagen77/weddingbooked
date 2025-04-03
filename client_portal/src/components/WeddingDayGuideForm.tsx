@@ -114,9 +114,6 @@ useEffect(() => {
         const minute = parseInt(minuteStr);
         const isPM = hour >= 12;
 
-        if (hour === 0) hour = 12;
-        else if (hour > 12) hour -= 12;
-
         const formatted = `${hour}:${minute.toString().padStart(2, '0')} ${isPM ? 'PM' : 'AM'}`;
         setDressingStartTime(formatted);
       }
