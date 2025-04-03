@@ -16,15 +16,16 @@ const TimeInput: React.FC<TimeInputProps> = ({ value, onChange, label }) => {
   return (
     <div className="mb-4">
       <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-      <TimePicker
-        onChange={onChange}
-        value={value}
-        disableClock
-        clearIcon={null}
-        className="w-full border rounded-md p-2"
-        format="hh:mm a"
-        amPmAriaLabel="Select AM/PM"
-      />
+        <TimePicker
+          onChange={onChange}
+          value={value}
+          disableClock={false} // ✅ ENABLE CLOCK
+          clearIcon={null}
+          format="h:mm a"
+          clockIcon={undefined} // You can customize this if you want
+          className="w-full border rounded-md p-2"
+          amPmAriaLabel="Select AM/PM"
+        />
     </div>
   );
 };

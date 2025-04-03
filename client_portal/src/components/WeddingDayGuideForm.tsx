@@ -106,8 +106,13 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
           Object.keys(data).forEach((key) => {
             setValue(key as keyof FormData, data[key as keyof FormData], { shouldValidate: false });
           });
+
+          // Set the time state for TimePicker
+          setDressingStartTime(data.dressing_start_time || null);
+
           setIsSubmitted(data.submitted || false);
         })
+
         .catch((error) => console.error('Fetch error:', error));
     }
   }, [contractId, setValue]);
