@@ -3,6 +3,7 @@
     <table class="table table-bordered table-striped">
         <thead>
             <tr>
+                <th>#</th> <!-- New header column -->
                 <th>Contract ID</th>
                 <th>Event Date</th>
                 <th>Primary Contact</th>
@@ -15,8 +16,9 @@
             </tr>
         </thead>
         <tbody>
-        {% for contract in contracts %}
-        <tr onclick="window.location='{% url 'contracts:contract_detail' id=contract.pk %}';" style="cursor: pointer;">
+            {% for contract in contracts %}
+            <tr onclick="window.location='{% url 'contracts:contract_detail' id=contract.pk %}';" style="cursor: pointer;">
+            <td>{{ forloop.counter }}</td>
             <td>{{ contract.custom_contract_number }}</td>
             <td>{{ contract.event_date|date:"Y-m-d" }}</td>
             <td>{{ contract.client.primary_contact }}</td>

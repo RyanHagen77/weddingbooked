@@ -3,6 +3,7 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
+                    <th>#</th> <!-- New number column -->
                     <th>Event Staff</th>
                     <th>Event Date</th>
                     <th>Primary Contact</th>
@@ -14,6 +15,7 @@
             <tbody>
                 {% for booking in bookings %}
                 <tr onclick="window.location='{% url 'bookings:booking_detail' booking.id %}';" style="cursor: pointer;">
+                    <td>{{ forloop.counter }}</td>
                     <td>{{ booking.staff.get_full_name }}</td>
                     <td>{{ booking.contract.event_date|date:"Y-m-d" }}</td>
                     <td>{{ booking.contract.client.primary_contact }}</td>
