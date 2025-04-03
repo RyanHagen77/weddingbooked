@@ -265,13 +265,14 @@ return (
                         className="border p-2 rounded-lg w-full"
                     />
 
-                    <label className="block text-sm font-medium text-gray-700">Start Time:</label>
-                    <input
-                        type="text"
-                        {...register("dressing_start_time")}
-                        className="border p-2 rounded-lg w-full"
-                    />
-                    <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
+                  <TimeInput
+                    label="Start Time"
+                    value={dressingStartTime}
+                    onChange={(value) => {
+                      setDressingStartTime(value);
+                      setValue('dressing_start_time', value || '', { shouldValidate: false });
+                    }}
+                  />
 
                   </div>
                   <div>
