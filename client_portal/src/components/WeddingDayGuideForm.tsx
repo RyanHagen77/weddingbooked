@@ -69,23 +69,6 @@ interface FormData {
 interface WeddingDayGuideFormProps {
   contractId: string;
 }
-
-const format24HourTo12Hour = (time24: string): string => {
-  const [hourStr, minuteStr] = time24.split(':');
-  let hour = parseInt(hourStr, 10);
-  const minute = parseInt(minuteStr, 10);
-  const isPM = hour >= 12;
-
-  if (hour === 0) hour = 12;
-  else if (hour > 12) hour -= 12;
-
-  const formattedHour = hour.toString();
-  const formattedMinute = minute.toString().padStart(2, '0');
-  const ampm = isPM ? 'PM' : 'AM';
-
-  return `${formattedHour}:${formattedMinute} ${ampm}`;
-};
-
 const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId }) => {
   const {
     register,
@@ -108,22 +91,6 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-// Helper to convert "14:00:00" to "2:00 PM"
-const parseTimeTo12Hour = (timeStr: string): string => {
-  const [hourStr, minuteStr] = timeStr.split(':');
-  let hour = parseInt(hourStr);
-  const minute = parseInt(minuteStr);
-  const isPM = hour >= 12;
-
-  if (hour === 0) hour = 12;
-  else if (hour > 12) hour -= 12;
-
-  const hourStrFormatted = hour.toString();
-  const minuteStrFormatted = minute.toString().padStart(2, '0');
-  const ampm = isPM ? 'PM' : 'AM';
-
-  return `${hourStrFormatted}:${minuteStrFormatted} ${ampm}`;
-};
 
 useEffect(() => {
   if (contractId) {
@@ -309,33 +276,18 @@ return (
                     />
 
                     <StyledTimePicker
-                        label="Start Time"
-                        value={dressingStartTime}
-                        onChange={(val) => {
-                          setDressingStartTime(val);
-
-                          // Convert "2:00 PM" to "14:00"
-                          const [time, modifier] = val.split(' ');
-                          let [hours, minutes] = time.split(':').map(Number);
-
-                          if (modifier === 'PM' && hours < 12) {
-                            hours += 12;
-                          }
-                          if (modifier === 'AM' && hours === 12) {
-                            hours = 0;
-                          }
-
-                          const time24 = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-
-                          // This is what gets saved in the hidden input
-                          setValue('dressing_start_time', time24, { shouldValidate: false });
-                        }}
+                      label="Start Time"
+                      value={dressingStartTime}
+                      onChange={(val) => {
+                        setDressingStartTime(val); // val is already in "HH:mm" (24-hour format)
+                        setValue('dressing_start_time', val, { shouldValidate: false });
+                      }}
                     />
+
                     <input
-                        type="hidden"
-                        {...register("dressing_start_time")}
+                      type="hidden"
+                      {...register("dressing_start_time")}
                     />
-
 
                   </div>
                   <div>

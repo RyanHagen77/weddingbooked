@@ -6,19 +6,25 @@ import { FaRegClock } from 'react-icons/fa'
 
 interface Props {
   label: string
-  value: string // stored in 24-hour format like "14:00"
+  value: string
   onChange: (value: string) => void
 }
 
-// Converts "14:00" => "2:00 PM"
-const formatTo12Hour = (time24: string): string => {
-  if (!time24 || !time24.includes(':')) return ''
-  const [hourStr, minuteStr] = time24.split(':')
-  const hour = parseInt(hourStr, 10)
-  const minute = parseInt(minuteStr, 10)
-  const ampm = hour >= 12 ? 'PM' : 'AM'
-  const displayHour = hour % 12 || 12
-  return `${displayHour}:${minute.toString().padStart(2, '0')} ${ampm}`
+// Converts "14:00" → "2:00 PM"
+const parseTimeTo12Hour = (timeStr: string): string => {
+  const [hourStr, minuteStr] = timeStr.split(':')
+  let hour = parseInt(hourStr)
+  const minute = parseInt(minuteStr)
+  const isPM = hour >= 12
+
+  if (hour === 0) hour = 12
+  else if (hour > 12) hour -= 12
+
+  const hourStrFormatted = hour.toString()
+  const minuteStrFormatted = minute.toString().padStart(2, '0')
+  const ampm = isPM ? 'PM' : 'AM'
+
+  return `${hourStrFormatted}:${minuteStrFormatted} ${ampm}`
 }
 
 export default function StyledTimePicker({ label, value, onChange }: Props) {
@@ -37,7 +43,7 @@ export default function StyledTimePicker({ label, value, onChange }: Props) {
           <FaRegClock />
         </button>
         <span className="text-gray-700 text-sm">
-          {value ? formatTo12Hour(value) : 'Select Time'}
+          {value ? parseTimeTo12Hour(value) : 'Select Time'}
         </span>
       </div>
 
@@ -46,7 +52,7 @@ export default function StyledTimePicker({ label, value, onChange }: Props) {
           <Timekeeper
             time={value || '12:00'}
             onChange={(newTime) => {
-              onChange(newTime.formatted24) // stored as "14:00"
+              onChange(newTime.formatted24) // store in "HH:mm"
             }}
             onDoneClick={() => setIsOpen(false)}
             switchToMinuteOnHourSelect
