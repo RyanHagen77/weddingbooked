@@ -82,8 +82,8 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   });
 
   // Time field states for TimeInput components
-  const [dressingStartRaw, setDressingStartRaw] = useState('14:00'); // 24-hr string, for the picker
-  const [dressingStartTime, setDressingStartTime] = useState('2:00 PM'); // Display string
+  const [dressingStartTimeRaw, setDressingStartTimeRaw] = useState('12:00')
+
 
 
 
@@ -95,43 +95,44 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
 
 
 useEffect(() => {
-  if (contractId) {
-    const accessToken = localStorage.getItem('access_token');
-    fetch(`https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    })
-      .then((response) => response.json())
-      .then((data: FormData) => {
-        Object.keys(data).forEach((key) => {
-          setValue(key as keyof FormData, data[key as keyof FormData], { shouldValidate: false });
-        });
+  if (!contractId) return;
 
-        // Safely convert 24hr string like "14:00:00" to "2:00 PM"
+  const accessToken = localStorage.getItem('access_token');
+
+  fetch(`https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((response) => response.json())
+    .then((data: FormData) => {
+      Object.keys(data).forEach((key) => {
+        setValue(key as keyof FormData, data[key as keyof FormData], { shouldValidate: false });
+      });
+
       if (data.dressing_start_time) {
-        // 24-hour value from API (e.g. "14:00:00" or "14:00")
         const [hourStr, minuteStr] = data.dressing_start_time.split(':');
-        let hour = parseInt(hourStr);
-        const minute = parseInt(minuteStr);
-        const isPM = hour >= 12;
+        const hour = parseInt(hourStr, 10);
+        const minute = parseInt(minuteStr, 10);
 
-        const formattedDisplay = `${(hour % 12) || 12}:${minute.toString().padStart(2, '0')} ${isPM ? 'PM' : 'AM'}`;
+        // Store in 24-hr format like "14:00"
         const raw = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        setDressingStartRaw(raw);
+        setValue('dressing_start_time', raw, { shouldValidate: false });
 
-        setDressingStartTime(formattedDisplay);  // for visible label
-        setDressingStartRaw(raw);                // for Timekeeper input
-        setValue('dressing_start_time', raw);   // for submission
+        // Display in 12-hour format like "2:00 PM"
+        const hour12 = hour % 12 || 12;
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const formattedDisplay = `${hour12}:${minute.toString().padStart(2, '0')} ${ampm}`;
+        setDressingStartTime(formattedDisplay);
       }
 
-
-        setIsSubmitted(data.submitted || false);
-      })
-      .catch((error) => {
-        console.error('Error fetching wedding guide:', error);
-      });
-  }
+      setIsSubmitted(data.submitted || false);
+    })
+    .catch((error) => {
+      console.error('Error fetching wedding guide:', error);
+    });
 }, [contractId, setValue]);
 
 
@@ -291,21 +292,15 @@ return (
 
                   <StyledTimePicker
                     label="Start Time"
-                    value={dressingStartRaw} // this should be the 24-hr string
-                    displayValue={dressingStartTime} // optional prop to show 12hr format in text
+                    value={dressingStartTimeRaw}
                     onChange={(val) => {
-                      const [time, modifier] = val.split(' ');
-                      let [hours, minutes] = time.split(':').map(Number);
-
-
-                      const time24 = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-                      setDressingStartRaw(time24);
-                      setDressingStartTime(val);
-                      setValue('dressing_start_time', time24, { shouldValidate: false });
+                      setDressingStartTimeRaw(val)
+                      setValue('dressing_start_time', val, { shouldValidate: false })
                     }}
                   />
 
-                  <input type="hidden" {...register("dressing_start_time")} />
+                  <input type="hidden" {...register('dressing_start_time')} />
+
 
 
                   </div>
