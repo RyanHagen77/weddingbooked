@@ -68,17 +68,15 @@ interface WeddingDayGuideFormProps {
 }
 
 const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId }) => {
-  const {
-    register,
-    handleSubmit,
-    getValues,
-    setValue,
-    trigger,
-    formState: { errors },
-  } = useForm<FormData>({
-    defaultValues: {} as FormData,
-  });
-
+const {
+  register,
+  handleSubmit,
+  setValue,
+  formState: { errors },
+} = useForm<FormData>({
+  defaultValues: {} as FormData,
+  mode: "onBlur", // or "onChange" if you want real-time validation feedback
+});
 
 
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -107,70 +105,38 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
     }
   }, [contractId, setValue]);
 
-const handleSave = async () => {
+const handleSave: SubmitHandler<FormData> = async (data) => {
   setIsSaving(true);
   setMessage(null);
-
-  const isValid = await trigger(); // Triggers field-level validation
-
-  if (!isValid) {
-    const currentErrors = getValues();
-    const firstErrorField = Object.keys(currentErrors).find(
-      (key) => !!(document.querySelector(`[name="${key}"]`) && errors[key])
-    );
-
-    const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
-    if (errorElement && typeof (errorElement as HTMLElement).focus === "function") {
-      (errorElement as HTMLElement).focus();
-      errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-
-    setMessage("Please check the highlighted fields before saving.");
-    setIsSaving(false);
-    return;
-  }
-
-  const accessToken = localStorage.getItem("access_token");
-  const data = getValues();
-
-  // Clean optional time fields to avoid backend format errors
-  const cleanTimeField = (value: string) => (value?.trim() === "" ? null : value);
-
-  const payload = {
-    ...data,
-    contract: contractId,
-    strict_validation: false,
-    photographer2_start: cleanTimeField(data.photographer2_start),
-    // Add more optional time fields here if needed
-  };
+  const accessToken = localStorage.getItem('access_token');
+  const payload = { ...data, contract: contractId, strict_validation: false };
 
   try {
     const response = await fetch(
       `https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`,
       {
-        method: "POST",
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
       }
     );
 
     if (response.ok) {
-      setMessage("Form saved successfully.");
+      setMessage('Form saved successfully.');
     } else {
-      setMessage("Failed to save form. Please try again.");
+      const errorData = await response.json();
+      setMessage(errorData?.detail || 'Failed to save form. Please fix the errors above.');
     }
   } catch (error) {
-    console.error("Error saving form:", error);
-    setMessage("An error occurred while saving the form.");
+    console.error('Error saving form:', error);
+    setMessage('An error occurred while saving the form.');
   } finally {
     setIsSaving(false);
   }
 };
-
-
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
       setIsSubmitting(true);
@@ -502,16 +468,7 @@ return (
                            className="border p-2 rounded-lg w-full"/>
 
                     <label className="block text-sm font-medium text-gray-700">Starting Time:</label>
-                    <input
-                        type="time"
-                        {...register("photographer2_start", {required: false})}
-                        className="border p-2 rounded-lg w-full"
-                    />
-                    <small className="text-gray-500">
-                      Be sure to include hours and AM or PM if filled out.
-                    </small>
-
-
+                    <input type="time" {...register("photographer2_start")} className="border p-2 rounded-lg w-full"/>
                   </div>
                 </div>
               </div>
@@ -849,7 +806,7 @@ return (
               {/* Save Button */}
               <button
                   type="button"
-                  onClick={handleSave} // ✅ Don't wrap with handleSubmit
+                  onClick={handleSubmit(handleSave)} // ✅ Validates before running handleSave
                   className="w-full bg-pink-300 text-white py-3 rounded-md hover:bg-pink-400 transition duration-200"
                   disabled={isSaving}
               >
