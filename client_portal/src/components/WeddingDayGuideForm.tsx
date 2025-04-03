@@ -105,38 +105,40 @@ const {
     }
   }, [contractId, setValue]);
 
-const handleSave: SubmitHandler<FormData> = async (data) => {
+const handleSave = async (data: FormData) => {
   setIsSaving(true);
   setMessage(null);
-  const accessToken = localStorage.getItem('access_token');
+
+  const accessToken = localStorage.getItem("access_token");
   const payload = { ...data, contract: contractId, strict_validation: false };
 
   try {
     const response = await fetch(
       `https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       }
     );
 
     if (response.ok) {
-      setMessage('Form saved successfully.');
+      setMessage("Form saved successfully.");
     } else {
       const errorData = await response.json();
-      setMessage(errorData?.detail || 'Failed to save form. Please fix the errors above.');
+      setMessage(errorData?.detail || "Failed to save form. Please try again.");
     }
   } catch (error) {
-    console.error('Error saving form:', error);
-    setMessage('An error occurred while saving the form.');
+    console.error("Error saving form:", error);
+    setMessage("An error occurred while saving the form.");
   } finally {
     setIsSaving(false);
   }
 };
+
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
       setIsSubmitting(true);
@@ -806,7 +808,7 @@ return (
               {/* Save Button */}
               <button
                   type="button"
-                  onClick={handleSubmit(handleSave)} // ✅ Validates before running handleSave
+                  onClick={() => handleSave(getValues())}
                   className="w-full bg-pink-300 text-white py-3 rounded-md hover:bg-pink-400 transition duration-200"
                   disabled={isSaving}
               >
