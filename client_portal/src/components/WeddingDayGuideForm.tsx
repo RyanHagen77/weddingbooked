@@ -92,30 +92,30 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (contractId) {
-      const accessToken = localStorage.getItem('access_token');
-      fetch(`https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      })
-        .then((response) => response.json())
-        .then((data: FormData) => {
-          Object.keys(data).forEach((key) => {
-            setValue(key as keyof FormData, data[key as keyof FormData], { shouldValidate: false });
-          });
-
-          // Set the time state for TimePicker
-          setDressingStartTime(data.dressing_start_time || null);
-
-          setIsSubmitted(data.submitted || false);
+useEffect(() => {
+  if (contractId) {
+    const accessToken = localStorage.getItem('access_token')
+    fetch(`https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((response) => response.json())
+      .then((data: FormData) => {
+        Object.keys(data).forEach((key) => {
+          setValue(key as keyof FormData, data[key as keyof FormData], { shouldValidate: false })
         })
 
-        .catch((error) => console.error('Fetch error:', error));
-    }
-  }, [contractId, setValue]);
+        setDressingStartTime(
+          typeof data.dressing_start_time === 'string' && data.dressing_start_time.match(/^\d{1,2}:\d{2} ?[APap][Mm]$/)
+            ? data.dressing_start_time
+            : '12:00 PM'
+        )
+      })
+  }
+}, [contractId, setValue])
+
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -270,14 +270,14 @@ return (
                         className="border p-2 rounded-lg w-full"
                     />
 
-                  <StyledTimePicker
-                    label="Start Time"
-                    value={dressingStartTime}
-                    onChange={(val) => {
-                      setDressingStartTime(val)
-                      setValue('dressing_start_time', val, { shouldValidate: false })
-                    }}
-                  />
+                    <StyledTimePicker
+                      label="Start Time"
+                      value={dressingStartTime || '12:00 PM'} // fallback to valid default
+                      onChange={(val) => {
+                        setDressingStartTime(val)
+                        setValue('dressing_start_time', val, { shouldValidate: false })
+                      }}
+                    />
 
                   </div>
                   <div>
