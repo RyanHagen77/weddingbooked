@@ -123,7 +123,6 @@ useEffect(() => {
         const hour12 = hour % 12 || 12;
         const ampm = hour >= 12 ? 'PM' : 'AM';
         const formattedDisplay = `${hour12}:${minute.toString().padStart(2, '0')} ${ampm}`;
-        setDressingStartTime(formattedDisplay);
       }
 
       setIsSubmitted(data.submitted || false);
