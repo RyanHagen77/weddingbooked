@@ -109,7 +109,16 @@ useEffect(() => {
 
         // Safely convert 24hr string like "14:00:00" to "2:00 PM"
       if (data.dressing_start_time) {
-        setDressingStartTime(format24HourTo12Hour(data.dressing_start_time));
+        const [hourStr, minuteStr] = data.dressing_start_time.split(':');
+        let hour = parseInt(hourStr);
+        const minute = parseInt(minuteStr);
+        const isPM = hour >= 12;
+
+        if (hour === 0) hour = 12;
+        else if (hour > 12) hour -= 12;
+
+        const formatted = `${hour}:${minute.toString().padStart(2, '0')} ${isPM ? 'PM' : 'AM'}`;
+        setDressingStartTime(formatted);
       }
 
         setIsSubmitted(data.submitted || false);
