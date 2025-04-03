@@ -3,6 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 
+import TimeInput from '@/components/TimeInput'; // Adjust path if needed
+
+const [dressingStartTime, setDressingStartTime] = useState<string | null>(null);
+
+
+
+
 interface FormData {
   event_date: string;
   primary_contact: string;
@@ -258,14 +265,13 @@ return (
                         className="border p-2 rounded-lg w-full"
                     />
 
-                  {/* Dressing Start Time */}
-                  <label className="block text-sm font-medium text-gray-700">Start Time:</label>
-                  <input
-                    type="text"
-                    {...register("dressing_start_time")}
-                    className="border p-2 rounded-lg w-full"
-                  />
-                  <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
+                    <label className="block text-sm font-medium text-gray-700">Start Time:</label>
+                    <input
+                        type="text"
+                        {...register("dressing_start_time")}
+                        className="border p-2 rounded-lg w-full"
+                    />
+                    <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
 
                   </div>
                   <div>
