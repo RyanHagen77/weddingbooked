@@ -75,6 +75,8 @@ interface WeddingDayGuideFormProps {
 }
 
 const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId }) => {
+  const [dressingStartTime, setDressingStartTime] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
