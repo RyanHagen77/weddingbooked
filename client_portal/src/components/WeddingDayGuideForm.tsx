@@ -111,14 +111,12 @@ const handleSave = async () => {
   setIsSaving(true);
   setMessage(null);
 
-  const isValid = await trigger(); // Triggers field-level validation
+  const isValid = await trigger(); // Run validations on all fields
 
   if (!isValid) {
-    // Re-read formState after trigger
-    const currentErrors = getValues(); // You could also destructure getValues, or re-call useFormState if needed
-    const firstErrorField = Object.keys(currentErrors).find(
-      (key) => !!(document.querySelector(`[name="${key}"]`) && errors[key])
-    );
+    // ⛳️ Fetch errors from formState AFTER trigger completes
+    const errorKeys = Object.keys(errors);
+    const firstErrorField = errorKeys[0];
 
     const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
     if (errorElement && typeof (errorElement as HTMLElement).focus === "function") {
@@ -131,6 +129,7 @@ const handleSave = async () => {
     return;
   }
 
+  // ✅ Proceed with save if valid
   const accessToken = localStorage.getItem("access_token");
   const data = getValues();
   const payload = { ...data, contract: contractId, strict_validation: false };
@@ -160,6 +159,7 @@ const handleSave = async () => {
     setIsSaving(false);
   }
 };
+
 
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
