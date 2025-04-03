@@ -71,8 +71,8 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   const {
     register,
     handleSubmit,
-    setValue,
     getValues,
+    setValue,
     trigger,
     formState: { errors },
   } = useForm<FormData>({
@@ -111,15 +111,24 @@ const handleSave = async () => {
   setIsSaving(true);
   setMessage(null);
 
-  const isValid = await trigger(); // this will validate the whole form
+  const isValid = await trigger();
 
   if (!isValid) {
+    // Find the first error field and focus on it
+    const firstErrorField = Object.keys(errors)[0];
+    const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
+    if (errorElement && typeof (errorElement as HTMLElement).focus === 'function') {
+      (errorElement as HTMLElement).focus();
+      // Optional: scroll into view
+      errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
     setMessage("Please check the highlighted fields before saving.");
     setIsSaving(false);
     return;
   }
 
-  const accessToken = localStorage.getItem('access_token');
+  const accessToken = localStorage.getItem("access_token");
   const data = getValues();
   const payload = { ...data, contract: contractId, strict_validation: false };
 
@@ -127,10 +136,10 @@ const handleSave = async () => {
     const response = await fetch(
       `https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       }
@@ -148,7 +157,6 @@ const handleSave = async () => {
     setIsSaving(false);
   }
 };
-
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
       setIsSubmitting(true);
