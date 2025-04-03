@@ -70,14 +70,11 @@ interface WeddingDayGuideFormProps {
   contractId: string;
 }
 
-function to24HourFormat(time: string): string {
-  const [hourMin, meridian] = time.split(/ (AM|PM)/i).filter(Boolean)
-  let [hour, minute] = hourMin.split(':').map(Number)
-
-  if (meridian.toLowerCase() === 'pm' && hour !== 12) hour += 12
-  if (meridian.toLowerCase() === 'am' && hour === 12) hour = 0
-
-  return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
+function formatTo12Hour(time24: string): string {
+  const [hour, minute] = time24.split(':').map(Number)
+  const ampm = hour >= 12 ? 'PM' : 'AM'
+  const displayHour = hour % 12 || 12
+  return `${displayHour}:${minute.toString().padStart(2, '0')} ${ampm}`
 }
 
 
