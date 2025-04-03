@@ -120,14 +120,19 @@ useEffect(() => {
     })
       .then((response) => response.json())
       .then((data: FormData) => {
-        // Set all fields normally
         Object.keys(data).forEach((key) => {
           setValue(key as keyof FormData, data[key as keyof FormData], { shouldValidate: false });
         });
 
-        // Parse and set time field correctly
+        // Safely convert 24hr string like "14:00:00" to "2:00 PM"
         if (data.dressing_start_time) {
-          const formatted = parseTimeTo12Hour(data.dressing_start_time);
+          const [hourStr, minuteStr] = data.dressing_start_time.split(':');
+          let hour = parseInt(hourStr);
+          const minute = parseInt(minuteStr);
+          const isPM = hour >= 12;
+          const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+          const ampm = isPM ? 'PM' : 'AM';
+          const formatted = `${displayHour}:${minute.toString().padStart(2, '0')} ${ampm}`;
           setDressingStartTime(formatted);
         }
 
@@ -138,6 +143,7 @@ useEffect(() => {
       });
   }
 }, [contractId, setValue]);
+
 
 
   const handleSave = async () => {
