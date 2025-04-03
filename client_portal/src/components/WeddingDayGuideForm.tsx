@@ -83,10 +83,7 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
     getValues,
     setValue,
     formState: { errors },
-  } = useForm<FormData>({
-    defaultValues: {} as FormData,
-    mode: 'onSubmit',
-  });
+  } = useForm<FormData>({...})
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
