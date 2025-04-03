@@ -111,12 +111,14 @@ const handleSave = async () => {
   setIsSaving(true);
   setMessage(null);
 
-  const isValid = await trigger(); // Run validations on all fields
+  const isValid = await trigger(); // Triggers field-level validation
 
   if (!isValid) {
-    // ⛳️ Fetch errors from formState AFTER trigger completes
-    const errorKeys = Object.keys(errors);
-    const firstErrorField = errorKeys[0];
+    // Re-read formState after trigger
+    const currentErrors = getValues(); // You could also destructure getValues, or re-call useFormState if needed
+    const firstErrorField = Object.keys(currentErrors).find(
+      (key) => !!(document.querySelector(`[name="${key}"]`) && errors[key])
+    );
 
     const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
     if (errorElement && typeof (errorElement as HTMLElement).focus === "function") {
@@ -129,7 +131,6 @@ const handleSave = async () => {
     return;
   }
 
-  // ✅ Proceed with save if valid
   const accessToken = localStorage.getItem("access_token");
   const data = getValues();
   const payload = { ...data, contract: contractId, strict_validation: false };
@@ -159,7 +160,6 @@ const handleSave = async () => {
     setIsSaving(false);
   }
 };
-
 
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
@@ -494,17 +494,13 @@ return (
                     <label className="block text-sm font-medium text-gray-700">Starting Time:</label>
                     <input
                         type="time"
-                        {...register("photographer2_start", {
-                          validate: (value) =>
-                              !value || value.length >= 4 || "Please select a complete time using the time picker"
-                        })}
+                        {...register("photographer2_start")}
                         className="border p-2 rounded-lg w-full"
                     />
-                    {errors.photographer2_start && (
-                        <p className="text-red-500 text-sm mt-1">{errors.photographer2_start.message}</p>
-                    )}
-                    <small className="text-gray-500">Be sure to include hours and AM or PM if filled
-                      out.</small>
+                    <small className="text-gray-500">
+                      Be sure to include hours and AM or PM if filled out.
+                    </small>
+
                   </div>
                 </div>
               </div>
