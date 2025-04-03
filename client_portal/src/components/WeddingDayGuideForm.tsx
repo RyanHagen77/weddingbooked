@@ -278,15 +278,14 @@ return (
                         className="border p-2 rounded-lg w-full"
                     />
 
-                  <StyledTimePicker
-                    label="Start Time"
-                    value={formatTo12Hour(dressingStartTime)}
-                    onChange={(val) => {
-                      setDressingStartTime(val) // val will be "14:00" etc.
-                      setValue('dressing_start_time', val, { shouldValidate: false })
-                    }}
-                  />
-
+                    <StyledTimePicker
+                      label="Start Time"
+                      value={formatTo12Hour(dressingStartTime)}
+                      onChange={(val) => {
+                        setDressingStartTime(val) // val will be "14:00" etc.
+                        setValue('dressing_start_time', val, { shouldValidate: false })
+                      }}
+                    />
 
                   </div>
                   <div>
