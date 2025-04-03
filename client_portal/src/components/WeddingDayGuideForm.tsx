@@ -257,14 +257,15 @@ return (
                         {...register("dressing_location", {required: "Dressing location is required"})}
                         className="border p-2 rounded-lg w-full"
                     />
-                    <label className="block text-sm font-medium text-gray-700">Start Time:</label>
-                    <input
-                        type="text" // changed from "time"
-                        {...register("dressing_start_time")}
-                        className="border p-2 rounded-lg w-full"
-                    />
-                    <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
 
+                  {/* Dressing Start Time */}
+                  <label className="block text-sm font-medium text-gray-700">Start Time:</label>
+                  <input
+                    type="text"
+                    {...register("dressing_start_time")}
+                    className="border p-2 rounded-lg w-full"
+                  />
+                  <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
 
                   </div>
                   <div>
@@ -289,38 +290,38 @@ return (
                         {...register("ceremony_site", {required: "Ceremony location is required"})}
                         className="border p-2 rounded-lg w-full"
                     />
-                    <label className="block text-sm font-medium text-gray-700">Ceremony Times:</label>
 
+                    {/* Ceremony Times */}
+                    <label className="block text-sm font-medium text-gray-700 mt-4">Ceremony Times:</label>
                     <input
-                        type="text" // allows partial/invalid time input to save
-                        {...register("ceremony_start")}
-                        className="border p-2 rounded-lg w-full"
+                      type="text"
+                      {...register("ceremony_start")}
+                      className="border p-2 rounded-lg w-full"
                     />
                     <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
 
                     <span className="block text-center my-1">to</span>
 
                     <input
-                        type="text" // same here
-                        {...register("ceremony_end")}
-                        className="border p-2 rounded-lg w-full"
+                      type="text"
+                      {...register("ceremony_end")}
+                      className="border p-2 rounded-lg w-full"
                     />
                     <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
-
 
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Ceremony Address:</label>
                     <input
-                        type="text"
-                        {...register("ceremony_address", {required: "Ceremony address is required"})}
-                        className="border p-2 rounded-lg w-full"
+                      type="text"
+                      {...register("ceremony_address", { required: "Ceremony address is required" })}
+                      className="border p-2 rounded-lg w-full"
                     />
 
                     <label className="block text-sm font-medium text-gray-700">Ceremony Phone #:</label>
                     <input
-                        type="tel"
-                        {...register("ceremony_phone", { required: "Ceremony phone number is required" })}
+                      type="tel"
+                      {...register("ceremony_phone", { required: "Ceremony phone number is required" })}
                       className="border p-2 rounded-lg w-full"
                     />
                   </div>
@@ -334,24 +335,25 @@ return (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Reception Location:</label>
                     <input
-                        type="text"
-                        {...register("reception_site", {required: "Reception location is required"})}
-                        className="border p-2 rounded-lg w-full"
+                      type="text"
+                      {...register("reception_site", { required: "Reception location is required" })}
+                      className="border p-2 rounded-lg w-full"
                     />
 
-                    <label className="block text-sm font-medium text-gray-700">Cocktail Start Time:</label>
+                    {/* Reception Start Time */}
+                    <label className="block text-sm font-medium text-gray-700 mt-4">Cocktail Start Time:</label>
                     <input
-                        type="text" // allows saving even if time format is incomplete or missing
-                        {...register("reception_start")}
-                        className="border p-2 rounded-lg w-full"
+                      type="text"
+                      {...register("reception_start")}
+                      className="border p-2 rounded-lg w-full"
                     />
                     <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
 
                     <label className="block text-sm font-medium text-gray-700">Reception Phone #:</label>
                     <input
-                        type="tel"
-                        {...register("reception_phone", {required: "Reception phone number is required"})}
-                        className="border p-2 rounded-lg w-full"
+                      type="tel"
+                      {...register("reception_phone", { required: "Reception phone number is required" })}
+                      className="border p-2 rounded-lg w-full"
                     />
                   </div>
                   <div>
@@ -362,19 +364,21 @@ return (
                         className="border p-2 rounded-lg w-full"
                     />
 
-                    <label className="block text-sm font-medium text-gray-700">Dinner Start Time:</label>
+                    {/* Dinner Start Time */}
+                    <label className="block text-sm font-medium text-gray-700 mt-4">Dinner Start Time:</label>
                     <input
-                        type="text"
-                        {...register("dinner_start")}
-                        className="border p-2 rounded-lg w-full"
+                      type="text"
+                      {...register("dinner_start")}
+                      className="border p-2 rounded-lg w-full"
                     />
                     <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
 
-                    <label className="block text-sm font-medium text-gray-700">Reception Ends:</label>
+                    {/* Reception End Time */}
+                    <label className="block text-sm font-medium text-gray-700 mt-4">Reception Ends:</label>
                     <input
-                        type="text"
-                        {...register("reception_end")}
-                        className="border p-2 rounded-lg w-full"
+                      type="text"
+                      {...register("reception_end")}
+                      className="border p-2 rounded-lg w-full"
                     />
                     <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
 
@@ -428,8 +432,14 @@ return (
                     <input type="text" {...register("photographer2_start_location_address")}
                            className="border p-2 rounded-lg w-full"/>
 
-                    <label className="block text-sm font-medium text-gray-700">Starting Time:</label>
-                    <input type="time" {...register("photographer2_start")} className="border p-2 rounded-lg w-full"/>
+                  {/* Photographer 2 Start Time */}
+                  <label className="block text-sm font-medium text-gray-700 mt-4">Starting Time (Photographer 2):</label>
+                  <input
+                    type="text"
+                    {...register("photographer2_start")}
+                    className="border p-2 rounded-lg w-full"
+                  />
+                  <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
                   </div>
                 </div>
               </div>
