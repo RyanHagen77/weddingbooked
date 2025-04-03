@@ -1,5 +1,3 @@
-'use client'
-
 import React, { useState } from 'react'
 import Timekeeper from 'react-timekeeper'
 import { FaRegClock } from 'react-icons/fa'
@@ -9,11 +7,6 @@ interface Props {
   value: string
   onChange: (value: string) => void
 }
-
-const formatTo12Hour = (raw: string) => {
-  // Ensures time is formatted like "12:00 PM"
-  return raw.toUpperCase().replace(/\s?(AM|PM)/, ' $1');
-};
 
 export default function StyledTimePicker({ label, value, onChange }: Props) {
   const [isOpen, setIsOpen] = useState(false)
@@ -38,8 +31,7 @@ export default function StyledTimePicker({ label, value, onChange }: Props) {
           <Timekeeper
             time={value}
             onChange={(newTime) => {
-              const formatted = formatTo12Hour(newTime.formatted12);
-              onChange(formatted);
+              onChange(newTime.formatted24) // <-- safer to store this
             }}
             onDoneClick={() => setIsOpen(false)}
             switchToMinuteOnHourSelect

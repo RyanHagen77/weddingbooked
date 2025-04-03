@@ -281,16 +281,15 @@ return (
                         className="border p-2 rounded-lg w-full"
                     />
 
-                    <StyledTimePicker
-                      label="Start Time"
-                      value={dressingStartTime || '12:00 PM'} // fallback to valid default
-                        onChange={(val) => {
-                          const formatted = val.toUpperCase().replace(/\s?AM/, ' AM').replace(/\s?PM/, ' PM')  // e.g. "12:00pm" -> "12:00 PM"
-                          setDressingStartTime(formatted)
-                          setValue('dressing_start_time', formatted, { shouldValidate: false })
-                        }}
+                  <StyledTimePicker
+                    label="Start Time"
+                    value={formatTo12Hour(dressingStartTime)}
+                    onChange={(val) => {
+                      setDressingStartTime(val) // val will be "14:00" etc.
+                      setValue('dressing_start_time', val, { shouldValidate: false })
+                    }}
+                  />
 
-                    />
 
                   </div>
                   <div>
