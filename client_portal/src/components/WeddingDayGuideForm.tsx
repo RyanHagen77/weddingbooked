@@ -70,14 +70,6 @@ interface WeddingDayGuideFormProps {
   contractId: string;
 }
 
-function formatTo12Hour(time24: string): string {
-  const [hour, minute] = time24.split(':').map(Number)
-  const ampm = hour >= 12 ? 'PM' : 'AM'
-  const displayHour = hour % 12 || 12
-  return `${displayHour}:${minute.toString().padStart(2, '0')} ${ampm}`
-}
-
-
 const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId }) => {
   const {
     register,
@@ -100,6 +92,23 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
+// Helper to convert "14:00:00" to "2:00 PM"
+const parseTimeTo12Hour = (timeStr: string): string => {
+  const [hourStr, minuteStr] = timeStr.split(':');
+  let hour = parseInt(hourStr);
+  const minute = parseInt(minuteStr);
+  const isPM = hour >= 12;
+
+  if (hour === 0) hour = 12;
+  else if (hour > 12) hour -= 12;
+
+  const hourStrFormatted = hour.toString();
+  const minuteStrFormatted = minute.toString().padStart(2, '0');
+  const ampm = isPM ? 'PM' : 'AM';
+
+  return `${hourStrFormatted}:${minuteStrFormatted} ${ampm}`;
+};
+
 useEffect(() => {
   if (contractId) {
     const accessToken = localStorage.getItem('access_token');
@@ -111,28 +120,24 @@ useEffect(() => {
     })
       .then((response) => response.json())
       .then((data: FormData) => {
+        // Set all fields normally
         Object.keys(data).forEach((key) => {
           setValue(key as keyof FormData, data[key as keyof FormData], { shouldValidate: false });
         });
 
+        // Parse and set time field correctly
         if (data.dressing_start_time) {
-          // Format "14:00:00" → "2:00 PM"
-          const time = new Date(`1970-01-01T${data.dressing_start_time}`);
-          const formatted = time.toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true,
-          });
+          const formatted = parseTimeTo12Hour(data.dressing_start_time);
           setDressingStartTime(formatted);
-        } else {
-          setDressingStartTime('12:00 PM');
         }
 
         setIsSubmitted(data.submitted || false);
+      })
+      .catch((error) => {
+        console.error('Error fetching wedding guide:', error);
       });
   }
 }, [contractId, setValue]);
-
 
 
   const handleSave = async () => {
