@@ -340,25 +340,20 @@ return (
                       className="border p-2 rounded-lg w-full"
                     />
 
+                    {/* Reception Start Time */}
+                    <label className="block text-sm font-medium text-gray-700 mt-4">Cocktail Start Time:</label>
                     <input
                       type="text"
-                      {...register("reception_start", {
-                        validate: (value) =>
-                          !value || /^([1-9]|1[0-2]):[0-5][0-9]\s?(AM|PM)$/i.test(value.trim()) ||
-                          "Please use the format HH:MM AM or PM"
-                      })}
+                      {...register("reception_start")}
                       className="border p-2 rounded-lg w-full"
                     />
-                    {errors.reception_start && (
-                      <p className="text-red-500 text-sm mt-1">{errors.reception_start.message}</p>
-                    )}
                     <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
 
                     <label className="block text-sm font-medium text-gray-700">Reception Phone #:</label>
                     <input
-                        type="tel"
-                        {...register("reception_phone", {required: "Reception phone number is required"})}
-                        className="border p-2 rounded-lg w-full"
+                      type="tel"
+                      {...register("reception_phone", { required: "Reception phone number is required" })}
+                      className="border p-2 rounded-lg w-full"
                     />
                   </div>
                   <div>
