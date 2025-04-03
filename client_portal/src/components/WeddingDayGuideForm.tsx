@@ -259,17 +259,10 @@ return (
                     />
                     <label className="block text-sm font-medium text-gray-700">Start Time:</label>
                     <input
-                        type="time"
-                        {...register("dressing_start_time", {
-                          required: "Start time is required",
-                          validate: (value) =>
-                              value?.length >= 4 || "Please select a complete time using the time picker"
-                        })}
+                        type="text" // changed from "time"
+                        {...register("dressing_start_time")}
                         className="border p-2 rounded-lg w-full"
                     />
-                    {errors.dressing_start_time && (
-                        <p className="text-red-500 text-sm mt-1">{errors.dressing_start_time.message}</p>
-                    )}
                     <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
 
 
@@ -277,7 +270,7 @@ return (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Dressing Address:</label>
                     <input
-                      type="text"
+                        type="text"
                       {...register("dressing_address", { required: "Dressing address is required" })}
                       className="border p-2 rounded-lg w-full"
                     />
@@ -299,33 +292,19 @@ return (
                     <label className="block text-sm font-medium text-gray-700">Ceremony Times:</label>
 
                     <input
-                        type="time"
-                        {...register("ceremony_start", {
-                          required: "Ceremony start time is required",
-                          validate: (value) =>
-                              value?.length >= 4 || "Please select a complete time using the time picker",
-                        })}
+                        type="text" // allows partial/invalid time input to save
+                        {...register("ceremony_start")}
                         className="border p-2 rounded-lg w-full"
                     />
-                    {errors.ceremony_start && (
-                        <p className="text-red-500 text-sm mt-1">{errors.ceremony_start.message}</p>
-                    )}
                     <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
 
                     <span className="block text-center my-1">to</span>
 
                     <input
-                        type="time"
-                        {...register("ceremony_end", {
-                          required: "Ceremony end time is required",
-                          validate: (value) =>
-                              value?.length >= 4 || "Please select a complete time using the time picker",
-                        })}
+                        type="text" // same here
+                        {...register("ceremony_end")}
                         className="border p-2 rounded-lg w-full"
                     />
-                    {errors.ceremony_end && (
-                        <p className="text-red-500 text-sm mt-1">{errors.ceremony_end.message}</p>
-                    )}
                     <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
 
 
@@ -333,15 +312,15 @@ return (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Ceremony Address:</label>
                     <input
-                      type="text"
-                      {...register("ceremony_address", { required: "Ceremony address is required" })}
-                      className="border p-2 rounded-lg w-full"
+                        type="text"
+                        {...register("ceremony_address", {required: "Ceremony address is required"})}
+                        className="border p-2 rounded-lg w-full"
                     />
 
                     <label className="block text-sm font-medium text-gray-700">Ceremony Phone #:</label>
                     <input
-                      type="tel"
-                      {...register("ceremony_phone", { required: "Ceremony phone number is required" })}
+                        type="tel"
+                        {...register("ceremony_phone", { required: "Ceremony phone number is required" })}
                       className="border p-2 rounded-lg w-full"
                     />
                   </div>
@@ -355,32 +334,24 @@ return (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Reception Location:</label>
                     <input
-                      type="text"
-                      {...register("reception_site", { required: "Reception location is required" })}
-                      className="border p-2 rounded-lg w-full"
+                        type="text"
+                        {...register("reception_site", {required: "Reception location is required"})}
+                        className="border p-2 rounded-lg w-full"
                     />
 
                     <label className="block text-sm font-medium text-gray-700">Cocktail Start Time:</label>
                     <input
-                      type="time"
-                      {...register("reception_start", {
-                        required: "Cocktail start time is required",
-                        validate: (value) =>
-                          value?.length >= 4 || "Please select a complete time using the time picker"
-                      })}
-                      className="border p-2 rounded-lg w-full"
+                        type="text" // allows saving even if time format is incomplete or missing
+                        {...register("reception_start")}
+                        className="border p-2 rounded-lg w-full"
                     />
-                    {errors.reception_start && (
-                      <p className="text-red-500 text-sm mt-1">{errors.reception_start.message}</p>
-                    )}
                     <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
-
 
                     <label className="block text-sm font-medium text-gray-700">Reception Phone #:</label>
                     <input
-                      type="tel"
-                      {...register("reception_phone", { required: "Reception phone number is required" })}
-                      className="border p-2 rounded-lg w-full"
+                        type="tel"
+                        {...register("reception_phone", {required: "Reception phone number is required"})}
+                        className="border p-2 rounded-lg w-full"
                     />
                   </div>
                   <div>
@@ -393,32 +364,18 @@ return (
 
                     <label className="block text-sm font-medium text-gray-700">Dinner Start Time:</label>
                     <input
-                        type="time"
-                        {...register("dinner_start", {
-                          required: "Dinner start time is required",
-                          validate: (value) =>
-                              value?.length >= 4 || "Please enter a full time including AM or PM"
-                        })}
+                        type="text"
+                        {...register("dinner_start")}
                         className="border p-2 rounded-lg w-full"
                     />
-                    {errors.dinner_start && (
-                        <p className="text-red-500 text-sm mt-1">{errors.dinner_start.message}</p>
-                    )}
                     <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
 
                     <label className="block text-sm font-medium text-gray-700">Reception Ends:</label>
                     <input
-                        type="time"
-                        {...register("reception_end", {
-                          required: "Reception end time is required",
-                          validate: (value) =>
-                              value?.length >= 4 || "Please enter a full time including AM or PM"
-                        })}
+                        type="text"
+                        {...register("reception_end")}
                         className="border p-2 rounded-lg w-full"
                     />
-                    {errors.reception_end && (
-                        <p className="text-red-500 text-sm mt-1">{errors.reception_end.message}</p>
-                    )}
                     <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
 
 
