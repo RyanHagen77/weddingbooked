@@ -781,16 +781,14 @@ return (
                 type="button"
                 onClick={handleSave} // Save without validation
                 disabled={isSaving}
-                className="bg-blue-500 text-white py-2 px-4 rounded"
-              >
+                  className="w-full bg-pink-300 text-white py-3 rounded-md hover:bg-pink-400 transition duration-200"              >
                 {isSaving ? 'Saving...' : 'Save'}
               </button>
 
               <button
                   type="submit"
                   disabled={isSubmitting || formSubmitted}
-                  className="bg-green-500 text-white py-2 px-4 rounded ml-2"
-              >
+                  className="w-full bg-pink-300 text-white py-3 rounded-md hover:bg-pink-400 transition duration-200"              >
                 {isSubmitting ? 'Submitting...' : 'Submit'}
               </button>
             </div>
