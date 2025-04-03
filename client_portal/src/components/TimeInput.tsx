@@ -1,33 +1,23 @@
-// components/TimeInput.tsx
-'use client';
+// components/StyledTimePicker.tsx
+import Timekeeper from 'react-timekeeper'
 
-import React from 'react';
-import TimePicker from 'react-time-picker';
-import 'react-time-picker/dist/TimePicker.css';
-import 'react-clock/dist/Clock.css';
-
-interface TimeInputProps {
-  value: string | null;
-  onChange: (value: string | null) => void;
-  label: string;
+interface Props {
+  label: string
+  value: string
+  onChange: (value: string) => void
 }
 
-const TimeInput: React.FC<TimeInputProps> = ({ value, onChange, label }) => {
+export default function StyledTimePicker({ label, value, onChange }: Props) {
   return (
     <div className="mb-4">
       <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-        <TimePicker
-          onChange={onChange}
-          value={value}
-          disableClock={false} // ✅ ENABLE CLOCK
-          clearIcon={null}
-          format="h:mm a"
-          clockIcon={undefined} // You can customize this if you want
-          className="w-full border rounded-md p-2"
-          amPmAriaLabel="Select AM/PM"
+      <div className="border rounded-md shadow p-2 bg-white">
+        <Timekeeper
+          time={value}
+          onChange={(newTime) => onChange(newTime.formatted12)}
+          switchToMinuteOnHourSelect
         />
+      </div>
     </div>
-  );
-};
-
-export default TimeInput;
+  )
+}

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 
-import TimeInput from '@/components/TimeInput'; // Adjust path if needed
+import Timekeeper from 'react-timekeeper'
 
 
 interface FormData {
@@ -83,7 +83,7 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   });
 
   // Time field states for TimeInput components
-  const [dressingStartTime, setDressingStartTime] = useState<string | null>(null);
+  const [dressingStartTime, setDressingStartTime] = useState('12:00pm')
 
 
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -270,14 +270,14 @@ return (
                         className="border p-2 rounded-lg w-full"
                     />
 
-                  <TimeInput
-                    label="Start Time"
-                    value={dressingStartTime}
-                    onChange={(value) => {
-                      setDressingStartTime(value);
-                      setValue('dressing_start_time', value || '', { shouldValidate: false });
-                    }}
-                  />
+                    <Timekeeper
+                      time={dressingStartTime}
+                      onChange={(newTime) => {
+                        setDressingStartTime(newTime.formatted12)
+                        setValue('dressing_start_time', newTime.formatted12, { shouldValidate: false })
+                      }}
+                      switchToMinuteOnHourSelect
+                    />
 
                   </div>
                   <div>
