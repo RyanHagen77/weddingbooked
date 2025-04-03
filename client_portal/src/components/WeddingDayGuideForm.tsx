@@ -82,7 +82,8 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   });
 
   // Time field states for TimeInput components
-  const [dressingStartTime, setDressingStartTime] = useState('12:00pm')
+  const [dressingStartTime, setDressingStartTime] = useState('2:00 PM'); // for display
+  const [dressingStartRaw, setDressingStartRaw] = useState('14:00');
 
 
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -114,6 +115,8 @@ useEffect(() => {
         const minute = parseInt(minuteStr);
         const isPM = hour >= 12;
 
+        if (hour === 0) hour = 12;
+        else if (hour > 12) hour -= 12;
 
         const formatted = `${hour}:${minute.toString().padStart(2, '0')} ${isPM ? 'PM' : 'AM'}`;
         setDressingStartTime(formatted);
