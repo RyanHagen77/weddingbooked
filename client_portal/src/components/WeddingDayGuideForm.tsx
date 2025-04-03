@@ -70,6 +70,17 @@ interface WeddingDayGuideFormProps {
   contractId: string;
 }
 
+function to24HourFormat(time: string): string {
+  const [hourMin, meridian] = time.split(/ (AM|PM)/i).filter(Boolean)
+  let [hour, minute] = hourMin.split(':').map(Number)
+
+  if (meridian.toLowerCase() === 'pm' && hour !== 12) hour += 12
+  if (meridian.toLowerCase() === 'am' && hour === 12) hour = 0
+
+  return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
+}
+
+
 const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId }) => {
   const {
     register,
@@ -275,7 +286,7 @@ return (
                       value={dressingStartTime || '12:00 PM'} // fallback to valid default
                       onChange={(val) => {
                         setDressingStartTime(val)
-                        setValue('dressing_start_time', val, { shouldValidate: false })
+                        setValue('dressing_start_time', to24HourFormat(dressingStartTime), { shouldValidate: false })
                       }}
                     />
 
