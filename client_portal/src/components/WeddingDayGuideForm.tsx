@@ -82,9 +82,7 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   });
 
   // Time field states for TimeInput components
-  const [dressingStartTimeRaw, setDressingStartTimeRaw] = useState('12:00')
-
-
+  const [dressingStartTimeRaw, setDressingStartTimeRaw] = useState('12:00'); // what Timekeeper uses
 
 
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -118,7 +116,7 @@ useEffect(() => {
 
         // Store in 24-hr format like "14:00"
         const raw = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        setDressingStartRaw(raw);
+        setDressingStartTimeRaw(raw);
         setValue('dressing_start_time', raw, { shouldValidate: false });
 
         // Display in 12-hour format like "2:00 PM"
