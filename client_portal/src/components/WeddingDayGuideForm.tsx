@@ -284,10 +284,12 @@ return (
                     <StyledTimePicker
                       label="Start Time"
                       value={dressingStartTime || '12:00 PM'} // fallback to valid default
-                      onChange={(val) => {
-                        setDressingStartTime(val)
-                        setValue('dressing_start_time', to24HourFormat(dressingStartTime), { shouldValidate: false })
-                      }}
+                        onChange={(val) => {
+                          const formatted = val.toUpperCase().replace(/\s?AM/, ' AM').replace(/\s?PM/, ' PM')  // e.g. "12:00pm" -> "12:00 PM"
+                          setDressingStartTime(formatted)
+                          setValue('dressing_start_time', formatted, { shouldValidate: false })
+                        }}
+
                     />
 
                   </div>
