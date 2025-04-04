@@ -83,6 +83,15 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
 
   // Time field states for TimeInput components
   const [dressingStartTimeRaw, setDressingStartTimeRaw] = useState('12:00'); // what Timekeeper uses
+  const [ceremonyStartRaw, setCeremonyStartRaw] = useState('12:00');
+  const [ceremonyEndRaw, setCeremonyEndRaw] = useState('13:00');
+  const [receptionStartTimeRaw, setReceptionStartTimeRaw] = useState('12:00')
+  const [dinnerStartTimeRaw, setDinnerStartTimeRaw] = useState('12:00')
+  const [receptionEndTimeRaw, setReceptionEndTimeRaw] = useState('12:00');
+  const [photographer2StartRaw, setPhotographer2StartRaw] = useState('12:00');
+
+
+
 
 
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -119,11 +128,64 @@ useEffect(() => {
         setDressingStartTimeRaw(raw);
         setValue('dressing_start_time', raw, { shouldValidate: false });
 
+       if (data.ceremony_start) {
+        const [hourStr, minuteStr] = data.ceremony_start.split(':');
+        const raw = `${hourStr.padStart(2, '0')}:${minuteStr.padStart(2, '0')}`;
+        setCeremonyStartRaw(raw);
+        setValue('ceremony_start', raw, { shouldValidate: false });
+      }
+
+      if (data.ceremony_end) {
+        const [hourStr, minuteStr] = data.ceremony_end.split(':');
+        const raw = `${hourStr.padStart(2, '0')}:${minuteStr.padStart(2, '0')}`;
+        setCeremonyEndRaw(raw);
+        setValue('ceremony_end', raw, { shouldValidate: false });
+      }
+
+      if (data.reception_start) {
+        const [hourStr, minuteStr] = data.reception_start.split(':');
+        const hour = parseInt(hourStr, 10);
+        const minute = parseInt(minuteStr, 10);
+        const raw = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        setReceptionStartTimeRaw(raw);
+        setValue('reception_start', raw, { shouldValidate: false });
+      }
+      if (data.dinner_start) {
+        const [hourStr, minuteStr] = data.dinner_start.split(':');
+        const hour = parseInt(hourStr, 10);
+        const minute = parseInt(minuteStr, 10);
+        const raw = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        setDinnerStartTimeRaw(raw);
+        setValue('dinner_start', raw, { shouldValidate: false });
+      }
+      if (data.reception_end) {
+        const [hourStr, minuteStr] = data.reception_end.split(':');
+        const hour = parseInt(hourStr, 10);
+        const minute = parseInt(minuteStr, 10);
+        const raw = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        setReceptionEndTimeRaw(raw);
+        setValue('reception_end', raw, { shouldValidate: false });
+      }
+      if (data.photographer2_start) {
+        const [hourStr, minuteStr] = data.photographer2_start.split(':');
+        const hour = parseInt(hourStr, 10);
+        const minute = parseInt(minuteStr, 10);
+        const raw = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        setPhotographer2StartRaw(raw);
+        setValue('photographer2_start', raw, { shouldValidate: false });
+      }
+
+
+
+
+
         // Display in 12-hour format like "2:00 PM"
         const hour12 = hour % 12 || 12;
         const ampm = hour >= 12 ? 'PM' : 'AM';
         const formattedDisplay = `${hour12}:${minute.toString().padStart(2, '0')} ${ampm}`;
       }
+
+
 
       setIsSubmitted(data.submitted || false);
     })
@@ -324,23 +386,28 @@ return (
                         className="border p-2 rounded-lg w-full"
                     />
 
-                    {/* Ceremony Times */}
-                    <label className="block text-sm font-medium text-gray-700 mt-4">Ceremony Times:</label>
-                    <input
-                      type="text"
-                      {...register("ceremony_start")}
-                      className="border p-2 rounded-lg w-full"
+                    <StyledTimePicker
+                      label="Ceremony Start"
+                      value={ceremonyStartRaw}
+                      onChange={(val) => {
+                        setCeremonyStartRaw(val);
+                        setValue('ceremony_start', val, { shouldValidate: false });
+                      }}
                     />
-                    <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
+                    <input type="hidden" {...register('ceremony_start')} />
 
                     <span className="block text-center my-1">to</span>
 
-                    <input
-                      type="text"
-                      {...register("ceremony_end")}
-                      className="border p-2 rounded-lg w-full"
+                    <StyledTimePicker
+                      label="Ceremony End"
+                      value={ceremonyEndRaw}
+                      onChange={(val) => {
+                        setCeremonyEndRaw(val);
+                        setValue('ceremony_end', val, { shouldValidate: false });
+                      }}
                     />
-                    <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
+                    <input type="hidden" {...register('ceremony_end')} />
+
 
                   </div>
                   <div>
@@ -373,16 +440,15 @@ return (
                       className="border p-2 rounded-lg w-full"
                     />
 
-                    {/* Reception Start Time */}
-                    <label className="block text-sm font-medium text-gray-700 mt-4">
-                      Cocktail Start Time:
-                    </label>
-                    <input
-                      type="text"
-                      {...register("reception_start")}
-                      className="border p-2 rounded-lg w-full"
+                    <StyledTimePicker
+                      label="Cocktail Start Time"
+                      value={receptionStartTimeRaw}
+                      onChange={(val) => {
+                        setReceptionStartTimeRaw(val)
+                        setValue('reception_start', val, { shouldValidate: false })
+                      }}
                     />
-                    <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
+                    <input type="hidden" {...register('reception_start')} />
 
                     <label className="block text-sm font-medium text-gray-700">Reception Phone #:</label>
                     <input
@@ -399,23 +465,25 @@ return (
                         className="border p-2 rounded-lg w-full"
                     />
 
-                    {/* Dinner Start Time */}
-                    <label className="block text-sm font-medium text-gray-700 mt-4">Dinner Start Time:</label>
-                    <input
-                      type="text"
-                      {...register("dinner_start")}
-                      className="border p-2 rounded-lg w-full"
+                    <StyledTimePicker
+                      label="Dinner Start Time"
+                      value={dinnerStartTimeRaw}
+                      onChange={(val) => {
+                        setDinnerStartTimeRaw(val)
+                        setValue('dinner_start', val, { shouldValidate: false })
+                      }}
                     />
-                    <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
+                    <input type="hidden" {...register('dinner_start')} />
 
-                    {/* Reception End Time */}
-                    <label className="block text-sm font-medium text-gray-700 mt-4">Reception Ends:</label>
-                    <input
-                      type="text"
-                      {...register("reception_end")}
-                      className="border p-2 rounded-lg w-full"
+                    <StyledTimePicker
+                      label="Reception Ends"
+                      value={receptionEndTimeRaw}
+                      onChange={(val) => {
+                        setReceptionEndTimeRaw(val);
+                        setValue('reception_end', val, { shouldValidate: false });
+                      }}
                     />
-                    <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
+                    <input type="hidden" {...register('reception_end')} />
 
 
                     <p>It is recommended that you seat your photographer/videographer in the room for dinner so that we
@@ -467,14 +535,17 @@ return (
                     <input type="text" {...register("photographer2_start_location_address")}
                            className="border p-2 rounded-lg w-full"/>
 
-                  {/* Photographer 2 Start Time */}
-                  <label className="block text-sm font-medium text-gray-700 mt-4">Starting Time (Photographer 2):</label>
-                  <input
-                    type="text"
-                    {...register("photographer2_start")}
-                    className="border p-2 rounded-lg w-full"
+                  <StyledTimePicker
+                    label="Starting Time (Photographer 2)"
+                    value={photographer2StartRaw}
+                    onChange={(val) => {
+                      setPhotographer2StartRaw(val);
+                      setValue('photographer2_start', val, { shouldValidate: false });
+                    }}
                   />
+                  <input type="hidden" {...register('photographer2_start')} />
                   <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
+
                   </div>
                 </div>
               </div>
