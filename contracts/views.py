@@ -568,6 +568,11 @@ def edit_services(request, id):
                     Package.objects.get(pk=request.POST.get('photobooth_package'))
                     if request.POST.get('photobooth_package') else None
                 )
+                contract.photobooth_additional = (
+                    AdditionalEventStaffOption.objects.get(pk=request.POST.get('photobooth_additional'))
+                    if request.POST.get('photobooth_additional') else None
+                )
+
 
             # Save the contract with the updated fields
             contract.save()
