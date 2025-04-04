@@ -33,7 +33,14 @@ def generate_pdf(guide, contract, logger):
         ).count()
         version_number = existing_versions + 1
 
-        context = {'guide': guide}
+        logo_url = f"{settings.MEDIA_URL}logo/Final_Logo.png"
+        logger.info("Generating PDF for guide ID: %s with logo URL: %s", guide.pk, logo_url)
+
+        context = {
+            'guide': guide,
+            'logo_url': logo_url,
+        }
+
         html_string = render_to_string('wedding_day_guide/wedding_day_guide_pdf.html', context)
         pdf_file = HTML(string=html_string).write_pdf()
 
@@ -47,12 +54,11 @@ def generate_pdf(guide, contract, logger):
             is_event_staff_visible=True
         )
 
-        logger.info("PDF generated and saved successfully for guide ID: %s, contract ID: %s", guide.pk,
-                    contract.contract_id)
+        logger.info("PDF generated and saved successfully for guide ID: %s, contract ID: %s",
+                    guide.pk, contract.contract_id)
     except Exception as e:
         logger.error("Error generating PDF for guide %s: %s", guide.pk, e)
         raise
-
 
 @login_required
 def wedding_day_guide(request, contract_id):
