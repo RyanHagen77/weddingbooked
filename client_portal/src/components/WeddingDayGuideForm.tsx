@@ -82,13 +82,13 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   });
 
   // Time field states for TimeInput components
-  const [dressingStartTimeRaw, setDressingStartTimeRaw] = useState('12:00'); // what Timekeeper uses
-  const [ceremonyStartRaw, setCeremonyStartRaw] = useState('12:00');
-  const [ceremonyEndRaw, setCeremonyEndRaw] = useState('12:00');
-  const [receptionStartTimeRaw, setReceptionStartTimeRaw] = useState('12:00')
-  const [dinnerStartTimeRaw, setDinnerStartTimeRaw] = useState('12:00')
-  const [receptionEndTimeRaw, setReceptionEndTimeRaw] = useState('12:00');
-  const [photographer2StartRaw, setPhotographer2StartRaw] = useState('12:00');
+  const [dressingStartTimeRaw, setDressingStartTimeRaw] = useState('00:00'); // what Timekeeper uses
+  const [ceremonyStartRaw, setCeremonyStartRaw] = useState('00:00');
+  const [ceremonyEndRaw, setCeremonyEndRaw] = useState('00:00');
+  const [receptionStartTimeRaw, setReceptionStartTimeRaw] = useState('00:00')
+  const [dinnerStartTimeRaw, setDinnerStartTimeRaw] = useState('00:00')
+  const [receptionEndTimeRaw, setReceptionEndTimeRaw] = useState('00:00');
+  const [photographer2StartRaw, setPhotographer2StartRaw] = useState('00:00');
 
 
 
