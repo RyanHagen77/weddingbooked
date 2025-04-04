@@ -396,8 +396,6 @@ return (
                     />
                     <input type="hidden" {...register('ceremony_start')} />
 
-                    <span className="block text-center my-1">to</span>
-
                     <StyledTimePicker
                       label="Ceremony End"
                       value={ceremonyEndRaw}
@@ -544,7 +542,6 @@ return (
                     }}
                   />
                   <input type="hidden" {...register('photographer2_start')} />
-                  <small className="text-gray-500">Be sure to include hours and AM or PM.</small>
 
                   </div>
                 </div>
