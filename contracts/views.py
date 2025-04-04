@@ -344,7 +344,7 @@ def contract_detail(request, id):
     additional_videography_options = AdditionalEventStaffOption.objects.filter(service_type=videography_service_type,
                                                                                is_active=True)
     additional_dj_options = AdditionalEventStaffOption.objects.filter(service_type=dj_service_type, is_active=True)
-    additional_photobooth_options = AdditionalEventStaffOption.objects.filter(servic_type=photobooth_service_type, is_active=True)
+    additional_photobooth_options = AdditionalEventStaffOption.objects.filter(service_type=photobooth_service_type, is_active=True)
     overtime_options = OvertimeOption.objects.all().values('id', 'role', 'rate_per_hour')
     engagement_session_options = EngagementSessionOption.objects.filter(is_active=True)
 
