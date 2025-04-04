@@ -236,39 +236,70 @@ useEffect(() => {
     }
   };
 
-  const onSubmit: SubmitHandler<FormData> = async (data) => {
-    setIsSubmitting(true);
-    setMessage(null);
-    const accessToken = localStorage.getItem('access_token');
-    const payload = { ...data, contract: contractId, strict_validation: true, submit: true };
+const onSubmit: SubmitHandler<FormData> = async (data) => {
+  setIsSubmitting(true);
+  setMessage(null);
 
-    try {
-      const response = await fetch(
-        `https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+  const requiredTimes = [
+    { key: 'dressing_start_time', label: 'Dressing Start Time' },
+    { key: 'ceremony_start', label: 'Ceremony Start Time' },
+    { key: 'ceremony_end', label: 'Ceremony End Time' },
+    { key: 'reception_start', label: 'Cocktail Start Time' },
+    { key: 'dinner_start', label: 'Dinner Start Time' },
+    { key: 'reception_end', label: 'Reception End Time' },
+    { key: 'photographer2_start', label: 'Photographer 2 Start Time' }
+  ];
 
-      if (response.ok) {
-        setFormSubmitted(true);
-        setIsSubmitted(true);
-        setMessage('Form submitted successfully.');
-      } else {
-        setMessage('Failed to submit form. Please try again.');
-      }
-    } catch (error) {
-      setMessage('An error occurred while submitting the form.');
-      console.error('Error submitting form:', error);
-    } finally {
-      setIsSubmitting(false);
+  const missingField = requiredTimes.find(({ key }) => !data[key as keyof FormData]);
+
+  if (missingField) {
+    const fieldName = missingField.key;
+    const label = missingField.label;
+    setMessage(`Please enter a time for "${label}".`);
+
+    // Scroll to field
+    const el = document.querySelector(`[name="${fieldName}"]`);
+    if (el && typeof el.scrollIntoView === 'function') {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      (el as HTMLElement).focus();
     }
-  };
+
+    setIsSubmitting(false);
+    return;
+  }
+
+  const accessToken = localStorage.getItem('access_token');
+  const payload = { ...data, contract: contractId, strict_validation: true, submit: true };
+
+  try {
+    const response = await fetch(
+      `https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (response.ok) {
+      setFormSubmitted(true);
+      setIsSubmitted(true);
+      setMessage('Form submitted successfully.');
+    } else {
+      const errorData = await response.json();
+      setMessage(errorData?.detail || 'Failed to submit form. Please check your entries.');
+    }
+  } catch (error) {
+    console.error('Error submitting form:', error);
+    setMessage('An error occurred while submitting the form.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
 
 return (
