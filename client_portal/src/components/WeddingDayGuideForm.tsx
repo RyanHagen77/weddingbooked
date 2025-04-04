@@ -175,24 +175,30 @@ useEffect(() => {
         setValue('photographer2_start', raw, { shouldValidate: false });
       }
 
-
-
-
-
         // Display in 12-hour format like "2:00 PM"
         const hour12 = hour % 12 || 12;
         const ampm = hour >= 12 ? 'PM' : 'AM';
         const formattedDisplay = `${hour12}:${minute.toString().padStart(2, '0')} ${ampm}`;
       }
 
-
-
-      setIsSubmitted(data.submitted || false);
+    setIsSubmitted(data.submitted || false);
     })
     .catch((error) => {
       console.error('Error fetching wedding guide:', error);
     });
 }, [contractId, setValue]);
+
+useEffect(() => {
+  if (Object.keys(errors).length > 0) {
+    const firstErrorField = Object.keys(errors)[0];
+    const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
+
+    if (errorElement && typeof errorElement.scrollIntoView === 'function') {
+      errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      errorElement.focus();
+    }
+  }
+}, [errors]);
 
 
 
