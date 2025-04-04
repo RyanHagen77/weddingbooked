@@ -88,6 +88,7 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   const [receptionStartTimeRaw, setReceptionStartTimeRaw] = useState('12:00')
   const [dinnerStartTimeRaw, setDinnerStartTimeRaw] = useState('12:00')
   const [receptionEndTimeRaw, setReceptionEndTimeRaw] = useState('12:00');
+  const [photographer2StartRaw, setPhotographer2StartRaw] = useState('12:00');
 
 
 
@@ -246,7 +247,6 @@ const onSubmit: SubmitHandler<FormData> = async (data) => {
     { key: 'reception_start', label: 'Cocktail Start Time' },
     { key: 'dinner_start', label: 'Dinner Start Time' },
     { key: 'reception_end', label: 'Reception End Time' },
-    { key: 'photographer2_start', label: 'Photographer 2 Start Time' }
   ];
 
   const missingField = requiredTimes.find(({ key }) => !data[key as keyof FormData]);
