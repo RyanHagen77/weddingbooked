@@ -335,6 +335,7 @@ def contract_detail(request, id):
     photography_packages = Package.objects.filter(service_type=photography_service_type).order_by('name')
     videography_service_type = ServiceType.objects.get(name='Videography')
     dj_service_type = ServiceType.objects.get(name='Dj')
+    photobooth_service_type = ServiceType.objects.get(name='Photobooth')
     videography_packages = Package.objects.filter(service_type__name='Videography').order_by('name')
     products_for_contract = contract.contract_products.all()
     payments_made = Payment.objects.filter(contract=contract)
@@ -343,6 +344,7 @@ def contract_detail(request, id):
     additional_videography_options = AdditionalEventStaffOption.objects.filter(service_type=videography_service_type,
                                                                                is_active=True)
     additional_dj_options = AdditionalEventStaffOption.objects.filter(service_type=dj_service_type, is_active=True)
+    additional_photobooth_options = AdditionalEventStaffOption.objects.filter(servic_type=photobooth_service_type, is_active=True)
     overtime_options = OvertimeOption.objects.all().values('id', 'role', 'rate_per_hour')
     engagement_session_options = EngagementSessionOption.objects.filter(is_active=True)
 
@@ -441,6 +443,7 @@ def contract_detail(request, id):
         'additional_photography_options': additional_photography_options,
         'additional_videography_options': additional_videography_options,
         'additional_dj_options': additional_dj_options,
+        'additional_photobooth_options': additional_photobooth_options,
         'engagement_session_options': engagement_session_options,
         'overtime_options': overtime_options,
         'total_overtime_cost': total_overtime_cost,
