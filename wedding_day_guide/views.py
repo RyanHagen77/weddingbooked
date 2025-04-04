@@ -133,18 +133,25 @@ def wedding_day_guide_pdf(request, pk):
     """
     try:
         guide = get_object_or_404(WeddingDayGuide, pk=pk, contract__client__user=request.user)
-        html_string = render_to_string('wedding_day_guide_pdf.html', {'guide': guide})
+        logo_url = f"{settings.MEDIA_URL}logo/Final_Logo.png"
+        logger.info("Rendering PDF for guide ID: %s with logo URL: %s by user: %s", guide.pk, logo_url, request.user)
+
+        html_string = render_to_string('wedding_day_guide_pdf.html', {
+            'guide': guide,
+            'logo_url': logo_url,
+        })
         pdf = HTML(string=html_string).write_pdf()
 
         response = HttpResponse(pdf, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="wedding_day_guide_{guide.pk}.pdf"'
         logger.info("PDF downloaded for guide ID: %s by user: %s", guide.pk, request.user)
         return response
+
     except WeddingDayGuide.DoesNotExist:
         logger.error("Guide not found for ID: %s by user: %s", pk, request.user)
         return HttpResponse("Guide not found.", status=404)
     except Exception as e:
-        logger.error("Error generating PDF for guide ID: %s - %s", pk, e)
+        logger.error("Error generating PDF for guide ID: %s - %s", pk, str(e))
         return HttpResponseServerError("Error generating PDF.")
 
 @api_view(['GET', 'POST'])
