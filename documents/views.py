@@ -338,10 +338,11 @@ def view_submitted_contract(request, contract_id, version_number):
 
 @login_required
 def contract_and_rider_agreement(request, contract_id):
-    # Fetch contract object
     contract = get_object_or_404(Contract, pk=contract_id)
     logo_url = f"{settings.MEDIA_URL}logo/Final_Logo.png"
     company_signature_url = f"{settings.MEDIA_URL}contract_signatures/EssenceSignature.png"
+
+    show_riders = request.POST.get('contract_agreement') != 'true' if request.method == 'POST' else True
 
     if request.method == 'POST':
         form = ContractAgreementForm(request.POST)
@@ -375,8 +376,6 @@ def contract_and_rider_agreement(request, contract_id):
                         rider_text=rider_text
                     )
                     rider_agreements.append(rider_agreement)
-                else:
-                    print(f"Missing signature for {rider}")
 
         discount_details = get_discount_details(contract)
         service_discounts = calculate_service_discounts(contract_id)
@@ -440,7 +439,7 @@ def contract_and_rider_agreement(request, contract_id):
                 contract.prospect_photographer2,
                 contract.prospect_photographer3
             ],
-            'show_riders': request.POST.get('contract_agreement') != 'true'
+            'show_riders': show_riders
         }
 
         latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
@@ -544,10 +543,11 @@ def contract_and_rider_agreement(request, contract_id):
                 contract.prospect_photographer2,
                 contract.prospect_photographer3
             ],
-            'show_riders': True
+            'show_riders': show_riders
         }
 
         return render(request, 'documents/client_contract_and_rider_agreement.html', context)
+
 
 
 
