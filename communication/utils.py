@@ -137,7 +137,7 @@ def send_contract_and_rider_email_to_client(request, contract, rider_type=None, 
         return
 
     if only_contract:
-        agreement_url = reverse('documents:client_contract_and_rider_agreement', args=[contract.contract_id])
+        agreement_url = reverse('documents:client_contract_agreement', args=[contract.contract_id])
         subject = 'Sign Your Contract Agreement'
         agreement_type = 'contract agreement'
     elif rider_type:
