@@ -386,16 +386,16 @@
         {{ contract.custom_text|default_if_none:"" }}
     </div>
 
-<!-- Main Contract Signature -->
-<div class="main-signature-section">
-    <label for="signature-pad-main">Signature for Contractual Agreement:</label>
-    <canvas id="signature-pad-main" width="400" height="100"></canvas>
-    <button type="button" onclick="clearSignaturePad('main')">Clear</button>
-</div>
-<input type="hidden" id="main_signature" name="main_signature">
+    <!-- Main Contract Signature -->
+    <div class="main-signature-section">
+        <label for="signature-pad-main">Signature for Contractual Agreement:</label>
+        <canvas id="signature-pad-main" width="400" height="100"></canvas>
+        <button type="button" onclick="clearSignaturePad('main')">Clear</button>
+    </div>
+    <input type="hidden" id="main_signature" name="main_signature">
 
     <!-- Photography Package Rider Agreement -->
-    {% if show_riders and contract.photography_package %}
+    {% if contract.photography_package %}
     <div class="page-break"></div>
     <div>
         <h2 style="text-align: center;">Photography Package Rider Agreement</h2>
@@ -448,9 +448,8 @@
     </div>
     {% endif %}
 
-
     <!-- Videography Package Rider Agreement -->
-    {% if show_riders and contract.videography_package %}
+    {% if contract.videography_package %}
     <div class="page-break"></div>
     <div>
         <h2 style="text-align: center;">Videography Package Rider Agreement</h2>
@@ -504,7 +503,7 @@
     {% endif %}
 
     <!-- DJ Package Rider Agreement -->
-    {% if show_riders and contract.dj_package %}
+    {% if contract.dj_package %}
     <div class="page-break"></div>
     <div>
         <h2 style="text-align: center;">DJ Package Rider Agreement</h2>
@@ -558,7 +557,7 @@
     {% endif %}
 
     <!-- Photobooth Package Rider Agreement -->
-    {% if show_riders and contract.photobooth_package %}
+    {% if contract.photobooth_package %}
     <div class="page-break"></div>
     <div>
         <h2 style="text-align: center;">Photobooth Package Rider Agreement</h2>
