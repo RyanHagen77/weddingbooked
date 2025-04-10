@@ -275,7 +275,7 @@
     </style>
 </head>
 <body>
-<form id="contract-form" method="post" action="{% url 'documents:client_contract_and_rider_agreement' contract.contract_id %}">
+<form id="contract-form" method="post" action="{% url 'documents:client_contract_agreement' contract.contract_id %}">
     {% csrf_token %}
     {% load group_tags %}
     <!-- Header Section -->
