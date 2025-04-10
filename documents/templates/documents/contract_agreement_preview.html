@@ -680,11 +680,18 @@
     }
 
     function sendContractAgreement() {
-        var form = document.getElementById('contract-form');
+        const form = document.getElementById('contract-form');
+        const formData = new FormData(form);
 
-        var formData = new FormData(form);
-        // ✅ Add as lowercase string so Django can read it properly
+        // ✅ Append flag to trigger contract-only response in Django
         formData.append('contract_agreement', 'true');
+
+        // ✅ Append required form fields (if needed by your form validation)
+        // Make sure main signature is saved
+        if (signaturePads['main']) {
+            const mainSignature = signaturePads['main'].toDataURL();
+            formData.set('main_signature', mainSignature);
+        }
 
         fetch(form.action, {
             method: 'POST',
@@ -692,17 +699,25 @@
                 'X-CSRFToken': '{{ csrf_token }}'
             },
             body: formData
-        }).then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert('Contract agreement email sent successfully!');
-                } else {
-                    alert('Failed to send the contract agreement email.');
-                }
-            }).catch(error => {
-                console.error('Error:', error);
+        })
+        .then(response => {
+            // It might not be JSON if there's an error
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                alert('Contract agreement email sent successfully!');
+            } else {
                 alert('Failed to send the contract agreement email.');
-            });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to send the contract agreement email.');
+        });
     }
 
     function clearSignaturePad(padId) {
