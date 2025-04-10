@@ -460,7 +460,8 @@ def contract_and_rider_agreement(request, contract_id):
                 contract.prospect_photographer1,
                 contract.prospect_photographer2,
                 contract.prospect_photographer3
-            ]
+            ],
+            'show_riders': False  # ✅ Use this in the template to skip rider sections
         }
 
         # Fetch the latest agreement version after saving to ensure it's correct

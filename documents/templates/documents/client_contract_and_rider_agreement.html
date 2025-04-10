@@ -386,13 +386,15 @@
         {{ contract.custom_text|default_if_none:"" }}
     </div>
 
-    <!-- Main Contract Signature -->
-    <div class="main-signature-section">
-        <label for="signature-pad-main">Signature for Contractual Agreement:</label>
-        <canvas id="signature-pad-main" width="400" height="100"></canvas>
-        <button type="button" onclick="clearSignaturePad('main')">Clear</button>
-    </div>
-    <input type="hidden" id="main_signature" name="main_signature">
+<!-- Main Contract Signature -->
+<div class="main-signature-section">
+    <label for="signature-pad-main">Signature for Contractual Agreement:</label>
+    <canvas id="signature-pad-main" width="400" height="100"></canvas>
+    <button type="button" onclick="clearSignaturePad('main')">Clear</button>
+</div>
+<input type="hidden" id="main_signature" name="main_signature">
+
+{% if show_riders %}
 
     <!-- Photography Package Rider Agreement -->
     {% if contract.photography_package %}
@@ -447,6 +449,7 @@
         </div>
     </div>
     {% endif %}
+
 
     <!-- Videography Package Rider Agreement -->
     {% if contract.videography_package %}
@@ -610,6 +613,7 @@
     </div>
     {% endif %}
 
+{% endif %}
     <!-- Hidden input for main signature -->
     <input type="hidden" name="signature_photography" id="signature_photography">
     <input type="hidden" name="signature_photography_additional" id="signature_photography_additional">

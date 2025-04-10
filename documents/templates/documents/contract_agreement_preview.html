@@ -683,8 +683,8 @@
         var form = document.getElementById('contract-form');
 
         var formData = new FormData(form);
-        // Add a specific identifier to indicate this is a contract agreement submission
-        formData.append('contract_agreement', true);
+        // ✅ Add as lowercase string so Django can read it properly
+        formData.append('contract_agreement', 'true');
 
         fetch(form.action, {
             method: 'POST',
