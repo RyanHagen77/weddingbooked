@@ -349,7 +349,7 @@ def contract_and_rider_agreement(request, contract_id):
             agreement = form.save(commit=False)
             agreement.contract = contract
             agreement.signature = form.cleaned_data['main_signature']
-            agreement.photographer_choice = form.cleaned_data['photographer_choice']  # Save photographer choice
+            agreement.photographer_choice = form.cleaned_data['photographer_choice']
 
             latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
             agreement.version_number = latest_agreement.version_number + 1 if latest_agreement else 1
@@ -378,47 +378,26 @@ def contract_and_rider_agreement(request, contract_id):
                 else:
                     print(f"Missing signature for {rider}")
 
-        # Fetch other discounts
         discount_details = get_discount_details(contract)
-
-        # Calculate service discounts
         service_discounts = calculate_service_discounts(contract_id)
-
-        # Get package and additional services text
         package_texts, additional_services_texts = get_package_and_service_texts(contract)
-
         rider_texts = get_rider_texts(contract)
-
-        # Process overtime options
         overtime_options_by_service_type, total_overtime_cost = calculate_overtime_cost(contract_id)
-
-        # Calculate totals
         formalwear_subtotal = contract.calculate_formalwear_subtotal()
-
         product_subtotal = contract.calculate_product_subtotal()
         tax_rate_percentage = float(contract.tax_rate)
         tax_amount = contract.calculate_tax()
         product_subtotal_with_tax = product_subtotal + tax_amount
-
-        # Calculate total deposit due to book
         deposit_due_to_book = calculate_total_deposit(contract)
-
-        # Pre-calculate payments totals to avoid recursion in templates
         amount_paid = sum(payment.amount for payment in contract.payments.all()) or Decimal('0.00')
         balance_due = max(Decimal('0.00'), contract.calculate_total_cost() - amount_paid)
-
-        # Calculate the due date (60 days before the event date)
         due_date = contract.event_date - timedelta(days=60)
-
-        # Add contract products to the context
         contract_products = contract.contract_products.all()
 
         first_agreement = ContractAgreement.objects.filter(contract=contract).order_by('version_number').first()
         latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
         rider_agreements = RiderAgreement.objects.filter(contract=contract)
 
-        # Update context with calculated values
-        # Build the context
         context = {
             'contract': contract,
             'logo_url': logo_url,
@@ -455,7 +434,7 @@ def contract_and_rider_agreement(request, contract_id):
             'videography_discount': service_discounts['videography'],
             'dj_discount': service_discounts['dj'],
             'photobooth_discount': service_discounts['photobooth'],
-            'contract_products': contract_products,  # Add products to context
+            'contract_products': contract_products,
             'photographer_choices': [
                 contract.prospect_photographer1,
                 contract.prospect_photographer2,
@@ -464,13 +443,10 @@ def contract_and_rider_agreement(request, contract_id):
             'show_riders': request.POST.get('contract_agreement') != 'true'
         }
 
-        # Fetch the latest agreement version after saving to ensure it's correct
         latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
-
-        # Generate PDF and send email
         html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
         pdf_file = HTML(string=html_string).write_pdf()
-        pdf_name = f"contract_{contract_id}_agreement_v{latest_agreement.version_number}.pdf"  # Use the latest version
+        pdf_name = f"contract_{contract_id}_agreement_v{latest_agreement.version_number}.pdf"
         path = default_storage.save(f"contract_documents/{pdf_name}", ContentFile(pdf_file))
 
         ContractDocument.objects.create(
@@ -479,7 +455,6 @@ def contract_and_rider_agreement(request, contract_id):
             is_client_visible=True,
         )
 
-        # Email the PDF to the client
         client_email = contract.client.primary_email
         email = EmailMessage(
             subject="Your Contract Agreement",
@@ -496,37 +471,19 @@ def contract_and_rider_agreement(request, contract_id):
             'portal_url': portal_url
         })
     else:
-        # Fetch other discounts
         discount_details = get_discount_details(contract)
-
-        # Calculate service discounts
         service_discounts = calculate_service_discounts(contract_id)
-
-        # Get package and additional services text
         package_texts, additional_services_texts = get_package_and_service_texts(contract)
-
-        # Process overtime options
         overtime_options_by_service_type, total_overtime_cost = calculate_overtime_cost(contract_id)
-
-        # Calculate totals
         formalwear_subtotal = contract.calculate_formalwear_subtotal()
-
         product_subtotal = contract.calculate_product_subtotal()
         tax_rate_percentage = float(contract.tax_rate)
         tax_amount = contract.calculate_tax()
         product_subtotal_with_tax = product_subtotal + tax_amount
-
-        # Calculate total deposit due to book
         deposit_due_to_book = calculate_total_deposit(contract)
-
-        # Pre-calculate payments totals to avoid recursion in templates
         amount_paid = sum(payment.amount for payment in contract.payments.all()) or Decimal('0.00')
         balance_due = max(Decimal('0.00'), contract.calculate_total_cost() - amount_paid)
-
-        # Calculate the due date (60 days before the event date)
         due_date = contract.event_date - timedelta(days=60)
-
-        # Add contract products to the context
         contract_products = contract.contract_products.all()
 
         first_agreement = ContractAgreement.objects.filter(contract=contract).order_by('version_number').first()
@@ -534,25 +491,17 @@ def contract_and_rider_agreement(request, contract_id):
         rider_agreements = RiderAgreement.objects.filter(contract=contract)
 
         rider_texts = {
-            'photography': linebreaks(
-                contract.photography_package.rider_text) if contract.photography_package else None,
-            'photography_additional': linebreaks(
-                contract.photography_additional.rider_text) if contract.photography_additional else None,
-            'engagement_session': linebreaks(
-                contract.engagement_session.rider_text) if contract.engagement_session else None,
-            'videography': linebreaks(
-                contract.videography_package.rider_text) if contract.videography_package else None,
-            'videography_additional': linebreaks(
-                contract.videography_additional.rider_text) if contract.videography_additional else None,
+            'photography': linebreaks(contract.photography_package.rider_text) if contract.photography_package else None,
+            'photography_additional': linebreaks(contract.photography_additional.rider_text) if contract.photography_additional else None,
+            'engagement_session': linebreaks(contract.engagement_session.rider_text) if contract.engagement_session else None,
+            'videography': linebreaks(contract.videography_package.rider_text) if contract.videography_package else None,
+            'videography_additional': linebreaks(contract.videography_additional.rider_text) if contract.videography_additional else None,
             'dj': linebreaks(contract.dj_package.rider_text) if contract.dj_package else None,
             'dj_additional': linebreaks(contract.dj_additional.rider_text) if contract.dj_additional else None,
             'photobooth': linebreaks(contract.photobooth_package.rider_text) if contract.photobooth_package else None,
-            'photobooth_additional': linebreaks(
-                contract.photobooth_additional.rider_text) if contract.photobooth_additional else None,
+            'photobooth_additional': linebreaks(contract.photobooth_additional.rider_text) if contract.photobooth_additional else None,
         }
 
-        # Update context with calculated values
-        # Build the context
         context = {
             'contract': contract,
             'logo_url': logo_url,
@@ -589,12 +538,13 @@ def contract_and_rider_agreement(request, contract_id):
             'videography_discount': service_discounts['videography'],
             'dj_discount': service_discounts['dj'],
             'photobooth_discount': service_discounts['photobooth'],
-            'contract_products': contract_products,  # Add products to context
+            'contract_products': contract_products,
             'photographer_choices': [
                 contract.prospect_photographer1,
                 contract.prospect_photographer2,
                 contract.prospect_photographer3
-            ]
+            ],
+            'show_riders': True
         }
 
         return render(request, 'documents/client_contract_and_rider_agreement.html', context)
