@@ -680,17 +680,11 @@
     }
 
     function sendContractAgreement() {
-        const form = document.getElementById('contract-form');
-        const formData = new FormData(form);
+        var form = document.getElementById('contract-form');
 
-        // Add the contract_agreement flag
-        formData.append('contract_agreement', 'true');
-
-        // Make sure the main signature is attached
-        if (window.signaturePads && signaturePads['main']) {
-            const mainSignature = signaturePads['main'].toDataURL();
-            formData.set('main_signature', mainSignature);
-        }
+        var formData = new FormData(form);
+        // Add a specific identifier to indicate this is a contract agreement submission
+        formData.append('contract_agreement', true);
 
         fetch(form.action, {
             method: 'POST',
@@ -698,19 +692,17 @@
                 'X-CSRFToken': '{{ csrf_token }}'
             },
             body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                alert('Contract agreement email sent successfully!');
-            } else {
+        }).then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Contract agreement email sent successfully!');
+                } else {
+                    alert('Failed to send the contract agreement email.');
+                }
+            }).catch(error => {
+                console.error('Error:', error);
                 alert('Failed to send the contract agreement email.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to send the contract agreement email.');
-        });
+            });
     }
 
     function clearSignaturePad(padId) {
