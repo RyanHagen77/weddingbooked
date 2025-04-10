@@ -35,6 +35,7 @@
             <table>
                 <thead>
                     <tr>
+                        <th>#</th>
                         <th>Primary Contact</th>
                         <th>Email</th>
                         <th>Phone</th>
@@ -47,6 +48,7 @@
                 <tbody>
                     {% for data in report_data %}
                     <tr>
+                        <td>{{ forloop.counter0|add:report_data.start_index }}</td>
                         <td>{{ data.primary_contact }}</td>
                         <td>{{ data.primary_email }}</td>
                         <td>{{ data.primary_phone1 }}</td>
@@ -58,6 +60,26 @@
                     {% endfor %}
                 </tbody>
             </table>
+
+            {% if report_data.has_other_pages %}
+            <div class="pagination">
+                <span class="step-links">
+                    {% if report_data.has_previous %}
+                        <a href="?page=1&{{ request.GET.urlencode|safe|cut:'page=' }}">« First</a>
+                        <a href="?page={{ report_data.previous_page_number }}&{{ request.GET.urlencode|safe|cut:'page=' }}">‹ Prev</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ report_data.number }} of {{ report_data.paginator.num_pages }}
+                    </span>
+
+                    {% if report_data.has_next %}
+                        <a href="?page={{ report_data.next_page_number }}&{{ request.GET.urlencode|safe|cut:'page=' }}">Next ›</a>
+                        <a href="?page={{ report_data.paginator.num_pages }}&{{ request.GET.urlencode|safe|cut:'page=' }}">Last »</a>
+                    {% endif %}
+                </span>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>

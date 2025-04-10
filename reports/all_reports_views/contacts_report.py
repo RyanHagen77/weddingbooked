@@ -1,9 +1,8 @@
 from django.shortcuts import render
-
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from contracts.models import Contract, Location
-
+from django.core.paginator import Paginator
 
 from datetime import datetime
 import calendar
@@ -13,14 +12,11 @@ import logging
 
 # Logging setup
 logger = logging.getLogger(__name__)
-
-
 User = get_user_model()
 
 
 @login_required
 def contacts_report(request):
-
     # Get the current date
     today = datetime.today()
     first_day_of_month = today.replace(day=1)
@@ -43,6 +39,7 @@ def contacts_report(request):
     if selected_status != 'all':
         contracts = contracts.filter(status=selected_status)
 
+    # Build report data
     report_data = []
     for contract in contracts:
         report_data.append({
@@ -55,6 +52,11 @@ def contacts_report(request):
             'location': contract.location.name if contract.location else 'N/A',
         })
 
+    # Add pagination
+    paginator = Paginator(report_data, 25)  # Show 25 per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     locations = Location.objects.all()
 
     context = {
@@ -64,7 +66,7 @@ def contacts_report(request):
         'selected_status': selected_status,
         'locations': locations,
         'statuses': Contract.STATUS_CHOICES,
-        'report_data': report_data,
+        'report_data': page_obj,  # Pass Page object for pagination and start_index
     }
 
     return render(request, 'reports/contacts_report.html', context)
