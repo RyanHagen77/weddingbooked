@@ -240,14 +240,7 @@ const onSubmit: SubmitHandler<FormData> = async (data) => {
   setIsSubmitting(true);
   setMessage(null);
 
-  const requiredTimes = [
-    { key: 'dressing_start_time', label: 'Dressing Start Time' },
-    { key: 'ceremony_start', label: 'Ceremony Start Time' },
-    { key: 'ceremony_end', label: 'Ceremony End Time' },
-    { key: 'reception_start', label: 'Cocktail Start Time' },
-    { key: 'dinner_start', label: 'Dinner Start Time' },
-    { key: 'reception_end', label: 'Reception End Time' },
-  ];
+
 
   const missingField = requiredTimes.find(({ key }) => !data[key as keyof FormData]);
 
