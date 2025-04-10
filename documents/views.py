@@ -440,7 +440,54 @@ def contract_and_rider_agreement(request, contract_id):
                 contract.prospect_photographer3
             ],
             'show_riders': show_riders
-        }
+        }@login_required
+def contract_and_rider_agreement(request, contract_id):
+    contract = get_object_or_404(Contract, pk=contract_id)
+    logo_url = f"{settings.MEDIA_URL}logo/Final_Logo.png"
+    company_signature_url = f"{settings.MEDIA_URL}contract_signatures/EssenceSignature.png"
+
+    show_riders = request.POST.get('contract_agreement') != 'true' if request.method == 'POST' else True
+
+    if request.method == 'POST':
+        form = ContractAgreementForm(request.POST)
+        if form.is_valid():
+            agreement = form.save(commit=False)
+            agreement.contract = contract
+            agreement.signature = form.cleaned_data['main_signature']
+            agreement.photographer_choice = form.cleaned_data['photographer_choice']
+
+            latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
+            agreement.version_number = latest_agreement.version_number + 1 if latest_agreement else 1
+            agreement.save()
+
+            rider_agreements = []
+            rider_texts = {}
+
+            if request.POST.get('contract_agreement') != 'true':
+                for rider in ['photography', 'photography_additional', 'videography', 'videography_additional', 'dj',
+                              'dj_additional', 'photobooth', 'photobooth_additional']:
+                    signature = request.POST.get(f'signature_{rider}')
+                    client_name = request.POST.get(f'client_name_{rider}')
+                    agreement_date = request.POST.get(f'agreement_date_{rider}')
+                    notes = request.POST.get(f'notes_{rider}')
+                    rider_text = request.POST.get(f'rider_text_{rider}')
+
+                    if signature:
+                        rider_agreement = RiderAgreement.objects.create(
+                            contract=contract,
+                            rider_type=rider,
+                            signature=signature,
+                            client_name=client_name,
+                            agreement_date=agreement_date,
+                            notes=notes,
+                            rider_text=rider_text
+                        )
+                        rider_agreements.append(rider_agreement)
+
+                rider_texts = get_rider_texts(contract)
+
+        context = build_contract_context(contract, contract_id, logo_url, company_signature_url, rider_texts)
+        context['show_riders'] = show_riders
 
         latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
         html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
@@ -464,92 +511,86 @@ def contract_and_rider_agreement(request, contract_id):
         email.attach(pdf_name, pdf_file, 'application/pdf')
         email.send()
 
+        if request.POST.get('contract_agreement') == 'true':
+            return JsonResponse({'status': 'success'})
+
         portal_url = reverse('users:client_portal', args=[contract_id])
         return render(request, 'documents/status_page.html', {
             'message': 'You\'re all set, thank you!',
             'portal_url': portal_url
         })
     else:
-        discount_details = get_discount_details(contract)
-        service_discounts = calculate_service_discounts(contract_id)
-        package_texts, additional_services_texts = get_package_and_service_texts(contract)
-        overtime_options_by_service_type, total_overtime_cost = calculate_overtime_cost(contract_id)
-        formalwear_subtotal = contract.calculate_formalwear_subtotal()
-        product_subtotal = contract.calculate_product_subtotal()
-        tax_rate_percentage = float(contract.tax_rate)
-        tax_amount = contract.calculate_tax()
-        product_subtotal_with_tax = product_subtotal + tax_amount
-        deposit_due_to_book = calculate_total_deposit(contract)
-        amount_paid = sum(payment.amount for payment in contract.payments.all()) or Decimal('0.00')
-        balance_due = max(Decimal('0.00'), contract.calculate_total_cost() - amount_paid)
-        due_date = contract.event_date - timedelta(days=60)
-        contract_products = contract.contract_products.all()
+        rider_texts = get_rider_texts(contract)
 
-        first_agreement = ContractAgreement.objects.filter(contract=contract).order_by('version_number').first()
-        latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
-        rider_agreements = RiderAgreement.objects.filter(contract=contract)
-
-        show_riders = True  # ✅ Explicitly define for GET requests
-
-        rider_texts = {
-            'photography': linebreaks(contract.photography_package.rider_text) if contract.photography_package else None,
-            'photography_additional': linebreaks(contract.photography_additional.rider_text) if contract.photography_additional else None,
-            'engagement_session': linebreaks(contract.engagement_session.rider_text) if contract.engagement_session else None,
-            'videography': linebreaks(contract.videography_package.rider_text) if contract.videography_package else None,
-            'videography_additional': linebreaks(contract.videography_additional.rider_text) if contract.videography_additional else None,
-            'dj': linebreaks(contract.dj_package.rider_text) if contract.dj_package else None,
-            'dj_additional': linebreaks(contract.dj_additional.rider_text) if contract.dj_additional else None,
-            'photobooth': linebreaks(contract.photobooth_package.rider_text) if contract.photobooth_package else None,
-            'photobooth_additional': linebreaks(contract.photobooth_additional.rider_text) if contract.photobooth_additional else None,
-        }
-
-        context = {
-            'contract': contract,
-            'logo_url': logo_url,
-            'company_signature_url': company_signature_url,
-            'first_agreement': first_agreement,
-            'latest_agreement': latest_agreement,
-            'rider_agreements': rider_agreements,
-            'package_texts': package_texts,
-            'additional_services_texts': additional_services_texts,
-            'rider_texts': rider_texts,
-            'total_overtime_cost': total_overtime_cost,
-            'overtime_options_by_service_type': overtime_options_by_service_type,
-            'formalwear_contracts': contract.formalwear_contracts.all(),
-            'formalwear_subtotal': formalwear_subtotal,
-            'product_subtotal': product_subtotal,
-            'tax_rate': tax_rate_percentage,
-            'tax_amount': tax_amount,
-            'product_subtotal_with_tax': product_subtotal_with_tax,
-            'service_fees': contract.servicefees.all(),
-            'service_fees_total': contract.calculate_total_service_fees(),
-            'total_service_cost': contract.calculate_total_service_cost(),
-            'package_discount': discount_details['package_discount'],
-            'sunday_discount': discount_details['sunday_discount'],
-            'other_discount_total': discount_details['other_discount_total'],
-            'total_discount': discount_details['total_discount'],
-            'other_discounts': discount_details['other_discounts'],
-            'total_cost_after_discounts': contract.calculate_total_service_cost_after_discounts(),
-            'deposit_due_to_book': deposit_due_to_book,
-            'grand_total': contract.calculate_total_cost(),
-            'amount_paid': amount_paid,
-            'balance_due': balance_due,
-            'due_date': due_date.strftime('%B %d, %Y'),
-            'photography_discount': service_discounts['photography'],
-            'videography_discount': service_discounts['videography'],
-            'dj_discount': service_discounts['dj'],
-            'photobooth_discount': service_discounts['photobooth'],
-            'contract_products': contract_products,
-            'photographer_choices': [
-                contract.prospect_photographer1,
-                contract.prospect_photographer2,
-                contract.prospect_photographer3
-            ],
-            'show_riders': show_riders
-        }
+        context = build_contract_context(contract, contract_id, logo_url, company_signature_url, rider_texts)
+        context['show_riders'] = show_riders
 
         return render(request, 'documents/client_contract_and_rider_agreement.html', context)
 
+
+def build_contract_context(contract, contract_id, logo_url, company_signature_url, rider_texts):
+    discount_details = get_discount_details(contract)
+    service_discounts = calculate_service_discounts(contract_id)
+    package_texts, additional_services_texts = get_package_and_service_texts(contract)
+    overtime_options_by_service_type, total_overtime_cost = calculate_overtime_cost(contract_id)
+    formalwear_subtotal = contract.calculate_formalwear_subtotal()
+    product_subtotal = contract.calculate_product_subtotal()
+    tax_rate_percentage = float(contract.tax_rate)
+    tax_amount = contract.calculate_tax()
+    product_subtotal_with_tax = product_subtotal + tax_amount
+    deposit_due_to_book = calculate_total_deposit(contract)
+    amount_paid = sum(payment.amount for payment in contract.payments.all()) or Decimal('0.00')
+    balance_due = max(Decimal('0.00'), contract.calculate_total_cost() - amount_paid)
+    due_date = contract.event_date - timedelta(days=60)
+    contract_products = contract.contract_products.all()
+
+    first_agreement = ContractAgreement.objects.filter(contract=contract).order_by('version_number').first()
+    latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
+    rider_agreements = RiderAgreement.objects.filter(contract=contract)
+
+    return {
+        'contract': contract,
+        'logo_url': logo_url,
+        'company_signature_url': company_signature_url,
+        'first_agreement': first_agreement,
+        'latest_agreement': latest_agreement,
+        'rider_agreements': rider_agreements,
+        'package_texts': package_texts,
+        'additional_services_texts': additional_services_texts,
+        'rider_texts': rider_texts,
+        'total_overtime_cost': total_overtime_cost,
+        'overtime_options_by_service_type': overtime_options_by_service_type,
+        'formalwear_contracts': contract.formalwear_contracts.all(),
+        'formalwear_subtotal': formalwear_subtotal,
+        'product_subtotal': product_subtotal,
+        'tax_rate': tax_rate_percentage,
+        'tax_amount': tax_amount,
+        'product_subtotal_with_tax': product_subtotal_with_tax,
+        'service_fees': contract.servicefees.all(),
+        'service_fees_total': contract.calculate_total_service_fees(),
+        'total_service_cost': contract.calculate_total_service_cost(),
+        'package_discount': discount_details['package_discount'],
+        'sunday_discount': discount_details['sunday_discount'],
+        'other_discount_total': discount_details['other_discount_total'],
+        'total_discount': discount_details['total_discount'],
+        'other_discounts': discount_details['other_discounts'],
+        'total_cost_after_discounts': contract.calculate_total_service_cost_after_discounts(),
+        'deposit_due_to_book': deposit_due_to_book,
+        'grand_total': contract.calculate_total_cost(),
+        'amount_paid': amount_paid,
+        'balance_due': balance_due,
+        'due_date': due_date.strftime('%B %d, %Y'),
+        'photography_discount': service_discounts['photography'],
+        'videography_discount': service_discounts['videography'],
+        'dj_discount': service_discounts['dj'],
+        'photobooth_discount': service_discounts['photobooth'],
+        'contract_products': contract_products,
+        'photographer_choices': [
+            contract.prospect_photographer1,
+            contract.prospect_photographer2,
+            contract.prospect_photographer3
+        ]
+    }
 
 
 
