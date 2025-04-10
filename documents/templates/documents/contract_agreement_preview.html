@@ -683,12 +683,11 @@
         const form = document.getElementById('contract-form');
         const formData = new FormData(form);
 
-        // ✅ Append flag to trigger contract-only response in Django
+        // Add the contract_agreement flag
         formData.append('contract_agreement', 'true');
 
-        // ✅ Append required form fields (if needed by your form validation)
-        // Make sure main signature is saved
-        if (signaturePads['main']) {
+        // Make sure the main signature is attached
+        if (window.signaturePads && signaturePads['main']) {
             const mainSignature = signaturePads['main'].toDataURL();
             formData.set('main_signature', mainSignature);
         }
@@ -700,13 +699,7 @@
             },
             body: formData
         })
-        .then(response => {
-            // It might not be JSON if there's an error
-            if (!response.ok) {
-                throw new Error("Network response was not ok");
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
                 alert('Contract agreement email sent successfully!');
