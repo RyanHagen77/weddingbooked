@@ -441,12 +441,17 @@ def contract_and_rider_agreement(request, contract_id):
             ],
             'show_riders': show_riders
         }@login_required
+
+
+@login_required
 def contract_and_rider_agreement(request, contract_id):
     contract = get_object_or_404(Contract, pk=contract_id)
     logo_url = f"{settings.MEDIA_URL}logo/Final_Logo.png"
     company_signature_url = f"{settings.MEDIA_URL}contract_signatures/EssenceSignature.png"
 
     show_riders = request.POST.get('contract_agreement') != 'true' if request.method == 'POST' else True
+
+    rider_texts = get_rider_texts(contract)  # Always include rider texts for context
 
     if request.method == 'POST':
         form = ContractAgreementForm(request.POST)
@@ -461,9 +466,8 @@ def contract_and_rider_agreement(request, contract_id):
             agreement.save()
 
             rider_agreements = []
-            rider_texts = {}
 
-            if request.POST.get('contract_agreement') != 'true':
+            if show_riders:
                 for rider in ['photography', 'photography_additional', 'videography', 'videography_additional', 'dj',
                               'dj_additional', 'photobooth', 'photobooth_additional']:
                     signature = request.POST.get(f'signature_{rider}')
@@ -483,8 +487,6 @@ def contract_and_rider_agreement(request, contract_id):
                             rider_text=rider_text
                         )
                         rider_agreements.append(rider_agreement)
-
-                rider_texts = get_rider_texts(contract)
 
         context = build_contract_context(contract, contract_id, logo_url, company_signature_url, rider_texts)
         context['show_riders'] = show_riders
@@ -511,7 +513,7 @@ def contract_and_rider_agreement(request, contract_id):
         email.attach(pdf_name, pdf_file, 'application/pdf')
         email.send()
 
-        if request.POST.get('contract_agreement') == 'true':
+        if not show_riders:
             return JsonResponse({'status': 'success'})
 
         portal_url = reverse('users:client_portal', args=[contract_id])
@@ -519,13 +521,10 @@ def contract_and_rider_agreement(request, contract_id):
             'message': 'You\'re all set, thank you!',
             'portal_url': portal_url
         })
-    else:
-        rider_texts = get_rider_texts(contract)
 
-        context = build_contract_context(contract, contract_id, logo_url, company_signature_url, rider_texts)
-        context['show_riders'] = show_riders
-
-        return render(request, 'documents/client_contract_and_rider_agreement.html', context)
+    context = build_contract_context(contract, contract_id, logo_url, company_signature_url, rider_texts)
+    context['show_riders'] = show_riders
+    return render(request, 'documents/client_contract_and_rider_agreement.html', context)
 
 
 def build_contract_context(contract, contract_id, logo_url, company_signature_url, rider_texts):
@@ -591,8 +590,6 @@ def build_contract_context(contract, contract_id, logo_url, company_signature_ur
             contract.prospect_photographer3
         ]
     }
-
-
 
 def view_rider_agreements(request, contract_id):
     contract = get_object_or_404(Contract, pk=contract_id)

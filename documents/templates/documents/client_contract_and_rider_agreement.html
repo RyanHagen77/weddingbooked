@@ -394,10 +394,8 @@
 </div>
 <input type="hidden" id="main_signature" name="main_signature">
 
-{% if show_riders %}
-
     <!-- Photography Package Rider Agreement -->
-    {% if contract.photography_package %}
+    {% if show_riders and contract.photography_package %}
     <div class="page-break"></div>
     <div>
         <h2 style="text-align: center;">Photography Package Rider Agreement</h2>
@@ -452,7 +450,7 @@
 
 
     <!-- Videography Package Rider Agreement -->
-    {% if contract.videography_package %}
+    {% if show_riders and contract.videography_package %}
     <div class="page-break"></div>
     <div>
         <h2 style="text-align: center;">Videography Package Rider Agreement</h2>
@@ -506,7 +504,7 @@
     {% endif %}
 
     <!-- DJ Package Rider Agreement -->
-    {% if contract.dj_package %}
+    {% if show_riders and contract.dj_package %}
     <div class="page-break"></div>
     <div>
         <h2 style="text-align: center;">DJ Package Rider Agreement</h2>
@@ -560,7 +558,7 @@
     {% endif %}
 
     <!-- Photobooth Package Rider Agreement -->
-    {% if contract.photobooth_package %}
+    {% if show_riders and contract.photobooth_package %}
     <div class="page-break"></div>
     <div>
         <h2 style="text-align: center;">Photobooth Package Rider Agreement</h2>
