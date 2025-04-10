@@ -1,309 +1,289 @@
 <!DOCTYPE html>
 <html>
+{% load static %}
 <head>
     <title>Contract Agreement</title>
-    <style>
-        body {
-            font-family: 'Merriweather', sans-serif;
-            padding: 0;
-            margin: 0;
-        }
-        .contract-header {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        .column {
-            flex: 1;
-            min-width: 100px;
-        }
-        .divider {
-            border-top: 1px solid #000;
-            margin: 20px 0;
-        }
-        .text-box {
-            border: 1px solid #000;
-            min-height: 40px;
-            margin-bottom: 20px;
-            padding: 10px;
-        }
-        .logo {
-            width: 100%;
-            text-align: center;
-        }
-        .logo img {
-            width: 250px;
-            height: auto;
-        }
-        .contact-info {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            padding-top: 10px;
-            padding-bottom: 10px;
-        }
-        .office-info {
-            text-align: left;
-            font-size: 9pt;
-            flex: 1;
-        }
-        .address-info {
-            text-align: right;
-            font-size: 9pt;
-            flex: 1;
-        }
-        .contract-date {
-            font-size: 9pt;
-            margin-top: 5px;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        .payment-info {
-            flex: 1;
-            font-size: 9pt;
-            text-align: center;
-            order: 2;
-        }
-        .payment-info strong {
-            font-weight: bold;
-        }
-        .company-info {
-            flex: 1;
-            font-size: 9pt;
-            text-align: right;
-            margin-bottom: 20px;
-            font-weight: bold;
-            order: 1;
-        }
-        .product-details {
-            flex: 1;
-            font-size: 9pt;
-            text-align: center;
-            margin-bottom: 20px;
-            order: 3;
-        }
-        .essence-rep strong {
-            font-weight: bold;
-        }
-        .rep-details strong {
-            font-weight: bold;
-        }
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/1.5.3/signature_pad.min.js"></script>
+   <style>
+    body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        margin: 0;
+    }
+
+    .contract-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    .column {
+        flex: 1;
+        min-width: 100px;
+    }
+
+    .contact-info {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    .office-info {
+        text-align: left;
+        font-size: 9pt;
+        flex: 1;
+    }
+    .address-info {
+        text-align: right;
+        font-size: 9pt;
+        flex: 1;
+    }
+    .agreement-description {
+        font-size: 12pt;
+        text-align: center;
+        margin-top: 5px;
+    }
+    .agreement-engage {
+        font-size: 9pt;
+        margin-top: 5px;
+        text-align: center;
+    }
+
+    .divider {
+        border-top: 1px solid #000;
+        margin: 20px 0;
+    }
+
+    .text-box {
+        border: 1px solid #000;
+        min-height: 40px;
+        margin-bottom: 20px;
+        padding: 10px;
+    }
+
+    .logo {
+        width: 100%;
+        text-align: center;
+    }
+    .logo img {
+        width: 250px;
+        height: auto;
+    }
+
+.agreement-details {
+    font-size: 9pt;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 10px 10px;
+    background-color: #f4f4f4; /* Light gray background */
+    border-radius: 8px; /* Rounded corners for the whole section */
+    border: 1px solid #ddd; /* Border around the section */
+    box-sizing: border-box; /* Prevent the padding from affecting layout */
+}
+
+.left-column, .right-column {
+    width: 48%; /* Take up nearly half the space */
+}
+
+.client-info-box, .ceremony-reception-box {
+    background-color: #fff;
+    padding: 10px 10px; /* Reduced padding for a more compact look */
+    border-radius: 12px; /* Rounded corners for boxes */
+    border: 1px solid #ddd; /* Light border around boxes */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Align content to the top */
+    height: auto; /* Let the box grow to fit the content */
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px; /* Reduced margin between rows */
+}
+
+.info-row strong {
+    font-size: 12px;
+    color: #333;
+}
+
+.info-row span {
+    font-size: 12px;
+    color: #555;
+}
+
+.ceremony-reception-box .info-row {
+    text-align: left; /* Align text to left for other fields */
+}
+
+.ceremony-reception-box .info-row span {
+    text-align: right; /* Align the city/state to the right */
+}
+
+@media (max-width: 600px) {
+    .agreement-details {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .left-column, .right-column {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .client-info-box, .ceremony-reception-box {
+        width: 100%;
+    }
+}
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    th {
+        background-color: #f2f2f2;
+        font-size: 13px;
+    }
+
+    td {
+        font-size: 12px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    tr:hover {
+        background-color: #ddd;
+    }
+
+    .default-text {
+        font-size: 9pt;
+        font-style: italic;
+    }
+
+    .signature-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+    .signature-section {
+        flex: 1;
+        margin: 0 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .signature-section label {
+        padding-bottom: 10px;
+    }
+    .signature-section canvas, .signature-placeholder {
+        border: 1px solid #000;
+        width: 100%;
+        height: 100px;
+    }
+    .signature-section button {
+        margin-top: 10px;
+    }
+    .main-signature-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .main-signature-section label {
+        margin-bottom: 10px;
+    }
+    .main-signature-section canvas {
+        border: 1px solid #000;
+        width: 400px;
+        height: 100px;
+    }
+    .main-signature-section button {
+        margin-top: 10px;
+    }
+    .rider-inputs {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+    .rider-inputs label {
+        width: 100%;
+        margin-top: 10px;
+    }
+    .rider-inputs input {
+        width: calc(50% - 20px);
+        max-width: 400px;
+        margin-bottom: 10px;
+    }
+
+    .submit-btn {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        display: block;
+        width: 100%;
+        max-width: 300px;
+        margin: 20px auto;
+        background-color: #d9727a;
+        color: white;
+        border: none;
+        border-radius: 5px;
+    }
+
+    .submit-btn:hover {
+        background-color: #ebcdc3; /* Darker dusty pink for hover */
+        color: white; /* Change text color on hover */
+        text-decoration: none; /* Remove underline */
+    }
+
+    .rider-text {
+        font-size: 7pt;
+    }
+    @media (max-width: 600px) {
         .agreement-details {
-            font-size: 9pt;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-        }
-        .agreement-description {
-            font-size: 12pt;
-            text-align: center;
-            margin-top: 5px;
-        }
-        .agreement-engage {
-            font-size: 9pt;
-            margin-top: 5px;
-            text-align: center;
-        }
-        .left-column, .right-column {
-            width: 48%;
-            margin-bottom: 5px;
-        }
-        .agreement-details {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding: 10px 10px; /* Reduced top and bottom padding to 5px */
-            background-color: #f4f4f4; /* Light gray background */
-            border-radius: 8px; /* Rounded corners for the whole section */
-            border: 1px solid #ddd; /* Border around the section */
+            flex-direction: column;
+            align-items: center;
         }
 
         .left-column, .right-column {
-            width: 48%; /* Take up nearly half the space */
+            width: 100%;
+            margin-bottom: 20px;
         }
 
         .client-info-box, .ceremony-reception-box {
-            background-color: #fff;
-            padding: 10px 10px; /* Reduced padding for a more compact look */
-            border-radius: 12px; /* Rounded corners for boxes */
-            border: 1px solid #ddd; /* Light border around boxes */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start; /* Align content to the top */
-            height: 100%; /* Ensure boxes stretch fully */
-        }
-
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px; /* Reduced margin between rows */
-        }
-
-        .info-row strong {
-            font-size: 12px;
-            color: #333;
-        }
-
-        .info-row span {
-            font-size: 12px;
-            color: #555;
-        }
-
-        .ceremony-reception-box .info-row {
-            text-align: left; /* Align text to left for other fields */
-        }
-
-        .ceremony-reception-box .info-row span {
-            text-align: right; /* Align the city/state to the right */
-        }
-
-        @media (max-width: 600px) {
-            .agreement-details {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .left-column, .right-column {
-                width: 100%;
-                margin-bottom: 20px;
-            }
-
-            .client-info-box, .ceremony-reception-box {
-                width: 100%;
-            }
-        }
-                table {
             width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
         }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-            vertical-align: top;
-        }
-        th {
-            background-color: #f2f2f2;
-            font-size: 13px;
-        }
-        td {
-            font-size: 12px;
-        }
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-        tr:hover {
-            background-color: #ddd;
-        }
-        .signature-box {
-            width: 200px; /* Adjust width as needed */
-            height: 50px; /* Adjust height as needed */
-            margin-top: 10px; /* Space above the box */
-        }
-        .default-text {
-            font-size: 9pt;
-            font-style: italic;
-        }
-        .signature-wrapper {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
-        }
-        .signature-section {
-            flex: 1;
-            margin: 0 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .signature-section label {
-            padding-bottom: 10px;
-        }
-        .signature-section img, .signature-placeholder {
-            border: 1px solid #000;
-            width: 100%;
-            height: 100px;
-        }
-        .main-signature-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .main-signature-section label {
-            margin-bottom: 10px;
-        }
-        .main-signature-section img {
-            border: 1px solid #000;
-            width: 400px;
-            height: 100px;
-        }
-        .rider-inputs {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            margin-bottom: 20px;
-        }
-        .rider-inputs label {
-            width: 100%;
-            margin-top: 10px;
-        }
-        .rider-inputs input {
-            width: calc(50% - 20px);
-            max-width: 400px;
-            margin-bottom: 10px;
-        }
-        .submit-btn {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            display: block;
-            width: 100%;
-            max-width: 300px;
-            margin: 20px auto;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        .rider-text {
-            font-size: 7pt;
-        }
-        @media (max-width: 600px) {
-            .contract-header {
-                flex-direction: column;
-                align-items: center;
-            }
-            .agreement-details {
-                flex-direction: column;
-                align-items: center;
-            }
-            .left-column, .right-column {
-                width: 100%;
-            }
-            .client-info-box, .ceremony-reception-box {
-                width: 100%;
-            }
-            .payment-info, .company-info, .essence-rep {
-                text-align: center;
-                margin-bottom: 20px;
-                order: initial;
-            }
-        }
+    }
+
     </style>
-    </head>
-    <body>
-        {% load group_tags %}
-        <!-- Header Section -->
-        {% include "documents/contract_agreements/partials/header.html" %}
+</head>
+<body>
+<form id="contract-form" method="post" action="{% url 'documents:client_contract_and_rider_agreement' contract.contract_id %}">
+    {% csrf_token %}
+    {% load group_tags %}
+    <!-- Header Section -->
+    {% include "documents/contract_agreements/partials/header.html" %}
 
-        <div class="divider"></div>
+    <div class="divider"></div>
 
-        <!-- Contract Agreement Description -->
+    <!-- Contract Agreement Description -->
     <!-- Agreement Section -->
     <div class="agreement-description">
         <strong>Contractual Agreement</strong>
@@ -357,8 +337,22 @@
             </div>
         </div>
     </div>
-    <div class="contract-details">
-        <p><strong>Photographer Choice:</strong> {{ latest_agreement.photographer_choice.get_full_name }}</p>
+
+
+    <div class="agreement-details">
+        <div class="left-column">
+            <p>
+                <label for="photographer_choice">Photographer Choice:</label><br>
+                <select id="photographer_choice" name="photographer_choice" style="width: 100%;">
+                    <option value="" disabled selected>Choose your photographer</option>
+                    {% for photographer in photographer_choices %}
+                        <option value="{{ photographer.id }}" {% if contract_agreement.photographer_choice == photographer %}selected{% endif %}>
+                            {{ photographer.get_full_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </p>
+        </div>
     </div>
 
     <div class="divider"></div>
@@ -387,19 +381,163 @@
     <div class="divider"></div>
 
 
-        <!-- Main Contract Signature -->
-    <div class="contract-details">
-        <div style="text-align: left;">
-            <p><strong>Signature:</strong> {{ latest_agreement.initials }}</p>
-            <img src="{{ latest_agreement.signature }}" alt="Contract Signature" class="signature-img">
-            <p><strong>Date Created:</strong> {{ latest_agreement.created_at|date:"Y-m-d H:i:s" }}</p>
+    <!-- Custom text area -->
+    <div class="text-box">
+        {{ contract.custom_text|default_if_none:"" }}
+    </div>
+
+    <!-- Main Contract Signature -->
+    <div class="main-signature-section">
+        <label for="signature-pad-main">Signature for Contractual Agreement:</label>
+        <canvas id="signature-pad-main" width="400" height="100"></canvas>
+        <button type="button" onclick="clearSignaturePad('main')">Clear</button>
+    </div>
+    <input type="hidden" id="main_signature" name="main_signature">
+
+    <!-- Rider Agreement -->
+    <div class="page-break"></div>
+    <div>
+        <h2 style="text-align: center;">{{ rider_type|title }} Rider Agreement</h2>
+        <div class="rider-text">{{ rider_text|safe }}</div>
+        <input type="hidden" name="rider_text_{{ rider_type }}" value="{{ rider_text }}">
+        <div class="rider-inputs">
+            <label for="client_name_{{ rider_type }}">Client Name (Print):</label>
+            <input type="text" id="client_name_{{ rider_type }}" name="client_name_{{ rider_type }}" required>
+            <label for="agreement_date_{{ rider_type }}">Date:</label>
+            <input type="date" id="agreement_date_{{ rider_type }}" name="agreement_date_{{ rider_type }}" required>
         </div>
-            <!-- Main Contract Signature -->
-        <div style="text-align: left;">
-            <label>Essence Rep Signature:</label>
-            <img src="{{ company_signature_url }}" alt="company_signature" class="signature-img">
+        <div class="signature-wrapper">
+            <div class="signature-section">
+                <label for="signature-pad-{{ rider_type }}">Signature for {{ rider_type|title }} Package:</label>
+                <canvas id="signature-pad-{{ rider_type }}" width="400" height="100"></canvas>
+                <button type="button" onclick="clearSignaturePad('{{ rider_type }}')">Clear</button>
+            </div>
+            <div class="signature-section">
+                <label for="essence-rep-signature-{{ rider_type }}">Essence Rep Signature:</label>
+                <div id="essence-rep-signature-{{ rider_type }}" class="signature-placeholder"></div>
+            </div>
         </div>
     </div>
-    <div class="divider"></div>
-<body>
-<html>
+
+    <!-- Hidden input for main signature -->
+    <input type="hidden" name="signature_{{ rider_type }}" id="signature_{{ rider_type }}">
+
+    <!-- Submit Button -->
+    <div style="text-align: center; margin-top: 20px;">
+        <input type="submit" value="Submit Agreement" class="submit-btn">
+    </div>
+</form>
+
+<!-- Include modal in the HTML -->
+<div id="successModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <p>Contract submitted successfully!</p>
+    </div>
+</div>
+
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        padding-top: 100px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0,0,0);
+        background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+</style>
+
+<script>
+    var signaturePads = {};
+
+    function initializeSignaturePads() {
+        var mainSignaturePad = new SignaturePad(document.getElementById('signature-pad-main'));
+        signaturePads['main'] = mainSignaturePad;
+
+        var padElements = document.querySelectorAll('canvas[id^="signature-pad-"]');
+        padElements.forEach(function (canvas) {
+            var padName = canvas.id.replace('signature-pad-', '');
+            var signaturePad = new SignaturePad(canvas);
+            resizeCanvas(canvas);
+            signaturePads[padName] = signaturePad;
+        });
+    }
+
+    function resizeCanvas(canvas) {
+        var ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+    }
+
+    window.addEventListener('resize', function () {
+        for (var padName in signaturePads) {
+            if (signaturePads.hasOwnProperty(padName)) {
+                resizeCanvas(signaturePads[padName].canvas);
+            }
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        initializeSignaturePads();
+    });
+
+    document.getElementById('rider-form').onsubmit = function (e) {
+        if (signaturePads['main'].isEmpty()) {
+            alert('Please provide your signature for the main contract.');
+            e.preventDefault();
+            return false;
+        }
+
+        // Set the hidden input values for each signature
+        document.getElementById('main_signature').value = signaturePads['main'].toDataURL();
+        console.log('Main signature:', document.getElementById('main_signature').value);
+
+        if (signaturePads['{{ rider_type }}'].isEmpty()) {
+            alert('Please provide your signature for the rider agreement.');
+            e.preventDefault();
+            return false;
+        }
+
+        document.getElementById('signature_{{ rider_type }}').value = signaturePads['{{ rider_type }}'].toDataURL();
+        console.log('Rider signature:', document.getElementById('signature_{{ rider_type }}').value);
+
+        return true;
+    };
+
+
+    function clearSignaturePad(padName) {
+        if (signaturePads[padName]) {
+            signaturePads[padName].clear();
+        }
+    }
+</script>
+</body>
+</html>
