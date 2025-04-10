@@ -6,9 +6,7 @@ app_name = 'documents'
 urlpatterns = [
     path('contract/<int:contract_id>/pdf/', views.generate_contract_pdf, name='generate_contract_pdf'),
     path('contract_agreement_preview/<int:contract_id>/', views.contract_agreement_preview, name='contract_agreement_preview'),
-    path('client_contract_agreement/<int:contract_id>/', views.client_contract_agreement,
-         name='client_contract_agreement'),
-    path('view_submitted_contract/<int:contract_id>/', views.client_contract_agreement, name='view_submitted_contract'),
+    path('view_submitted_contract/<int:contract_id>/', views.contract_and_rider_agreement, name='view_submitted_contract'),
     path('client_contract_and_rider_agreement/<int:contract_id>/', views.contract_and_rider_agreement,
          name='client_contract_and_rider_agreement'),
     path('client_rider_agreement/<int:contract_id>/<str:rider_type>/', views.contract_and_rider_agreement,
