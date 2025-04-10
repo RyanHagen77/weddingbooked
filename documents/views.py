@@ -611,7 +611,7 @@ def contract_agreement(request, contract_id):
             agreement = form.save(commit=False)
             agreement.contract = contract
             agreement.signature = form.cleaned_data['main_signature']
-            agreement.photographer_choice = form.cleaned_data['photographer_choice']  # Save photographer choice
+            agreement.photographer_choice = form.cleaned_data['photographer_choice']
 
             # Get the latest agreement and increment the version number
             latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
