@@ -337,7 +337,7 @@ def view_submitted_contract(request, contract_id, version_number):
 
 
 @login_required
-def contract_and_rider_agreement(request, contract_id, rider_type):
+def contract_and_rider_agreement(request, contract_id):
     # Fetch contract object
     contract = get_object_or_404(Contract, pk=contract_id)
     logo_url = f"{settings.MEDIA_URL}logo/Final_Logo.png"
