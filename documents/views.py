@@ -489,6 +489,8 @@ def contract_and_rider_agreement(request, contract_id):
         latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
         rider_agreements = RiderAgreement.objects.filter(contract=contract)
 
+        show_riders = True  # ✅ Explicitly define for GET requests
+
         rider_texts = {
             'photography': linebreaks(contract.photography_package.rider_text) if contract.photography_package else None,
             'photography_additional': linebreaks(contract.photography_additional.rider_text) if contract.photography_additional else None,
