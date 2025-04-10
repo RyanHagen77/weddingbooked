@@ -1,70 +1,73 @@
 <!DOCTYPE html>
 <html>
-{% load static %}
 <head>
-    <title>{{ rider_type|title }} Rider Agreement</title>
-    <link rel="stylesheet" href="{% static 'contracts/style.css' %}">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/1.5.3/signature_pad.min.js"></script>
+    <title>Contract Agreement</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
+            font-family: 'Merriweather', sans-serif;
+            padding: 0;
             margin: 0;
         }
-
-        .contract-header, .contact-info, .event-info {
+        .contract-header {
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
-
         .column {
             flex: 1;
             min-width: 100px;
         }
-
         .divider {
             border-top: 1px solid #000;
             margin: 20px 0;
         }
-
         .text-box {
             border: 1px solid #000;
             min-height: 40px;
             margin-bottom: 20px;
             padding: 10px;
         }
-
         .logo {
-            width: 33%;
+            width: 100%;
             text-align: center;
-            padding-right: 20px;
         }
-
         .logo img {
-            width: 150px;
+            width: 250px;
             height: auto;
         }
-
+        .contact-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+        .office-info {
+            text-align: left;
+            font-size: 9pt;
+            flex: 1;
+        }
+        .address-info {
+            text-align: right;
+            font-size: 9pt;
+            flex: 1;
+        }
         .contract-date {
             font-size: 9pt;
             margin-top: 5px;
             margin-bottom: 10px;
             text-align: center;
         }
-
         .payment-info {
             flex: 1;
             font-size: 9pt;
             text-align: center;
             order: 2;
         }
-
         .payment-info strong {
             font-weight: bold;
         }
-
         .company-info {
             flex: 1;
             font-size: 9pt;
@@ -73,82 +76,137 @@
             font-weight: bold;
             order: 1;
         }
-
-        .essence-rep {
+        .product-details {
             flex: 1;
             font-size: 9pt;
             text-align: center;
             margin-bottom: 20px;
             order: 3;
         }
-
         .essence-rep strong {
             font-weight: bold;
         }
-
         .rep-details strong {
             font-weight: bold;
         }
-
         .agreement-details {
             font-size: 9pt;
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
         }
-
         .agreement-description {
-            font-size: 8pt;
+            font-size: 12pt;
             text-align: center;
             margin-top: 5px;
         }
-
+        .agreement-engage {
+            font-size: 9pt;
+            margin-top: 5px;
+            text-align: center;
+        }
         .left-column, .right-column {
             width: 48%;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
+        }
+        .agreement-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 10px 10px; /* Reduced top and bottom padding to 5px */
+            background-color: #f4f4f4; /* Light gray background */
+            border-radius: 8px; /* Rounded corners for the whole section */
+            border: 1px solid #ddd; /* Border around the section */
         }
 
-        .ceremony-reception-box, .client-info-box {
-            border: 1px solid #000;
-            padding: 10px;
-            margin-bottom: 20px;
+        .left-column, .right-column {
+            width: 48%; /* Take up nearly half the space */
         }
 
-        table {
+        .client-info-box, .ceremony-reception-box {
+            background-color: #fff;
+            padding: 10px 10px; /* Reduced padding for a more compact look */
+            border-radius: 12px; /* Rounded corners for boxes */
+            border: 1px solid #ddd; /* Light border around boxes */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Align content to the top */
+            height: 100%; /* Ensure boxes stretch fully */
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px; /* Reduced margin between rows */
+        }
+
+        .info-row strong {
+            font-size: 12px;
+            color: #333;
+        }
+
+        .info-row span {
+            font-size: 12px;
+            color: #555;
+        }
+
+        .ceremony-reception-box .info-row {
+            text-align: left; /* Align text to left for other fields */
+        }
+
+        .ceremony-reception-box .info-row span {
+            text-align: right; /* Align the city/state to the right */
+        }
+
+        @media (max-width: 600px) {
+            .agreement-details {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .left-column, .right-column {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+
+            .client-info-box, .ceremony-reception-box {
+                width: 100%;
+            }
+        }
+                table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
         }
-
         th, td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
             vertical-align: top;
         }
-
         th {
             background-color: #f2f2f2;
             font-size: 13px;
         }
-
         td {
             font-size: 12px;
         }
-
         tr:nth-child(even) {
             background-color: #f2f2f2;
         }
-
         tr:hover {
             background-color: #ddd;
         }
-
+        .signature-box {
+            width: 200px; /* Adjust width as needed */
+            height: 50px; /* Adjust height as needed */
+            margin-top: 10px; /* Space above the box */
+        }
         .default-text {
             font-size: 9pt;
             font-style: italic;
         }
-
         .signature-wrapper {
             display: flex;
             justify-content: space-between;
@@ -165,13 +223,10 @@
         .signature-section label {
             padding-bottom: 10px;
         }
-        .signature-section canvas, .signature-placeholder {
+        .signature-section img, .signature-placeholder {
             border: 1px solid #000;
             width: 100%;
             height: 100px;
-        }
-        .signature-section button {
-            margin-top: 10px;
         }
         .main-signature-section {
             display: flex;
@@ -182,13 +237,10 @@
         .main-signature-section label {
             margin-bottom: 10px;
         }
-        .main-signature-section canvas {
+        .main-signature-section img {
             border: 1px solid #000;
             width: 400px;
             height: 100px;
-        }
-        .main-signature-section button {
-            margin-top: 10px;
         }
         .rider-inputs {
             display: flex;
@@ -205,7 +257,6 @@
             max-width: 400px;
             margin-bottom: 10px;
         }
-
         .submit-btn {
             padding: 10px 20px;
             font-size: 16px;
@@ -214,19 +265,11 @@
             width: 100%;
             max-width: 300px;
             margin: 20px auto;
-            background-color: #d9727a;
+            background-color: #4CAF50;
             color: white;
             border: none;
             border-radius: 5px;
         }
-
-        .submit-btn:hover {
-            background-color: #ebcdc3; /* Darker dusty pink for hover */
-            color: white; /* Change text color on hover */
-            text-decoration: none; /* Remove underline */
-        }
-
-
         .rider-text {
             font-size: 7pt;
         }
@@ -252,425 +295,112 @@
             }
         }
     </style>
-</head>
-<body>
-<form id="rider-form" method="post" action="{% url 'documents:client_rider_agreement' contract.contract_id rider_type %}">
-    {% csrf_token %}
-    <div class="contract-header">
-        <div class="logo">
-            <img src="{{ logo_url }}" alt="Logo">
-            <div class="contract-date">
-                <strong style="font-size: 15px;">Wedding Date:</strong> <span style="font-size: 15px;">{{ contract.event_date }}</span><br>
-                <strong>Contract No.:</strong> {{ contract.custom_contract_number }}
-            </div>
-        </div>
-        <div class="payment-info">
-            Please Send Payments To:<br>
-            <strong>Essence Photo</strong><br>
-            1300 Remington Rd<br>
-            Suite B<br>
-            Schaumburg IL, 60173
-        </div>
-        <div class="essence-rep">
-            <div class="company-info">
-                Office: (847) 923-9800<br>
-                info@essenceweddings.com<br>
-                EssenceWeddings.com<br>
-            </div>
-        </div>
-    </div>
+    </head>
+    <body>
+        {% load group_tags %}
+        <!-- Header Section -->
+        {% include "documents/contract_agreements/partials/header.html" %}
 
-    <div class="divider"></div>
+        <div class="divider"></div>
 
-    <div class="contract-agreement" style="text-align: center;">
+        <!-- Contract Agreement Description -->
+    <!-- Agreement Section -->
+    <div class="agreement-description">
         <strong>Contractual Agreement</strong>
     </div>
-
-    <div class="agreement-description">
-        I (we) hereby engage Essence Weddings to render services as follows:
+    <div class="agreement-engage">
+        <p>I (we) hereby engage Essence Weddings to render services as follows:</p>
     </div>
 
-    <div class="agreement-details">
-        <div class="left-column">
-            <p>
-                <strong>Bridal Party:</strong> {{ contract.bridal_party_qty }}<br>
-                <strong>No. of Guests:</strong> {{ contract.guests_qty }}<br>
-            </p>
-        </div>
-
-        <div class="right-column">
-            <p>
-                <strong>Services:</strong><br>
-                {% if contract.photography_package %}
-                    {{ contract.photography_package.service_type }}<br>
-                {% endif %}
-                {% if contract.photography_additional %}
-                    {{ contract.photography_additional.name }}<br>
-                {% endif %}
-                {% if contract.engagement_session %}
-                    {{ contract.engagement_session.service_type }}<br>
-                {% endif %}
-                {% if contract.videography_package %}
-                    {{ contract.videography_package.service_type }}<br>
-                {% endif %}
-                {% if contract.videography_additional %}
-                    {{ contract.videography_additional.name }}<br>
-                {% endif %}
-                {% if contract.dj_package %}
-                    {{ contract.dj_package.service_type }}<br>
-                {% endif %}
-                {% if contract.dj_additional %}
-                    {{ contract.dj_additional.name }}<br>
-                {% endif %}
-                {% if contract.photobooth_package %}
-                    {{ contract.photobooth_package.service_type }}<br>
-                {% endif %}
-                {% if photobooth_additional %}
-                    {{ photobooth_additional.name }}<br>
-                {% endif %}
-            </p>
-        </div>
-    </div>
-
-    <div class="divider"></div>
-
+    <!-- Agreement Details (Client and Event Info) -->
     <div class="agreement-details">
         <div class="left-column">
             <div class="client-info-box">
-                <strong>Primary Contact:</strong> {{ contract.client.primary_contact }}<br>
-                <strong>Email:</strong> {{ contract.client.primary_email }}<br>
-                <strong>Phone:</strong> {{ contract.client.primary_phone1 }}<br>
+                <div class="info-row">
+                    <strong>Primary Contact:</strong>
+                    <span>{{ contract.client.primary_contact }}</span>
+                </div>
+                <div class="info-row">
+                    <strong>Email:</strong>
+                    <span>{{ contract.client.primary_email }}</span>
+                </div>
+                <div class="info-row">
+                    <strong>Phone:</strong>
+                    <span>{{ contract.client.primary_phone1 }}</span>
+                </div>
                 {% if contract.client.partner_contact %}
-                    <strong>Partner Contact:</strong> {{ contract.client.partner_contact }}<br>
+                    <div class="info-row">
+                        <strong>Partner Contact:</strong>
+                        <span>{{ contract.client.partner_contact }}</span>
+                    </div>
                 {% endif %}
             </div>
         </div>
-
         <div class="right-column">
             <div class="ceremony-reception-box">
-                <strong>Ceremony Site:</strong> {{ contract.ceremony_site }}<br>
-                {{ contract.ceremony_city }}, {{ contract.ceremony_state }}<br>
-                <strong>Reception Site:</strong> {{ contract.reception_site }}<br>
-                {{ contract.reception_city }}, {{ contract.reception_state }}
+                <div class="info-row">
+                    <strong>Contract No.:</strong>
+                    <span>{{ contract.custom_contract_number }}</span>
+                </div>
+                <div class="info-row">
+                    <strong>Wedding Date:</strong>
+                    <span>{{ contract.event_date }}</span>
+                </div>
+                <div class="info-row">
+                    <strong>Ceremony Site:</strong>
+                    <span>{{ contract.ceremony_site }}</span>
+                </div>
+                <div class="info-row">
+                    <strong>Reception Site:</strong>
+                    <span>{{ contract.reception_site }}</span>
+                </div>
             </div>
         </div>
     </div>
-
-    <div class="service-details">
-        <table>
-            <tr>
-                <th>Service</th>
-                <th></th>
-                <th>Hours</th>
-                <th>Price</th>
-            </tr>
-            <!-- Photography Package -->
-            {% if contract.photography_package %}
-            <tr>
-                <td>Photography Package</td>
-                <td style="padding-top: 0; padding-bottom: 0;">{{ package_texts.photography|safe }}</td>
-                <td>{{ contract.photography_package.hours }}</td>
-                <td>${{ contract.photography_package.price }}</td>
-            </tr>
-            {% endif %}
-
-            <!-- Photography Additional -->
-            {% if contract.photography_additional %}
-            <tr>
-                <td>Additional Photographer</td>
-                <td style="padding-top: 0; padding-bottom: 0;">{{ additional_services_texts.photography_additional|safe }}</td>
-                <td>{{ contract.photography_additional.hours }}</td>
-                <td>${{ contract.photography_additional.price }}</td>
-            </tr>
-            {% endif %}
-
-            <!-- Iterate over engagement session options for Photography -->
-            {% if contract.engagement_session %}
-            <tr>
-                <td>Engagement Session (Photography)</td>
-                <td>{{ contract.engagement_session.name }}</td>
-                <td>{{ contract.engagement_session.hours }}</td>
-                <td>${{ contract.engagement_session.price }}</td>
-            </tr>
-            {% endif %}
-
-            {% for overtime_option in overtime_options_by_service_type.Photography %}
-            <tr>
-                <td>Overtime (Photography)</td>
-                <td>{{ overtime_option.role }}</td>
-                <td>{{ overtime_option.hours }}</td>
-                <td>${{ overtime_option.total_cost|floatformat:"2" }}</td>
-            </tr>
-            {% endfor %}
-
-            <!-- Videography Package -->
-            {% if contract.videography_package %}
-            <tr>
-                <td>Videography Package</td>
-                <td style="padding-top: 0; padding-bottom: 0;">{{ package_texts.videography|safe }}</td>
-                <td>{{ contract.videography_package.hours }}</td>
-                <td>${{ contract.videography_package.price }}</td>
-            </tr>
-            {% endif %}
-
-            <!-- Videography Additional -->
-            {% if contract.videography_additional %}
-            <tr>
-                <td>Additional Videographer</td>
-                <td style="padding-top: 0; padding-bottom: 0;">{{ additional_services_texts.videography_additional|safe }}</td>
-                <td>{{ contract.videography_additional.hours }}</td>
-                <td>${{ contract.videography_additional.price }}</td>
-            </tr>
-            {% endif %}
-
-            <!-- Iterate over overtime options for Videography -->
-            {% for overtime_option in overtime_options_by_service_type.Videography %}
-            <tr>
-                <td>Overtime (Videography)</td>
-                <td>{{ overtime_option.role }}</td>
-                <td>{{ overtime_option.hours }}</td>
-                <td>${{ overtime_option.rate_per_hour }}</td>
-            </tr>
-            {% endfor %}
-
-            <!-- DJ Package -->
-            {% if contract.dj_package %}
-            <tr>
-                <td>DJ Package</td>
-                <td style="padding-top: 0; padding-bottom: 0;">{{ package_texts.dj|safe }}</td>
-                <td>{{ contract.dj_package.hours }}</td>
-                <td>${{ contract.dj_package.price }}</td>
-            </tr>
-            {% endif %}
-
-            <!-- DJ Additional -->
-            {% if contract.dj_additional %}
-            <tr>
-                <td>Additional DJ</td>
-                <td style="padding-top: 0; padding-bottom: 0;">{{ additional_services_texts.dj_additional|safe }}</td>
-                <td>{{ contract.dj_additional.hours }}</td>
-                <td>${{ contract.dj_additional.price }}</td>
-            </tr>
-            {% endif %}
-
-            <!-- Iterate over overtime options for DJ -->
-            {% for overtime_option in overtime_options_by_service_type.Dj %}
-            <tr>
-                <td>Overtime (DJ)</td>
-                <td>{{ overtime_option.role }}</td>
-                <td>{{ overtime_option.hours }}</td>
-                <td>${{ overtime_option.rate_per_hour }}</td>
-            </tr>
-            {% endfor %}
-
-            <!-- Photobooth Package -->
-            {% if contract.photobooth_package %}
-            <tr>
-                <td>Photo Booth Package</td>
-                <td style="padding-top: 0; padding-bottom: 0;">{{ package_texts.photobooth|safe }}</td>
-                <td>{{ contract.photobooth_package.hours }}</td>
-                <td>${{ contract.photobooth_package.price }}</td>
-            </tr>
-            {% endif %}
-
-            <!-- Photobooth Additional -->
-            {% if contract.photobooth_additional %}
-            <tr>
-                <td>Additional Photo Booth</td>
-                <td style="padding-top: 0; padding-bottom: 0;">{{ additional_services_texts.photobooth_additional|safe }}</td>
-                <td>{{ contract.photobooth_additional.hours }}</td>
-                <td>${{ contract.photobooth_additional.price }}</td>
-            </tr>
-            {% endif %}
-
-            <!-- Iterate over overtime options for Photobooth -->
-            {% for overtime_option in overtime_options_by_service_type.Photobooth %}
-            <tr>
-                <td>Overtime (Photobooth)</td>
-                <td>{{ overtime_option.role }}</td>
-                <td>{{ overtime_option.hours }}</td>
-                <td>${{ overtime_option.rate_per_hour }}</td>
-            </tr>
-            {% endfor %}
-
-            <!-- Service cost section -->
-            <tr>
-                <td colspan="3" style="text-align: right;"><strong>Service Total:</strong></td>
-                <td>${{ total_service_cost }}</td>
-            </tr>
-
-            <!-- Discounts section -->
-            <tr>
-                <td colspan="3" style="text-align: right;"><strong>Total Discounts:</strong></td>
-                <td>${{ total_discount }}</td>
-            </tr>
-
-            <!-- Total cost after discounts section -->
-            <tr>
-                <td colspan="3" style="text-align: right;"><strong>Total after Discounts:</strong></td>
-                <td>${{ total_cost_after_discounts }}</td>
-            </tr>
-        </table>
+    <div class="contract-details">
+        <p><strong>Photographer Choice:</strong> {{ latest_agreement.photographer_choice.get_full_name }}</p>
     </div>
 
-    <!-- Custom text area -->
-    <div class="text-box">
-        {{ contract.custom_text }}
-    </div>
+    <div class="divider"></div>
+
+    <!-- Service Details Table -->
+    {% include "documents/contract_agreements/partials/service_details_table.html" %}
+
+    <div class="divider"></div>
+
+    <!-- Product Details Table -->
+    {% include "documents/contract_agreements/partials/product_details_table.html" %}
+
+    <!-- Formalwear Details Table -->
+    {% include "documents/contract_agreements/partials/formalwear_details_table.html" %}
+
+    <!-- Service Fees Table -->
+    {% include "documents/contract_agreements/partials/service_fees_table.html" %}
+
+    <!-- discounts Table -->
+    {% include "documents/contract_agreements/partials/discounts.html" %}
+    <div class="divider"></div>
+
+    <!-- Summary Details -->
+    {% include "documents/contract_agreements/partials/summary_details.html" %}
+
+    <div class="divider"></div>
 
 
-    <!-- Main Contract Signature -->
-    <div class="main-signature-section">
-        <label for="signature-pad-main">Signature for Contractual Agreement:</label>
-        <canvas id="signature-pad-main" width="400" height="100"></canvas>
-        <button type="button" onclick="clearSignaturePad('main')">Clear</button>
-    </div>
-    <input type="hidden" id="main_signature" name="main_signature">
-
-    <!-- Rider Agreement -->
-    <div class="page-break"></div>
-    <div>
-        <h2 style="text-align: center;">{{ rider_type|title }} Rider Agreement</h2>
-        <div class="rider-text">{{ rider_text|safe }}</div>
-        <input type="hidden" name="rider_text_{{ rider_type }}" value="{{ rider_text }}">
-        <div class="rider-inputs">
-            <label for="client_name_{{ rider_type }}">Client Name (Print):</label>
-            <input type="text" id="client_name_{{ rider_type }}" name="client_name_{{ rider_type }}" required>
-            <label for="agreement_date_{{ rider_type }}">Date:</label>
-            <input type="date" id="agreement_date_{{ rider_type }}" name="agreement_date_{{ rider_type }}" required>
+        <!-- Main Contract Signature -->
+    <div class="contract-details">
+        <div style="text-align: left;">
+            <p><strong>Signature:</strong> {{ latest_agreement.initials }}</p>
+            <img src="{{ latest_agreement.signature }}" alt="Contract Signature" class="signature-img">
+            <p><strong>Date Created:</strong> {{ latest_agreement.created_at|date:"Y-m-d H:i:s" }}</p>
         </div>
-        <div class="signature-wrapper">
-            <div class="signature-section">
-                <label for="signature-pad-{{ rider_type }}">Signature for {{ rider_type|title }} Package:</label>
-                <canvas id="signature-pad-{{ rider_type }}" width="400" height="100"></canvas>
-                <button type="button" onclick="clearSignaturePad('{{ rider_type }}')">Clear</button>
-            </div>
-            <div class="signature-section">
-                <label for="essence-rep-signature-{{ rider_type }}">Essence Rep Signature:</label>
-                <div id="essence-rep-signature-{{ rider_type }}" class="signature-placeholder"></div>
-            </div>
+            <!-- Main Contract Signature -->
+        <div style="text-align: left;">
+            <label>Essence Rep Signature:</label>
+            <img src="{{ company_signature_url }}" alt="company_signature" class="signature-img">
         </div>
     </div>
-
-    <!-- Hidden input for main signature -->
-    <input type="hidden" name="signature_{{ rider_type }}" id="signature_{{ rider_type }}">
-
-    <!-- Submit Button -->
-    <div style="text-align: center; margin-top: 20px;">
-        <input type="submit" value="Submit Agreement" class="submit-btn">
-    </div>
-</form>
-
-<!-- Include modal in the HTML -->
-<div id="successModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <p>Contract submitted successfully!</p>
-    </div>
-</div>
-
-<style>
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1;
-        padding-top: 100px;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgb(0,0,0);
-        background-color: rgba(0,0,0,0.4);
-    }
-
-    .modal-content {
-        background-color: #fefefe;
-        margin: auto;
-        padding: 20px;
-        border: 1px solid #888;
-        width: 80%;
-    }
-
-    .close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-    }
-
-    .close:hover,
-    .close:focus {
-        color: black;
-        text-decoration: none;
-        cursor: pointer;
-    }
-</style>
-
-<script>
-    var signaturePads = {};
-
-    function initializeSignaturePads() {
-        var mainSignaturePad = new SignaturePad(document.getElementById('signature-pad-main'));
-        signaturePads['main'] = mainSignaturePad;
-
-        var padElements = document.querySelectorAll('canvas[id^="signature-pad-"]');
-        padElements.forEach(function (canvas) {
-            var padName = canvas.id.replace('signature-pad-', '');
-            var signaturePad = new SignaturePad(canvas);
-            resizeCanvas(canvas);
-            signaturePads[padName] = signaturePad;
-        });
-    }
-
-    function resizeCanvas(canvas) {
-        var ratio = Math.max(window.devicePixelRatio || 1, 1);
-        canvas.width = canvas.offsetWidth * ratio;
-        canvas.height = canvas.offsetHeight * ratio;
-        canvas.getContext("2d").scale(ratio, ratio);
-    }
-
-    window.addEventListener('resize', function () {
-        for (var padName in signaturePads) {
-            if (signaturePads.hasOwnProperty(padName)) {
-                resizeCanvas(signaturePads[padName].canvas);
-            }
-        }
-    });
-
-    document.addEventListener('DOMContentLoaded', function () {
-        initializeSignaturePads();
-    });
-
-    document.getElementById('rider-form').onsubmit = function (e) {
-        if (signaturePads['main'].isEmpty()) {
-            alert('Please provide your signature for the main contract.');
-            e.preventDefault();
-            return false;
-        }
-
-        // Set the hidden input values for each signature
-        document.getElementById('main_signature').value = signaturePads['main'].toDataURL();
-        console.log('Main signature:', document.getElementById('main_signature').value);
-
-        if (signaturePads['{{ rider_type }}'].isEmpty()) {
-            alert('Please provide your signature for the rider agreement.');
-            e.preventDefault();
-            return false;
-        }
-
-        document.getElementById('signature_{{ rider_type }}').value = signaturePads['{{ rider_type }}'].toDataURL();
-        console.log('Rider signature:', document.getElementById('signature_{{ rider_type }}').value);
-
-        return true;
-    };
-
-
-    function clearSignaturePad(padName) {
-        if (signaturePads[padName]) {
-            signaturePads[padName].clear();
-        }
-    }
-</script>
-</body>
-</html>
+    <div class="divider"></div>
+    {% endfor %}
+<body>
+<html>
