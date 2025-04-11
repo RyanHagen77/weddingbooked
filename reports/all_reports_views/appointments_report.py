@@ -72,18 +72,34 @@ def appointments_report(request):
 
             total_appointments = month_contracts.distinct().count()
 
-            report_data.append({
-                'period': month_start.strftime('%b %Y'),
-                'photo_count': month_contracts.filter(photography_package__isnull=False).count(),
-                'photo_booked_count': month_contracts.filter(photography_package__isnull=False, status='booked').count(),
-                'video_count': month_contracts.filter(videography_package__isnull=False).count(),
-                'video_booked_count': month_contracts.filter(videography_package__isnull=False, status='booked').count(),
-                'dj_count': month_contracts.filter(dj_package__isnull=False).count(),
-                'dj_booked_count': month_contracts.filter(dj_package__isnull=False, status='booked').count(),
-                'photobooth_count': month_contracts.filter(photobooth_package__isnull=False).count(),
-                'photobooth_booked_count': month_contracts.filter(photobooth_package__isnull=False, status='booked').count(),
-                'total_appointments': total_appointments,
-            })
+            report_data = []
+            if period == 'monthly':
+                for month_start in month_range(start_date, end_date):
+                    month_end = month_start.replace(day=calendar.monthrange(month_start.year, month_start.month)[1])
+                    month_contracts = contracts.filter(contract_date__range=(month_start, month_end))
+
+                    photo_count = month_contracts.filter(photography_package__isnull=False).count()
+                    video_count = month_contracts.filter(videography_package__isnull=False).count()
+                    dj_count = month_contracts.filter(dj_package__isnull=False).count()
+                    photobooth_count = month_contracts.filter(photobooth_package__isnull=False).count()
+
+                    total_appointments = photo_count + video_count + dj_count + photobooth_count
+
+                    report_data.append({
+                        'period': month_start.strftime('%b %Y'),
+                        'photo_count': photo_count,
+                        'photo_booked_count': month_contracts.filter(photography_package__isnull=False,
+                                                                     status='booked').count(),
+                        'video_count': video_count,
+                        'video_booked_count': month_contracts.filter(videography_package__isnull=False,
+                                                                     status='booked').count(),
+                        'dj_count': dj_count,
+                        'dj_booked_count': month_contracts.filter(dj_package__isnull=False, status='booked').count(),
+                        'photobooth_count': photobooth_count,
+                        'photobooth_booked_count': month_contracts.filter(photobooth_package__isnull=False,
+                                                                          status='booked').count(),
+                        'total_appointments': total_appointments,
+                    })
 
     elif period == 'weekly':
         for week_start in week_range(start_date, end_date):
@@ -112,13 +128,19 @@ def appointments_report(request):
     for salesperson in salespeople:
         sales_contracts = contracts.filter(csr=salesperson)
 
-        total_appointments = sales_contracts.distinct().count()
-        booked_appointments = sales_contracts.filter(
-            Q(photography_package__isnull=False, status='booked') |
-            Q(videography_package__isnull=False, status='booked') |
-            Q(dj_package__isnull=False, status='booked') |
-            Q(photobooth_package__isnull=False, status='booked')
-        ).distinct().count()
+        photo_count = sales_contracts.filter(photography_package__isnull=False).count()
+        video_count = sales_contracts.filter(videography_package__isnull=False).count()
+        dj_count = sales_contracts.filter(dj_package__isnull=False).count()
+        photobooth_count = sales_contracts.filter(photobooth_package__isnull=False).count()
+
+        total_appointments = photo_count + video_count + dj_count + photobooth_count
+
+        photo_booked = sales_contracts.filter(photography_package__isnull=False, status='booked').count()
+        video_booked = sales_contracts.filter(videography_package__isnull=False, status='booked').count()
+        dj_booked = sales_contracts.filter(dj_package__isnull=False, status='booked').count()
+        photobooth_booked = sales_contracts.filter(photobooth_package__isnull=False, status='booked').count()
+
+        booked_appointments = photo_booked + video_booked + dj_booked + photobooth_booked
 
         closed_percentage = (booked_appointments / total_appointments * 100) if total_appointments > 0 else 0
 
