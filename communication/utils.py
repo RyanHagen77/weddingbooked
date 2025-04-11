@@ -73,6 +73,35 @@ def send_contract_booked_email(contract):
         print(f"Failed to send email to salesperson: {e}")
 
 
+def send_contract_signed_email(contract):
+    logo_url = f'{settings.MEDIA_URL}logo/Final_Logo.png'
+    salesperson = contract.csr
+    if not salesperson or not salesperson.email:
+        print("No salesperson assigned or missing email.")
+        return
+
+    subject = f"Contract {contract.custom_contract_number} is now SIGNED!"
+
+    # Include logo_url in the context
+    html_content = render_to_string('communication/contract_signed_email.html', {
+        'first_name': salesperson.first_name,
+        'contract': contract,
+        'logo_url': logo_url,  # Add the logo URL here
+        'domain': 'enet2.com',
+    })
+
+    text_content = (f"Your client's contract ({contract.custom_contract_number}) "
+                    f"has been signed. View at https://enet2.com/contracts/{contract.contract_id}/")
+
+    email = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [salesperson.email])
+    email.attach_alternative(html_content, "text/html")
+    try:
+        email.send()
+        print(f"Email successfully sent to salesperson: {salesperson.email}")
+    except Exception as e:
+        print(f"Failed to send email to salesperson: {e}")
+
+
 def send_contract_message_email_to_coordinator(request, message, contract):
     coordinator = contract.coordinator
     if not coordinator or not coordinator.email:

@@ -25,6 +25,8 @@ from rest_framework.permissions import IsAuthenticated
 from .helpers import (calculate_overtime_cost, calculate_service_discounts, get_package_and_service_texts,
                       get_rider_texts, calculate_total_deposit, get_discount_details)
 
+from communication.utils import send_contract_signed_email
+
 @login_required
 def delete_document(request, document_id):
     document = get_object_or_404(ContractDocument, pk=document_id)
@@ -489,6 +491,9 @@ def contract_and_rider_agreement(request, contract_id):
         email.attach(pdf_name, pdf_file, 'application/pdf')
         email.send()
 
+        # Send email to the salesperson about the signed contract
+        send_contract_signed_email(contract)
+
         portal_url = reverse('users:client_portal', args=[contract_id])
         return render(request, 'documents/status_page.html', {
             'message': 'You\'re all set, thank you!',
@@ -723,6 +728,9 @@ def contract_agreement(request, contract_id):
         email.attach(pdf_name, pdf_file, 'application/pdf')
         email.send()
 
+        # Send email to the salesperson about the signed contract
+        send_contract_signed_email(contract)
+
         portal_url = reverse('users:client_portal', args=[contract_id])
         return render(request, 'documents/status_page.html', {
             'message': 'You\'re all set, thank you!',
@@ -922,41 +930,49 @@ def contract_agreement(request, contract_id):
 def client_rider_agreement(request, contract_id, rider_type):
     contract = get_object_or_404(Contract, pk=contract_id)
     logo_url = f"{settings.MEDIA_URL}logo/Final_Logo.png"
-    company_signature_url = f"http://{request.get_host()}{settings.MEDIA_URL}essence_signature/EssenceSignature.png"
-
+    company_signature_url = f"{settings.MEDIA_URL}contract_signatures/EssenceSignature.png"
 
     if request.method == 'POST':
         form = ContractAgreementForm(request.POST)
         if form.is_valid():
+            # Save the contract agreement
             agreement = form.save(commit=False)
             agreement.contract = contract
-            agreement.signature = form.cleaned_data['main_signature']
+            agreement.signature = form.cleaned_data.get('main_signature')
 
             latest_agreement = ContractAgreement.objects.filter(contract=contract).order_by('-version_number').first()
             agreement.version_number = latest_agreement.version_number + 1 if latest_agreement else 1
-
             agreement.save()
 
+            # Handle rider agreement
             signature = request.POST.get(f'signature_{rider_type}')
             client_name = request.POST.get(f'client_name_{rider_type}')
             agreement_date = request.POST.get(f'agreement_date_{rider_type}')
             notes = request.POST.get(f'notes_{rider_type}')
             rider_text = request.POST.get(f'rider_text_{rider_type}')
 
-            rider_agreement = None
-            if signature:
-                try:
-                    rider_agreement = RiderAgreement.objects.create(
-                        contract=contract,
-                        rider_type=rider_type,
-                        signature=signature,
-                        client_name=client_name,
-                        agreement_date=agreement_date,
-                        notes=notes,
-                        rider_text=rider_text
-                    )
-                except Exception as e:
-                    pass
+            # Check if a RiderAgreement already exists
+            rider_agreement = RiderAgreement.objects.filter(contract=contract, rider_type=rider_type).first()
+
+            if not rider_agreement:
+                # Create a new rider agreement if it doesn't exist
+                rider_agreement = RiderAgreement.objects.create(
+                    contract=contract,
+                    rider_type=rider_type,
+                    signature=signature,
+                    client_name=client_name,
+                    agreement_date=agreement_date,
+                    notes=notes,
+                    rider_text=rider_text
+                )
+            else:
+                # Update the existing rider agreement
+                rider_agreement.signature = signature
+                rider_agreement.client_name = client_name
+                rider_agreement.agreement_date = agreement_date
+                rider_agreement.notes = notes
+                rider_agreement.rider_text = rider_text
+                rider_agreement.save()
 
             # Generate PDF
             rider_agreements = RiderAgreement.objects.filter(contract=contract)
@@ -972,26 +988,21 @@ def client_rider_agreement(request, contract_id, rider_type):
                 'first_agreement': first_agreement,
             }
 
-            # Initialize an empty dictionary to store overtime options grouped by service type
+            # Initialize overtime options and costs
             overtime_options_by_service_type = {}
-
-            # Initialize total overtime cost
             total_overtime_cost = 0
 
-            # Iterate over each overtime option
             for contract_overtime in contract.overtimes.all():
                 service_type = contract_overtime.overtime_option.service_type.name
                 if service_type in overtime_options_by_service_type:
                     overtime_options_by_service_type[service_type].append({
-                        'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role,
-                                                       contract_overtime.overtime_option.role),
+                        'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role, contract_overtime.overtime_option.role),
                         'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
                         'hours': contract_overtime.hours,
                     })
                 else:
                     overtime_options_by_service_type[service_type] = [{
-                        'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role,
-                                                       contract_overtime.overtime_option.role),
+                        'role': ROLE_DISPLAY_NAMES.get(contract_overtime.overtime_option.role, contract_overtime.overtime_option.role),
                         'rate_per_hour': contract_overtime.overtime_option.rate_per_hour,
                         'hours': contract_overtime.hours,
                     }]
@@ -1001,6 +1012,7 @@ def client_rider_agreement(request, contract_id, rider_type):
                     option['total_cost'] = option['hours'] * option['rate_per_hour']
                     total_overtime_cost += option['total_cost']
 
+            # Prepare package and rider texts
             package_texts = {
                 'photography': linebreaks(contract.photography_package.default_text) if contract.photography_package else None,
                 'videography': linebreaks(contract.videography_package.default_text) if contract.videography_package else None,
@@ -1042,11 +1054,10 @@ def client_rider_agreement(request, contract_id, rider_type):
                 'total_cost_after_discounts': total_cost_after_discounts,
             })
 
+            # Continue with PDF generation and sending email
             html_string = render_to_string('documents/client_contract_and_rider_agreement_pdf.html', context)
             pdf_file = HTML(string=html_string).write_pdf()
-
-            # Save PDF to the documents section of the contract
-            pdf_name = f"contract_{contract_id}_rider_{rider_type}.pdf"
+            pdf_name = f"contract_{contract_id}_agreement_v{latest_agreement.version_number}.pdf"
             path = default_storage.save(f"contract_documents/{pdf_name}", ContentFile(pdf_file))
 
             ContractDocument.objects.create(
@@ -1066,15 +1077,17 @@ def client_rider_agreement(request, contract_id, rider_type):
             email.attach(pdf_name, pdf_file, 'application/pdf')
             email.send()
 
+            # Send email to the salesperson about the signed contract
+            send_contract_signed_email(contract)
+
             portal_url = reverse('users:client_portal', args=[contract_id])
-            return render(request, 'contracts/status_page.html', {
+            return render(request, 'documents/status_page.html', {
                 'message': 'You\'re all set, thank you!',
                 'portal_url': portal_url
             })
         else:
             portal_url = reverse('users:client_portal', args=[contract_id])
-
-            return render(request, 'contracts/status_page.html', {
+            return render(request, 'documents/status_page.html', {
                 'message': 'There was an error submitting the agreements.',
                 'portal_url': portal_url
             })

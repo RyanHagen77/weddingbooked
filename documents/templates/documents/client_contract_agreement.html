@@ -394,24 +394,13 @@
     </div>
     <input type="hidden" id="main_signature" name="main_signature">
 
-
-    <!-- Hidden input for main signature -->
-    <input type="hidden" name="signature_photography" id="signature_photography">
-    <input type="hidden" name="signature_photography_additional" id="signature_photography_additional">
-    <input type="hidden" name="signature_videography" id="signature_videography">
-    <input type="hidden" name="signature_videography_additional" id="signature_videography_additional">
-    <input type="hidden" name="signature_dj" id="signature_dj">
-    <input type="hidden" name="signature_dj_additional" id="signature_dj_additional">
-    <input type="hidden" name="signature_photobooth" id="signature_photobooth">
-    <input type="hidden" name="signature_photobooth_additional" id="signature_photobooth_additional">
-
     <!-- Submit Button -->
     <div style="text-align: center; margin-top: 20px;">
         <input type="submit" value="Submit Agreement" class="submit-btn">
     </div>
 </form>
 
-<!-- Include modal in the HTML -->
+<!-- Success Modal -->
 <div id="successModal" class="modal">
     <div class="modal-content">
         <span class="close">&times;</span>
@@ -419,64 +408,20 @@
     </div>
 </div>
 
-<style>
-
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    padding-top: 100px;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgb(0,0,0);
-    background-color: rgba(0,0,0,0.4);
-}
-
-.modal-content {
-    background-color: #fefefe;
-    margin: auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-}
-
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
-</style>
-
 <script>
     // Object to store our signature pad instances
     var signaturePads = {};
 
     function initializeSignaturePads() {
-        // Select all canvases whose id starts with "signature-pad-"
         var padElements = document.querySelectorAll('canvas[id^="signature-pad-"]');
         padElements.forEach(function (canvas) {
-            // Create a key by removing the prefix and replacing dashes with underscores.
             var padName = canvas.id.replace('signature-pad-', '').replace(/-/g, '_');
-            // Initialize SignaturePad on the canvas
             var signaturePad = new SignaturePad(canvas);
             resizeCanvas(canvas);
-            // Store the instance in our signaturePads object using the normalized key
             signaturePads[padName] = signaturePad;
         });
     }
 
-    // Resize canvas for proper responsiveness
     function resizeCanvas(canvas) {
         var ratio = Math.max(window.devicePixelRatio || 1, 1);
         canvas.width = canvas.offsetWidth * ratio;
@@ -484,7 +429,6 @@
         canvas.getContext("2d").scale(ratio, ratio);
     }
 
-    // Reinitialize canvas sizes on window resize
     window.addEventListener('resize', function () {
         for (var padName in signaturePads) {
             if (signaturePads.hasOwnProperty(padName)) {
@@ -493,18 +437,20 @@
         }
     });
 
-    // Initialize signature pads once the DOM content is loaded
     document.addEventListener('DOMContentLoaded', function () {
         initializeSignaturePads();
     });
 
     // On form submit, save signature data to hidden inputs
     document.getElementById('contract-form').onsubmit = function (e) {
-        // Example check: ensure the main signature is not empty.
-        if (signaturePads['main'] && signaturePads['main'].isEmpty()) {
-            alert('Please provide your signature for the main contract.');
-            e.preventDefault();
-            return false;
+        var signaturePad = signaturePads['main'];
+        if (signaturePad && signaturePad.isEmpty()) {
+            alert('Please provide your signature for the contract.');
+            e.preventDefault(); // Prevent form submission
+        } else {
+            // Set the hidden input to the base64 signature data
+            var signatureData = signaturePad.toDataURL(); // Base64 encoded signature
+            document.getElementById('main_signature').value = signatureData;
         }
     };
 
