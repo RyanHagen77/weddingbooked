@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -8,6 +9,9 @@ from django.http import HttpRequest
 from django.contrib.auth.forms import PasswordResetForm
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth import get_user_model
+from datetime import timedelta
+from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 
 def send_password_reset_email(user_email):
@@ -74,19 +78,40 @@ def send_contract_booked_email(contract):
 
 
 def send_contract_signed_email(contract):
+    Task = apps.get_model('communication', 'Task')
     logo_url = f'{settings.MEDIA_URL}logo/Final_Logo.png'
-    salesperson = contract.csr
+    salesperson = contract.csr  # Assuming csr is the salesperson assigned to the contract
     if not salesperson or not salesperson.email:
         print("No salesperson assigned or missing email.")
         return
 
+    # Calculate the due date (7 days after the contract signing)
+    due_date = timezone.now() + timedelta(days=7)
+
+    # Create the task for the salesperson
+    task = Task(
+        sender=salesperson,  # The sender is the salesperson
+        assigned_to=salesperson,  # Task is assigned to the same salesperson
+        contract=contract,
+        due_date=due_date,
+        description=f"Signature received for contract {contract.custom_contract_number}",
+        task_type='contract',
+    )
+
+    try:
+        task.full_clean()  # Validate the task instance
+        task.save()
+        print(f"Task created successfully for salesperson: {salesperson.email}")
+    except ValidationError as e:
+        print(f"Error creating task: {e}")
+
+    # Email the salesperson
     subject = f"Contract {contract.custom_contract_number} is now SIGNED!"
 
-    # Include logo_url in the context
     html_content = render_to_string('communication/contract_signed_email.html', {
         'first_name': salesperson.first_name,
         'contract': contract,
-        'logo_url': logo_url,  # Add the logo URL here
+        'logo_url': logo_url,
         'domain': 'enet2.com',
     })
 
@@ -95,6 +120,7 @@ def send_contract_signed_email(contract):
 
     email = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [salesperson.email])
     email.attach_alternative(html_content, "text/html")
+
     try:
         email.send()
         print(f"Email successfully sent to salesperson: {salesperson.email}")

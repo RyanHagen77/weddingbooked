@@ -5,6 +5,7 @@ from contracts.models import Contract
 from django.conf import settings
 from django.core.exceptions import ValidationError  # For custom validation
 
+
 class UnifiedCommunication(models.Model):
     INTERNAL = 'INTERNAL'
     PORTAL = 'PORTAL'

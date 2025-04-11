@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from django.utils.http import urlsafe_base64_encode, urlencode
+from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 
 from contracts.models import Contract
