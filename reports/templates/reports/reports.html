@@ -58,6 +58,7 @@
                         <ul class="report-list">
                             {% if request.user|in_group:"AllReportViewer" %}
                                 <li><a href="{% url 'reports:contacts_report' %}">Contacts Report</a></li>
+                            <li><a href="{% url 'reports:all_contracts_report' %}">All Contracts Report</a></li>
                             {% endif %}
                         </ul>
                     </td>

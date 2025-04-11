@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="outer-container">
+    <div class="search-results">
+        <h4>Contracts by Status Report</h4>
+        <button onclick="history.back()" class="btn btn-dusty-pink">Go Back</button>
+
+        <form method="get" class="report-form">
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
+
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
+
+            <label for="status">Status:</label>
+            <select id="status" name="status">
+                <option value="all" {% if selected_status == 'all' %}selected{% endif %}>All Statuses</option>
+                {% for key, label in statuses %}
+                    <option value="{{ key }}" {% if selected_status == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="location">Location:</label>
+            <select id="location" name="location">
+                <option value="all" {% if selected_location == 'all' %}selected{% endif %}>All Locations</option>
+                {% for location in locations %}
+                <option value="{{ location.id }}" {% if selected_location == location.id|stringformat:"s" %}selected{% endif %}>
+                    {{ location.name }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="btn btn-dusty-pink">Generate Report</button>
+        </form>
+
+        <div class="search-results">
+            <h6>Contracts created from {{ start_date }} to {{ end_date }}</h6>
+            <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Primary Contact</th>
+                    <th>Contract Number</th>
+                    <th>Contract Date</th>
+                    <th>Event Date</th>
+                    <th>Status</th>
+                    <th>Location</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contract in page_obj %}
+                <tr>
+                    <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
+                    <td>{{ contract.client.primary_contact }}</td>
+                    <td>
+                        <a href="{% url 'contracts:contract_detail' contract.contract_id %}">
+                            {{ contract.custom_contract_number }}
+                        </a>
+                    </td>
+                    <td>{{ contract.contract_date }}</td>
+                    <td>{{ contract.event_date }}</td>
+                    <td>{{ contract.get_status_display }}</td>
+                    <td>{{ contract.location.name }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center;">No contracts found for this period.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+
+            {% if page_obj.has_other_pages %}
+            <div class="pagination">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1&start_date={{ start_date }}&end_date={{ end_date }}&location={{ selected_location }}">First</a>
+                        <a href="?page={{ page_obj.previous_page_number }}&start_date={{ start_date }}&end_date={{ end_date }}&location={{ selected_location }}">Previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}&start_date={{ start_date }}&end_date={{ end_date }}&location={{ selected_location }}">Next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}&start_date={{ start_date }}&end_date={{ end_date }}&location={{ selected_location }}">Last</a>
+                    {% endif %}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -14,6 +14,8 @@ from reports.all_reports_views.event_staff_payroll_report import event_staff_pay
 from reports.all_reports_views.payments_due_report import payments_due_report
 from reports.all_reports_views.contacts_report import contacts_report
 from reports.all_reports_views.formalwear_deposit_report_new import formalwear_deposit_report_new
+from reports.all_reports_views.all_contracts_report import all_contracts_report
+
 
 app_name = 'reports'
 
@@ -32,6 +34,7 @@ urlpatterns = [
     path('payments_due_report/', payments_due_report, name='payments_due_report'),
     path('formalwear_deposit_report_new/', formalwear_deposit_report_new, name='formalwear_deposit_report_new'),
     path('contacts_report/', contacts_report, name='contacts_report'),
+    path('all_contracts_report/', all_contracts_report, name='all_contracts_report')
         ]
 
 
