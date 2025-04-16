@@ -16,7 +16,13 @@
             No note
         {% endif %}
     </td>
-    <td>{{ task.due_date|date:"Y-m-d" }}</td>
+    <td>
+        {% if task.is_overdue %}
+            <span class="text-danger font-weight-bold">OVERDUE</span>
+        {% else %}
+            {{ task.due_date|date:"Y-m-d" }}
+        {% endif %}
+    </td>
     <td>{{ task.description }}</td>
     <td>
         <form action="{% url 'communication:mark_complete' task.id %}" method="post" class="mark-complete-form" data-task-id="{{ task.id }}">

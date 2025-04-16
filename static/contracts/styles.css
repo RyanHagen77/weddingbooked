@@ -1,7 +1,19 @@
 /* Basic styles */
-body {
+html {
     font-family: Arial, sans-serif;
+
+    /*-webkit-filter: invert(1);*/
+    /*filter: invert(1);*/
 }
+
+.dark {
+    filter: invert(1);
+}
+
+.dark li {
+    filter: invert(1);
+}
+
 
 .header {
     display: flex;
@@ -113,7 +125,7 @@ footer {
     display: flex;
     list-style-type: none;
     padding: 0;
-    margin: 0;
+    margin: 0
 }
 
 .menu-item {
@@ -199,6 +211,8 @@ footer {
     border-radius: 5px; /* Optional: Rounded corners */
     background-color: #f9f9f9; /* Light gray background */
     box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Adds subtle shadow for depth */
+
+
 }
 
 /* Optional: Style for the inputs within the new contract form */
