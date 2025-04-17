@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 {% load static %}
 {% load group_tags %}
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,6 +51,41 @@
             {% block content %}{% endblock %}
         </div>
     </main>
+
+    <div class="toggle-switch">
+        <input class="toggle-input" id="toggle" type="checkbox">
+        <label class="toggle-label" for="toggle"></label>
+    </div>
+    
+    <script>
+        // Function to apply the saved theme when the page loads
+        function applySavedTheme() {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme === "dark-mode") {
+                document.documentElement.classList.add("dark-mode");
+                document.getElementById("toggle").checked = true; // Set checkbox as checked for dark mode
+            } else {
+                document.documentElement.classList.remove("dark-mode");
+                document.getElementById("toggle").checked = false; // Ensure the checkbox is unchecked for light mode
+            }
+        }
+    
+        // Save the user's theme preference when the toggle is changed
+        document.getElementById("toggle").addEventListener("change", function() {
+            if (this.checked) {
+                document.documentElement.classList.add("dark-mode");
+                localStorage.setItem("theme", "dark-mode"); // Save dark mode preference
+            } else {
+                document.documentElement.classList.remove("dark-mode");
+                localStorage.setItem("theme", "light-mode"); // Save light mode preference
+            }
+        });
+    
+        // Apply the saved theme on page load
+        document.addEventListener("DOMContentLoaded", () => {
+            applySavedTheme();
+        });
+    </script>
 
         {% include 'communication/modals/_add_task_modal.html' %}
         {% include 'communication/modals/_edit_task_modal.html' %}

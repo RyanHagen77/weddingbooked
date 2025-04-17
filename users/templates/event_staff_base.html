@@ -39,6 +39,41 @@
     {% block content %}{% endblock %}
 </div>
 
+<div class="toggle-switch">
+    <input class="toggle-input" id="toggle" type="checkbox">
+    <label class="toggle-label" for="toggle"></label>
+</div>
+
+<script>
+    // Function to apply the saved theme when the page loads
+    function applySavedTheme() {
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme === "dark-mode") {
+            document.documentElement.classList.add("dark-mode");
+            document.getElementById("toggle").checked = true; // Set checkbox as checked for dark mode
+        } else {
+            document.documentElement.classList.remove("dark-mode");
+            document.getElementById("toggle").checked = false; // Ensure the checkbox is unchecked for light mode
+        }
+    }
+
+    // Save the user's theme preference when the toggle is changed
+    document.getElementById("toggle").addEventListener("change", function() {
+        if (this.checked) {
+            document.documentElement.classList.add("dark-mode");
+            localStorage.setItem("theme", "dark-mode"); // Save dark mode preference
+        } else {
+            document.documentElement.classList.remove("dark-mode");
+            localStorage.setItem("theme", "light-mode"); // Save light mode preference
+        }
+    });
+
+    // Apply the saved theme on page load
+    document.addEventListener("DOMContentLoaded", () => {
+        applySavedTheme();
+    });
+</script>
+
 <!-- Bootstrap and other libraries should load after jQuery -->
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

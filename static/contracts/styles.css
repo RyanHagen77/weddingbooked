@@ -1,19 +1,102 @@
 /* Basic styles */
 html {
     font-family: Arial, sans-serif;
-
-    /*-webkit-filter: invert(1);*/
-    /*filter: invert(1);*/
 }
 
-.dark {
-    filter: invert(1);
+/* invert page */
+.dark-mode {
+    filter: invert(1) hue-rotate(180deg);
 }
 
-.dark li {
-    filter: invert(1);
+  /* Fix images and videos so they don't get inverted */
+.dark-mode img,
+.dark-mode video {
+    filter: invert(1) hue-rotate(180deg);
+}
+ /* inverts the logo back */
+.dark-mode img[alt~="Logo"], .dark-mode img[alt~="logo"] {
+    filter: invert(0) hue-rotate(0deg);
 }
 
+/* From Uiverse.io by ClawHack1 */ 
+/* Genel stil */
+.toggle-switch {
+    position: absolute;
+    margin: 10px;
+    right: 0;
+    bottom: 0;
+    display: inline-block;
+    width: 40px;
+    height: 24px;
+    margin: 10px;
+}
+
+  /* Giriş stil */
+.toggle-switch .toggle-input {
+    display: none;
+}
+
+  /* Anahtarın stilinin etrafındaki etiketin stil */
+.toggle-switch .toggle-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40px;
+    height: 24px;
+    background-color: #a1a1a1;
+    border-radius: 34px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+  /* Anahtarın yuvarlak kısmının stil */
+.toggle-switch .toggle-label::before {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    background-color: #fff;
+    box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s;
+}
+
+  /* Anahtarın etkin hale gelmesindeki stil değişiklikleri */
+.toggle-switch .toggle-input:checked + .toggle-label {
+    background-color: #a1a1a1;
+}
+
+.toggle-switch .toggle-input:checked + .toggle-label::before {
+    transform: translateX(16px);
+}
+
+  /* Light tema */
+.toggle-switch.light .toggle-label {
+    background-color: #BEBEBE;
+}
+
+.toggle-switch.light .toggle-input:checked + .toggle-label {
+    background-color: #9B9B9B;
+}
+
+.toggle-switch.light .toggle-input:checked + .toggle-label::before {
+    transform: translateX(6px);
+}
+
+  /* Dark tema */
+.toggle-switch.dark .toggle-label {
+    background-color: #4B4B4B;
+}
+
+.toggle-switch.dark .toggle-input:checked + .toggle-label {
+    background-color: #717171;
+}
+
+.toggle-switch.dark .toggle-input:checked + .toggle-label::before {
+    transform: translateX(16px);
+}
 
 .header {
     display: flex;
@@ -841,7 +924,7 @@ body {
 }
 
 
-    <!-- Modal styles -->
+    /* <!-- Modal styles --> */
 
     .modal {
         display: none;
