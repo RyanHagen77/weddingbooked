@@ -1,110 +1,102 @@
+:root {
+    /* Background colors */
+    --color-bk-main: #f3f3f3;
+    --color-bk-main1: #f9f9f9;
+    --color-bk-main2: #ffffff;
+    --color-bk-main3: #fefefe;
+    --color-bk-cool-grey: #8A8A8F;
+    --color-bk-dark-sienna: #3C1414;
+
+    /* Border colors */
+    --color-border-light: #e0e0e0;
+    --color-border-medium: #ddd;
+    --color-border-dark: #ccc;
+    --color-border-darker: #888;
+    --color-border-darkest: #333;
+    --color-border-idfk: #dee2e6;
+
+    /* Accent colors */
+    --color-accent-green: #A0C49D;
+    --color-accent-green-hover: #c8dcc9;
+    --color-accent-green-light: #a1c9a5;
+
+    /* Accent pink colors */
+    --color-pink: #d9727a;
+    --color-pink-hover: #ebcdc3;
+
+    /* Special button and link colors */
+    --color-grey-medium: #999999;
+    --color-grey-light: #cccccc;
+    --color-blue-link: #007bff;
+    --color-red-button: #f44336;
+    --color-red-button-hover: #d32f2f;
+
+    /* Text colors */
+    --color-text-default: #333333;
+    --color-text-sienna: #3C1414;
+    --color-text-light: #cccccc;
+    --color-white: #ffffff;
+    --color-black: #000000;
+    --color-text-table: #212529;
+}
+
 /* Basic styles */
 html {
     font-family: Arial, sans-serif;
+    filter: none;
+    color-scheme: light;
+    visibility: visible;
 }
 
-/* invert page */
-.dark-mode {
-    filter: invert(1) hue-rotate(180deg);
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Background colors */
+        --color-bk-main: #0c0c0c;
+        --color-bk-main1: #060606;
+        --color-bk-main2: #060606;
+        --color-bk-main3: #010101;
+        --color-bk-cool-grey: #757570;
+        --color-bk-dark-sienna: #c3ebeb;
+
+        /* Border colors */
+        --color-border-light: #1f1f1f;
+        --color-border-medium: #222;
+        --color-border-dark: #333;
+        --color-border-darker: #777;
+        --color-border-darkest: #ccc;
+        --color-border-idfk: #211d19;
+
+        /* Text colors */
+        --color-text-default: #cccccc;
+        --color-text-sienna: #c3ebeb;
+        --color-text-light: #333333;
+        --color-white: #000000;
+        --color-black: #ffffff;
+        --color-text-table: #dedad6;
+
+        color-scheme: dark;
+    }
+
+    html img[alt~="Logo"], html img[alt~="logo"] {
+        filter: invert(1) hue-rotate(180deg);
+    }
 }
 
-  /* Fix images and videos so they don't get inverted */
-.dark-mode img,
-.dark-mode video {
-    filter: invert(1) hue-rotate(180deg);
-}
- /* inverts the logo back */
-.dark-mode img[alt~="Logo"], .dark-mode img[alt~="logo"] {
-    filter: invert(0) hue-rotate(0deg);
+td, th {
+    border-color: var(--color-border-idfk) !important;
 }
 
-/* From Uiverse.io by ClawHack1 */ 
-/* Genel stil */
-.toggle-switch {
-    position: absolute;
-    margin: 10px;
-    right: 0;
-    bottom: 0;
-    display: inline-block;
-    width: 40px;
-    height: 24px;
-    margin: 10px;
-}
-
-  /* Giriş stil */
-.toggle-switch .toggle-input {
-    display: none;
-}
-
-  /* Anahtarın stilinin etrafındaki etiketin stil */
-.toggle-switch .toggle-label {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 40px;
-    height: 24px;
-    background-color: #a1a1a1;
-    border-radius: 34px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-  /* Anahtarın yuvarlak kısmının stil */
-.toggle-switch .toggle-label::before {
-    content: "";
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    top: 2px;
-    left: 2px;
-    background-color: #fff;
-    box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s;
-}
-
-  /* Anahtarın etkin hale gelmesindeki stil değişiklikleri */
-.toggle-switch .toggle-input:checked + .toggle-label {
-    background-color: #a1a1a1;
-}
-
-.toggle-switch .toggle-input:checked + .toggle-label::before {
-    transform: translateX(16px);
-}
-
-  /* Light tema */
-.toggle-switch.light .toggle-label {
-    background-color: #BEBEBE;
-}
-
-.toggle-switch.light .toggle-input:checked + .toggle-label {
-    background-color: #9B9B9B;
-}
-
-.toggle-switch.light .toggle-input:checked + .toggle-label::before {
-    transform: translateX(6px);
-}
-
-  /* Dark tema */
-.toggle-switch.dark .toggle-label {
-    background-color: #4B4B4B;
-}
-
-.toggle-switch.dark .toggle-input:checked + .toggle-label {
-    background-color: #717171;
-}
-
-.toggle-switch.dark .toggle-input:checked + .toggle-label::before {
-    transform: translateX(16px);
+tr {
+    color: var(--color-text-table);
 }
 
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #f3f3f3;
+    background-color: var(--color-bk-main);
     padding: 10px;
-    border-bottom: 1px solid #e0e0e0; /* Light grey border */
+    border-bottom: 1px solid var(--color-border-light); /* Light grey border */
 }
 
 .logo img {
@@ -114,11 +106,11 @@ html {
 
 /* Header Bar for viewing, printing contracts */
 .bg-cool-grey {
-    background-color: #f3f3f3;
+    background-color: var(--color-bk-main);
 }
 
 header p, .section-link, .small-text {
-    color: white;
+    color: var(--color-white);
     margin: 0;
     padding: 0 10px; /* Add padding for spacing */
     font-size: 11pt; /* Smaller text size */
@@ -130,13 +122,13 @@ header p, .section-link, .small-text {
 }
 
 .section-link {
-    color: white;
+    color: var(--color-white);
     text-decoration: none;
     padding: 0 10px;
 }
 
 .section-link:hover {
-    color: #cccccc; /* Darker shade on hover */
+    color: var(--color-text-light); /* Darker shade on hover */
     text-decoration: none; /* No underline on hover */
 }
 
@@ -152,9 +144,9 @@ header p, .section-link, .small-text {
 
 .card-container {
     padding: 20px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border-medium);
     border-radius: 5px;
-    background-color: #f9f9f9;
+    background-color: var(--color-bk-main1);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     overflow-x: auto; /* Enable horizontal scrolling for small screens */
 }
@@ -171,7 +163,7 @@ header p, .section-link, .small-text {
 
 
 footer {
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid var(--color-border-light);
     padding-top: 10px;
     text-align: center;
 }
@@ -193,13 +185,14 @@ footer {
     padding: 5px 10px; /* Adjust padding to make the button more compact */
     font-size: 10px; /* Ensure the text size is appropriate */
     margin: 0; /* Remove default margin */
+    color: var(--color-white) !important;
 }
 
 /* Menu section below top header */
 .menu-container {
-    background-color: #f3f3f3;
+    background-color: var(--color-bk-main);
     padding: 10px;
-    border-bottom: 1px solid #e0e0e0; /* Light grey border */
+    border-bottom: 1px solid var(--color-border-light); /* Light grey border */
     display: flex;
     justify-content: center; /* Center the menu items */
 }
@@ -224,9 +217,9 @@ footer {
 
 .menu-item a {
     text-decoration: none; /* Removes underline from links */
-    color: white; /* Sets all text to white */
+    color: var(--color-white); /* Sets all text to white */
     display: block; /* Ensures the link fills the `.menu-item` for better clickability */
-    background-color: #A0C49D; /* Lighter pastel pistachio color */
+    background-color: var(--color-accent-green); /* Lighter pastel pistachio color */
     padding: 4px 8px; /* Smaller padding to reduce overall size */
     border-radius: 5px; /* Slightly smaller border-radius for a less pronounced curve */
     transition: background-color 0.3s; /* Smooth transition for background color change */
@@ -234,7 +227,7 @@ footer {
 }
 
 .menu-item a:hover {
-    background-color: #c8dcc9 /* Slightly darker shade on hover for a subtle effect */
+    background-color: var(--color-accent-green-hover) /* Slightly darker shade on hover for a subtle effect */
 }
 
 @media (max-width: 600px) {
@@ -278,7 +271,7 @@ footer {
 .form-section .form-title {
     text-align: center;
     width: 100%;
-    color: #333; /* Optional: color styling */
+    color: var(--color-text-light); /* Optional: color styling */
     margin-bottom: 20px;
 }
 
@@ -290,9 +283,9 @@ footer {
     font-size: 10pt; /* Set font size to 10pt */
     margin: 10px;
     padding: 10px; /* Increased padding for better spacing */
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border-medium);
     border-radius: 5px; /* Optional: Rounded corners */
-    background-color: #f9f9f9; /* Light gray background */
+    background-color: var(--color-bk-main1); /* Light gray background */
     box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Adds subtle shadow for depth */
 
 
@@ -308,7 +301,7 @@ footer {
     padding: 8px;
     margin: 0;
     box-sizing: border-box;
-    border: 1px solid #ccc;
+    border: 1px solid var(--color-border-dark);
     border-radius: 3px;
 }
 
@@ -322,9 +315,9 @@ footer {
 
 /* Button styling for aesthetic consistency */
 .toggle-button, .btn-dusty-pink {
-    background-color: #d9727a; /* Dusty Pink */
+    background-color: var(--color-pink); /* Dusty Pink */
     font-size: 13px; /* Smaller text size */
-    color: white;
+    color: var(--color-white);
     border: none;
     margin: 10px 0;
     padding: 10px 20px;
@@ -333,13 +326,13 @@ footer {
 }
 
 .toggle-button:hover, .btn-dusty-pink:hover {
-    background-color: #ebcdc3; /* Darker shade for hover */
+    background-color: var(--color-pink-hover); /* Darker shade for hover */
 }
 
 /* Specific styles for hidden fields container */
 .fields-container {
     display: none; /* Hidden by default */
-    background-color: #fff;
+    background-color: var(--color-bk-main2);
     padding: 10px;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
@@ -358,9 +351,9 @@ input[type="reset"],
     font-weight: normal !important; /* Make text not bold */
     line-height: 20px; /* Center text vertically within the button */
     padding: 5px 15px; /* Adjust padding as needed */
-    background-color: #d9727a;
+    background-color: var(--color-pink);
     text-decoration: none; /* Remove underline */
-    color: white;
+    color: var(--color-white);
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -372,21 +365,21 @@ button:hover,
 input[type="submit"]:hover,
 input[type="reset"]:hover,
 .button-group a:hover {
-    background-color: #ebcdc3; /* Darker dusty pink for hover */
-    color: white; /* Change text color on hover */
+    background-color: var(--color-pink-hover); /* Darker dusty pink for hover */
+    color: var(--color-white); /* Change text color on hover */
     text-decoration: none; /* Remove underline */
 }
 
 .close {
     background-color: transparent !important; /* Ensures background is always transparent */
     border: none; /* Removes any border if present */
-    color: #000; /* Set the color of the 'X' to black, or change as needed */
+    color: var(--color-black); /* Set the color of the 'X' to black, or change as needed */
     opacity: 1; /* Ensures the button is fully visible */
 }
 
 .close:hover, .close:focus {
     background-color: transparent !important; /* Keeps background transparent on hover/focus */
-    color: #000; /* You can change this color to indicate hover state */
+    color: var(--color-black); /* You can change this color to indicate hover state */
     opacity: 0.8; /* Optional: changes opacity on hover for a subtle effect */
 }
 
@@ -399,8 +392,8 @@ input[type="reset"]:hover,
     font-weight: normal !important; /* Make text not bold */
     line-height: 20px; /* Center text vertically within the button */
     padding: 5px 15px; /* Adjust padding as needed */
-    background-color: #999999; /* Grey background color */
-    color: white; /* Text color */
+    background-color: var(--color-grey-medium); /* Grey background color */
+    color: var(--color-white); /* Text color */
     border: none; /* No border */
     border-radius: 4px; /* Rounded corners */
     cursor: pointer;
@@ -408,8 +401,8 @@ input[type="reset"]:hover,
 }
 
 .btn-close:hover {
-    background-color: #cccccc; /* Darker grey for hover */
-    color: white; /* Change text color on hover */
+    background-color: var(--color-grey-light); /* Darker grey for hover */
+    color: var(--color-white); /* Change text color on hover */
 }
 
 .logout-button {
@@ -419,31 +412,31 @@ input[type="reset"]:hover,
     font-weight: normal !important; /* Make text not bold */
     line-height: 0px; /* Align text vertically, should match the height */
     padding: 5px 10px;
-    background-color: #A0C49D;
-    color: white;
+    background-color: var(--color-accent-green);
+    color: var(--color-white);
     border: none;
     border-radius: 4px;
     cursor: pointer;
 }
 
 .bg-cool-grey {
-    background-color: #8A8A8F !important;
+    background-color: var(--color-bk-cool-grey) !important;
 }
 
 .bg-dark-sienna {
-    background-color: #3C1414 !important;
+    background-color: var(--color-bk-dark-sienna) !important;
 }
 
 .text-dark-sienna {
-    color: #3C1414 !important;
+    color: var(--color-text-sienna) !important;
 }
 /* Search form styling */
 .search-form {
     margin: 20px auto; /* Center the form */
     max-width: 1200px; /* Set maximum width */
-    background-color: #ffffff; /* Background color for the form */
+    background-color: var(--color-bk-main2); /* Background color for the form */
     padding: 20px; /* Padding inside the form */
-    border: 1px solid #ddd; /* Border for the form */
+    border: 1px solid var(--color-border-medium); /* Border for the form */
     border-radius: 5px; /* Optional: Rounded corners */
     font-size: 11pt; /* Set font size to 11pt */
 
@@ -463,9 +456,9 @@ input[type="reset"]:hover,
     margin: 20px auto; /* Center the table */
     width: 100%; /* Set table width */
     max-width: 1200px; /* Set maximum width */
-    background-color: #ffffff; /* Background color for the table */
+    background-color: var(--color-bk-main2); /* Background color for the table */
     padding: 5px; /* Padding inside the table */
-    border: 1px solid #ddd; /* Border for the table */
+    border: 1px solid var(--color-border-medium); /* Border for the table */
     border-radius: 5px; /* Optional: Rounded corners */
     overflow-x: auto; /* Enable horizontal scrolling for small screens */
 }
@@ -499,7 +492,7 @@ input[type="reset"]:hover,
 }
 
 .search-results th, .search-results td {
-    border: 1px solid #ddd; /* Adds border to table cells */
+    border: 1px solid var(--color-border-medium); /* Adds border to table cells */
     padding: 8px; /* Padding inside cells */
     text-align: left; /* Aligns text to the left */
     font-size: 10pt; /* Set font size to 10pt */
@@ -507,11 +500,11 @@ input[type="reset"]:hover,
 
 /* Alternating row colors */
 .search-results tr:nth-child(odd) {
-    background-color: #f2f2f2; /* Light gray for odd rows */
+    background-color: var(--color-bk-main); /* Light gray for odd rows */
 }
 
 .search-results tr:nth-child(even) {
-    background-color: #ffffff; /* White for even rows */
+    background-color: var(--color-bk-main2); /* White for even rows */
 }
 
 /* Hover effect for rows */
@@ -522,8 +515,8 @@ input[type="reset"]:hover,
 
 /* Table header styling */
 .search-results th {
-    background-color: #d9727a; /* Dusty pink for table headers */
-    color: white;
+    background-color: var(--color-pink); /* Dusty pink for table headers */
+    color: var(--color-white);
     padding: 10px; /* Padding for headers */
 }
 
@@ -577,11 +570,11 @@ input[type="reset"]:hover,
 .pagination .step-links a {
     margin: 0 10px;
     text-decoration: none;
-    color: #3C1414;
+    color: var(--color-text-sienna);
 }
 
 .pagination .step-links .current {
-    color: #3C1414;
+    color: var(--color-text-sienna);
     margin: 0 10px;
 }
 
@@ -595,18 +588,18 @@ label {
 
 /* Body or general styling */
 body {
-    background-color: #f2f2f2; /* Light gray background for the overall page */
-    color: #333; /* Dark gray for the text */
+    background-color: var(--color-bk-main); /* Light gray background for the overall page */
+    color: var(--color-text-default); /* Dark gray for the text */
     font-family: Arial, sans-serif;
 }
 
 /* Adjust other elements as needed to fit the color scheme */
 
 .field-box {
-    border: 1px solid #ddd; /* Light grey border */
+    border: 1px solid var(--color-border-medium); /* Light grey border */
     border-radius: 5px; /* Rounded corners */
     padding: 15px; /* Padding inside the box */
-    background-color: #f9f9f9; /* Light background color */
+    background-color: var(--color-bk-main1); /* Light background color */
     margin-top: 10px; /* Additional space above the box */
 }
 
@@ -633,7 +626,7 @@ body {
 }
 
 #products-table .thead-light {
-    background-color: #f3f3f3; /* Same grey as the header */
+    background-color: var(--color-bk-main); /* Same grey as the header */
 }
 
 .product-column {
@@ -707,8 +700,8 @@ body {
 
 /* Communication Tab Styles */
 .communication-tab {
-    background-color: #f9f9f9;
-    border: 1px solid #ccc;
+    background-color: var(--color-bk-main1);
+    border: 1px solid var(--color-border-dark);
     border-radius: 5px;
     padding: 15px;
     margin-bottom: 20px;
@@ -719,21 +712,21 @@ body {
 }
 
 .communication-tab .message {
-    background-color: #fff;
-    border: 1px solid #ddd;
+    background-color: var(--color-bk-main2);
+    border: 1px solid var(--color-border-medium);
     border-radius: 5px;
     padding: 10px;
     margin-bottom: 10px;
 }
 
 .communication-tab .message strong {
-    color: #007bff;
+    color: var(--color-blue-link);
 }
 
 .message {
     font-size: 11pt; /* Adjust the font size as needed */
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
+    background-color: var(--color-bk-main1);
+    border: 1px solid var(--color-border-medium);
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 5px;
@@ -748,11 +741,11 @@ body {
 }
 
 .nav-tabs .nav-item .nav-link {
-    color: #3C1414 !important;
+    color: var(--color-text-sienna) !important;
 }
 
 .nav-tabs .nav-item .nav-link.active {
-    color: #000 !important;
+    color: var(--color-black) !important;
 }
 
 /* Outer Container Styling */
@@ -764,9 +757,9 @@ body {
 .task-container {
     margin: 20px auto; /* Center the task container */
     max-width: 1200px; /* Set maximum width */
-    background-color: #ffffff; /* Background color for the container */
+    background-color: var(--color-bk-main2); /* Background color for the container */
     padding: 10px; /* Padding inside the container */
-    border: 1px solid #ddd; /* Border for the container */
+    border: 1px solid var(--color-border-medium); /* Border for the container */
     border-radius: 5px; /* Optional: Rounded corners */
 }
 
@@ -778,7 +771,7 @@ body {
 
 /* Task item styling */
 .task-container li {
-    border-bottom: 1px solid #ddd !important; /* Add bottom border to separate items */
+    border-bottom: 1px solid var(--color-border-medium) !important; /* Add bottom border to separate items */
     padding: 8px 0 !important; /* Adjust padding for top and bottom */
     font-size: 10pt !important; /* Set font size to 10pt */
     height: 30px !important; /* Set height of each row */
@@ -797,7 +790,7 @@ body {
 
 /* Styling for completed tasks */
 .task-completed {
-    background-color: #e0e0e0; /* Light gray background for completed tasks */
+    background-color: var(--color-border-light); /* Light gray background for completed tasks */
 }
 
 
@@ -807,13 +800,13 @@ body {
 }
 
 #daysOffList th, #daysOffList td {
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border-medium);
     padding: 8px;
     text-align: left;
 }
 
 #daysOffList tr:nth-child(even) {
-    background-color: #f2f2f2;
+    background-color: var(--color-bk-main);
 }
 
 #daysOffList tr:hover {
@@ -823,20 +816,20 @@ body {
 .remove-day-off {
     padding: 4px 8px;
     font-size: 14px;
-    color: white;
-    background-color: #f44336; /* Red color for emphasis */
+    color: var(--color-white);
+    background-color: var(--color-red-button); /* Red color for emphasis */
     border: none;
     border-radius: 4px;
     cursor: pointer;
 }
 
 .remove-day-off:hover {
-    background-color: #d32f2f;
+    background-color: var(--color-red-button-hover);
 }
 
 .divider {
     height: 2px; /* Adjust thickness here */
-    background-color: #ccc; /* Divider color */
+    background-color: var(--color-border-dark); /* Divider color */
     margin: 20px 0; /* Space above and below the divider */
 }
 
@@ -874,8 +867,8 @@ body {
 }
 
 .styled-table thead tr {
-    background-color: #d9727a;
-    color: #ffffff;
+    background-color: var(--color-pink);
+    color: var(--color-white);
     text-align: left;
 }
 
@@ -885,20 +878,20 @@ body {
 }
 
 .styled-table tbody tr {
-    border-bottom: 1px solid #dddddd;
+    border-bottom: 1px solid #ddd;
 }
 
 .styled-table tbody tr:nth-of-type(even) {
-    background-color: #f3f3f3;
+    background-color: var(--color-bk-main);
 }
 
 .styled-table tbody tr:last-of-type {
-    border-bottom: 2px solid #d9727a;
+    border-bottom: 2px solid var(--color-pink);
 }
 
 .styled-table tbody tr.active-row {
     font-weight: bold;
-    color: #a1c9a5;
+    color: var(--color-accent-green-light);
 }
 
 .styled-select {
@@ -906,7 +899,7 @@ body {
     padding: 8px;
     margin-top: 10px;
     font-size: 16px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--color-border-dark);
     border-radius: 4px;
 }
 
@@ -916,7 +909,7 @@ body {
 }
 
 .styled-list li {
-    background: #f9f9f9;
+    background: var(--color-bk-main1);
     padding: 10px;
     margin-bottom: 5px;
     border-radius: 4px;
@@ -941,10 +934,10 @@ body {
     }
 
     .modal-content {
-        background-color: #fefefe;
+        background-color: var(--color-bk-main3);
         margin: auto;
         padding: 20px;
-        border: 1px solid #888;
+        border: 1px solid var(--color-border-darker);
         width: 80%;
     }
 
@@ -957,7 +950,7 @@ body {
 
     .close:hover,
     .close:focus {
-        color: black;
+        color: var(--color-black);
         text-decoration: none;
         cursor: pointer;
     }
@@ -971,9 +964,9 @@ body {
     flex-wrap: wrap; /* Allows form sections to wrap in smaller screens */
     margin: 0 auto; /* Center the form horizontally */
     padding: 10px; /* Increased padding for better spacing */
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border-medium);
     border-radius: 5px; /* Optional: Rounded corners */
-    background-color: #f9f9f9; /* Light gray background */
+    background-color: var(--color-bk-main1); /* Light gray background */
     box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Adds subtle shadow for depth */
     align-items: center; /* Center align items vertically */
 }
@@ -1006,9 +999,9 @@ body {
     margin: 20px auto; /* Center the section */
     width: 100%; /* Set section width */
     max-width: 1200px; /* Set maximum width */
-    background-color: #ffffff; /* Background color for the section */
+    background-color: var(--color-bk-main2); /* Background color for the section */
     padding: 10px; /* Padding inside the section */
-    border: 1px solid #ddd; /* Border for the section */
+    border: 1px solid var(--color-border-medium); /* Border for the section */
     border-radius: 5px; /* Optional: Rounded corners */
     box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Adds subtle shadow for depth */
     overflow-x: auto; /* Enable horizontal scrolling for small screens */
@@ -1021,7 +1014,7 @@ body {
 }
 
 .reports-section th, .reports-section td {
-    border: 1px solid #ddd; /* Adds border to table cells */
+    border: 1px solid var(--color-border-medium); /* Adds border to table cells */
     padding: 8px; /* Padding inside cells */
     text-align: left; /* Aligns text to the left */
     font-size: 11pt; /* Set font size to 10pt */
@@ -1029,11 +1022,11 @@ body {
 
 /* Alternating row colors */
 .reports-section tr:nth-child(odd) {
-    background-color: #f2f2f2; /* Light gray for odd rows */
+    background-color: var(--color-bk-main); /* Light gray for odd rows */
 }
 
 .reports-section tr:nth-child(even) {
-    background-color: #ffffff; /* White for even rows */
+    background-color: var(--color-bk-main2); /* White for even rows */
 }
 
 /* Hover effect for rows */
@@ -1044,14 +1037,14 @@ body {
 
 /* Table header styling */
 .reports-section th {
-    background-color: #d9727a; /* Dusty pink for table headers */
-    color: white;
+    background-color: var(--color-pink); /* Dusty pink for table headers */
+    color: var(--color-white);
     padding: 10px; /* Padding for headers */
 }
 
 /* Link styling for report list */
 .reports-section .report-list a {
-    color: #3C1414; /* Dark red color for links */
+    color: var(--color-text-sienna); /* Dark red color for links */
     text-decoration: none; /* Remove underline from links */
 }
 
@@ -1060,7 +1053,7 @@ body {
 }
 
 #calendar {
-    background-color: #ffffff; /* Set background color */
+    background-color: var(--color-bk-main2); /* Set background color */
     border-radius: 8px; /* Rounded corners */
     padding: 10px; /* Add padding */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
@@ -1068,14 +1061,14 @@ body {
 
 .fc-toolbar h2 {
     font-size: 16pt; /* Adjust header font size */
-    color: #d9727a; /* Header text color */
+    color: var(--color-pink); /* Header text color */
 }
 
 .fc-button {
     text-decoration: none; /* Removes underline from links */
-    color: white; /* Sets all text to white */
+    color: var(--color-white); /* Sets all text to white */
     display: block; /* Ensures the link fills the `.menu-item` for better clickability */
-    background-color: #d9727a; /* Lighter pastel pistachio color */
+    background-color: var(--color-pink); /* Lighter pastel pistachio color */
     padding: 4px 8px; /* Smaller padding to reduce overall size */
     border-radius: 5px; /* Slightly smaller border-radius for a less pronounced curve */
     transition: background-color 0.3s; /* Smooth transition for background color change */
@@ -1083,17 +1076,17 @@ body {
 }
 
 .fc-button:hover {
-    background-color: #d9727a; /* Slightly darker shade on hover for a subtle effect */
+    background-color: var(--color-pink); /* Slightly darker shade on hover for a subtle effect */
 }
 
 .fc-daygrid-day-number {
     font-size: 13pt; /* Adjust day number font size */
-    color: #333333; /* Day number color */
+    color: var(--color-text-default); /* Day number color */
 }
 
 .fc-event {
-    background-color: #a1c9a5; /* Event background color */
-    color: white; /* Event text color */
+    background-color: var(--color-accent-green-light); /* Event background color */
+    color: var(--color-white); /* Event text color */
     border-radius: 4px; /* Rounded event corners */
     padding: 2px; /* Add padding to event */
 }
@@ -1113,8 +1106,8 @@ body {
     display: flex;
     flex-direction: row; /* Horizontal layout for details and table */
     align-items: flex-start; /* Align top edges */
-    background-color: #f9f9f9; /* Subtle background for contrast */
-    border: 1px solid #ddd; /* Light border for separation */
+    background-color: var(--color-bk-main1); /* Subtle background for contrast */
+    border: 1px solid var(--color-border-medium); /* Light border for separation */
     border-radius: 8px; /* Rounded corners */
     padding: 15px; /* Padding inside the card */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
@@ -1136,16 +1129,16 @@ body {
 }
 
 .contract-roles th {
-    background-color: #f2f2f2; /* Light header background */
-    color: black; /* Black text for headers */
+    background-color: var(--color-bk-main); /* Light header background */
+    color: var(--color-black); /* Black text for headers */
     font-weight: bold;
     padding: 8px;
     text-align: left;
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border-medium);
 }
 
 .contract-roles td {
     padding: 8px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border-medium);
     text-align: left;
 }
