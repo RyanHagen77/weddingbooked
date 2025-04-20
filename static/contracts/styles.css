@@ -82,6 +82,10 @@ html {
     }
 }
 
+.modal-backdrop {
+    visibility: hidden;
+}
+
 td, th {
     border-color: var(--color-border-idfk) !important;
 }

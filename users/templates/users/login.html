@@ -3,9 +3,33 @@
 <head>
     <title>Essence Staff Login</title>
     <style>
+        :root {
+            --primary-color: #EBCFC3; /* Light pink */
+            --secondary-color: #000000; /* Black */
+            --accent-color: #A0C49D; /* Green */
+            --text-color: #4b4b4b; /* Grey */
+            --background-color: #ffffff; /* White */
+            --border-color: #d1d5db;
+
+            color-scheme: light;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary-color: #14303c; /* Light pink */
+                --secondary-color: #ffffff; /* Black */
+                --accent-color: #5f3b62; /* Green */
+                --text-color: #b4b4b4; /* Grey */
+                --background-color: #000000; /* White */
+                --border-color: #2e2a24;
+
+                color-scheme: dark;
+            }
+        }
+
         body {
-            background-color: #EBCFC3; /* Light pink background */
-            color: #000000; /* Black text */
+            background-color: var(--primary-color); /* Light pink background */
+            color: var(--secondary-color); /* Black text */
             font-family: Arial, sans-serif;
             display: flex;
             align-items: center;
@@ -14,7 +38,7 @@
             margin: 0;
         }
         .container {
-            background-color: #ffffff; /* White box background */
+            background-color: var(--background-color); /* White box background */
             padding: 32px; /* Padding around the content */
             border-radius: 4px; /* Rounded corners */
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
@@ -33,14 +57,14 @@
             height: auto; /* Maintain aspect ratio */
         }
         h2 {
-            color: #000000; /* Black heading */
+            color: var(--secondary-color); /* Black heading */
             font-size: 24px; /* Font size for heading */
             font-weight: bold;
             margin-bottom: 24px; /* Space below heading */
         }
         label {
             display: block;
-            color: #4b4b4b; /* Grey text for labels */
+            color: var(--text-color); /* Grey text for labels */
             font-size: 16px; /* Font size for labels */
             margin-bottom: 8px; /* Space below label */
             text-align: left; /* Align labels to the left */
@@ -50,13 +74,13 @@
             width: 100%; /* Full width input */
             padding: 12px; /* Padding inside input */
             margin-bottom: 16px; /* Space below input fields */
-            border: 1px solid #d1d5db; /* Border color */
+            border: 1px solid var(--border-color); /* Border color */
             border-radius: 4px; /* Rounded corners */
             box-sizing: border-box; /* Include padding and border in width calculation */
         }
         button {
-            background-color: #000000; /* Black button background */
-            color: #ffffff; /* White text */
+            background-color: var(--secondary-color); /* Black button background */
+            color: var(--background-color); /* White text */
             padding: 12px; /* Padding inside button */
             border: none;
             border-radius: 4px; /* Rounded corners */
@@ -73,7 +97,7 @@
             padding: 0;
         }
         li {
-            background-color: white;
+            background-color: var(--background-color);
             margin-bottom: 10px;
             padding: 10px;
             border-radius: 4px;
