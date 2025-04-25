@@ -142,8 +142,11 @@ header p, .section-link, .small-text {
 
 .card-header {
     font-size: 11pt; /* Text size set to 10pt */
+    background-color: var(--color-bk-main);
 }
-.card-body {    font-size: 11pt; /* Text size set to 10pt */
+.card-body {    
+    font-size: 11pt; /* Text size set to 10pt */
+    background-color: var(--color-bk-main);
 }
 
 .card-container {
@@ -750,6 +753,7 @@ body {
 
 .nav-tabs .nav-item .nav-link.active {
     color: var(--color-black) !important;
+    background-color: var(--color-bk-main);
 }
 
 /* Outer Container Styling */
