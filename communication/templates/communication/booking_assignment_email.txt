@@ -8,7 +8,8 @@ Ceremony Location: {{ contract.ceremony_site|default:"TBD" }}
 Reception Location: {{ contract.reception_site|default:"TBD" }}
 Role: {{ role }}
 
-If you have any questions, please reach out to the event coordinator.
+Please log in to your portal to confirm your booking or reach out to the event coordinator if you have any questions.
+.
 
 Best regards,
 Essence Weddings
