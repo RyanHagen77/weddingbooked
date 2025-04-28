@@ -81,7 +81,7 @@ html {
         filter: invert(1) hue-rotate(180deg);
     }
 }
-/*hi*/
+
 .modal-backdrop {
     visibility: hidden;
 }
@@ -92,6 +92,14 @@ td, th {
 
 tr {
     color: var(--color-text-table);
+}
+
+.bg-light {
+    background-color: var(--color-bk-main3) !important;
+}
+
+.bg-white {
+    background-color: var(--color-white) !important;
 }
 
 .header {
@@ -114,7 +122,7 @@ tr {
 }
 
 header p, .section-link, .small-text {
-    color: var(--color-white);
+    color: var(--color-black);
     margin: 0;
     padding: 0 10px; /* Add padding for spacing */
     font-size: 11pt; /* Smaller text size */
@@ -516,7 +524,7 @@ input[type="reset"]:hover,
 
 /* Hover effect for rows */
 .search-results tr:hover {
-    background-color: #ddd; /* Color when row is hovered */
+    background-color: var(--color-border-medium); /* Color when row is hovered */
     cursor: pointer; /* Change cursor to indicate clickable */
 }
 
@@ -538,6 +546,7 @@ input[type="reset"]:hover,
 
 .form-control {
     font-size: 11pt;
+    background-color: var(--color-white) !important;
 }
 
 .form-group {
@@ -818,7 +827,7 @@ body {
 }
 
 #daysOffList tr:hover {
-    background-color: #ddd;
+    background-color: var(--color-border-medium);
 }
 
 .remove-day-off {
@@ -1039,7 +1048,7 @@ body {
 
 /* Hover effect for rows */
 .reports-section tr:hover {
-    background-color: #ddd; /* Color when row is hovered */
+    background-color: var(--color-white); /* Color when row is hovered */
     cursor: pointer; /* Change cursor to indicate clickable */
 }
 
