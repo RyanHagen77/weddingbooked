@@ -18,7 +18,7 @@ from communication.utils import send_contract_booked_email
 
 
 phone_validator = RegexValidator(
-    regex=r'^\d{3}-\d{3}-\d{4}$',
+    regex=r'^(\d{3}-\d{3}-\d{4})||(\d{10})$',
     message='Phone number must be in the format XXX-XXX-XXXX.'
 )
 
