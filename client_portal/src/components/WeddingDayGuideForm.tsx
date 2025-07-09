@@ -106,7 +106,7 @@ useEffect(() => {
 
   const accessToken = localStorage.getItem('access_token');
 
-  fetch(`https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`, {
+  fetch(`https://https://weddingbooked.app/wedding_day_guide/api/wedding_day_guide/${contractId}/`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
@@ -211,7 +211,7 @@ useEffect(() => {
 
     try {
       const response = await fetch(
-        `https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`,
+        `https://https://weddingbooked.app/wedding_day_guide/api/wedding_day_guide/${contractId}/`,
         {
           method: 'POST',
           headers: {
@@ -265,7 +265,7 @@ const onSubmit: SubmitHandler<FormData> = async (data) => {
 
   try {
     const response = await fetch(
-      `https://www.enet2.com/wedding_day_guide/api/wedding_day_guide/${contractId}/`,
+      `https://https://weddingbooked.app/wedding_day_guide/api/wedding_day_guide/${contractId}/`,
       {
         method: 'POST',
         headers: {

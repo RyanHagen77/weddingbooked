@@ -30,7 +30,7 @@ def send_password_reset_email(user_email):
     form = PasswordResetForm({'email': user_email})
     if form.is_valid():
         request = HttpRequest()
-        request.META['SERVER_NAME'] = 'www.enet2.com'  # Use domain name here
+        request.META['SERVER_NAME'] = 'https://weddingbooked.app'  # Use domain name here
         request.META['SERVER_PORT'] = '443'  # HTTPS default port
 
         try:
@@ -62,11 +62,11 @@ def send_contract_booked_email(contract):
     html_content = render_to_string('communication/contract_booked_email.html', {
         'first_name': salesperson.first_name,
         'contract': contract,
-        'domain': 'enet2.com',
+        'domain': 'weddingbooked.app',
     })
 
     text_content = (f"Your client's contract ({contract.custom_contract_number}) "
-                    f"is booked. View at https://enet2.com/contracts/{contract.contract_id}/")
+                    f"is booked. View at https://weddingbooked.app/contracts/{contract.contract_id}/")
 
     email = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [salesperson.email])
     email.attach_alternative(html_content, "text/html")
