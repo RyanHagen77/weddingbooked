@@ -195,7 +195,7 @@ useEffect(() => {
 
     if (errorElement && typeof errorElement.scrollIntoView === 'function') {
       errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      errorElement.focus();
+      (errorElement as HTMLElement).focus();
     }
   }
 }, [errors]);
