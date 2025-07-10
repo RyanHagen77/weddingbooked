@@ -66,6 +66,12 @@ interface FormData {
   submitted: boolean;
 }
 
+const requiredTimes = [
+  { key: 'ceremonyTime', label: 'Ceremony Time' },
+  { key: 'receptionTime', label: 'Reception Time' },
+  // add others as needed
+];
+
 interface WeddingDayGuideFormProps {
   contractId: string;
 }
@@ -188,17 +194,17 @@ useEffect(() => {
     });
 }, [contractId, setValue]);
 
-useEffect(() => {
-  if (Object.keys(errors).length > 0) {
-    const firstErrorField = Object.keys(errors)[0];
-    const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      const firstErrorField = Object.keys(errors)[0];
+      const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
 
-    if (errorElement && typeof errorElement.scrollIntoView === 'function') {
-      errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      (errorElement as HTMLElement).focus();
+      if (errorElement && typeof errorElement.scrollIntoView === 'function') {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        (errorElement as HTMLElement).focus();
+      }
     }
-  }
-}, [errors]);
+  }, [errors]);
 
 
 
