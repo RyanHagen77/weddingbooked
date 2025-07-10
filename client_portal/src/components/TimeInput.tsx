@@ -41,20 +41,13 @@ export default function StyledTimePicker({ label, value, onChange }: Props) {
 
       {isOpen && (
         <div className="absolute z-50 bg-white border rounded shadow-lg mt-2">
-          <Timekeeper
-            time={value || '12:00'}
-            onChange={(newTime) => {
-              // newTime.formatted24 = "14:00"
-              onChange(newTime.formatted24)
-            }}
-            onDoneClick={() => setIsOpen(false)}
-            switchToMinuteOnHourSelect
-            coarseMinutes={5}
-            config={{
-              TIMEPICKER_WIDTH: 200,
-              FONT_SIZE: '14px',
-            }}
-          />
+        <Timekeeper
+          time={value || '12:00'}
+          onChange={(newTime) => onChange(newTime.formatted24)}
+          onDoneClick={() => setIsOpen(false)}
+          switchToMinuteOnHourSelect
+          coarseMinutes={5}
+        />
         </div>
       )}
     </div>
