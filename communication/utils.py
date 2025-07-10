@@ -112,11 +112,11 @@ def send_contract_signed_email(contract):
         'first_name': salesperson.first_name,
         'contract': contract,
         'logo_url': logo_url,
-        'domain': 'enet2.com',
+        'domain': 'weddingbooked.app',
     })
 
     text_content = (f"Your client's contract ({contract.custom_contract_number}) "
-                    f"has been signed. View at https://enet2.com/contracts/{contract.contract_id}/")
+                    f"has been signed. View at https://weddingbooked.app/contracts/{contract.contract_id}/")
 
     email = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [salesperson.email])
     email.attach_alternative(html_content, "text/html")
@@ -170,7 +170,7 @@ def send_contract_message_email_to_client(request, message, contract):
         'user': request.user,
         'message': message,
         'contract': contract,
-        'domain': 'enet2.com',
+        'domain': 'weddingbooked.app',
     }
 
     text_content = render_to_string('communication/contract_message_email_to_client.txt', context)

@@ -63,17 +63,17 @@ export default function Home() {
       const accessToken = localStorage.getItem('access_token');
 
       const fetchPhotographers = fetch(
-        `https://www.enet2.com/bookings/api/prospect-photographers/?contract_id=${contractId}`,
+        `https://www.weddingbooked.app/bookings/api/prospect-photographers/?contract_id=${contractId}`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       ).then((response) => response.json());
 
       const fetchMessages = fetch(
-        `https://www.enet2.com/communication/api/contract-messages/${contractId}/`,
+        `https://www.weddingbooked.app/communication/api/contract-messages/${contractId}/`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       ).then((response) => response.json());
 
       const fetchDocuments = fetch(
-        `https://www.enet2.com/documents/api/client-documents/${contractId}/`,
+        `https://www.weddingbooked.app/documents/api/client-documents/${contractId}/`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       ).then((response) => response.json());
 
@@ -113,7 +113,7 @@ export default function Home() {
 
     try {
       const response = await fetch(
-        `https://www.enet2.com/communication/api/post-contract-message/${contractId}/`,
+        `https://www.weddingbooked.app/communication/api/post-contract-message/${contractId}/`,
         {
           method: 'POST',
           headers: {

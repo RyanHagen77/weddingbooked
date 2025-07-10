@@ -60,7 +60,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       try {
-        const response = await fetch('https://www.enet2.com/api/token/refresh/', {
+        const response = await fetch('https://www.weddingbooked.app/api/token/refresh/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -18,7 +18,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     e.preventDefault();
 
     try {
-        const response = await axios.post('https://www.enet2.com/users/api/token/', {
+        const response = await axios.post('https://www.weddingbooked.app/users/api/token/', {
           email,
           password,
         });
@@ -80,7 +80,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           </button>
         </form>
         <div className="mt-4 text-center">
-          <a href="https://www.enet2.com/users/password_reset/" className="text-pink-700 hover:underline">
+          <a href="https://www.weddingbooked.app/users/password_reset/" className="text-pink-700 hover:underline">
             Forgot Password?
           </a>
         </div>
