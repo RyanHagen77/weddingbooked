@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import Timekeeper from 'react-timekeeper'
 import { FaRegClock as FaRegClockRaw } from 'react-icons/fa';
 
-const FaRegClock: React.FC = () => <FaRegClockRaw />;
 
 interface Props {
   label: string
@@ -35,7 +34,7 @@ export default function StyledTimePicker({ label, value, onChange }: Props) {
           onClick={() => setIsOpen((prev) => !prev)}
           className="p-2 border rounded-md shadow-sm bg-white hover:bg-gray-100"
         >
-          <FaRegClock />
+          <FaRegClockRaw />
         </button>
         <span className="text-gray-700 text-sm">
           {value ? formatTo12Hour(value) : 'Select Time'}
