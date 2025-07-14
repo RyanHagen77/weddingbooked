@@ -106,13 +106,12 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-
 useEffect(() => {
   if (!contractId) return;
 
   const accessToken = localStorage.getItem('access_token');
 
-  fetch(`https://https://weddingbooked.app/wedding_day_guide/api/wedding_day_guide/${contractId}/`, {
+  fetch(`https://weddingbooked.app/wedding_day_guide/api/wedding_day_guide/${contractId}/`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
@@ -126,15 +125,12 @@ useEffect(() => {
 
       if (data.dressing_start_time) {
         const [hourStr, minuteStr] = data.dressing_start_time.split(':');
-        const hour = parseInt(hourStr, 10);
-        const minute = parseInt(minuteStr, 10);
-
-        // Store in 24-hr format like "14:00"
-        const raw = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        const raw = `${hourStr.padStart(2, '0')}:${minuteStr.padStart(2, '0')}`;
         setDressingStartTimeRaw(raw);
         setValue('dressing_start_time', raw, { shouldValidate: false });
+      }
 
-       if (data.ceremony_start) {
+      if (data.ceremony_start) {
         const [hourStr, minuteStr] = data.ceremony_start.split(':');
         const raw = `${hourStr.padStart(2, '0')}:${minuteStr.padStart(2, '0')}`;
         setCeremonyStartRaw(raw);
@@ -150,49 +146,40 @@ useEffect(() => {
 
       if (data.reception_start) {
         const [hourStr, minuteStr] = data.reception_start.split(':');
-        const hour = parseInt(hourStr, 10);
-        const minute = parseInt(minuteStr, 10);
-        const raw = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        const raw = `${hourStr.padStart(2, '0')}:${minuteStr.padStart(2, '0')}`;
         setReceptionStartTimeRaw(raw);
         setValue('reception_start', raw, { shouldValidate: false });
       }
+
       if (data.dinner_start) {
         const [hourStr, minuteStr] = data.dinner_start.split(':');
-        const hour = parseInt(hourStr, 10);
-        const minute = parseInt(minuteStr, 10);
-        const raw = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        const raw = `${hourStr.padStart(2, '0')}:${minuteStr.padStart(2, '0')}`;
         setDinnerStartTimeRaw(raw);
         setValue('dinner_start', raw, { shouldValidate: false });
       }
+
       if (data.reception_end) {
         const [hourStr, minuteStr] = data.reception_end.split(':');
-        const hour = parseInt(hourStr, 10);
-        const minute = parseInt(minuteStr, 10);
-        const raw = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        const raw = `${hourStr.padStart(2, '0')}:${minuteStr.padStart(2, '0')}`;
         setReceptionEndTimeRaw(raw);
         setValue('reception_end', raw, { shouldValidate: false });
       }
+
       if (data.photographer2_start) {
         const [hourStr, minuteStr] = data.photographer2_start.split(':');
-        const hour = parseInt(hourStr, 10);
-        const minute = parseInt(minuteStr, 10);
-        const raw = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        const raw = `${hourStr.padStart(2, '0')}:${minuteStr.padStart(2, '0')}`;
         setPhotographer2StartRaw(raw);
         setValue('photographer2_start', raw, { shouldValidate: false });
       }
 
-        // Display in 12-hour format like "2:00 PM"
-        const hour12 = hour % 12 || 12;
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        const formattedDisplay = `${hour12}:${minute.toString().padStart(2, '0')} ${ampm}`;
-      }
-
-    setIsSubmitted(data.submitted || false);
+      setIsSubmitted(data.submitted || false);
     })
     .catch((error) => {
       console.error('Error fetching wedding guide:', error);
     });
 }, [contractId, setValue]);
+
+
 
 useEffect(() => {
   if (Object.keys(errors).length > 0) {
@@ -292,7 +279,7 @@ const onSubmit: SubmitHandler<FormData> = async (data) => {
 
   try {
     const response = await fetch(
-      `https://https://weddingbooked.app/wedding_day_guide/api/wedding_day_guide/${contractId}/`,
+      `https://weddingbooked.app/wedding_day_guide/api/wedding_day_guide/${contractId}/`,
       {
         method: 'POST',
         headers: {
