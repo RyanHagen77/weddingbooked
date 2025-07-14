@@ -2,13 +2,16 @@
 
 import React, { useState } from 'react'
 import Timekeeper from 'react-timekeeper'
-import { FaRegClock } from 'react-icons/fa'
+import { FaRegClock as FaRegClockRaw } from 'react-icons/fa';
+
+const FaRegClock: React.FC = () => <FaRegClockRaw />;
 
 interface Props {
   label: string
-  value: string            // 24-hour like "14:00"
+  value: string
   onChange: (value: string) => void
 }
+
 
 // Show "14:00" as "2:00 PM"
 const formatTo12Hour = (time: string): string => {
