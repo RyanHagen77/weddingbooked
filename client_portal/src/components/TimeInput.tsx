@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import Timekeeper from 'react-timekeeper'
 import { FaRegClock } from 'react-icons/fa'
 
-const ClockIcon = () => <FaRegClock />;
+const ClockIcon: React.FC = () => <>{FaRegClock({})}</>;
 
 interface Props {
   label: string
