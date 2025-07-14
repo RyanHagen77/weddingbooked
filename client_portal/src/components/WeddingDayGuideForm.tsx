@@ -806,106 +806,143 @@ return (
               <div className="p-4 bg-gray-100 rounded-lg mb-6">
                 <h2 className="font-bold text-lg mb-2">Videography Customers Only</h2>
                 <p>Essence cannot process your video until you have provided us with the following information.</p>
-                <p>&nbsp;</p>
-                <p>We deliver weddings online through the Vimeo platform. If you would also like your video on a Blu-Ray
-                  Disc, they are available for $100 if you contact our office directly, prior to your wedding. Please note:
-                  Blu-Ray discs can only be viewed in a Blu-Ray player and are not compatible with standard DVD players or
-                  computers. Online videos can be viewed or downloaded on any digital media device, and will be viewable on
-                  Vimeo.com for 1 year after they are delivered.</p>
-                <p>&nbsp;</p>
-                <p>Please type your names below EXACTLY as you would like them to appear in the final video. Traditionally
-                  the names are listed as John and Sara Flemming.</p>
-                <p>&nbsp;</p>
+                <p>Your final video will be delivered through Vimeo, the same cutting-edge platform trusted across the industry. We host it online for one year. Please be sure to download and save your video right away. After one year, the link will expire and be removed from our hosting. Feel free to store it wherever you like once you have it saved.</p>
+                <p>Please type your names below EXACTLY as you would like them to appear in the final video. Traditionally the names are listed as John and Sara Flemming.</p>
 
-                <label className="block text-sm font-medium text-gray-700">Names:</label>
-                <input type="text" {...register("video_client_names")} className="border p-2 rounded-lg w-full"/>
-                <p>&nbsp;</p>
+                <label htmlFor="video_client_names" className="block text-sm font-medium text-gray-700">
+                  Names:
+                </label>
+                <input
+                  id="video_client_names"
+                  type="text"
+                  {...register("video_client_names")}
+                  className="border p-2 rounded-lg w-full"
+                />
 
+                {/* New Notes Below Names Field */}
+                <div className="mt-4 p-4 border-l-4 border-blue-400 bg-blue-50 rounded">
+                  <p className="font-semibold mb-2">Notes:</p>
+                  <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
+                    <li>We arrive at least 1 hour before the ceremony to set up and capture essential highlight shots and set up sound for the ceremony.</li>
+                    <li>Most packages include 8 hours of coverage.</li>
+                    <li>Dance Highlight requires 2+ hours of open dancing.</li>
+                    <li>Early starts (getting ready/first look) may mean no dance highlight if time runs out.</li>
+                    <li><strong>Need more time?</strong> Overtime is available!</li>
+                  </ul>
+                </div>
+
+                <p className="mt-4">Questions? Message us anytime in the portal—we’re happy to help!</p>
 
                 {/* Wedding Story */}
-                <h3 className="font-semibold mb-2">Wedding Story</h3>
-                <p>Your wedding story will be a collection of highlights from your full wedding day. Your song selection
-                  should be one slow or medium tempo song. We strongly encourage you to pick a song with a length of 3-4
-                  minutes, as a shorter song will decrease the amount of footage the editors are able to include in your
-                  highlight video. Re-edits of videos due to the choice of a short length song will be charged a fee.</p>
-                <p>&nbsp;</p>
+                <h3 className="font-semibold mb-2 mt-6">Wedding Story</h3>
+                <p>Your wedding story will be a collection of highlights from your full wedding day. Your song selection should be one slow or medium tempo song. We strongly encourage you to pick a song with a length of 3–4 minutes, as a shorter song will decrease the amount of footage the editors are able to include in your highlight video. Re-edits of videos due to the choice of a short-length song will be charged a fee.</p>
 
-                <label className="block text-sm font-medium text-gray-700">WS Song Title:</label>
-                <input type="text" {...register("wedding_story_song_title")} className="border p-2 rounded-lg w-full"/>
-                <p>&nbsp;</p>
+                <label className="block text-sm font-medium text-gray-700 mt-4">WS Song Title:</label>
+                <input type="text" {...register("wedding_story_song_title")} className="border p-2 rounded-lg w-full" />
 
-                <label className="block text-sm font-medium text-gray-700">WS Song Artist:</label>
-                <input type="text" {...register("wedding_story_song_artist")} className="border p-2 rounded-lg w-full"/>
-                <p>&nbsp;</p>
-
+                <label className="block text-sm font-medium text-gray-700 mt-4">WS Song Artist:</label>
+                <input type="text" {...register("wedding_story_song_artist")} className="border p-2 rounded-lg w-full" />
 
                 {/* Dance Montage */}
-                <h3 className="font-semibold mb-2">Dance Montage</h3>
-                <p>Your dance montage will be an upbeat collection of footage shot during the general dancing portion of
-                  your evening paired with one song. Re-edits of videos due to the choice of a short length song will be
-                  charged a fee.</p>
-                <p>We cannot complete your video without BOTH your Wedding Story and Dance Montage songs.</p>
-                <p>&nbsp;</p>
+                <h3 className="font-semibold mb-2 mt-6">Dance Montage</h3>
+                <p><strong className="text-red-600">Only if we’re there for 2 hours of open dancing.</strong> Make sure your timelines allow that before filling this out.</p>
+                <p>Your dance montage will be an upbeat collection of footage shot during the general dancing portion of your evening paired with one song. Re-edits of videos due to the choice of a short-length song will be charged a fee. We cannot complete your video without BOTH your Wedding Story and Dance Montage songs.</p>
 
-                <label className="block text-sm font-medium text-gray-700">DM Song Title:</label>
-                <input type="text" {...register("dance_montage_song_title")} className="border p-2 rounded-lg w-full"/>
-                <label className="block text-sm font-medium text-gray-700">DM Song Artist:</label>
-                <input type="text" {...register("dance_montage_song_artist")} className="border p-2 rounded-lg w-full"/>
-                <p>&nbsp;</p>
+                <label className="block text-sm font-medium text-gray-700 mt-4">DM Song Title:</label>
+                <input type="text" {...register("dance_montage_song_title")} className="border p-2 rounded-lg w-full" />
+
+                <label className="block text-sm font-medium text-gray-700 mt-4">DM Song Artist:</label>
+                <input type="text" {...register("dance_montage_song_artist")} className="border p-2 rounded-lg w-full" />
 
                 {/* Additional Editing Notes */}
-                <h3 className="font-semibold mb-2">Additional Editing Notes</h3>
-                <p>Videography customers receive the two above highlight videos as well as other important portions of their
-                  day. Videography customers who have not added Bridal Prep / First Look to their video coverage receive the
-                  following live footage in their video: Ceremony, Introductions, Cake Cutting, Toasts, First Dance, Special
-                  Dances (i.e. Father/Daughter dance and Mother/Son dance), and Bouquet/Garter toss. These portions are only
-                  a part of the video if the events occurred and the videographer is present during the time they
-                  happen.</p>
-                <p>If you are having other “special dances” besides the Mother/Son and Father/Daughter dance, please list
-                  them below so that your videographer and editor know to include footage of them in your video.</p>
-                <p>&nbsp;</p>
+                <h3 className="font-semibold mb-2 mt-6">Additional Editing Notes</h3>
+                <p>Videography customers receive the two above highlight videos as well as other important portions of their day. Videography customers who have not added Bridal Prep / First Look to their video coverage receive the following live footage in their video: Ceremony, Introductions, Cake Cutting, Toasts, First Dance, Special Dances (i.e. Father/Daughter dance and Mother/Son dance), and Bouquet/Garter toss. These portions are only a part of the video if the events occurred and the videographer is present during the time they happen.</p>
 
-                <label className="block text-sm font-medium text-gray-700">Other Special Dances to be Included:</label>
-                <input type="text" {...register("video_special_dances")} className="border p-2 rounded-lg w-full"/>
+                {/* Additional Video Notes */}
+                <div className="mt-4 p-4 border-l-4 border-blue-400 bg-blue-50 rounded">
+                  <p className="font-semibold mb-2">Additional Video Notes to Remember</p>
+                  <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
+                    <li>Videography customers receive one highlight video (their Wedding Story).</li>
+                    <li>If we're there for 2+ hours of open dancing late night, they'll get a dance highlight included.</li>
+                  </ul>
+                </div>
+
+                {/* Bridal Prep / First Look */}
+                <div className="mt-4 p-4 border-l-4 border-yellow-400 bg-yellow-50 rounded">
+                  <p className="font-semibold mb-2">Bridal Prep / First Look Coverage:</p>
+                  <p>Would be added to your Wedding Story (not a separate chapter).</p>
+                  <p>Just remember: if you want early coverage, you may need to extend hours to ensure we’re there late for open dancing.</p>
+                  <p className="mt-2">Other than our highlights, just a reminder of the specific chapters we showed you in your original meeting of our video:</p>
+                  <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
+                    <li>Ceremony</li>
+                    <li>Introductions</li>
+                    <li>Cake Cutting</li>
+                    <li>Toasts</li>
+                    <li>First Dance</li>
+                    <li>Special Dances (e.g. Father/Daughter, Mother/Son)</li>
+                    <li>Bouquet/Garter Toss</li>
+                  </ul>
+                  <p className="mt-2">These chapters are not edited—they are live.</p>
+                  <p>If you have any other special dances or important moments, please list them below so we can make sure to include them and we’re aware of it.</p>
+                </div>
+
+                <label className="block text-sm font-medium text-gray-700 mt-4">Other Special Dances to be Included:</label>
+                <input type="text" {...register("video_special_dances")} className="border p-2 rounded-lg w-full" />
               </div>
+
               {/* Photo Booth Customers Only Section */}
               <div className="p-4 bg-gray-100 rounded-lg mb-6">
                 <h2 className="font-bold text-lg mb-2">Photo Booth Customers Only</h2>
-                <p>Your open-air photo booth, with sparkly, silver backdrop and props, opens during the last 3 hours of the
-                  open dance time at your wedding. The booth prints (2) 2x6 photo strips for each set of images. The digital
-                  images will be sent to you as well, after the wedding via Google Drive. (Essence does not provide an album
-                  for photo strips.)</p>
-                <p>&nbsp;</p>
+                <p>Your open-air photo booth, with sparkly, silver backdrop and props, opens during the last 3 hours of the open dance time at your wedding. The booth prints (2) 2x6 photo strips for each set of images. The digital images will be sent to you as well, after the wedding via Google Drive. (Essence does not provide an album for photo strips.)</p>
 
-                <p>How would you like your names and wedding date to appear on your photo strip? (ie. Kim and Joe, Joe &
-                  Kim, May 22, 2025, or 05/22/25)</p>
-                <p>&nbsp;</p>
+                <p className="mt-4">How would you like your names and wedding date to appear on your photo strip? (e.g., Kim and Joe, Joe & Kim, May 22, 2025, or 05/22/25)</p>
 
-                <label className="block text-sm font-medium text-gray-700">Text Line 1 (up to 15 characters):</label>
-                <input
-                  type="text"
-                  {...register("photo_booth_text_line1")}
-                  maxLength={15} // Ensure maxLength is a number
-                  className="border p-2 rounded-lg w-full"
-                />
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700">Text Line 1 (up to 15 characters):</label>
+                  <input
+                    type="text"
+                    maxLength={15}
+                    {...register("photo_booth_text_line1")}
+                    className="border p-2 rounded-lg w-full"
+                  />
+                </div>
 
-                <label className="block text-sm font-medium text-gray-700">Text Line 2 (up to 15 characters):</label>
-                <input
-                  type="text"
-                  {...register("photo_booth_text_line2")}
-                  maxLength={15} // Ensure maxLength is a number
-                  className="border p-2 rounded-lg w-full"
-                />
-                <p>&nbsp;</p>
-                <p>
-                  Please describe the location in your facility where we will be setting up. Please remember that we will
-                  need a 5&apos;x7&apos; space within 15 feet of an outlet, and a skirted high-top table. (Example: You will be in the
-                  far corner of the room next to the head table, or you will be in the front, just inside the doors.)
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700">Text Line 2 (up to 15 characters):</label>
+                  <input
+                    type="text"
+                    maxLength={15}
+                    {...register("photo_booth_text_line2")}
+                    className="border p-2 rounded-lg w-full"
+                  />
+                </div>
+
+                {/* New Field: Party End Time */}
+                <div className="mt-6">
+                  <label className="block text-sm font-medium text-gray-700">What time does your party end?</label>
+                  <input
+                    type="text"
+                    {...register("photo_booth_end_time")}
+                    className="border p-2 rounded-lg w-full"
+                    placeholder="e.g., 11:30 PM"
+                  />
+                  <p className="text-sm text-gray-600 mt-1">We will do the last three hours of open dancing.</p>
+                </div>
+
+                <p className="mt-6">
+                  Please describe the location in your facility where we will be setting up. Please remember that we will need a 5&apos;x7&apos; space within 15 feet of an outlet, and a skirted high-top table. (Example: You will be in the far corner of the room next to the head table, or you will be in the front, just inside the doors.)
                 </p>
-                <p>&nbsp;</p>
-                <label className="block text-sm font-medium text-gray-700">Placement:</label>
-                <input type="text" {...register("photo_booth_placement")} className="border p-2 rounded-lg w-full"/>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700">Placement:</label>
+                  <input
+                    type="text"
+                    {...register("photo_booth_placement")}
+                    className="border p-2 rounded-lg w-full"
+                  />
+                </div>
               </div>
+
               {/* Warning Message */}
               <div className="text-red-500 text-center">
                 Please note that once you submit this form, you will not be able to make any changes.
