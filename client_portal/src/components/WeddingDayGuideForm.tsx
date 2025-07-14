@@ -388,7 +388,7 @@ return (
                     <label className="block text-sm font-medium text-gray-700">Dressing Location:</label>
                     <input
                         type="text"
-                        {...register("dressing_location", {required: "Dressing location is required"})}
+                        {...register("dressing_location")}
                         className="border p-2 rounded-lg w-full"
                     />
 
@@ -410,7 +410,7 @@ return (
                     <label className="block text-sm font-medium text-gray-700">Dressing Address:</label>
                     <input
                         type="text"
-                      {...register("dressing_address", { required: "Dressing address is required" })}
+                        {...register("dressing_address")}
                       className="border p-2 rounded-lg w-full"
                     />
                   </div>
@@ -425,7 +425,7 @@ return (
                     <label className="block text-sm font-medium text-gray-700">Ceremony Location:</label>
                     <input
                         type="text"
-                        {...register("ceremony_site", {required: "Ceremony location is required"})}
+                        {...register("ceremony_site")}
                         className="border p-2 rounded-lg w-full"
                     />
 
@@ -455,14 +455,14 @@ return (
                     <label className="block text-sm font-medium text-gray-700">Ceremony Address:</label>
                     <input
                       type="text"
-                      {...register("ceremony_address", { required: "Ceremony address is required" })}
+                      {...register("ceremony_address")}
                       className="border p-2 rounded-lg w-full"
                     />
 
                     <label className="block text-sm font-medium text-gray-700">Ceremony Phone #:</label>
                     <input
                       type="tel"
-                      {...register("ceremony_phone", { required: "Ceremony phone number is required" })}
+                      {...register("ceremony_phone")}
                       className="border p-2 rounded-lg w-full"
                     />
                   </div>
@@ -477,7 +477,7 @@ return (
                     <label className="block text-sm font-medium text-gray-700">Reception Location:</label>
                     <input
                       type="text"
-                      {...register("reception_site", { required: "Reception location is required" })}
+                      {...register("reception_site")}
                       className="border p-2 rounded-lg w-full"
                     />
 
@@ -494,7 +494,7 @@ return (
                     <label className="block text-sm font-medium text-gray-700">Reception Phone #:</label>
                     <input
                       type="tel"
-                      {...register("reception_phone", { required: "Reception phone number is required" })}
+                      {...register("reception_phone")}
                       className="border p-2 rounded-lg w-full"
                     />
                   </div>
@@ -502,7 +502,7 @@ return (
                     <label className="block text-sm font-medium text-gray-700">Reception Address:</label>
                     <input
                         type="text"
-                        {...register("reception_address", {required: "Reception address is required"})}
+                        {...register("reception_address")}
                         className="border p-2 rounded-lg w-full"
                     />
 
@@ -709,8 +709,8 @@ return (
                     </div>
                   </div>
                 </div>
-                <p>Essence does not recommend table shots or backdrop photography with a single photographer. If you require
-                  either of these things, please call us to add a second photographer.</p>
+                <p>Essence does not recommend table shots. If you’d like table shots, we require a second photographer.
+                  Please message us in the portal and we can help you.</p>
               </div>
               {/* Family & Wedding Party Info Section */}
               <div className="p-4 bg-gray-100 rounded-lg">
