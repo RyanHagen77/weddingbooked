@@ -247,26 +247,6 @@ const onSubmit: SubmitHandler<FormData> = async (data) => {
   setIsSubmitting(true);
   setMessage(null);
 
-
-
-  const missingField = requiredTimes.find(({ key }) => !data[key as keyof FormData]);
-
-  if (missingField) {
-    const fieldName = missingField.key;
-    const label = missingField.label;
-    setMessage(`Please enter a time for "${label}".`);
-
-    // Scroll to field
-    const el = document.querySelector(`[name="${fieldName}"]`);
-    if (el && typeof el.scrollIntoView === 'function') {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      (el as HTMLElement).focus();
-    }
-
-    setIsSubmitting(false);
-    return;
-  }
-
   const accessToken = localStorage.getItem('access_token');
   const payload = { ...data, contract: contractId, strict_validation: true, submit: true };
 
