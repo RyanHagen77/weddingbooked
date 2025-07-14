@@ -63,14 +63,9 @@ interface FormData {
   photo_booth_text_line1: string;
   photo_booth_text_line2: string;
   photo_booth_placement: string;
+  photo_booth_end_time: string; // 👈 Add this line
   submitted: boolean;
 }
-
-const requiredTimes = [
-  { key: 'ceremonyTime', label: 'Ceremony Time' },
-  { key: 'receptionTime', label: 'Reception Time' },
-  // add others as needed
-];
 
 interface WeddingDayGuideFormProps {
   contractId: string;
@@ -95,9 +90,7 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   const [dinnerStartTimeRaw, setDinnerStartTimeRaw] = useState('00:00')
   const [receptionEndTimeRaw, setReceptionEndTimeRaw] = useState('00:00');
   const [photographer2StartRaw, setPhotographer2StartRaw] = useState('00:00');
-
-
-
+  const [photoBoothEndTimeRaw, setPhotoBoothEndTimeRaw] = useState('00:00'); // 👈 Add here
 
 
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -918,16 +911,19 @@ return (
                 </div>
 
                 {/* New Field: Party End Time */}
-                <div className="mt-6">
-                  <label className="block text-sm font-medium text-gray-700">What time does your party end?</label>
-                  <input
-                    type="text"
-                    {...register("photo_booth_end_time")}
-                    className="border p-2 rounded-lg w-full"
-                    placeholder="e.g., 11:30 PM"
-                  />
-                  <p className="text-sm text-gray-600 mt-1">We will do the last three hours of open dancing.</p>
-                </div>
+                <label className="block text-sm font-medium text-gray-700">
+                  What time does your party end?
+                </label>
+                <input
+                  type="text"
+                  {...register("photo_booth_end_time")}
+                  value={photoBoothEndTimeRaw}
+                  onChange={(e) => setPhotoBoothEndTimeRaw(e.target.value)}
+                  className="border p-2 rounded-lg w-full"
+                  placeholder="e.g., 11:00 PM"
+                />
+                <p className="text-sm text-gray-600 mt-1">We will do the last three hours of open dancing.</p>
+
 
                 <p className="mt-6">
                   Please describe the location in your facility where we will be setting up. Please remember that we will need a 5&apos;x7&apos; space within 15 feet of an outlet, and a skirted high-top table. (Example: You will be in the far corner of the room next to the head table, or you will be in the front, just inside the doors.)
