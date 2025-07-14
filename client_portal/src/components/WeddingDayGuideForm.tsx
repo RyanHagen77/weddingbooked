@@ -225,7 +225,7 @@ useEffect(() => {
 
     try {
       const response = await fetch(
-        `https://https://weddingbooked.app/wedding_day_guide/api/wedding_day_guide/${contractId}/`,
+        `https://weddingbooked.app/wedding_day_guide/api/wedding_day_guide/${contractId}/`,
         {
           method: 'POST',
           headers: {
