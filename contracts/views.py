@@ -175,7 +175,7 @@ def contract_search(request):
         contracts = contracts.filter(event_date__gte=one_week_ago)
 
     # Always sort results by soonest event date.
-    contracts = contracts.order_by('event_date')
+    contracts = list(contracts.order_by('event_date'))  # Forces evaluation, no dangling cursor
 
     # Paginate results.
     paginator = Paginator(contracts, 25)

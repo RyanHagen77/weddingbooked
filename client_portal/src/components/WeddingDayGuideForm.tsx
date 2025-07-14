@@ -194,17 +194,38 @@ useEffect(() => {
     });
 }, [contractId, setValue]);
 
-  useEffect(() => {
-    if (Object.keys(errors).length > 0) {
-      const firstErrorField = Object.keys(errors)[0];
-      const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
+useEffect(() => {
+  if (Object.keys(errors).length > 0) {
+    const firstErrorField = Object.keys(errors)[0];
+    const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
 
-      if (errorElement && typeof errorElement.scrollIntoView === 'function') {
-        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        (errorElement as HTMLElement).focus();
-      }
+    if (errorElement && typeof errorElement.scrollIntoView === 'function') {
+      errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      (errorElement as HTMLElement).focus();
     }
-  }, [errors]);
+
+    // Create the tooltip popup
+    const existingPopup = document.querySelector(`#popup-${firstErrorField}`);
+    if (!existingPopup && errorElement) {
+      const rect = (errorElement as HTMLElement).getBoundingClientRect();
+      const popup = document.createElement('div');
+      popup.id = `popup-${firstErrorField}`;
+      popup.innerText = 'Oops! We need this. Please fill this out.';
+      popup.className = 'absolute z-50 bg-red-100 text-red-700 text-sm px-3 py-1 rounded shadow';
+      popup.style.position = 'absolute';
+      popup.style.left = `${rect.left}px`;
+      popup.style.top = `${rect.top - 30}px`; // slightly above the input
+      popup.style.maxWidth = '250px';
+
+      document.body.appendChild(popup);
+
+      // Auto-remove popup after 5 seconds
+      setTimeout(() => {
+        popup.remove();
+      }, 5000);
+    }
+  }
+}, [errors]);
 
 
 
