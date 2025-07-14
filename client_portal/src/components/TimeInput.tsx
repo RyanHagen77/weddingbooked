@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, createElement } from 'react'
 import Timekeeper from 'react-timekeeper'
-import { FaRegClock as FaRegClockRaw } from 'react-icons/fa';
+import { FaRegClock } from 'react-icons/fa'
 
 
 interface Props {
@@ -29,13 +29,13 @@ export default function StyledTimePicker({ label, value, onChange }: Props) {
     <div className="mb-4 relative">
       <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
       <div className="flex items-center space-x-2">
-        <button
-          type="button"
-          onClick={() => setIsOpen((prev) => !prev)}
-          className="p-2 border rounded-md shadow-sm bg-white hover:bg-gray-100"
-        >
-          <FaRegClockRaw />
-        </button>
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="p-2 border rounded-md shadow-sm bg-white hover:bg-gray-100"
+      >
+        {createElement(FaRegClock)}
+      </button>
         <span className="text-gray-700 text-sm">
           {value ? formatTo12Hour(value) : 'Select Time'}
         </span>
