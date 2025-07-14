@@ -863,7 +863,7 @@ return (
                   <p className="font-semibold mb-2">Additional Video Notes to Remember</p>
                   <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
                     <li>Videography customers receive one highlight video (their Wedding Story).</li>
-                    <li>If we're there for 2+ hours of open dancing late night, they'll get a dance highlight included.</li>
+                    <li>If we&rsquo;re there for 2+ hours of open dancing late night, they&rsquo;ll get a dance highlight included.</li>
                   </ul>
                 </div>
 
