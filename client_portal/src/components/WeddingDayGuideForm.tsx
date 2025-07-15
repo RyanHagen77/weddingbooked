@@ -63,8 +63,10 @@ interface FormData {
   photo_booth_text_line1: string;
   photo_booth_text_line2: string;
   photo_booth_placement: string;
-  photo_booth_end_time: string; // 👈 Add this line
+  photo_booth_end_time: string;
   submitted: boolean;
+  // Allow arbitrary fields with a specific type for photo requests
+  [key: string]: string | number | boolean | undefined;
 }
 
 interface WeddingDayGuideFormProps {
@@ -494,7 +496,8 @@ return (
                     Location Photo Stops
                   </h2>
                   <p className="text-sm text-gray-700 mb-4 font-sans">
-                    It is recommended that you only have 1–2 photo location stops, and that you accurately factor in transportation
+                    It is recommended that you only have 1–2 photo location stops, and that you accurately factor in
+                    transportation
                     time.
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -525,7 +528,8 @@ return (
                       <input type="text" {...register("photographer2_start_location")} className="input"/>
                     </div>
                     <div className="space-y-4">
-                      <label className="block text-sm font-medium text-gray-700 font-sans">Starting Location Address:</label>
+                      <label className="block text-sm font-medium text-gray-700 font-sans">Starting Location
+                        Address:</label>
                       <input type="text" {...register("photographer2_start_location_address")} className="input"/>
 
                       <StyledTimePicker
@@ -548,7 +552,8 @@ return (
                     Shot List
                   </h2>
                   <p className="mb-6 text-sm text-gray-700 font-sans">
-                    What follows are the photos Essence photographers take at a typical wedding depending on time and organization.
+                    What follows are the photos Essence photographers take at a typical wedding depending on time and
+                    organization.
                     Additional photo requests can be added in the next section.
                   </p>
 
@@ -657,7 +662,8 @@ return (
                   </div>
 
                   <p className="text-sm text-gray-600 mt-6 font-sans">
-                    Essence does not recommend table shots. If you&apos;d like table shots, we require a second photographer. Please message us in the portal and we can help you.
+                    Essence does not recommend table shots. If you&apos;d like table shots, we require a second
+                    photographer. Please message us in the portal and we can help you.
                   </p>
                 </section>
 
@@ -670,283 +676,323 @@ return (
                     <div className="space-y-4">
                       <h3 className="font-semibold font-sans">Partner 1&apos;s Side</h3>
                       <label className="block text-sm font-medium text-gray-700 font-sans">P1&apos;s Parents:</label>
-                      <input type="text" {...register("p1_parent_names")} className="input" />
+                      <input type="text" {...register("p1_parent_names")} className="input"/>
 
                       <label className="block text-sm font-medium text-gray-700 font-sans">P1&apos;s Siblings:</label>
-                      <input type="text" {...register("p1_sibling_names")} className="input" />
+                      <input type="text" {...register("p1_sibling_names")} className="input"/>
 
-                      <label className="block text-sm font-medium text-gray-700 font-sans">P1&apos;s Grandparents:</label>
-                      <input type="text" {...register("p1_grandparent_names")} className="input" />
+                      <label className="block text-sm font-medium text-gray-700 font-sans">P1&apos;s
+                        Grandparents:</label>
+                      <input type="text" {...register("p1_grandparent_names")} className="input"/>
 
                       <h3 className="font-semibold mt-6 font-sans">Partner 2&apos;s Side</h3>
                       <label className="block text-sm font-medium text-gray-700 font-sans">P2&apos;s Parents:</label>
-                      <input type="text" {...register("p2_parent_names")} className="input" />
+                      <input type="text" {...register("p2_parent_names")} className="input"/>
 
                       <label className="block text-sm font-medium text-gray-700 font-sans">P2&apos;s Siblings:</label>
-                      <input type="text" {...register("p2_sibling_names")} className="input" />
+                      <input type="text" {...register("p2_sibling_names")} className="input"/>
 
-                      <label className="block text-sm font-medium text-gray-700 font-sans">P2&apos;s Grandparents:</label>
-                      <input type="text" {...register("p2_grandparent_names")} className="input" />
+                      <label className="block text-sm font-medium text-gray-700 font-sans">P2&apos;s
+                        Grandparents:</label>
+                      <input type="text" {...register("p2_grandparent_names")} className="input"/>
                     </div>
 
                     {/* Right Column – Wedding Party Info */}
                     <div className="space-y-4">
                       <h3 className="font-semibold font-sans">Wedding Party</h3>
-                      <label className="block text-sm font-medium text-gray-700 font-sans">Attendant of Honor P1:</label>
-                      <input type="text" {...register("p1_attendant_of_honor")} className="input" />
+                      <label className="block text-sm font-medium text-gray-700 font-sans">Attendant of Honor
+                        P1:</label>
+                      <input type="text" {...register("p1_attendant_of_honor")} className="input"/>
 
-                      <label className="block text-sm font-medium text-gray-700 font-sans">Attendant of Honor P2:</label>
-                      <input type="text" {...register("p2_attendant_of_honor")} className="input" />
+                      <label className="block text-sm font-medium text-gray-700 font-sans">Attendant of Honor
+                        P2:</label>
+                      <input type="text" {...register("p2_attendant_of_honor")} className="input"/>
 
                       <label className="block text-sm font-medium text-gray-700 font-sans"># of Attendants P1:</label>
-                      <input type="number" {...register("p1_attendant_qty")} className="input" />
+                      <input type="number" {...register("p1_attendant_qty")} className="input"/>
 
                       <label className="block text-sm font-medium text-gray-700 font-sans"># of Attendants P2:</label>
-                      <input type="number" {...register("p2_attendant_qty")} className="input" />
+                      <input type="number" {...register("p2_attendant_qty")} className="input"/>
 
-                      <label className="block text-sm font-medium text-gray-700 font-sans"># of Flower Attendants:</label>
-                      <input type="number" {...register("flower_attendant_qty")} className="input" />
+                      <label className="block text-sm font-medium text-gray-700 font-sans"># of Flower
+                        Attendants:</label>
+                      <input type="number" {...register("flower_attendant_qty")} className="input"/>
 
                       <label className="block text-sm font-medium text-gray-700 font-sans"># of Ring Bearers:</label>
-                      <input type="number" {...register("ring_bearer_qty")} className="input" />
+                      <input type="number" {...register("ring_bearer_qty")} className="input"/>
 
                       <label className="block text-sm font-medium text-gray-700 font-sans"># of Ushers:</label>
-                      <input type="number" {...register("usher_qty")} className="input" />
+                      <input type="number" {...register("usher_qty")} className="input"/>
                     </div>
                   </div>
                 </section>
 
-              {/* Additional Photography Requests & Videography Section */}
-              <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm mb-10">
-                <h2 className="text-xl font-bold text-pinkbrand border-b border-pinkbrand pb-2 mb-4 font-display">
-                  Additional Photography Requests
-                </h2>
-                <p className="mb-4 text-sm text-gray-700 font-sans">
-                  Please add your photo requests below. We will do our best to get to all of them, time and weather permitting.
-                </p>
+                {/* Additional Photography Requests & Videography Section */}
+                <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm mb-10">
+                  <h2 className="text-xl font-bold text-pinkbrand border-b border-pinkbrand pb-2 mb-4 font-display">
+                    Additional Photography Requests
+                  </h2>
+                  <p className="mb-4 text-sm text-gray-700 font-sans">
+                    Please add your photo requests below. We will do our best to get to all of them, time and weather permitting.
+                  </p>
 
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="space-y-4">
-                    {[...Array(5)].map((_, idx) => (
-                      <div key={idx}>
-                        <label className="block text-sm font-medium text-gray-700">
-                          {idx < 3 ? `Formal/Posed Photo Requests${idx > 0 ? ` (${idx + 1})` : ''}` : `Other Photo Requests${idx > 3 ? ' (2)' : ''}`}:
-                        </label>
-                        <input
-                          type="text"
-                          {...register(`additional_photo_request${idx + 1}`)}
-                          className="border p-2 rounded-lg w-full"
-                        />
-                      </div>
-                    ))}
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="space-y-4">
+                      {[...Array(5)].map((_, idx) => (
+                          <div key={idx}>
+                            <label className="block text-sm font-medium text-gray-700">
+                              {idx < 3 ? `Formal/Posed Photo Requests${idx > 0 ? ` (${idx + 1})` : ''}` : `Other Photo Requests${idx > 3 ? ' (2)' : ''}`}:
+                            </label>
+                            <input
+                                type="text"
+                                // Explicitly typing the field name for register
+                                {...register(`additional_photo_request${idx + 1}` as keyof FormData)} // TypeScript-safe register
+                                className="border p-2 rounded-lg w-full"
+                            />
+                          </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+
+
+                {/* Videography Customers Only Section */}
+                <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm mb-10">
+                  <h2 className="text-xl font-bold text-pinkbrand border-b border-pinkbrand pb-2 mb-4 font-display">
+                    Videography Customers Only
+                  </h2>
+                  <p className="text-sm text-gray-700 mb-4 font-sans">
+                    Essence cannot process your video until you have provided us with the following information.
+                  </p>
+                  <p className="text-sm text-gray-700 mb-4 font-sans">
+                    Your final video will be delivered through Vimeo, the same cutting-edge platform trusted across the
+                    industry. We host it online for one year. Please be sure to download and save your video right away.
+                    After one year, the link will expire and be removed from our hosting. Feel free to store it wherever
+                    you like once you have it saved.
+                  </p>
+                  <p className="text-sm text-gray-700 mb-4 font-sans">
+                    Please type your names below EXACTLY as you would like them to appear in the final video.
+                    Traditionally the names are listed as John and Sara Flemming.
+                  </p>
+
+                  <label className="block text-sm font-medium text-gray-700">Names:</label>
+                  <input
+                      type="text"
+                      {...register("video_client_names")}
+                      className="border p-2 rounded-lg w-full"
+                  />
+
+                  <div className="mt-4 p-4 border-l-4 border-blue-400 bg-blue-50 rounded">
+                    <p className="font-semibold mb-2">Notes:</p>
+                    <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
+                      <li>We arrive at least 1 hour before the ceremony to set up and capture essential highlight shots
+                        and set up sound for the ceremony.
+                      </li>
+                      <li>Most packages include 8 hours of coverage.</li>
+                      <li>Dance Highlight requires 2+ hours of open dancing.</li>
+                      <li>Early starts (getting ready/first look) may mean no dance highlight if time runs out.</li>
+                      <li><strong>Need more time?</strong> Overtime is available!</li>
+                    </ul>
+                  </div>
+
+                  <p className="mt-4 text-sm font-sans">Questions? Message us anytime in the portal—we&apos;re happy to
+                    help!</p>
+
+                  <h3 className="font-semibold mt-6">Wedding Story</h3>
+                  <p className="text-sm text-gray-700 mb-2 font-sans">
+                    Your wedding story will be a collection of highlights from your full wedding day. Your song
+                    selection should be one slow or medium tempo song. We strongly encourage you to pick a song with a
+                    length of 3–4 minutes, as a shorter song will decrease the amount of footage the editors are able to
+                    include in your highlight video. Re-edits of videos due to the choice of a short-length song will be
+                    charged a fee.
+                  </p>
+
+                  <label className="block text-sm font-medium text-gray-700 mt-4">WS Song Title:</label>
+                  <input type="text" {...register("wedding_story_song_title")}
+                         className="border p-2 rounded-lg w-full"/>
+
+                  <label className="block text-sm font-medium text-gray-700 mt-4">WS Song Artist:</label>
+                  <input type="text" {...register("wedding_story_song_artist")}
+                         className="border p-2 rounded-lg w-full"/>
+
+                  <h3 className="font-semibold mt-6">Dance Montage</h3>
+                  <p className="text-sm text-red-600 mb-1 font-sans"><strong>Only if we&apos;re there for 2 hours of
+                    open dancing.</strong></p>
+                  <p className="text-sm text-gray-700 font-sans">
+                    Your dance montage will be an upbeat collection of footage shot during the general dancing portion
+                    of your evening paired with one song. Re-edits of videos due to the choice of a short-length song
+                    will be charged a fee. We cannot complete your video without BOTH your Wedding Story and Dance
+                    Montage songs.
+                  </p>
+
+                  <label className="block text-sm font-medium text-gray-700 mt-4">DM Song Title:</label>
+                  <input type="text" {...register("dance_montage_song_title")}
+                         className="border p-2 rounded-lg w-full"/>
+
+                  <label className="block text-sm font-medium text-gray-700 mt-4">DM Song Artist:</label>
+                  <input type="text" {...register("dance_montage_song_artist")}
+                         className="border p-2 rounded-lg w-full"/>
+
+                  <h3 className="font-semibold mt-6">Additional Editing Notes</h3>
+                  <p className="text-sm text-gray-700 mb-4 font-sans">
+                    Videography customers receive the two above highlight videos as well as other important portions of
+                    their day. Customers who have not added Bridal Prep / First Look to their video coverage receive the
+                    following live footage: Ceremony, Introductions, Cake Cutting, Toasts, First Dance, Special Dances
+                    (i.e. Father/Daughter, Mother/Son), and Bouquet/Garter toss. These are only included if the events
+                    occur while the videographer is present.
+                  </p>
+
+                  <div className="mt-4 p-4 border-l-4 border-blue-400 bg-blue-50 rounded">
+                    <p className="font-semibold mb-2">Additional Video Notes to Remember</p>
+                    <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
+                      <li>Videography customers receive one highlight video (their Wedding Story).</li>
+                      <li>If we&apos;re there for 2+ hours of open dancing late night, they&apos;ll get a dance
+                        highlight included.
+                      </li>
+                    </ul>
+                  </div>
+                </section>
+
+                {/* Bridal Prep / First Look */}
+                <div className="mt-4 p-4 border-l-4 border-yellow-400 bg-yellow-50 rounded">
+                  <p className="font-semibold mb-2">Bridal Prep / First Look Coverage:</p>
+                  <p>Would be added to your Wedding Story (not a separate chapter).</p>
+                  <p>
+                    Just remember: if you want early coverage, you may need to extend hours to ensure we’re there late
+                    for open dancing.
+                  </p>
+                  <p className="mt-2">
+                    Other than our highlights, just a reminder of the specific chapters we showed you in your original
+                    meeting of our video:
+                  </p>
+                  <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
+                    <li>Ceremony</li>
+                    <li>Introductions</li>
+                    <li>Cake Cutting</li>
+                    <li>Toasts</li>
+                    <li>First Dance</li>
+                    <li>Special Dances (e.g. Father/Daughter, Mother/Son)</li>
+                    <li>Bouquet/Garter Toss</li>
+                  </ul>
+                  <p className="mt-2">These chapters are not edited—they are live.</p>
+                  <p>
+                    If you have any other special dances or important moments, please list them below so we can make
+                    sure to include them and we’re aware of it.
+                  </p>
+                </div>
+
+                <label className="block text-sm font-medium text-gray-700 mt-4">
+                  Other Special Dances to be Included:
+                </label>
+                <input type="text" {...register("video_special_dances")} className="border p-2 rounded-lg w-full"/>
+
+                {/* Photo Booth Customers Only Section */}
+                <div className="p-4 bg-gray-100 rounded-lg mb-6">
+                  <h2 className="font-bold text-lg mb-2">Photo Booth Customers Only</h2>
+                  <p>
+                    Your open-air photo booth, with sparkly, silver backdrop and props, opens during the last 3 hours of
+                    the open dance time at your wedding. The booth prints (2) 2x6 photo strips for each set of images.
+                    The digital images will be sent to you as well, after the wedding via Google Drive. (Essence does
+                    not provide an album for photo strips.)
+                  </p>
+
+                  <p className="mt-4">
+                    How would you like your names and wedding date to appear on your photo strip? (e.g., Kim and Joe,
+                    Joe & Kim, May 22, 2025, or 05/22/25)
+                  </p>
+
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Text Line 1 (up to 15 characters):
+                    </label>
+                    <input
+                        type="text"
+                        maxLength={15}
+                        {...register("photo_booth_text_line1")}
+                        className="border p-2 rounded-lg w-full"
+                    />
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Text Line 2 (up to 15 characters):
+                    </label>
+                    <input
+                        type="text"
+                        maxLength={15}
+                        {...register("photo_booth_text_line2")}
+                        className="border p-2 rounded-lg w-full"
+                    />
                   </div>
                 </div>
-              </section>
 
-              {/* Videography Customers Only Section */}
-              <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm mb-10">
-                <h2 className="text-xl font-bold text-pinkbrand border-b border-pinkbrand pb-2 mb-4 font-display">
-                  Videography Customers Only
-                </h2>
-                <p className="text-sm text-gray-700 mb-4 font-sans">
-                  Essence cannot process your video until you have provided us with the following information.
-                </p>
-                <p className="text-sm text-gray-700 mb-4 font-sans">
-                  Your final video will be delivered through Vimeo, the same cutting-edge platform trusted across the industry. We host it online for one year. Please be sure to download and save your video right away. After one year, the link will expire and be removed from our hosting. Feel free to store it wherever you like once you have it saved.
-                </p>
-                <p className="text-sm text-gray-700 mb-4 font-sans">
-                  Please type your names below EXACTLY as you would like them to appear in the final video. Traditionally the names are listed as John and Sara Flemming.
-                </p>
-
-                <label className="block text-sm font-medium text-gray-700">Names:</label>
+                {/* New Field: Party End Time */}
+                <label className="block text-sm font-medium text-gray-700">
+                  What time does your party end?
+                </label>
                 <input
-                  type="text"
-                  {...register("video_client_names")}
-                  className="border p-2 rounded-lg w-full"
+                    type="text"
+                    {...register("photo_booth_end_time")}
+                    value={photoBoothEndTimeRaw}
+                    onChange={(e) => setPhotoBoothEndTimeRaw(e.target.value)}
+                    className="border p-2 rounded-lg w-full"
+                    placeholder="e.g., 11:00 PM"
                 />
+                <p className="text-sm text-gray-600 mt-1">We will do the last three hours of open dancing.</p>
 
-                <div className="mt-4 p-4 border-l-4 border-blue-400 bg-blue-50 rounded">
-                  <p className="font-semibold mb-2">Notes:</p>
-                  <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
-                    <li>We arrive at least 1 hour before the ceremony to set up and capture essential highlight shots and set up sound for the ceremony.</li>
-                    <li>Most packages include 8 hours of coverage.</li>
-                    <li>Dance Highlight requires 2+ hours of open dancing.</li>
-                    <li>Early starts (getting ready/first look) may mean no dance highlight if time runs out.</li>
-                    <li><strong>Need more time?</strong> Overtime is available!</li>
-                  </ul>
-                </div>
-
-                <p className="mt-4 text-sm font-sans">Questions? Message us anytime in the portal—we&apos;re happy to help!</p>
-
-                <h3 className="font-semibold mt-6">Wedding Story</h3>
-                <p className="text-sm text-gray-700 mb-2 font-sans">
-                  Your wedding story will be a collection of highlights from your full wedding day. Your song selection should be one slow or medium tempo song. We strongly encourage you to pick a song with a length of 3–4 minutes, as a shorter song will decrease the amount of footage the editors are able to include in your highlight video. Re-edits of videos due to the choice of a short-length song will be charged a fee.
-                </p>
-
-                <label className="block text-sm font-medium text-gray-700 mt-4">WS Song Title:</label>
-                <input type="text" {...register("wedding_story_song_title")} className="border p-2 rounded-lg w-full" />
-
-                <label className="block text-sm font-medium text-gray-700 mt-4">WS Song Artist:</label>
-                <input type="text" {...register("wedding_story_song_artist")} className="border p-2 rounded-lg w-full" />
-
-                <h3 className="font-semibold mt-6">Dance Montage</h3>
-                <p className="text-sm text-red-600 mb-1 font-sans"><strong>Only if we&apos;re there for 2 hours of open dancing.</strong></p>
-                <p className="text-sm text-gray-700 font-sans">
-                  Your dance montage will be an upbeat collection of footage shot during the general dancing portion of your evening paired with one song. Re-edits of videos due to the choice of a short-length song will be charged a fee. We cannot complete your video without BOTH your Wedding Story and Dance Montage songs.
-                </p>
-
-                <label className="block text-sm font-medium text-gray-700 mt-4">DM Song Title:</label>
-                <input type="text" {...register("dance_montage_song_title")} className="border p-2 rounded-lg w-full" />
-
-                <label className="block text-sm font-medium text-gray-700 mt-4">DM Song Artist:</label>
-                <input type="text" {...register("dance_montage_song_artist")} className="border p-2 rounded-lg w-full" />
-
-                <h3 className="font-semibold mt-6">Additional Editing Notes</h3>
-                <p className="text-sm text-gray-700 mb-4 font-sans">
-                  Videography customers receive the two above highlight videos as well as other important portions of their day. Customers who have not added Bridal Prep / First Look to their video coverage receive the following live footage: Ceremony, Introductions, Cake Cutting, Toasts, First Dance, Special Dances (i.e. Father/Daughter, Mother/Son), and Bouquet/Garter toss. These are only included if the events occur while the videographer is present.
-                </p>
-
-                <div className="mt-4 p-4 border-l-4 border-blue-400 bg-blue-50 rounded">
-                  <p className="font-semibold mb-2">Additional Video Notes to Remember</p>
-                  <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
-                    <li>Videography customers receive one highlight video (their Wedding Story).</li>
-                    <li>If we&apos;re there for 2+ hours of open dancing late night, they&apos;ll get a dance highlight included.</li>
-                  </ul>
-                </div>
-              </section>
-
-              {/* Bridal Prep / First Look */}
-              <div className="mt-4 p-4 border-l-4 border-yellow-400 bg-yellow-50 rounded">
-                <p className="font-semibold mb-2">Bridal Prep / First Look Coverage:</p>
-                <p>Would be added to your Wedding Story (not a separate chapter).</p>
-                <p>
-                  Just remember: if you want early coverage, you may need to extend hours to ensure we’re there late for open dancing.
-                </p>
-                <p className="mt-2">
-                  Other than our highlights, just a reminder of the specific chapters we showed you in your original meeting of our video:
-                </p>
-                <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
-                  <li>Ceremony</li>
-                  <li>Introductions</li>
-                  <li>Cake Cutting</li>
-                  <li>Toasts</li>
-                  <li>First Dance</li>
-                  <li>Special Dances (e.g. Father/Daughter, Mother/Son)</li>
-                  <li>Bouquet/Garter Toss</li>
-                </ul>
-                <p className="mt-2">These chapters are not edited—they are live.</p>
-                <p>
-                  If you have any other special dances or important moments, please list them below so we can make sure to include them and we’re aware of it.
-                </p>
-              </div>
-
-              <label className="block text-sm font-medium text-gray-700 mt-4">
-                Other Special Dances to be Included:
-              </label>
-              <input type="text" {...register("video_special_dances")} className="border p-2 rounded-lg w-full" />
-
-              {/* Photo Booth Customers Only Section */}
-              <div className="p-4 bg-gray-100 rounded-lg mb-6">
-                <h2 className="font-bold text-lg mb-2">Photo Booth Customers Only</h2>
-                <p>
-                  Your open-air photo booth, with sparkly, silver backdrop and props, opens during the last 3 hours of the open dance time at your wedding. The booth prints (2) 2x6 photo strips for each set of images. The digital images will be sent to you as well, after the wedding via Google Drive. (Essence does not provide an album for photo strips.)
-                </p>
-
-                <p className="mt-4">
-                  How would you like your names and wedding date to appear on your photo strip? (e.g., Kim and Joe, Joe & Kim, May 22, 2025, or 05/22/25)
+                <p className="mt-6">
+                  Please describe the location in your facility where we will be setting up. Please remember that we
+                  will need a 5&apos;x7&apos; space within 15 feet of an outlet, and a skirted high-top table. (Example:
+                  You will be in the far corner of the room next to the head table, or you will be in the front, just
+                  inside
+                  the doors.)
                 </p>
 
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Text Line 1 (up to 15 characters):
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700">Placement:</label>
                   <input
-                    type="text"
-                    maxLength={15}
-                    {...register("photo_booth_text_line1")}
-                    className="border p-2 rounded-lg w-full"
+                      type="text"
+                      {...register("photo_booth_placement")}
+                      className="border p-2 rounded-lg w-full"
                   />
                 </div>
 
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Text Line 2 (up to 15 characters):
-                  </label>
-                  <input
-                    type="text"
-                    maxLength={15}
-                    {...register("photo_booth_text_line2")}
-                    className="border p-2 rounded-lg w-full"
-                  />
+                {/* Warning Message */}
+                <div className="text-red-500 text-center">
+                  Please note that once you submit this form, you will not be able to make any changes.
                 </div>
-              </div>
 
-              {/* New Field: Party End Time */}
-              <label className="block text-sm font-medium text-gray-700">
-                What time does your party end?
-              </label>
-              <input
-                type="text"
-                {...register("photo_booth_end_time")}
-                value={photoBoothEndTimeRaw}
-                onChange={(e) => setPhotoBoothEndTimeRaw(e.target.value)}
-                className="border p-2 rounded-lg w-full"
-                placeholder="e.g., 11:00 PM"
-              />
-              <p className="text-sm text-gray-600 mt-1">We will do the last three hours of open dancing.</p>
+                {message && (
+                    <div
+                        className={`p-4 mb-6 text-center rounded-lg ${
+                            message.includes("successfully")
+                                ? "bg-green-100 text-green-700"
+                                : "bg-red-100 text-red-700"
+                        }`}
+                    >
+                      {message}
+                    </div>
+                )}
 
-              <p className="mt-6">
-                Please describe the location in your facility where we will be setting up. Please remember that we
-                will need a 5&apos;x7&apos; space within 15 feet of an outlet, and a skirted high-top table. (Example:
-                You will be in the far corner of the room next to the head table, or you will be in the front, just inside
-                the doors.)
-              </p>
+                <div className="flex flex-col space-y-4">
+                  {/* Save Button */}
+                  <button
+                      type="button"
+                      onClick={handleSave} // Save without validation
+                      disabled={isSaving}
+                      className="w-full bg-pink-300 text-white py-3 rounded-md hover:bg-pink-400 transition duration-200"
+                  >
+                    {isSaving ? "Saving..." : "Save"}
+                  </button>
 
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">Placement:</label>
-                <input
-                  type="text"
-                  {...register("photo_booth_placement")}
-                  className="border p-2 rounded-lg w-full"
-                />
-              </div>
-
-              {/* Warning Message */}
-              <div className="text-red-500 text-center">
-                Please note that once you submit this form, you will not be able to make any changes.
-              </div>
-
-              {message && (
-                <div
-                  className={`p-4 mb-6 text-center rounded-lg ${
-                    message.includes("successfully")
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                  }`}
-                >
-                  {message}
+                  <button
+                      type="submit"
+                      disabled={isSubmitting || formSubmitted}
+                      className="w-full bg-pink-300 text-white py-3 rounded-md hover:bg-pink-400 transition duration-200"
+                  >
+                    {isSubmitting ? "Submitting..." : "Submit"}
+                  </button>
                 </div>
-              )}
-
-              <div className="flex flex-col space-y-4">
-                {/* Save Button */}
-                <button
-                  type="button"
-                  onClick={handleSave} // Save without validation
-                  disabled={isSaving}
-                  className="w-full bg-pink-300 text-white py-3 rounded-md hover:bg-pink-400 transition duration-200"
-                >
-                  {isSaving ? "Saving..." : "Save"}
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting || formSubmitted}
-                  className="w-full bg-pink-300 text-white py-3 rounded-md hover:bg-pink-400 transition duration-200"
-                >
-                  {isSubmitting ? "Submitting..." : "Submit"}
-                </button>
-              </div>
               </form>
             </>
         )}
