@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 
-import StyledTimePicker from './TimeInput'
-
+import StyledTimePicker from './TimeInput';
 
 interface FormData {
   event_date: string;
@@ -63,24 +62,34 @@ interface FormData {
   photo_booth_text_line1: string;
   photo_booth_text_line2: string;
   photo_booth_placement: string;
-  photo_booth_end_time: string; // 👈 Add this line
+  photo_booth_end_time: string;
   submitted: boolean;
 }
 
 interface WeddingDayGuideFormProps {
   contractId: string;
 }
+
 const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId }) => {
   const {
     register,
     handleSubmit,
-    getValues,
     setValue,
     formState: { errors },
+    getValues,
   } = useForm<FormData>({
     defaultValues: {} as FormData,
     mode: 'onSubmit',
   });
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const inputClass =
+    "border p-2 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-pinkbrand bg-white shadow-sm font-sans";
+
 
   // Time field states for TimeInput components
   const [dressingStartTimeRaw, setDressingStartTimeRaw] = useState('00:00'); // what Timekeeper uses
@@ -92,12 +101,6 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   const [photographer2StartRaw, setPhotographer2StartRaw] = useState('00:00');
   const [photoBoothEndTimeRaw, setPhotoBoothEndTimeRaw] = useState('00:00'); // 👈 Add here
 
-
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
 
 useEffect(() => {
   if (!contractId) return;
@@ -281,8 +284,6 @@ const onSubmit: SubmitHandler<FormData> = async (data) => {
   }
 };
 
-  // Define inputClass before the return statement
-  const inputClass = "border p-2 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-pinkbrand bg-white shadow-sm font-sans";
 
   return (
     <div className="bg-neutral-100 min-h-screen px-4 md:px-12 py-10 md:py-16 text-gray-800 font-sans">
