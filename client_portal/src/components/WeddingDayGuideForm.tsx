@@ -359,20 +359,17 @@ return (
                   </div>
                 </section>
 
-                <section className="bg-gray-50 p-6 rounded-lg border">
-                  <h2 className="text-xl font-bold mb-2 text-rose-800 border-b border-rose-200 pb-2">For The Lead
-                    Photographer</h2>
-                  <p className="mb-4 text-sm text-gray-700">
-                    The photographer typically comes to the bride&rsquo;s dressing location 3 hours before the ceremony.
+                <section className="bg-[#fdf4f5] p-6 rounded-lg border border-pinkbrand shadow-sm">
+                  <h2 className="text-xl font-bold mb-2 text-pinkbrand border-b border-pinkbrand pb-2 font-display">
+                    For The Lead Photographer
+                  </h2>
+                  <p className="mb-4 text-sm text-gray-700 font-sans">
+                    The photographer typically comes to the bride’s dressing location 3 hours before the ceremony.
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
-                      <label className="block text-sm font-medium text-gray-700">Dressing Location:</label>
-                      <input
-                          type="text"
-                          {...register("dressing_location")}
-                          className="input"
-                      />
+                      <label className="block text-sm font-medium text-gray-700 font-sans">Dressing Location:</label>
+                      <input type="text" {...register("dressing_location")} className="input"/>
 
                       <StyledTimePicker
                           label="Start Time"
@@ -386,22 +383,20 @@ return (
                     </div>
 
                     <div className="space-y-4">
-                      <label className="block text-sm font-medium text-gray-700">Dressing Address:</label>
-                      <input
-                          type="text"
-                          {...register("dressing_address")}
-                          className="input"
-                      />
+                      <label className="block text-sm font-medium text-gray-700 font-sans">Dressing Address:</label>
+                      <input type="text" {...register("dressing_address")} className="input"/>
                     </div>
                   </div>
                 </section>
+
                 {/* Ceremony Location Section */}
-                <section className="bg-gray-50 p-6 rounded-lg border">
-                  <h2 className="text-xl font-bold mb-2 text-rose-800 border-b border-rose-200 pb-2">Ceremony
-                    Location</h2>
+                <section className="bg-[#fdf4f5] p-6 rounded-lg border border-pinkbrand shadow-sm">
+                  <h2 className="text-xl font-bold mb-2 text-pinkbrand border-b border-pinkbrand pb-2 font-display">
+                    Ceremony Location
+                  </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
-                      <label className="block text-sm font-medium text-gray-700">Ceremony Location:</label>
+                      <label className="block text-sm font-medium text-gray-700 font-sans">Ceremony Location:</label>
                       <input type="text" {...register("ceremony_site")} className="input"/>
 
                       <StyledTimePicker
@@ -426,21 +421,22 @@ return (
                     </div>
 
                     <div className="space-y-4">
-                      <label className="block text-sm font-medium text-gray-700">Ceremony Address:</label>
+                      <label className="block text-sm font-medium text-gray-700 font-sans">Ceremony Address:</label>
                       <input type="text" {...register("ceremony_address")} className="input"/>
 
-                      <label className="block text-sm font-medium text-gray-700">Ceremony Phone #:</label>
+                      <label className="block text-sm font-medium text-gray-700 font-sans">Ceremony Phone #:</label>
                       <input type="tel" {...register("ceremony_phone")} className="input"/>
                     </div>
                   </div>
                 </section>
 
-                <section className="bg-gray-50 p-6 rounded-lg border">
-                  <h2 className="text-xl font-bold mb-2 text-rose-800 border-b border-rose-200 pb-2">Reception
-                    Location</h2>
+                <section className="bg-[#fdf4f5] p-6 rounded-lg border border-pinkbrand shadow-sm">
+                  <h2 className="text-xl font-bold mb-2 text-pinkbrand border-b border-pinkbrand pb-2 font-display">
+                    Reception Location
+                  </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
-                      <label className="block text-sm font-medium text-gray-700">Reception Location:</label>
+                      <label className="block text-sm font-medium text-gray-700 font-sans">Reception Location:</label>
                       <input type="text" {...register("reception_site")} className="input"/>
 
                       <StyledTimePicker
@@ -453,12 +449,12 @@ return (
                       />
                       <input type="hidden" {...register("reception_start")} />
 
-                      <label className="block text-sm font-medium text-gray-700">Reception Phone #:</label>
+                      <label className="block text-sm font-medium text-gray-700 font-sans">Reception Phone #:</label>
                       <input type="tel" {...register("reception_phone")} className="input"/>
                     </div>
 
                     <div className="space-y-4">
-                      <label className="block text-sm font-medium text-gray-700">Reception Address:</label>
+                      <label className="block text-sm font-medium text-gray-700 font-sans">Reception Address:</label>
                       <input type="text" {...register("reception_address")} className="input"/>
 
                       <StyledTimePicker
@@ -481,51 +477,55 @@ return (
                       />
                       <input type="hidden" {...register("reception_end")} />
 
-                      <p className="text-sm italic text-gray-600">
+                      <p className="text-sm italic text-gray-600 mt-2 font-sans">
                         It is recommended that you seat your photographer/videographer in the room for dinner so that we
-                        don&rsquo;t miss anything.
+                        don’t miss anything.
                       </p>
-                      <label className="block text-sm font-medium text-gray-700">Table #:</label>
+
+                      <label className="block text-sm font-medium text-gray-700 font-sans mt-4">Table #:</label>
                       <input type="text" {...register("staff_table")} className="input"/>
                     </div>
                   </div>
                 </section>
+
                 {/* Location Photo Stops Section */}
-                <section className="bg-gray-50 p-6 rounded-lg border">
-                  <h2 className="text-xl font-bold mb-2 text-rose-800 border-b border-rose-200 pb-2">Location Photo
-                    Stops</h2>
-                  <p className="text-sm text-gray-700 mb-4">It is recommended that you only have 1–2 photo location
-                    stops, and
-                    that you accurately factor in transportation time.</p>
+                <section className="bg-[#fdf4f5] p-6 rounded-lg border border-pinkbrand shadow-sm">
+                  <h2 className="text-xl font-bold mb-2 text-pinkbrand border-b border-pinkbrand pb-2 font-display">
+                    Location Photo Stops
+                  </h2>
+                  <p className="text-sm text-gray-700 mb-4 font-sans">
+                    It is recommended that you only have 1–2 photo location stops, and that you accurately factor in transportation
+                    time.
+                  </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
-                      <label className="block text-sm font-medium text-gray-700">Stop 1:</label>
+                      <label className="block text-sm font-medium text-gray-700 font-sans">Stop 1:</label>
                       <input type="text" {...register("photo_stop1")} className="input"/>
 
-                      <label className="block text-sm font-medium text-gray-700">Stop 3:</label>
+                      <label className="block text-sm font-medium text-gray-700 font-sans">Stop 3:</label>
                       <input type="text" {...register("photo_stop3")} className="input"/>
                     </div>
                     <div className="space-y-4">
-                      <label className="block text-sm font-medium text-gray-700">Stop 2:</label>
+                      <label className="block text-sm font-medium text-gray-700 font-sans">Stop 2:</label>
                       <input type="text" {...register("photo_stop2")} className="input"/>
 
-                      <label className="block text-sm font-medium text-gray-700">Stop 4:</label>
+                      <label className="block text-sm font-medium text-gray-700 font-sans">Stop 4:</label>
                       <input type="text" {...register("photo_stop4")} className="input"/>
                     </div>
                   </div>
                 </section>
 
-                <section className="bg-gray-50 p-6 rounded-lg border">
-                  <h2 className="text-xl font-bold mb-2 text-rose-800 border-b border-rose-200 pb-2">For The 2nd
-                    Photographer
-                    (If Booked)</h2>
+                <section className="bg-[#fdf4f5] p-6 rounded-lg border border-pinkbrand shadow-sm">
+                  <h2 className="text-xl font-bold mb-2 text-pinkbrand border-b border-pinkbrand pb-2 font-display">
+                    For The 2nd Photographer (If Booked)
+                  </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
-                      <label className="block text-sm font-medium text-gray-700">Starting Location:</label>
+                      <label className="block text-sm font-medium text-gray-700 font-sans">Starting Location:</label>
                       <input type="text" {...register("photographer2_start_location")} className="input"/>
                     </div>
                     <div className="space-y-4">
-                      <label className="block text-sm font-medium text-gray-700">Starting Location Address:</label>
+                      <label className="block text-sm font-medium text-gray-700 font-sans">Starting Location Address:</label>
                       <input type="text" {...register("photographer2_start_location_address")} className="input"/>
 
                       <StyledTimePicker
@@ -533,26 +533,31 @@ return (
                           value={photographer2StartRaw}
                           onChange={(val) => {
                             setPhotographer2StartRaw(val);
-                            setValue('photographer2_start', val, {shouldValidate: false});
+                            setValue("photographer2_start", val, {shouldValidate: false});
                           }}
                       />
-                      <input type="hidden" {...register('photographer2_start')} />
+                      <input type="hidden" {...register("photographer2_start")} />
                     </div>
                   </div>
                 </section>
+
                 {/* Shot List Section with Two Columns */}
                 {/* Shot List Section */}
-                <div className="p-6 bg-gray-50 rounded-lg border border-gray-200 mb-10">
-                  <h2 className="text-xl font-semibold text-rose-800 border-b pb-2 mb-4">Shot List</h2>
-                  <p className="mb-6 text-sm text-gray-700">What follows are the photos Essence photographers take at a
-                    typical wedding depending on time and organization. Additional photo requests can be added in the
-                    next section.</p>
+                <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm mb-10">
+                  <h2 className="text-xl font-bold text-pinkbrand border-b border-pinkbrand pb-2 mb-4 font-display">
+                    Shot List
+                  </h2>
+                  <p className="mb-6 text-sm text-gray-700 font-sans">
+                    What follows are the photos Essence photographers take at a typical wedding depending on time and organization.
+                    Additional photo requests can be added in the next section.
+                  </p>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Left Column */}
                     <div className="space-y-6">
                       <div>
-                        <h3 className="font-semibold text-gray-800 mb-1">Dressing Details</h3>
-                        <ul className="list-disc pl-5 text-sm text-gray-700">
+                        <h3 className="font-semibold text-gray-800 mb-1 font-sans">Dressing Details</h3>
+                        <ul className="list-disc pl-5 text-sm text-gray-700 font-sans">
                           <li>Dress/Suit</li>
                           <li>Shoes</li>
                           <li>Bouquet/Boutonniere</li>
@@ -560,8 +565,8 @@ return (
                         </ul>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-800 mb-1">On Location</h3>
-                        <ul className="list-disc pl-5 text-sm text-gray-700">
+                        <h3 className="font-semibold text-gray-800 mb-1 font-sans">On Location</h3>
+                        <ul className="list-disc pl-5 text-sm text-gray-700 font-sans">
                           <li>Partner 1 Alone</li>
                           <li>Partner 2 Alone</li>
                           <li>P1 w/ P2 Attendants</li>
@@ -571,57 +576,58 @@ return (
                         </ul>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-800 mb-1">Before Ceremony - Partner 1 (P1)</h3>
-                        <ul className="list-disc pl-5 text-sm text-gray-700">
+                        <h3 className="font-semibold text-gray-800 mb-1 font-sans">Before Ceremony - Partner 1 (P1)</h3>
+                        <ul className="list-disc pl-5 text-sm text-gray-700 font-sans">
                           <li>Alone</li>
                           <li>P1 w/ Attendants</li>
                           <li>P1 w/ Flower Attendants</li>
                           <li>P1 w/ Mom</li>
                           <li>P1 w/ Dad</li>
-                          <li>P1 w/ Mom & Dad</li>
+                          <li>P1 w/ Mom &amp; Dad</li>
                           <li>P1 w/ Siblings</li>
                           <li>P1 w/ Immediate Family</li>
                         </ul>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-800 mb-1">Before Ceremony - Partner 2 (P2)</h3>
-                        <ul className="list-disc pl-5 text-sm text-gray-700">
+                        <h3 className="font-semibold text-gray-800 mb-1 font-sans">Before Ceremony - Partner 2 (P2)</h3>
+                        <ul className="list-disc pl-5 text-sm text-gray-700 font-sans">
                           <li>Alone</li>
                           <li>P2 w/ Attendants</li>
                           <li>P2 w/ Ring Bearers</li>
                           <li>P2 w/ Ushers</li>
                           <li>P2 w/ Mom</li>
                           <li>P2 w/ Dad</li>
-                          <li>P2 w/ Mom & Dad</li>
+                          <li>P2 w/ Mom &amp; Dad</li>
                           <li>P2 w/ Siblings</li>
                           <li>P2 w/ Immediate Family</li>
                         </ul>
                       </div>
                     </div>
+
                     {/* Right Column */}
                     <div className="space-y-6">
                       <div>
-                        <h3 className="font-semibold text-gray-800 mb-1">Post-Ceremony</h3>
-                        <ul className="list-disc pl-5 text-sm text-gray-700">
+                        <h3 className="font-semibold text-gray-800 mb-1 font-sans">Post-Ceremony</h3>
+                        <ul className="list-disc pl-5 text-sm text-gray-700 font-sans">
                           <li>P1 at Altar</li>
                           <li>P2 at Altar</li>
                           <li>Couple at Altar</li>
                           <li>Couple w/ Wedding Party</li>
-                          <li>Couple w/ P1&#39;s Parents</li>
-                          <li>Couple w/ P1&#39;s Immediate Family</li>
-                          <li>Couple w/ P1&#39;s Grandparents</li>
-                          <li>Couple w/ P1&#39;s Extended Family</li>
+                          <li>Couple w/ P1&apos;s Parents</li>
+                          <li>Couple w/ P1&apos;s Immediate Family</li>
+                          <li>Couple w/ P1&apos;s Grandparents</li>
+                          <li>Couple w/ P1&apos;s Extended Family</li>
                           <li>Couple w/ Both Sets of Parents</li>
-                          <li>Couple w/ P2&#39;s Parents</li>
-                          <li>Couple w/ P2&#39;s Immediate Family</li>
-                          <li>Couple w/ P2&#39;s Grandparents</li>
-                          <li>Couple w/ P2&#39;s Extended Family</li>
+                          <li>Couple w/ P2&apos;s Parents</li>
+                          <li>Couple w/ P2&apos;s Immediate Family</li>
+                          <li>Couple w/ P2&apos;s Grandparents</li>
+                          <li>Couple w/ P2&apos;s Extended Family</li>
                           <li>Church Exit</li>
                         </ul>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-800 mb-1">Ceremony</h3>
-                        <ul className="list-disc pl-5 text-sm text-gray-700">
+                        <h3 className="font-semibold text-gray-800 mb-1 font-sans">Ceremony</h3>
+                        <ul className="list-disc pl-5 text-sm text-gray-700 font-sans">
                           <li>Processional</li>
                           <li>Vows</li>
                           <li>Ring Exchange</li>
@@ -632,8 +638,8 @@ return (
                         </ul>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-800 mb-1">Reception</h3>
-                        <ul className="list-disc pl-5 text-sm text-gray-700">
+                        <h3 className="font-semibold text-gray-800 mb-1 font-sans">Reception</h3>
+                        <ul className="list-disc pl-5 text-sm text-gray-700 font-sans">
                           <li>Reception Details</li>
                           <li>Cocktail Hour Mingling</li>
                           <li>Introductions</li>
@@ -649,75 +655,68 @@ return (
                       </div>
                     </div>
                   </div>
-                  <p className="text-sm text-gray-600 mt-6">Essence does not recommend table shots. If you’d like table
-                    shots, we require a second photographer. Please message us in the portal and we can help you.</p>
-                </div>
-                {/* Family & Wedding Party Info Section */}
-                <div className="p-4 bg-gray-100 rounded-lg">
-                  <h2 className="font-bold text-lg mb-2">Family & Wedding Party Info</h2>
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* Left Column for Family */}
-                    <div>
-                      <h3 className="font-semibold mb-2">Family</h3>
-                      {/* Bride's Side */}
-                      <div className="mb-4">
-                        <h4 className="font-semibold">Partner 1&apos;s Side</h4>
-                        <label className="block text-sm font-medium text-gray-700">P1&apos;s Parents:</label>
-                        <input type="text" {...register("p1_parent_names")} className="border p-2 rounded-lg w-full"/>
 
-                        <label className="block text-sm font-medium text-gray-700">P1&apos;s Siblings:</label>
-                        <input type="text" {...register("p1_sibling_names")} className="border p-2 rounded-lg w-full"/>
+                  <p className="text-sm text-gray-600 mt-6 font-sans">
+                    Essence does not recommend table shots. If you&apos;d like table shots, we require a second photographer. Please message us in the portal and we can help you.
+                  </p>
+                </section>
 
-                        <label className="block text-sm font-medium text-gray-700">P1&apos;s Grandparents:</label>
-                        <input type="text" {...register("p1_grandparent_names")}
-                               className="border p-2 rounded-lg w-full"/>
-                      </div>
+                <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm">
+                  <h2 className="text-xl font-bold text-pinkbrand border-b border-pinkbrand pb-2 mb-4 font-display">
+                    Family &amp; Wedding Party Info
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Left Column – Family Info */}
+                    <div className="space-y-4">
+                      <h3 className="font-semibold font-sans">Partner 1&apos;s Side</h3>
+                      <label className="block text-sm font-medium text-gray-700 font-sans">P1&apos;s Parents:</label>
+                      <input type="text" {...register("p1_parent_names")} className="input" />
 
-                      {/* Groom's Side */}
-                      <div>
-                        <h4 className="font-semibold">Partner 2&apos;s Side</h4>
-                        <label className="block text-sm font-medium text-gray-700">Partner 2&apos;s Parents:</label>
-                        <input type="text" {...register("p2_parent_names")} className="border p-2 rounded-lg w-full"/>
+                      <label className="block text-sm font-medium text-gray-700 font-sans">P1&apos;s Siblings:</label>
+                      <input type="text" {...register("p1_sibling_names")} className="input" />
 
-                        <label className="block text-sm font-medium text-gray-700">Partner 2&apos;s Siblings:</label>
-                        <input type="text" {...register("p2_sibling_names")} className="border p-2 rounded-lg w-full"/>
+                      <label className="block text-sm font-medium text-gray-700 font-sans">P1&apos;s Grandparents:</label>
+                      <input type="text" {...register("p1_grandparent_names")} className="input" />
 
-                        <label className="block text-sm font-medium text-gray-700">Partner 2&apos;s
-                          Grandparents:</label>
-                        <input type="text" {...register("p2_grandparent_names")}
-                               className="border p-2 rounded-lg w-full"/>
-                      </div>
+                      <h3 className="font-semibold mt-6 font-sans">Partner 2&apos;s Side</h3>
+                      <label className="block text-sm font-medium text-gray-700 font-sans">P2&apos;s Parents:</label>
+                      <input type="text" {...register("p2_parent_names")} className="input" />
+
+                      <label className="block text-sm font-medium text-gray-700 font-sans">P2&apos;s Siblings:</label>
+                      <input type="text" {...register("p2_sibling_names")} className="input" />
+
+                      <label className="block text-sm font-medium text-gray-700 font-sans">P2&apos;s Grandparents:</label>
+                      <input type="text" {...register("p2_grandparent_names")} className="input" />
                     </div>
 
-                    {/* Right Column for Wedding Party */}
-                    <div>
-                      <h3 className="font-semibold mb-2">Wedding Party</h3>
-                      <label className="block text-sm font-medium text-gray-700">Attendant of Honor P1:</label>
-                      <input type="text" {...register("p1_attendant_of_honor")}
-                             className="border p-2 rounded-lg w-full"/>
+                    {/* Right Column – Wedding Party Info */}
+                    <div className="space-y-4">
+                      <h3 className="font-semibold font-sans">Wedding Party</h3>
+                      <label className="block text-sm font-medium text-gray-700 font-sans">Attendant of Honor P1:</label>
+                      <input type="text" {...register("p1_attendant_of_honor")} className="input" />
 
-                      <label className="block text-sm font-medium text-gray-700">Attendant of Honor P2:</label>
-                      <input type="text" {...register("p2_attendant_of_honor")}
-                             className="border p-2 rounded-lg w-full"/>
+                      <label className="block text-sm font-medium text-gray-700 font-sans">Attendant of Honor P2:</label>
+                      <input type="text" {...register("p2_attendant_of_honor")} className="input" />
 
-                      <label className="block text-sm font-medium text-gray-700"># of Attendants P1:</label>
-                      <input type="number" {...register("p1_attendant_qty")} className="border p-2 rounded-lg w-full"/>
+                      <label className="block text-sm font-medium text-gray-700 font-sans"># of Attendants P1:</label>
+                      <input type="number" {...register("p1_attendant_qty")} className="input" />
 
-                      <label className="block text-sm font-medium text-gray-700"># of Attendants P2:</label>
-                      <input type="number" {...register("p2_attendant_qty")} className="border p-2 rounded-lg w-full"/>
+                      <label className="block text-sm font-medium text-gray-700 font-sans"># of Attendants P2:</label>
+                      <input type="number" {...register("p2_attendant_qty")} className="input" />
 
-                      <label className="block text-sm font-medium text-gray-700"># of Flower Attendants:</label>
-                      <input type="number" {...register("flower_attendant_qty")}
-                             className="border p-2 rounded-lg w-full"/>
+                      <label className="block text-sm font-medium text-gray-700 font-sans"># of Flower Attendants:</label>
+                      <input type="number" {...register("flower_attendant_qty")} className="input" />
 
-                      <label className="block text-sm font-medium text-gray-700"># of Ring Bearers:</label>
-                      <input type="number" {...register("ring_bearer_qty")} className="border p-2 rounded-lg w-full"/>
+                      <label className="block text-sm font-medium text-gray-700 font-sans"># of Ring Bearers:</label>
+                      <input type="number" {...register("ring_bearer_qty")} className="input" />
 
-                      <label className="block text-sm font-medium text-gray-700"># of Ushers:</label>
-                      <input type="number" {...register("usher_qty")} className="border p-2 rounded-lg w-full"/>
+                      <label className="block text-sm font-medium text-gray-700 font-sans"># of Ushers:</label>
+                      <input type="number" {...register("usher_qty")} className="input" />
                     </div>
                   </div>
-                </div>
+                </section>
+
+
                 {/* Additional Photography Requests Section */}
                 <div className="p-4 bg-gray-100 rounded-lg mb-6">
                   <h2 className="font-bold text-lg mb-2">Additional Photography Requests</h2>
