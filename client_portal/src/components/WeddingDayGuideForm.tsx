@@ -919,7 +919,7 @@ useEffect(() => {
                   <p className="text-sm text-gray-600 mt-1">We will do the last three hours of open dancing.</p>
 
                   <p className="mt-6">
-                    Please describe the location in your facility where we will be setting up. Please remember that we will need a 5'x7' space within 15 feet of an outlet, and a skirted high-top table. (Example: You will be in the far corner of the room next to the head table, or you will be in the front, just inside the doors.)
+                    Please describe the location in your facility where we will be setting up. Please remember that we will need a 5&#39;x7&#39; space within 15 feet of an outlet, and a skirted high-top table. (Example: You will be in the far corner of the room next to the head table, or you will be in the front, just inside the doors.)
                   </p>
 
                   <div className="mt-4">
