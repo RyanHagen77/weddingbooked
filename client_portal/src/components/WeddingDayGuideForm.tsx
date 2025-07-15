@@ -113,7 +113,11 @@ useEffect(() => {
     .then((response) => response.json())
     .then((data: FormData) => {
       Object.keys(data).forEach((key) => {
-        setValue(key as keyof FormData, data[key as keyof FormData], { shouldValidate: false });
+        // Ensure the key is valid by narrowing its type to keyof FormData
+        const typedKey = key as keyof FormData;
+        if (typedKey in data) {
+          setValue(typedKey, data[typedKey], { shouldValidate: false });
+        }
       });
 
       if (data.dressing_start_time) {
@@ -171,8 +175,6 @@ useEffect(() => {
       console.error('Error fetching wedding guide:', error);
     });
 }, [contractId, setValue]);
-
-
 
 useEffect(() => {
   if (Object.keys(errors).length > 0) {
