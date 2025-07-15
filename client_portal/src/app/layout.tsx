@@ -1,9 +1,22 @@
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "../components/AuthContext";
-import React from "react"; // Ensure correct path
+import React from "react";
 
-const inter = Inter({ subsets: ["latin"] });
+// ✅ Import fonts only once
+import { Inter, Cormorant_Garamond, Libre_Franklin } from "next/font/google";
+
+// ✅ Declare all font variables
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const display = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  variable: "--font-display",
+});
+const sans = Libre_Franklin({
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  variable: "--font-sans",
+});
 
 export default function RootLayout({
   children,
@@ -12,10 +25,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+      {/* ✅ Apply all font variables to body */}
+      <body className={`${inter.variable} ${display.variable} ${sans.variable}`}>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

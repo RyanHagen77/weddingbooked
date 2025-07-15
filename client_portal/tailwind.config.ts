@@ -12,8 +12,11 @@ module.exports = {
         albert: ['Albert Sans', 'sans-serif'],
         paris: ['Parisienne', 'sans-serif'],
         dance: ['Dancing Script', 'sans-serif'],
-        brittany: ['Brittany Signature', 'cursive'], // Add this line
+        brittany: ['Brittany Signature', 'cursive'], // ✔️ custom font
+        display: ['var(--font-display)', 'serif'],   // ✔️ Cormorant Garamond
+        sans: ['var(--font-sans)', 'sans-serif'],    // ✔️ Libre Franklin
       },
+
       colors: {
         'lightpink': '#ebcdc3',
         'dark-pistachio': '#495D4E',
