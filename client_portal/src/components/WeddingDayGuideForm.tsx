@@ -281,214 +281,213 @@ const onSubmit: SubmitHandler<FormData> = async (data) => {
   }
 };
 
+  // Define inputClass before the return statement
+  const inputClass = "border p-2 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-pinkbrand bg-white shadow-sm font-sans";
 
-
-return (
-    /* Apply this to your Wedding Day Guide form container */
+  return (
     <div className="bg-neutral-100 min-h-screen px-4 md:px-12 py-10 md:py-16 text-gray-800 font-sans">
       <div className="max-w-5xl mx-auto">
         {isSubmitted ? (
-            <div className="text-center p-6 mb-10 bg-white rounded-lg border border-gray-300 shadow-sm">
-              <h2 className="text-xl font-semibold mb-2 text-gray-800">Wedding Day Guide Submitted</h2>
-              <p className="text-gray-600">This guide has already been submitted and cannot be modified.</p>
-            </div>
+          <div className="text-center p-6 mb-10 bg-white rounded-lg border border-gray-300 shadow-sm">
+            <h2 className="text-xl font-semibold mb-2 text-gray-800">Wedding Day Guide Submitted</h2>
+            <p className="text-gray-600">This guide has already been submitted and cannot be modified.</p>
+          </div>
         ) : (
-            <>
-              <h1 className="text-4xl font-bold mb-8 text-center tracking-wide border-b-2 border-pinkbrand pb-4 text-gray-800 font-display">
-                Wedding Planning Guide
-              </h1>
+          <>
+            <h1 className="text-4xl font-bold mb-8 text-center tracking-wide border-b-2 border-pinkbrand pb-4 text-gray-800 font-display">
+              Wedding Planning Guide
+            </h1>
 
-              <div className="text-center p-6 mb-10 bg-[#fdf4f5] border border-pinkbrand rounded-lg shadow-sm">
-                <h2 className="font-bold text-lg text-[#a2585f] mb-2 font-display">Emergency Contact</h2>
-                <p className="text-sm text-[#5b2e30]">(847) 780-7092: Contact Essence with this number in case of
-                  emergency.</p>
-              </div>
+            <div className="text-center p-6 mb-10 bg-[#fdf4f5] border border-pinkbrand rounded-lg shadow-sm">
+              <h2 className="font-bold text-lg text-[#a2585f] mb-2 font-display">Emergency Contact</h2>
+              <p className="text-sm text-[#5b2e30]">(847) 780-7092: Contact Essence with this number in case of emergency.</p>
+            </div>
 
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
-                <section
-                    className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-[#fdf4f5] p-6 rounded-lg border border-gray-200 shadow-sm">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
+              <section className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-[#fdf4f5] p-6 rounded-lg border border-gray-200 shadow-sm">
+                <div className="space-y-4">
+                  <label className="block text-sm font-medium text-gray-700">Wedding Date</label>
+                  <input
+                    type="date"
+                    {...register("event_date", { required: true })}
+                    className={inputClass}
+                  />
+
+                  <label className="block text-sm font-medium text-gray-700">Partner 1</label>
+                  <input
+                    type="text"
+                    {...register("primary_contact", { required: true })}
+                    className={inputClass}
+                  />
+
+                  <label className="block text-sm font-medium text-gray-700">Primary Email</label>
+                  <input
+                    type="email"
+                    {...register("primary_email", { required: true })}
+                    className={inputClass}
+                  />
+
+                  <label className="block text-sm font-medium text-gray-700">Primary Cell #</label>
+                  <input
+                    type="tel"
+                    {...register("primary_phone", { required: true })}
+                    className={inputClass}
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <label className="block text-sm font-medium text-gray-700">Partner 2</label>
+                  <input
+                    type="text"
+                    {...register("partner_contact", { required: true })}
+                    className={inputClass}
+                  />
+
+                  <label className="block text-sm font-medium text-gray-700">Partner Email</label>
+                  <input
+                    type="email"
+                    {...register("partner_email", { required: true })}
+                    className={inputClass}
+                  />
+
+                  <label className="block text-sm font-medium text-gray-700">Partner Cell #</label>
+                  <input
+                    type="tel"
+                    {...register("partner_phone", { required: true })}
+                    className={inputClass}
+                  />
+                </div>
+              </section>
+
+              {/* For The Lead Photographer Section */}
+              <section className="bg-[#fdf4f5] p-6 rounded-lg border border-pinkbrand shadow-sm">
+                <h2 className="text-xl font-bold mb-2 text-pinkbrand border-b border-pinkbrand pb-2 font-display">
+                  For The Lead Photographer
+                </h2>
+                <p className="mb-4 text-sm text-gray-700 font-sans">
+                  The photographer typically comes to the bride’s dressing location 3 hours before the ceremony.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    <label className="block text-sm font-medium text-gray-700">Wedding Date</label>
-                    <input
-                        type="date"
-                        {...register("event_date", {required: true})}
-                        className="border border-gray-300 p-2 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-pinkbrand bg-white shadow-sm font-sans"
-                    />
+                    <label className="block text-sm font-medium text-gray-700 font-sans">Dressing Location:</label>
+                    <input type="text" {...register("dressing_location")} className={inputClass} />
 
-                    <label className="block text-sm font-medium text-gray-700">Partner 1</label>
-                    <input
-                        type="text"
-                        {...register("primary_contact", {required: true})}
-                        className="border border-gray-300 p-2 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-pinkbrand bg-white shadow-sm font-sans"
+                    <StyledTimePicker
+                      label="Start Time"
+                      value={dressingStartTimeRaw}
+                      onChange={(val) => {
+                        setDressingStartTimeRaw(val);
+                        setValue("dressing_start_time", val, { shouldValidate: false });
+                      }}
                     />
-
-                    <label className="block text-sm font-medium text-gray-700">Primary Email</label>
-                    <input
-                        type="email"
-                        {...register("primary_email", {required: true})}
-                        className="border border-gray-300 p-2 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-pinkbrand bg-white shadow-sm font-sans"
-                    />
-
-                    <label className="block text-sm font-medium text-gray-700">Primary Cell #</label>
-                    <input
-                        type="tel"
-                        {...register("primary_phone", {required: true})}
-                        className="border border-gray-300 p-2 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-pinkbrand bg-white shadow-sm font-sans"
-                    />
+                    <input type="hidden" {...register("dressing_start_time")} />
                   </div>
 
                   <div className="space-y-4">
-                    <label className="block text-sm font-medium text-gray-700">Partner 2</label>
-                    <input
-                        type="text"
-                        {...register("partner_contact", {required: true})}
-                        className="border border-gray-300 p-2 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-pinkbrand bg-white shadow-sm font-sans"
+                    <label className="block text-sm font-medium text-gray-700 font-sans">Dressing Address:</label>
+                    <input type="text" {...register("dressing_address")} className={inputClass} />
+                  </div>
+                </div>
+              </section>
+
+              {/* Ceremony Location Section */}
+              <section className="bg-[#fdf4f5] p-6 rounded-lg border border-pinkbrand shadow-sm">
+                <h2 className="text-xl font-bold mb-2 text-pinkbrand border-b border-pinkbrand pb-2 font-display">
+                  Ceremony Location
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <label className="block text-sm font-medium text-gray-700 font-sans">Ceremony Location:</label>
+                    <input type="text" {...register("ceremony_site")} className={inputClass} />
+
+                    <StyledTimePicker
+                      label="Ceremony Start"
+                      value={ceremonyStartRaw}
+                      onChange={(val) => {
+                        setCeremonyStartRaw(val);
+                        setValue("ceremony_start", val, { shouldValidate: false });
+                      }}
                     />
+                    <input type="hidden" {...register("ceremony_start")} />
 
-                    <label className="block text-sm font-medium text-gray-700">Partner Email</label>
-                    <input
-                        type="email"
-                        {...register("partner_email", {required: true})}
-                        className="border border-gray-300 p-2 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-pinkbrand bg-white shadow-sm font-sans"
+                    <StyledTimePicker
+                      label="Ceremony End"
+                      value={ceremonyEndRaw}
+                      onChange={(val) => {
+                        setCeremonyEndRaw(val);
+                        setValue("ceremony_end", val, { shouldValidate: false });
+                      }}
                     />
+                    <input type="hidden" {...register("ceremony_end")} />
+                  </div>
 
-                    <label className="block text-sm font-medium text-gray-700">Partner Cell #</label>
-                    <input
-                        type="tel"
-                        {...register("partner_phone", {required: true})}
-                        className="border border-gray-300 p-2 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-pinkbrand bg-white shadow-sm font-sans"
+                  <div className="space-y-4">
+                    <label className="block text-sm font-medium text-gray-700 font-sans">Ceremony Address:</label>
+                    <input type="text" {...register("ceremony_address")} className={inputClass} />
+
+                    <label className="block text-sm font-medium text-gray-700 font-sans">Ceremony Phone #:</label>
+                    <input type="tel" {...register("ceremony_phone")} className={inputClass} />
+                  </div>
+                </div>
+              </section>
+
+              {/* Reception Location Section */}
+              <section className="bg-[#fdf4f5] p-6 rounded-lg border border-pinkbrand shadow-sm">
+                <h2 className="text-xl font-bold mb-2 text-pinkbrand border-b border-pinkbrand pb-2 font-display">
+                  Reception Location
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <label className="block text-sm font-medium text-gray-700 font-sans">Reception Location:</label>
+                    <input type="text" {...register("reception_site")} className={inputClass} />
+
+                    <StyledTimePicker
+                      label="Cocktail Start Time"
+                      value={receptionStartTimeRaw}
+                      onChange={(val) => {
+                        setReceptionStartTimeRaw(val);
+                        setValue("reception_start", val, { shouldValidate: false });
+                      }}
                     />
+                    <input type="hidden" {...register("reception_start")} />
+
+                    <label className="block text-sm font-medium text-gray-700 font-sans">Reception Phone #:</label>
+                    <input type="tel" {...register("reception_phone")} className={inputClass} />
                   </div>
-                </section>
 
-                <section className="bg-[#fdf4f5] p-6 rounded-lg border border-pinkbrand shadow-sm">
-                  <h2 className="text-xl font-bold mb-2 text-pinkbrand border-b border-pinkbrand pb-2 font-display">
-                    For The Lead Photographer
-                  </h2>
-                  <p className="mb-4 text-sm text-gray-700 font-sans">
-                    The photographer typically comes to the bride’s dressing location 3 hours before the ceremony.
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <label className="block text-sm font-medium text-gray-700 font-sans">Dressing Location:</label>
-                      <input type="text" {...register("dressing_location")} className="input"/>
+                  <div className="space-y-4">
+                    <label className="block text-sm font-medium text-gray-700 font-sans">Reception Address:</label>
+                    <input type="text" {...register("reception_address")} className={inputClass} />
 
-                      <StyledTimePicker
-                          label="Start Time"
-                          value={dressingStartTimeRaw}
-                          onChange={(val) => {
-                            setDressingStartTimeRaw(val);
-                            setValue("dressing_start_time", val, {shouldValidate: false});
-                          }}
-                      />
-                      <input type="hidden" {...register("dressing_start_time")} />
-                    </div>
+                    <StyledTimePicker
+                      label="Dinner Start Time"
+                      value={dinnerStartTimeRaw}
+                      onChange={(val) => {
+                        setDinnerStartTimeRaw(val);
+                        setValue("dinner_start", val, { shouldValidate: false });
+                      }}
+                    />
+                    <input type="hidden" {...register("dinner_start")} />
 
-                    <div className="space-y-4">
-                      <label className="block text-sm font-medium text-gray-700 font-sans">Dressing Address:</label>
-                      <input type="text" {...register("dressing_address")} className="input"/>
-                    </div>
+                    <StyledTimePicker
+                      label="Reception Ends"
+                      value={receptionEndTimeRaw}
+                      onChange={(val) => {
+                        setReceptionEndTimeRaw(val);
+                        setValue("reception_end", val, { shouldValidate: false });
+                      }}
+                    />
+                    <input type="hidden" {...register("reception_end")} />
+
+                    <p className="text-sm italic text-gray-600 mt-2 font-sans">
+                      It is recommended that you seat your photographer/videographer in the room for dinner so that we don’t miss anything.
+                    </p>
+
+                    <label className="block text-sm font-medium text-gray-700 font-sans mt-4">Table #:</label>
+                    <input type="text" {...register("staff_table")} className={inputClass} />
                   </div>
-                </section>
-
-                {/* Ceremony Location Section */}
-                <section className="bg-[#fdf4f5] p-6 rounded-lg border border-pinkbrand shadow-sm">
-                  <h2 className="text-xl font-bold mb-2 text-pinkbrand border-b border-pinkbrand pb-2 font-display">
-                    Ceremony Location
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <label className="block text-sm font-medium text-gray-700 font-sans">Ceremony Location:</label>
-                      <input type="text" {...register("ceremony_site")} className="input"/>
-
-                      <StyledTimePicker
-                          label="Ceremony Start"
-                          value={ceremonyStartRaw}
-                          onChange={(val) => {
-                            setCeremonyStartRaw(val);
-                            setValue("ceremony_start", val, {shouldValidate: false});
-                          }}
-                      />
-                      <input type="hidden" {...register("ceremony_start")} />
-
-                      <StyledTimePicker
-                          label="Ceremony End"
-                          value={ceremonyEndRaw}
-                          onChange={(val) => {
-                            setCeremonyEndRaw(val);
-                            setValue("ceremony_end", val, {shouldValidate: false});
-                          }}
-                      />
-                      <input type="hidden" {...register("ceremony_end")} />
-                    </div>
-
-                    <div className="space-y-4">
-                      <label className="block text-sm font-medium text-gray-700 font-sans">Ceremony Address:</label>
-                      <input type="text" {...register("ceremony_address")} className="input"/>
-
-                      <label className="block text-sm font-medium text-gray-700 font-sans">Ceremony Phone #:</label>
-                      <input type="tel" {...register("ceremony_phone")} className="input"/>
-                    </div>
-                  </div>
-                </section>
-
-                <section className="bg-[#fdf4f5] p-6 rounded-lg border border-pinkbrand shadow-sm">
-                  <h2 className="text-xl font-bold mb-2 text-pinkbrand border-b border-pinkbrand pb-2 font-display">
-                    Reception Location
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <label className="block text-sm font-medium text-gray-700 font-sans">Reception Location:</label>
-                      <input type="text" {...register("reception_site")} className="input"/>
-
-                      <StyledTimePicker
-                          label="Cocktail Start Time"
-                          value={receptionStartTimeRaw}
-                          onChange={(val) => {
-                            setReceptionStartTimeRaw(val);
-                            setValue("reception_start", val, {shouldValidate: false});
-                          }}
-                      />
-                      <input type="hidden" {...register("reception_start")} />
-
-                      <label className="block text-sm font-medium text-gray-700 font-sans">Reception Phone #:</label>
-                      <input type="tel" {...register("reception_phone")} className="input"/>
-                    </div>
-
-                    <div className="space-y-4">
-                      <label className="block text-sm font-medium text-gray-700 font-sans">Reception Address:</label>
-                      <input type="text" {...register("reception_address")} className="input"/>
-
-                      <StyledTimePicker
-                          label="Dinner Start Time"
-                          value={dinnerStartTimeRaw}
-                          onChange={(val) => {
-                            setDinnerStartTimeRaw(val);
-                            setValue("dinner_start", val, {shouldValidate: false});
-                          }}
-                      />
-                      <input type="hidden" {...register("dinner_start")} />
-
-                      <StyledTimePicker
-                          label="Reception Ends"
-                          value={receptionEndTimeRaw}
-                          onChange={(val) => {
-                            setReceptionEndTimeRaw(val);
-                            setValue("reception_end", val, {shouldValidate: false});
-                          }}
-                      />
-                      <input type="hidden" {...register("reception_end")} />
-
-                      <p className="text-sm italic text-gray-600 mt-2 font-sans">
-                        It is recommended that you seat your photographer/videographer in the room for dinner so that we
-                        don’t miss anything.
-                      </p>
-
-                      <label className="block text-sm font-medium text-gray-700 font-sans mt-4">Table #:</label>
-                      <input type="text" {...register("staff_table")} className="input"/>
-                    </div>
-                  </div>
-                </section>
+                </div>
+              </section>
 
                 {/* Location Photo Stops Section */}
                 <section className="bg-[#fdf4f5] p-6 rounded-lg border border-pinkbrand shadow-sm">
@@ -502,17 +501,17 @@ return (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <label className="block text-sm font-medium text-gray-700 font-sans">Stop 1:</label>
-                      <input type="text" {...register("photo_stop1")} className="input"/>
+                      <input type="text" {...register("photo_stop1")} className={inputClass} />
 
                       <label className="block text-sm font-medium text-gray-700 font-sans">Stop 3:</label>
-                      <input type="text" {...register("photo_stop3")} className="input"/>
+                      <input type="text" {...register("photo_stop3")} className={inputClass} />
                     </div>
                     <div className="space-y-4">
                       <label className="block text-sm font-medium text-gray-700 font-sans">Stop 2:</label>
-                      <input type="text" {...register("photo_stop2")} className="input"/>
+                      <input type="text" {...register("photo_stop2")} className={inputClass} />
 
                       <label className="block text-sm font-medium text-gray-700 font-sans">Stop 4:</label>
-                      <input type="text" {...register("photo_stop4")} className="input"/>
+                      <input type="text" {...register("photo_stop4")} className={inputClass} />
                     </div>
                   </div>
                 </section>
@@ -524,11 +523,11 @@ return (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <label className="block text-sm font-medium text-gray-700 font-sans">Starting Location:</label>
-                      <input type="text" {...register("photographer2_start_location")} className="input"/>
+                      <input type="text" {...register("photographer2_start_location")} className={inputClass} />
                     </div>
                     <div className="space-y-4">
                       <label className="block text-sm font-medium text-gray-700 font-sans">Starting Location Address:</label>
-                      <input type="text" {...register("photographer2_start_location_address")} className="input"/>
+                      <input type="text" {...register("photographer2_start_location_address")} className={inputClass} />
 
                       <StyledTimePicker
                           label="Starting Time (Photographer 2)"
@@ -672,48 +671,48 @@ return (
                     <div className="space-y-4">
                       <h3 className="font-semibold font-sans">Partner 1&apos;s Side</h3>
                       <label className="block text-sm font-medium text-gray-700 font-sans">P1&apos;s Parents:</label>
-                      <input type="text" {...register("p1_parent_names")} className="input" />
+                      <input type="text" {...register("p1_parent_names")} className={inputClass} />
 
                       <label className="block text-sm font-medium text-gray-700 font-sans">P1&apos;s Siblings:</label>
-                      <input type="text" {...register("p1_sibling_names")} className="input" />
+                      <input type="text" {...register("p1_sibling_names")}  className={inputClass} />
 
                       <label className="block text-sm font-medium text-gray-700 font-sans">P1&apos;s Grandparents:</label>
-                      <input type="text" {...register("p1_grandparent_names")} className="input" />
+                      <input type="text" {...register("p1_grandparent_names")} className={inputClass} />
 
                       <h3 className="font-semibold mt-6 font-sans">Partner 2&apos;s Side</h3>
                       <label className="block text-sm font-medium text-gray-700 font-sans">P2&apos;s Parents:</label>
-                      <input type="text" {...register("p2_parent_names")} className="input" />
+                      <input type="text" {...register("p2_parent_names")} className={inputClass} />
 
                       <label className="block text-sm font-medium text-gray-700 font-sans">P2&apos;s Siblings:</label>
-                      <input type="text" {...register("p2_sibling_names")} className="input" />
+                      <input type="text" {...register("p2_sibling_names")} className={inputClass} />
 
                       <label className="block text-sm font-medium text-gray-700 font-sans">P2&apos;s Grandparents:</label>
-                      <input type="text" {...register("p2_grandparent_names")} className="input" />
+                      <input type="text" {...register("p2_grandparent_names")} className={inputClass} />
                     </div>
 
                     {/* Right Column – Wedding Party Info */}
                     <div className="space-y-4">
                       <h3 className="font-semibold font-sans">Wedding Party</h3>
                       <label className="block text-sm font-medium text-gray-700 font-sans">Attendant of Honor P1:</label>
-                      <input type="text" {...register("p1_attendant_of_honor")} className="input" />
+                      <input type="text" {...register("p1_attendant_of_honor")} className={inputClass} />
 
                       <label className="block text-sm font-medium text-gray-700 font-sans">Attendant of Honor P2:</label>
-                      <input type="text" {...register("p2_attendant_of_honor")} className="input" />
+                      <input type="text" {...register("p2_attendant_of_honor")} className={inputClass} />
 
                       <label className="block text-sm font-medium text-gray-700 font-sans"># of Attendants P1:</label>
-                      <input type="number" {...register("p1_attendant_qty")} className="input" />
+                      <input type="number" {...register("p1_attendant_qty")} className={inputClass} />
 
                       <label className="block text-sm font-medium text-gray-700 font-sans"># of Attendants P2:</label>
-                      <input type="number" {...register("p2_attendant_qty")} className="input" />
+                      <input type="number" {...register("p2_attendant_qty")} className={inputClass} />
 
                       <label className="block text-sm font-medium text-gray-700 font-sans"># of Flower Attendants:</label>
-                      <input type="number" {...register("flower_attendant_qty")} className="input" />
+                      <input type="number" {...register("flower_attendant_qty")} className={inputClass} />
 
                       <label className="block text-sm font-medium text-gray-700 font-sans"># of Ring Bearers:</label>
-                      <input type="number" {...register("ring_bearer_qty")} className="input" />
+                      <input type="number" {...register("ring_bearer_qty")} className={inputClass} />
 
                       <label className="block text-sm font-medium text-gray-700 font-sans"># of Ushers:</label>
-                      <input type="number" {...register("usher_qty")} className="input" />
+                      <input type="number" {...register("usher_qty")} className={inputClass}  />
                     </div>
                   </div>
                 </section>
@@ -733,35 +732,35 @@ return (
                       <input
                         type="text"
                         {...register("additional_photo_request1")}
-                        className="border p-2 rounded-lg w-full"
+                        className={inputClass}
                       />
 
                       <label className="block text-sm font-medium text-gray-700">Formal/Posed Photo Requests (2):</label>
                       <input
                         type="text"
                         {...register("additional_photo_request2")}
-                        className="border p-2 rounded-lg w-full"
+                        className={inputClass}
                       />
 
                       <label className="block text-sm font-medium text-gray-700">Formal/Posed Photo Requests (3):</label>
                       <input
                         type="text"
                         {...register("additional_photo_request3")}
-                        className="border p-2 rounded-lg w-full"
+                        className={inputClass}
                       />
 
                       <label className="block text-sm font-medium text-gray-700">Other Photo Requests:</label>
                       <input
                         type="text"
                         {...register("additional_photo_request4")}
-                        className="border p-2 rounded-lg w-full"
+                        className={inputClass}
                       />
 
                       <label className="block text-sm font-medium text-gray-700">Other Photo Requests (2):</label>
                       <input
                         type="text"
                         {...register("additional_photo_request5")}
-                        className="border p-2 rounded-lg w-full"
+                        className={inputClass}
                       />
                     </div>
                   </div>
@@ -787,7 +786,7 @@ return (
                     id="video_client_names"
                     type="text"
                     {...register("video_client_names")}
-                    className="border p-2 rounded-lg w-full"
+                    className={inputClass}
                   />
 
                   <div className="mt-4 p-4 border-l-4 border-blue-400 bg-blue-50 rounded">
@@ -810,10 +809,10 @@ return (
                   </p>
 
                   <label className="block text-sm font-medium text-gray-700 mt-4">WS Song Title:</label>
-                  <input type="text" {...register("wedding_story_song_title")} className="border p-2 rounded-lg w-full" />
+                  <input type="text" {...register("wedding_story_song_title")}  className={inputClass} />
 
                   <label className="block text-sm font-medium text-gray-700 mt-4">WS Song Artist:</label>
-                  <input type="text" {...register("wedding_story_song_artist")} className="border p-2 rounded-lg w-full" />
+                  <input type="text" {...register("wedding_story_song_artist")}  className={inputClass} />
 
                   <h3 className="font-semibold mt-6">Dance Montage</h3>
                   <p><strong className="text-red-600">Only if we&rsquo;re there for 2 hours of open dancing.</strong></p>
@@ -822,10 +821,10 @@ return (
                   </p>
 
                   <label className="block text-sm font-medium text-gray-700 mt-4">DM Song Title:</label>
-                  <input type="text" {...register("dance_montage_song_title")} className="border p-2 rounded-lg w-full" />
+                  <input type="text" {...register("dance_montage_song_title")} className={inputClass} />
 
                   <label className="block text-sm font-medium text-gray-700 mt-4">DM Song Artist:</label>
-                  <input type="text" {...register("dance_montage_song_artist")} className="border p-2 rounded-lg w-full" />
+                  <input type="text" {...register("dance_montage_song_artist")} className={inputClass} />
 
                   <h3 className="font-semibold mt-6">Additional Editing Notes</h3>
                   <p className="text-sm text-gray-700 mb-4 font-sans">
@@ -864,7 +863,7 @@ return (
                 <input
                   type="text"
                   {...register("video_special_dances")}
-                  className="border p-2 rounded-lg w-full"
+                  className={inputClass}
                 />
 
                 {/* Photo Booth Customers Only Section */}
@@ -880,7 +879,7 @@ return (
                       type="text"
                       maxLength={15}
                       {...register("photo_booth_text_line1")}
-                      className="border p-2 rounded-lg w-full"
+                      className={inputClass}
                     />
                   </div>
 
@@ -890,7 +889,7 @@ return (
                       type="text"
                       maxLength={15}
                       {...register("photo_booth_text_line2")}
-                      className="border p-2 rounded-lg w-full"
+                      className={inputClass}
                     />
                   </div>
 
@@ -919,7 +918,7 @@ return (
                     <input
                       type="text"
                       {...register("photo_booth_placement")}
-                      className="border p-2 rounded-lg w-full"
+                      className={inputClass}
                     />
                   </div>
                 </section>
@@ -939,33 +938,32 @@ return (
                   </div>
                 )}
 
-                <div className="flex flex-col space-y-4">
+                <div className="flex flex-col space-y-4 items-center">
                   {/* Save Button */}
                   <button
                     type="button"
                     onClick={handleSave} // Save without validation
                     disabled={isSaving}
-                    className="w-full bg-pink-300 text-white py-3 rounded-md hover:bg-pink-400 transition duration-200"
+                    className="w-auto bg-[#fdf4f5] border border-pinkbrand text-pinkbrand py-3 px-8 rounded-lg hover:bg-pinkbrand hover:text-white transition duration-200"
                   >
                     {isSaving ? 'Saving...' : 'Save'}
                   </button>
 
                   {/* Submit Button */}
                   <button
-                    type="submit"
-                    disabled={isSubmitting || formSubmitted}
-                    className="w-full bg-pink-300 text-white py-3 rounded-md hover:bg-pink-400 transition duration-200"
+                      type="submit"
+                      disabled={isSubmitting || formSubmitted}
+                      className="w-auto bg-[#fdf4f5] border border-pinkbrand text-pinkbrand py-3 px-8 rounded-lg hover:bg-pinkbrand hover:text-white transition duration-200"
                   >
                     {isSubmitting ? 'Submitting...' : 'Submit'}
                   </button>
                 </div>
-
-              </form>
-            </>
+            </form>
+          </>
         )}
       </div>
     </div>
-);
+  );
 };
 
 export default WeddingDayGuideForm;
