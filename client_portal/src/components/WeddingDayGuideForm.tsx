@@ -82,10 +82,11 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
     mode: 'onSubmit',
   });
 
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const inputClass =
     "border p-2 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-pinkbrand bg-white shadow-sm font-sans";
@@ -246,42 +247,48 @@ useEffect(() => {
       setIsSaving(false);
     }
   };
+  // Handle form submit
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
+    setIsSubmitting(true);
+    setMessage(null);
 
-const onSubmit: SubmitHandler<FormData> = async (data) => {
-  setIsSubmitting(true);
-  setMessage(null);
+    const accessToken = localStorage.getItem('access_token');
+    const payload = { ...data, contract: contractId, strict_validation: true, submit: true };
 
-  const accessToken = localStorage.getItem('access_token');
-  const payload = { ...data, contract: contractId, strict_validation: true, submit: true };
+    try {
+      const response = await fetch(
+        `https://weddingbooked.app/wedding_day_guide/api/wedding_day_guide/${contractId}/`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
-  try {
-    const response = await fetch(
-      `https://weddingbooked.app/wedding_day_guide/api/wedding_day_guide/${contractId}/`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
+      if (response.ok) {
+        setFormSubmitted(true); // Ensure this state is set after a successful submission
+        setIsSubmitted(true);
+        setMessage('Form submitted successfully.');
+      } else {
+        const errorData = await response.json();
+        setMessage(errorData?.detail || 'Failed to submit form. Please check your entries.');
       }
-    );
-
-    if (response.ok) {
-      setFormSubmitted(true);
-      setIsSubmitted(true);
-      setMessage('Form submitted successfully.');
-    } else {
-      const errorData = await response.json();
-      setMessage(errorData?.detail || 'Failed to submit form. Please check your entries.');
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setMessage('An error occurred while submitting the form.');
+    } finally {
+      setIsSubmitting(false);
     }
-  } catch (error) {
-    console.error('Error submitting form:', error);
-    setMessage('An error occurred while submitting the form.');
-  } finally {
-    setIsSubmitting(false);
+  };
+
+  // Loading screen
+  if (isSaving || isSubmitting) {
+    return <div>Loading...</div>;
   }
-};
+
 
 
   return (
