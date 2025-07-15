@@ -90,7 +90,6 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   const inputClass =
     "border p-2 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-pinkbrand bg-white shadow-sm font-sans";
 
-
   // Time field states for TimeInput components
   const [dressingStartTimeRaw, setDressingStartTimeRaw] = useState('00:00'); // what Timekeeper uses
   const [ceremonyStartRaw, setCeremonyStartRaw] = useState('00:00');
