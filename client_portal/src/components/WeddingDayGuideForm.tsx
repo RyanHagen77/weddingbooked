@@ -505,29 +505,25 @@ return (
             </div>
           </section>
           {/* Shot List Section with Two Columns */}
-          <div className="p-4 bg-gray-100 rounded-lg mb-6">
-            <h2 className="font-bold text-lg mb-2">Shot List</h2>
-            <p>What follows are the photos Essence photographers take at a typical wedding depending on time and
-              organization. Additional photo requests can be added in the next section.</p>
-            <div className="grid grid-cols-2 gap-4">
+          {/* Shot List Section */}
+          <div className="p-6 bg-gray-50 rounded-lg border border-gray-200 mb-10">
+            <h2 className="text-xl font-semibold text-rose-800 border-b pb-2 mb-4">Shot List</h2>
+            <p className="mb-6 text-sm text-gray-700">What follows are the photos Essence photographers take at a typical wedding depending on time and organization. Additional photo requests can be added in the next section.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Left Column */}
-              <div>
-                {/* Partner 1 Details */}
-                <div className="mb-4">
-                  <h3 className="font-semibold mb-2">Dressing Details</h3>
-                  <ul className="list-disc pl-5">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="font-semibold text-gray-800 mb-1">Dressing Details</h3>
+                  <ul className="list-disc pl-5 text-sm text-gray-700">
                     <li>Dress/Suit</li>
                     <li>Shoes</li>
                     <li>Bouquet/Boutonniere</li>
                     <li>Putting Dress On or Fixing Tie</li>
                   </ul>
                 </div>
-
-
-                {/* On Location */}
-                <div className="mb-4">
-                  <h3 className="font-semibold mb-2">On Location</h3>
-                  <ul className="list-disc pl-5">
+                <div>
+                  <h3 className="font-semibold text-gray-800 mb-1">On Location</h3>
+                  <ul className="list-disc pl-5 text-sm text-gray-700">
                     <li>Partner 1 Alone</li>
                     <li>Partner 2 Alone</li>
                     <li>P1 w/ P2 Attendants</li>
@@ -536,10 +532,9 @@ return (
                     <li>Fun Wedding Party Photos</li>
                   </ul>
                 </div>
-                {/* Before Ceremony (P1) */}
-                <div className="mb-4">
-                  <h3 className="font-semibold mb-2">Before Ceremony - Partner 1 (P1)</h3>
-                  <ul className="list-disc pl-5">
+                <div>
+                  <h3 className="font-semibold text-gray-800 mb-1">Before Ceremony - Partner 1 (P1)</h3>
+                  <ul className="list-disc pl-5 text-sm text-gray-700">
                     <li>Alone</li>
                     <li>P1 w/ Attendants</li>
                     <li>P1 w/ Flower Attendants</li>
@@ -550,11 +545,9 @@ return (
                     <li>P1 w/ Immediate Family</li>
                   </ul>
                 </div>
-
-                {/* Before Ceremony (P2) */}
                 <div>
-                  <h3 className="font-semibold mb-2">Before Ceremony - Partner 2 (P2)</h3>
-                  <ul className="list-disc pl-5">
+                  <h3 className="font-semibold text-gray-800 mb-1">Before Ceremony - Partner 2 (P2)</h3>
+                  <ul className="list-disc pl-5 text-sm text-gray-700">
                     <li>Alone</li>
                     <li>P2 w/ Attendants</li>
                     <li>P2 w/ Ring Bearers</li>
@@ -567,34 +560,30 @@ return (
                   </ul>
                 </div>
               </div>
-
               {/* Right Column */}
-              <div>
-                {/* Post-Ceremony */}
-                <div className="mb-4">
-                  <h3 className="font-semibold mb-2">Post-Ceremony</h3>
-                  <ul className="list-disc pl-5">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="font-semibold text-gray-800 mb-1">Post-Ceremony</h3>
+                  <ul className="list-disc pl-5 text-sm text-gray-700">
                     <li>P1 at Altar</li>
                     <li>P2 at Altar</li>
                     <li>Couple at Altar</li>
                     <li>Couple w/ Wedding Party</li>
-                    <li>Couple w/ P1&apos;s Parents</li>
-                    <li>Couple w/ P1&apos;s Immediate Family</li>
-                    <li>Couple w/ P1&apos;s Grandparents</li>
-                    <li>Couple w/ P1&apos;s Extended Family</li>
+                    <li>Couple w/ P1&#39;s Parents</li>
+                    <li>Couple w/ P1&#39;s Immediate Family</li>
+                    <li>Couple w/ P1&#39;s Grandparents</li>
+                    <li>Couple w/ P1&#39;s Extended Family</li>
                     <li>Couple w/ Both Sets of Parents</li>
-                    <li>Couple w/ P2&apos;s Parents</li>
-                    <li>Couple w/ P2&apos;s Immediate Family</li>
-                    <li>Couple w/ P2&apos;s Grandparents</li>
-                    <li>Couple w/ P2&apos;s Extended Family</li>
+                    <li>Couple w/ P2&#39;s Parents</li>
+                    <li>Couple w/ P2&#39;s Immediate Family</li>
+                    <li>Couple w/ P2&#39;s Grandparents</li>
+                    <li>Couple w/ P2&#39;s Extended Family</li>
                     <li>Church Exit</li>
                   </ul>
                 </div>
-
-                {/* Ceremony */}
-                <div className="mb-4">
-                  <h3 className="font-semibold mb-2">Ceremony</h3>
-                  <ul className="list-disc pl-5">
+                <div>
+                  <h3 className="font-semibold text-gray-800 mb-1">Ceremony</h3>
+                  <ul className="list-disc pl-5 text-sm text-gray-700">
                     <li>Processional</li>
                     <li>Vows</li>
                     <li>Ring Exchange</li>
@@ -604,11 +593,9 @@ return (
                     <li>Recessional</li>
                   </ul>
                 </div>
-
-                {/* Reception */}
                 <div>
-                  <h3 className="font-semibold mb-2">Reception</h3>
-                  <ul className="list-disc pl-5">
+                  <h3 className="font-semibold text-gray-800 mb-1">Reception</h3>
+                  <ul className="list-disc pl-5 text-sm text-gray-700">
                     <li>Reception Details</li>
                     <li>Cocktail Hour Mingling</li>
                     <li>Introductions</li>
@@ -624,8 +611,7 @@ return (
                 </div>
               </div>
             </div>
-            <p>Essence does not recommend table shots. If you’d like table shots, we require a second photographer.
-              Please message us in the portal and we can help you.</p>
+            <p className="text-sm text-gray-600 mt-6">Essence does not recommend table shots. If you’d like table shots, we require a second photographer. Please message us in the portal and we can help you.</p>
           </div>
           {/* Family & Wedding Party Info Section */}
           <div className="p-4 bg-gray-100 rounded-lg">
