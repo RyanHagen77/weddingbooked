@@ -843,15 +843,8 @@ useEffect(() => {
                   <input type="text" {...register("dance_montage_song_artist")} className={inputClass} />
                 </section>
 
-                {/* Additional Editing Notes Section */}
+                {/* Additional Video Notes Section */}
                 <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm mt-6">
-                  <h2 className="text-xl font-bold text-pinkbrand border-b border-pinkbrand pb-2 mb-4 font-display">
-                    Additional Editing Notes
-                  </h2>
-                  <p className="text-sm text-gray-700 mb-4 font-sans">
-                    Videography customers receive the two above highlight videos as well as other important portions of their day. Customers who have not added Bridal Prep / First Look to their video coverage receive the following live footage: Ceremony, Introductions, Cake Cutting, Toasts, First Dance, Special Dances (i.e. Father/Daughter, Mother/Son), and Bouquet/Garter toss. These are only included if the events occur while the videographer is present.
-                  </p>
-
                   <div className="mt-4 p-4 border-l-4 border-blue-400 bg-blue-50 rounded">
                     <p className="font-semibold mb-2">Additional Video Notes to Remember</p>
                     <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
