@@ -807,22 +807,31 @@ useEffect(() => {
                     </ul>
                   </div>
 
-                  <p className="mt-4 text-sm font-sans">Questions? Message us anytime in the portal—we&rsquo;re happy to help!</p>
+                  <p className="mt-4 text-sm font-sans">Questions? Message us anytime in the portal—we’re happy to help!</p>
+                </section>
 
-                  {/* Wedding Story */}
-                  <h3 className="font-semibold mt-6">Wedding Story</h3>
+                {/* Wedding Story Section */}
+                <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm">
+                  <h2 className="text-xl font-bold text-pinkbrand border-b border-pinkbrand pb-2 mb-4 font-display">
+                    Wedding Story
+                  </h2>
                   <p className="text-sm text-gray-700 mb-2 font-sans">
                     Your wedding story will be a collection of highlights from your full wedding day. Your song selection should be one slow or medium tempo song. We strongly encourage you to pick a song with a length of 3–4 minutes, as a shorter song will decrease the amount of footage the editors are able to include in your highlight video. Re-edits of videos due to the choice of a short-length song will be charged a fee.
                   </p>
 
                   <label className="block text-sm font-medium text-gray-700 mt-4">WS Song Title:</label>
-                  <input type="text" {...register("wedding_story_song_title")}  className={inputClass} />
+                  <input type="text" {...register("wedding_story_song_title")} className={inputClass} />
 
                   <label className="block text-sm font-medium text-gray-700 mt-4">WS Song Artist:</label>
-                  <input type="text" {...register("wedding_story_song_artist")}  className={inputClass} />
+                  <input type="text" {...register("wedding_story_song_artist")} className={inputClass} />
+                </section>
 
-                  <h3 className="font-semibold mt-6">Dance Montage</h3>
-                  <p><strong className="text-red-600">Only if we&rsquo;re there for 2 hours of open dancing.</strong></p>
+                {/* Dance Montage Section */}
+                <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm mt-6">
+                  <h2 className="text-xl font-bold text-pinkbrand border-b border-pinkbrand pb-2 mb-4 font-display">
+                    Dance Montage
+                  </h2>
+                  <p><strong className="text-red-600">Only if we’re there for 2 hours of open dancing.</strong></p>
                   <p className="text-sm text-gray-700 font-sans">
                     Your dance montage will be an upbeat collection of footage shot during the general dancing portion of your evening paired with one song. Re-edits of videos due to the choice of a short-length song will be charged a fee. We cannot complete your video without BOTH your Wedding Story and Dance Montage songs.
                   </p>
@@ -832,8 +841,13 @@ useEffect(() => {
 
                   <label className="block text-sm font-medium text-gray-700 mt-4">DM Song Artist:</label>
                   <input type="text" {...register("dance_montage_song_artist")} className={inputClass} />
+                </section>
 
-                  <h3 className="font-semibold mt-6">Additional Editing Notes</h3>
+                {/* Additional Editing Notes Section */}
+                <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm mt-6">
+                  <h2 className="text-xl font-bold text-pinkbrand border-b border-pinkbrand pb-2 mb-4 font-display">
+                    Additional Editing Notes
+                  </h2>
                   <p className="text-sm text-gray-700 mb-4 font-sans">
                     Videography customers receive the two above highlight videos as well as other important portions of their day. Customers who have not added Bridal Prep / First Look to their video coverage receive the following live footage: Ceremony, Introductions, Cake Cutting, Toasts, First Dance, Special Dances (i.e. Father/Daughter, Mother/Son), and Bouquet/Garter toss. These are only included if the events occur while the videographer is present.
                   </p>
@@ -842,14 +856,16 @@ useEffect(() => {
                     <p className="font-semibold mb-2">Additional Video Notes to Remember</p>
                     <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
                       <li>Videography customers receive one highlight video (their Wedding Story).</li>
-                      <li>If we&rsquo;re there for 2+ hours of open dancing late night, they&rsquo;ll get a dance highlight included.</li>
+                      <li>If we’re there for 2+ hours of open dancing late night, they’ll get a dance highlight included.</li>
                     </ul>
                   </div>
                 </section>
 
-                {/* Bridal Prep / First Look */}
-                <section className="mt-4 p-4 border-l-4 border-yellow-400 bg-yellow-50 rounded">
-                  <p className="font-semibold mb-2">Bridal Prep / First Look Coverage:</p>
+                {/* Bridal Prep / First Look Section */}
+                <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm mt-6">
+                  <h2 className="text-xl font-bold text-pinkbrand border-b border-pinkbrand pb-2 mb-4 font-display">
+                    Bridal Prep / First Look
+                  </h2>
                   <p>Would be added to your Wedding Story (not a separate chapter).</p>
                   <p>Just remember: if you want early coverage, you may need to extend hours to ensure we’re there late for open dancing.</p>
                   <p className="mt-2">Other than our highlights, just a reminder of the specific chapters we showed you in your original meeting of our video:</p>
@@ -867,43 +883,29 @@ useEffect(() => {
                 </section>
 
                 <label className="block text-sm font-medium text-gray-700 mt-4">Other Special Dances to be Included:</label>
-                <input
-                  type="text"
-                  {...register("video_special_dances")}
-                  className={inputClass}
-                />
+                <input type="text" {...register("video_special_dances")} className={inputClass} />
 
                 {/* Photo Booth Customers Only Section */}
-                <section className="p-4 bg-gray-100 rounded-lg mb-6">
-                  <h2 className="font-bold text-lg mb-2">Photo Booth Customers Only</h2>
+                <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm mt-6">
+                  <h2 className="text-xl font-bold text-pinkbrand border-b border-pinkbrand pb-2 mb-4 font-display">
+                    Photo Booth Customers Only
+                  </h2>
                   <p>Your open-air photo booth, with sparkly, silver backdrop and props, opens during the last 3 hours of the open dance time at your wedding. The booth prints (2) 2x6 photo strips for each set of images. The digital images will be sent to you as well, after the wedding via Google Drive. (Essence does not provide an album for photo strips.)</p>
 
                   <p className="mt-4">How would you like your names and wedding date to appear on your photo strip? (e.g., Kim and Joe, Joe & Kim, May 22, 2025, or 05/22/25)</p>
 
                   <div className="mt-4">
                     <label className="block text-sm font-medium text-gray-700">Text Line 1 (up to 15 characters):</label>
-                    <input
-                      type="text"
-                      maxLength={15}
-                      {...register("photo_booth_text_line1")}
-                      className={inputClass}
-                    />
+                    <input type="text" maxLength={15} {...register("photo_booth_text_line1")} className={inputClass} />
                   </div>
 
                   <div className="mt-4">
                     <label className="block text-sm font-medium text-gray-700">Text Line 2 (up to 15 characters):</label>
-                    <input
-                      type="text"
-                      maxLength={15}
-                      {...register("photo_booth_text_line2")}
-                      className={inputClass}
-                    />
+                    <input type="text" maxLength={15} {...register("photo_booth_text_line2")} className={inputClass} />
                   </div>
 
                   {/* New Field: Party End Time */}
-                  <label className="block text-sm font-medium text-gray-700">
-                    What time does your party end?
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700">What time does your party end?</label>
                   <StyledTimePicker
                     label="Photo Booth End Time"
                     value={photoBoothEndTimeRaw}
@@ -917,16 +919,12 @@ useEffect(() => {
                   <p className="text-sm text-gray-600 mt-1">We will do the last three hours of open dancing.</p>
 
                   <p className="mt-6">
-                    Please describe the location in your facility where we will be setting up. Please remember that we will need a 5&apos;x7&apos; space within 15 feet of an outlet, and a skirted high-top table. (Example: You will be in the far corner of the room next to the head table, or you will be in the front, just inside the doors.)
+                    Please describe the location in your facility where we will be setting up. Please remember that we will need a 5'x7' space within 15 feet of an outlet, and a skirted high-top table. (Example: You will be in the far corner of the room next to the head table, or you will be in the front, just inside the doors.)
                   </p>
 
                   <div className="mt-4">
                     <label className="block text-sm font-medium text-gray-700">Placement:</label>
-                    <input
-                      type="text"
-                      {...register("photo_booth_placement")}
-                      className={inputClass}
-                    />
+                    <input type="text" {...register("photo_booth_placement")} className={inputClass} />
                   </div>
                 </section>
 
@@ -944,30 +942,29 @@ useEffect(() => {
                     {message}
                   </div>
                 )}
+            <div className="flex space-x-6 justify-center">
+              {/* Save Button */}
+              <button
+                  type="button"
+                  onClick={handleSave} // Save without validation
+                  disabled={isSaving}
+                  className="w-auto bg-[#fdf4f5] border-2 border-pinkbrand text-pinkbrand py-3 px-8 rounded-lg hover:bg-pinkbrand hover:text-white transition-all duration-300 transform hover:scale-105"
+              >
+                {isSaving ? 'Saving...' : 'Save'}
+              </button>
 
-                <div className="flex flex-col space-y-4 items-center">
-                  {/* Save Button */}
-                  <button
-                    type="button"
-                    onClick={handleSave} // Save without validation
-                    disabled={isSaving}
-                    className="w-auto bg-[#fdf4f5] border border-pinkbrand text-pinkbrand py-3 px-8 rounded-lg hover:bg-pinkbrand hover:text-white transition duration-200"
-                  >
-                    {isSaving ? 'Saving...' : 'Save'}
-                  </button>
-
-                  {/* Submit Button */}
-                  <button
-                      type="submit"
-                      disabled={isSubmitting || formSubmitted}
-                      className="w-auto bg-[#fdf4f5] border border-pinkbrand text-pinkbrand py-3 px-8 rounded-lg hover:bg-pinkbrand hover:text-white transition duration-200"
-                  >
-                    {isSubmitting ? 'Submitting...' : 'Submit'}
-                  </button>
-                </div>
-            </form>
+              {/* Submit Button */}
+              <button
+                  type="submit"
+                  disabled={isSubmitting || formSubmitted}
+                  className="w-auto bg-[#fdf4f5] border-2 border-pinkbrand text-pinkbrand py-3 px-8 rounded-lg hover:bg-pinkbrand hover:text-white transition-all duration-300 transform hover:scale-105"
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit'}
+              </button>
+            </div>
+          </form>
           </>
-        )}
+          )}
       </div>
     </div>
   );
