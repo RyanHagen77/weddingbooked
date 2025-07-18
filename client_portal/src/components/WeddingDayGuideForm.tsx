@@ -813,10 +813,11 @@ useEffect(() => {
                 {/* Wedding Story Section */}
                 <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm">
                   <h2 className="text-xl font-bold text-pinkbrand border-b border-pinkbrand pb-2 mb-4 font-display">
-                    Wedding Story
+                    Wedding Story Song
                   </h2>
                   <p className="text-sm text-gray-700 mb-2 font-sans">
-                    Your wedding story will be a collection of highlights from your full wedding day. Your song selection should be one slow or medium tempo song. We strongly encourage you to pick a song with a length of 3–4 minutes, as a shorter song will decrease the amount of footage the editors are able to include in your highlight video. Re-edits of videos due to the choice of a short-length song will be charged a fee.
+                    This is a highlight reel from your entire wedding day. Please choose one slow or medium-tempo song that is 3–4 minutes long.
+                    Shorter songs will reduce how much footage can be included. Re-edits due to song length will incur a fee.
                   </p>
 
                   <label className="block text-sm font-medium text-gray-700 mt-4">WS Song Title:</label>
@@ -829,11 +830,12 @@ useEffect(() => {
                 {/* Dance Montage Section */}
                 <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm mt-6">
                   <h2 className="text-xl font-bold text-pinkbrand border-b border-pinkbrand pb-2 mb-4 font-display">
-                    Dance Montage
+                    Dance Montage Song
                   </h2>
                   <p><strong className="text-red-600">Only if we’re there for 2 hours of open dancing.</strong></p>
                   <p className="text-sm text-gray-700 font-sans">
-                    Your dance montage will be an upbeat collection of footage shot during the general dancing portion of your evening paired with one song. Re-edits of videos due to the choice of a short-length song will be charged a fee. We cannot complete your video without BOTH your Wedding Story and Dance Montage songs.
+                    Important: You must have at least 2 hours of open dancing for a Dance Montage to be created. This section is a fun, upbeat highlight of your dance floor footage set to one energetic song.
+                    Re-edits due to short song length will also incur a fee.
                   </p>
 
                   <label className="block text-sm font-medium text-gray-700 mt-4">DM Song Title:</label>
@@ -842,6 +844,33 @@ useEffect(() => {
                   <label className="block text-sm font-medium text-gray-700 mt-4">DM Song Artist:</label>
                   <input type="text" {...register("dance_montage_song_artist")} className={inputClass} />
                 </section>
+
+
+                {/* Other Special Dances Section */}
+                <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm mt-6">
+                  <h2 className="text-xl font-bold text-pinkbrand border-b border-pinkbrand pb-2 mb-4 font-display">
+                    Other Special Dances
+                  </h2>
+                  <p className="text-sm text-gray-700 font-sans mb-4">
+                    If there are any additional special dances (e.g. anniversary dances, siblings, friends, etc.) or moments you’d like to make sure we’re aware of and include in your final video, please list them below.
+                  </p>
+                  <label htmlFor="video_special_dances" className="block text-sm font-medium text-gray-700">
+                    Dances or Moments to Include:
+                  </label>
+                  <input
+                    id="video_special_dances"
+                    type="text"
+                    {...register("video_special_dances")}
+                    className={inputClass}
+                  />
+                </section>
+
+                {/* Please Note Message */}
+                <div className="p-4 mt-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                  <p className="text-sm text-gray-800 font-sans">
+                    <strong className="text-yellow-700">Please Note:</strong> For most weddings, if significant time is used capturing getting ready footage, there may not be enough time remaining to film open dancing — unless extended coverage hours were added. In that case, your Dance Montage may not be possible without that extra time.
+                  </p>
+                </div>
 
                 {/* Additional Video Notes Section */}
                 <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm mt-6">
@@ -874,9 +903,6 @@ useEffect(() => {
                   <p className="mt-2">These chapters are not edited—they are live.</p>
                   <p>If you have any other special dances or important moments, please list them below so we can make sure to include them and we’re aware of it.</p>
                 </section>
-
-                <label className="block text-sm font-medium text-gray-700 mt-4">Other Special Dances to be Included:</label>
-                <input type="text" {...register("video_special_dances")} className={inputClass} />
 
                 {/* Photo Booth Customers Only Section */}
                 <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm mt-6">
