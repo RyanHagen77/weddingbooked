@@ -865,16 +865,21 @@ useEffect(() => {
                   />
                 </section>
 
-                {/* Please Note Message */}
-                <div className="p-4 mt-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
-                  <p className="text-sm text-gray-800 font-sans">
-                    <strong className="text-yellow-700">Please Note:</strong> For most weddings, if significant time is used capturing getting ready footage, there may not be enough time remaining to film open dancing — unless extended coverage hours were added. In that case, your Dance Montage may not be possible without that extra time.
-                  </p>
-                </div>
-
-                {/* Additional Video Notes Section */}
+                {/* Video Coverage Notes Section */}
                 <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm mt-6">
-                  <div className="mt-4 p-4 border-l-4 border-blue-400 bg-blue-50 rounded">
+                  <h2 className="text-xl font-bold text-pinkbrand border-b border-pinkbrand pb-2 mb-4 font-display">
+                    Important Notes About Your Video Coverage
+                  </h2>
+
+                  {/* Please Note Message */}
+                  <div className="mb-4 p-4 border-l-4 border-yellow-400 bg-yellow-50 rounded">
+                    <p className="text-sm text-gray-800 font-sans">
+                      <strong className="text-yellow-700">Please Note:</strong> For most weddings, if significant time is used capturing getting ready footage, there may not be enough time remaining to film open dancing — unless extended coverage hours were added. In that case, your Dance Montage may not be possible without that extra time.
+                    </p>
+                  </div>
+
+                  {/* Additional Notes List */}
+                  <div className="p-4 border-l-4 border-blue-400 bg-blue-50 rounded">
                     <p className="font-semibold mb-2">Additional Video Notes to Remember</p>
                     <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
                       <li>Videography customers receive one highlight video (their Wedding Story).</li>
