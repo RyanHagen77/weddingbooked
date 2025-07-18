@@ -54,6 +54,8 @@ interface FormData {
   additional_photo_request4: string;
   additional_photo_request5: string;
   video_client_names: string;
+  video_arrival_time: string;
+  video_arrival_location: string;
   wedding_story_song_title: string;
   wedding_story_song_artist: string;
   dance_montage_song_title: string;
@@ -780,7 +782,7 @@ useEffect(() => {
                   </h2>
 
                   <p className="text-sm text-gray-700 font-sans mb-4">
-                    Essence cannot process your video until you have provided us with the following information. Please be aware that if you'd like your videographer to be there for bridal prep or a first look, this footage will be included in your <strong>Wedding Story Highlight Reel only</strong>.
+                    Essence cannot process your video until you have provided us with the following information. Please be aware that if you&#39;d like your videographer to be there for bridal prep or a first look, this footage will be included in your <strong>Wedding Story Highlight Reel only</strong>.
                   </p>
                   <p className="text-sm text-gray-700 font-sans mb-4">
                     All video packages require our videographer to begin <strong>1 hour before the ceremony</strong> at the ceremony site for establishing footage and audio set-up.
@@ -844,7 +846,7 @@ useEffect(() => {
                       In addition to your highlight videos, your final product will include other key live footage chapters: Ceremony, Introductions, Cake Cutting, Toasts, First Dance, Special Dances (e.g., Father/Daughter, Mother/Son), and Bouquet/Garter Toss — if those events occur while the videographer is present.
                     </p>
                     <p className="text-sm text-gray-700 font-sans mb-2">
-                      If there are other special dances or moments you'd like us to capture, please list them below.
+                      If there are other special dances or moments you&#39;d like us to capture, please list them below.
                     </p>
                     <label htmlFor="video_special_dances" className="block text-sm font-medium text-gray-700">Other Dances or Moments to Include:</label>
                     <input id="video_special_dances" type="text" {...register("video_special_dances")} className={inputClass} />
@@ -938,9 +940,9 @@ useEffect(() => {
 
                   {/* Placement Description */}
                   <p className="mt-6 text-sm text-gray-700 font-sans">
-                    Please describe the location in your facility where we will be setting up. We need a 5'x7' space within 15 feet of an outlet and a skirted high-top table.
+                    Please describe the location in your facility where we will be setting up. We need a 5&#39;x7&#39; space within 15 feet of an outlet and a skirted high-top table.
                     <br />
-                    <span className="italic">Example: "In the far corner next to the head table" or "In the front near the entrance doors."</span>
+                    <span className="italic">Example: &#34;In the far corner next to the head table&#34; or &#34;In the front near the entrance doors.&#34;</span>
                   </p>
 
                   <div className="mt-4">
