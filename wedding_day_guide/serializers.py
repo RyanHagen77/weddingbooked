@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models import WeddingDayGuide
 from contracts.models import Contract
 
+
 class WeddingDayGuideSerializer(serializers.ModelSerializer):
     contract = serializers.PrimaryKeyRelatedField(queryset=Contract.objects.all())
 
@@ -19,11 +20,7 @@ class WeddingDayGuideSerializer(serializers.ModelSerializer):
         # List of fields that are required for submission
         required_fields = [
             'event_date', 'primary_contact', 'primary_email', 'primary_phone',
-            'partner_contact', 'partner_email', 'partner_phone', 'dressing_location',
-            'dressing_address', 'dressing_start_time', 'ceremony_site',
-            'ceremony_address', 'ceremony_phone', 'ceremony_start', 'ceremony_end',
-            'reception_site', 'reception_address', 'reception_phone',
-            'reception_start', 'dinner_start', 'reception_end',
+            'partner_contact', 'partner_email', 'partner_phone'
         ]
 
         if strict_validation:

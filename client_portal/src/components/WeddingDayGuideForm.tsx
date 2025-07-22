@@ -853,27 +853,6 @@ useEffect(() => {
                   </div>
                 </section>
 
-                {/* Bridal Prep / First Look Section */}
-                <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm mt-6">
-                  <h2 className="text-xl font-bold text-pinkbrand border-b border-pinkbrand pb-2 mb-4 font-display">
-                    Bridal Prep / First Look
-                  </h2>
-                  <p>Would be added to your Wedding Story (not a separate chapter).</p>
-                  <p>Just remember: if you want early coverage, you may need to extend hours to ensure we’re there late for open dancing.</p>
-                  <p className="mt-2">Other than our highlights, just a reminder of the specific chapters we showed you in your original meeting of our video:</p>
-                  <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
-                    <li>Ceremony</li>
-                    <li>Introductions</li>
-                    <li>Cake Cutting</li>
-                    <li>Toasts</li>
-                    <li>First Dance</li>
-                    <li>Special Dances (e.g. Father/Daughter, Mother/Son)</li>
-                    <li>Bouquet/Garter Toss</li>
-                  </ul>
-                  <p className="mt-2">These chapters are not edited—they are live.</p>
-                  <p>If you have any other special dances or important moments, please list them below so we can make sure to include them and we’re aware of it.</p>
-                </section>
-
                 {/* Photo Booth Customers Only Section */}
                 <section className="p-6 bg-[#fdf4f5] rounded-lg border border-pinkbrand shadow-sm mt-6">
                   <h2 className="text-xl font-bold text-pinkbrand border-b border-pinkbrand pb-2 mb-4 font-display">
