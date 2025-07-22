@@ -70,9 +70,7 @@ class WeddingDayGuideForm(forms.ModelForm):
         if self.strict_validation:
             required_fields = [
                 'event_date', 'primary_contact', 'primary_email', 'primary_phone',
-                'partner_contact', 'partner_email', 'partner_phone', 'dressing_location',
-                'dressing_start_time', 'ceremony_site', 'ceremony_start', 'ceremony_end',
-                'reception_site', 'reception_start', 'reception_end'
+                'partner_contact', 'partner_email', 'partner_phone',
             ]
             for field in required_fields:
                 if not cleaned_data.get(field):
