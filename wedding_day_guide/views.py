@@ -183,7 +183,8 @@ def wedding_day_guide_api(request, contract_id):
         elif request.method == 'POST':
             data = request.data.copy()
             data['contract'] = contract.contract_id
-            strict_validation = request.data.get('strict_validation', False)
+            strict_validation_raw = request.data.get('strict_validation', False)
+            strict_validation = strict_validation_raw in [True, 'true', 'True', 1, '1']
 
             serializer = WeddingDayGuideSerializer(data=data, context={'strict_validation': strict_validation})
             if serializer.is_valid():
