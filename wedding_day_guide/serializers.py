@@ -74,6 +74,10 @@ class WeddingDayGuideSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
+        print(">>> VALIDATING DATA:", data)
+        print(">>> ceremony_address present?:", "ceremony_address" in data)
+        print(">>> value:", repr(data.get("ceremony_address")))
+
         strict_validation = self.context.get('strict_validation', False)
 
         if strict_validation:
