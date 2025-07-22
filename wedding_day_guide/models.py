@@ -62,6 +62,8 @@ class WeddingDayGuide(models.Model):
     photo_booth_text_line1 = models.TextField(max_length=255, null=True, blank=True)
     photo_booth_text_line2 = models.TextField(max_length=255, null=True, blank=True)
     photo_booth_placement = models.TextField(max_length=255, null=True, blank=True)
+    photo_booth_end_time = models.TimeField(max_length=255, null=True, blank=True)
+
 
     version_number = models.IntegerField(default=1)  # Version control
 
