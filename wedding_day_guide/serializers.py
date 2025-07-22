@@ -89,7 +89,8 @@ class WeddingDayGuideSerializer(serializers.ModelSerializer):
             ]
 
             for field in required_fields:
-                if not data.get(field):
+                value = data.get(field)
+                if value is None or (isinstance(value, str) and not value.strip()):
                     raise serializers.ValidationError({
                         field: f"{field.replace('_', ' ').capitalize()} is required."
                     })
