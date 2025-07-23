@@ -15,13 +15,16 @@ class WeddingDayGuideForm(forms.ModelForm):
         model = WeddingDayGuide
         fields = '__all__'
         widgets = {
-            'dressing_start_time': forms.TimeInput(format='%I:%M %p', attrs={'class': 'form-control'}),
-            'ceremony_start': forms.TimeInput(format='%I:%M %p', attrs={'class': 'form-control'}),
-            'ceremony_end': forms.TimeInput(format='%I:%M %p', attrs={'class': 'form-control'}),
-            'reception_start': forms.TimeInput(format='%I:%M %p', attrs={'class': 'form-control'}),
-            'reception_end': forms.TimeInput(format='%I:%M %p', attrs={'class': 'form-control'}),
-            'dinner_start': forms.TimeInput(format='%I:%M %p', attrs={'class': 'form-control'}),
-            'photographer2_start': forms.TimeInput(format='%I:%M %p', attrs={'class': 'form-control'}),
+            'dressing_start_time': forms.TimeInput(format='%H:%M', attrs={'type': 'time', 'class': 'form-control'}),
+            'ceremony_start': forms.TimeInput(format='%H:%M', attrs={'type': 'time', 'class': 'form-control'}),
+            'ceremony_end': forms.TimeInput(format='%H:%M', attrs={'type': 'time', 'class': 'form-control'}),
+            'reception_start': forms.TimeInput(format='%H:%M', attrs={'type': 'time', 'class': 'form-control'}),
+            'reception_end': forms.TimeInput(format='%H:%M', attrs={'type': 'time', 'class': 'form-control'}),
+            'dinner_start': forms.TimeInput(format='%H:%M', attrs={'type': 'time', 'class': 'form-control'}),
+            'photographer2_start': forms.TimeInput(format='%H:%M', attrs={'type': 'time', 'class': 'form-control'}),
+            'video_arrival_time': forms.TimeInput(format='%H:%M', attrs={'type': 'time', 'class': 'form-control'}),
+            'photo_booth_end_time': forms.TimeInput(format='%H:%M', attrs={'type': 'time', 'class': 'form-control'}),
+
         }
 
     def __init__(self, *args, **kwargs):
@@ -32,7 +35,8 @@ class WeddingDayGuideForm(forms.ModelForm):
         # Ensure Django can parse 12-hour time input
         time_fields = [
             'dressing_start_time', 'ceremony_start', 'ceremony_end',
-            'reception_start', 'reception_end', 'dinner_start', 'photographer2_start'
+            'reception_start', 'reception_end', 'dinner_start', 'photographer2_start',
+            'video_arrival_time', 'photo_booth_end_time'
         ]
         for field in time_fields:
             self.fields[field].input_formats = ['%I:%M %p']

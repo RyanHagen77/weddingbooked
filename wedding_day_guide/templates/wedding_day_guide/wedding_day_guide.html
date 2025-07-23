@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 {% load static %}
@@ -6,53 +7,293 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wedding Day Guide</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'contracts/styles.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Albert+Sans:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --color-white: #fff;
-            --color-shadow: rgba(0, 0, 0, 0.1);
-
-            color-scheme: light;
+            --color-white: #ffffff;
+            --color-light-gray: #f9fafb;
+            --color-lightpink: #FDF4F5;
+            --color-goodblue: #2563eb;
+            --color-grayblue: #e8ecef;
+            --color-text: #000000;
+            --color-gray-700: #374151;
+            --color-gray-300: #d1d5db;
+            --font-brittany: 'Playfair Display', serif;
+            --font-albert: 'Albert Sans', sans-serif;
         }
 
         @media (prefers-color-scheme: dark) {
             :root {
-                --color-white: #000;
-                --color-shadow: rgba(255, 255, 255, 0.1);
-
-                color-scheme: dark;
+                --color-white: #1a1a1a;
+                --color-light-gray: #2d3748;
+                --color-lightpink: #2d1b2a;
+                --color-goodblue: #60a5fa;
+                --color-grayblue: #374151;
+                --color-text: #e0e0e0;
+                --color-gray-700: #9ca3af;
+                --color-gray-300: #6b7280;
             }
+        }
+
+        html, body {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: var(--color-white);
+            font-family: var(--font-albert);
+            color: var(--color-text);
+            line-height: 1.5;
+            box-sizing: border-box;
+        }
+
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+
+        .header {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--color-white);
+        }
+
+        .container-fluid {
+            max-width: 64rem;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .logo img {
+            max-width: 300px;
+            max-height: 150px;
+            margin: 1rem auto;
+            display: block;
+            object-fit: contain;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1.5rem auto;
+            max-width: 80%;
+        }
+
+        .section-header .flex-1 {
+            flex: 1;
+        }
+
+        .section-header .border-t-4 {
+            border-top: 4px solid var(--color-lightpink);
+        }
+
+        .section-header .border-t-2 {
+            border-top: 2px solid var(--color-lightpink);
+            margin-top: 6px;
+        }
+
+        .section-header h2 {
+            font-family: var(--font-brittany);
+            font-size: 2.5rem;
+            color: var(--color-text);
+            padding: 0 2rem;
+            text-align: center;
         }
 
         .section-box {
             background-color: var(--color-white);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 0 10px var(--color-shadow);
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            width: 100%;
         }
+
         .section-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 15px;
+            font-family: var(--font-brittany);
+            font-size: 1.25rem;
+            color: var(--color-text);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid var(--color-gray-300);
+            padding-bottom: 0.25rem;
         }
-        .field-title {
-            font-weight: bold;
+
+        .form-group {
+            margin-bottom: 0.75rem;
+            width: 100%;
         }
-        .logo img {
-            max-width: 200px;
-            max-height: 100px;
+
+        .form-group label {
+            font-family: var(--font-albert);
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-gray-700);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            border: 1px solid var(--color-gray-300);
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            font-family: var(--font-albert);
+            font-size: 0.875rem;
+            width: 100%;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--color-goodblue);
+            outline: none;
+        }
+
+        .form-text {
+            font-family: var(--font-albert);
+            font-size: 0.75rem;
+            color: var(--color-gray-700);
+            margin-top: 0.25rem;
+        }
+
+        h4 {
+            font-family: var(--font-brittany);
+            font-size: 1.125rem;
+            color: var(--color-text);
+            margin: 0.75rem 0 0.5rem;
+        }
+
+        h5 {
+            font-family: var(--font-albert);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--color-gray-700);
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            font-family: var(--font-albert);
+            font-size: 0.875rem;
+            color: var(--color-gray-700);
+            margin-bottom: 0.5rem;
+        }
+
+        ul {
+            list-style-type: disc;
+            margin-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        ul li {
+            font-family: var(--font-albert);
+            font-size: 0.875rem;
+            color: var(--color-gray-700);
+            margin-bottom: 0.25rem;
+        }
+
+        button[type="submit"] {
+            background-color: var(--color-text);
+            color: var(--color-white);
+            font-family: var(--font-albert);
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: none;
+            transition: background-color 0.3s ease;
+            width: calc(50% - 0.25rem);
+        }
+
+        button[type="submit"]:hover {
+            background-color: #1f2937;
+        }
+
+        .row {
+            margin-left: -0.5rem;
+            margin-right: -0.5rem;
+        }
+
+        .col-md-6 {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+
+        .bg-light-gray {
+            background-color: var(--color-light-gray);
+        }
+
+        .text-goodblue {
+            color: var(--color-goodblue);
+        }
+
+        .bg-yellow-50 {
+            background-color: #fefce8;
+        }
+
+        .border-yellow-400 {
+            border-color: #facc15;
+        }
+
+        .text-yellow-700 {
+            color: #a16207;
+        }
+
+        .text-red-600 {
+            color: #dc2626;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 0.75rem;
+            }
+
+            .section-header h2 {
+                font-size: 1.75rem;
+                padding: 0 1rem;
+            }
+
+            .section-title {
+                font-size: 1.125rem;
+            }
+
+            .logo img {
+                max-width: 200px;
+            }
+
+            .form-group {
+                margin-bottom: 0.5rem;
+            }
+
+            button[type="submit"] {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+
+            .row {
+                margin-left: 0;
+                margin-right: 0;
+            }
+
+            .col-md-6 {
+                padding-left: 0;
+                padding-right: 0;
+            }
         }
     </style>
 </head>
-<body class="bg-lightpink min-h-screen flex items-center justify-center">
+<body>
     <div class="header">
-        <div class="bg-white p-8 rounded shadow-md w-full max-w-4xl">
-            <div class="logo text-center mb-6">
-            <img src="{{ MEDIA_URL }}logo/Final_Logo.png" alt="Essence Logo">
-
+        <div class="container-fluid">
+            <div class="logo text-center mb-3">
+                <img src="{{ MEDIA_URL }}logo/Final_Logo.png" alt="Essence Logo">
             </div>
-            <h3 class="text-2xl font-bold text-center mb-6">Wedding Day Guide</h3>
+            <div class="section-header">
+                <div class="flex-1">
+                    <div class="border-t-4 border-lightpink"></div>
+                    <div class="border-t-2 border-lightpink mt-[6px]"></div>
+                </div>
+                <h2 class="font-brittany">Wedding Day Guide</h2>
+                <div class="flex-1">
+                    <div class="border-t-4 border-lightpink"></div>
+                    <div class="border-t-2 border-lightpink mt-[6px]"></div>
+                </div>
+            </div>
 
             <!-- Emergency Contact Section -->
             <div class="section-box">
@@ -60,189 +301,193 @@
                 <p><strong>(847) 780-7092:</strong> Contact Essence with this number in case of any emergency on your wedding day.</p>
             </div>
 
-            <form method="post" class="space-y-4">
+            <form method="post">
                 {% csrf_token %}
 
-            <div class="section-box">
-                <div class="section-title">General Info</div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="field-title" for="id_event_date">Wedding Date:</label>
-                            {{ form.event_date }}
+                <div class="section-box">
+                    <div class="section-title">General Info</div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="field-title" for="id_event_date">Wedding Date</label>
+                                {{ form.event_date }}
+                            </div>
+                            <div class="form-group">
+                                <label class="field-title" for="id_primary_contact">Primary Full Name</label>
+                                {{ form.primary_contact }}
+                            </div>
+                            <div class="form-group">
+                                <label class="field-title" for="id_primary_email">Primary Email</label>
+                                {{ form.primary_email }}
+                                <small class="form-text">e.g., example@email.com</small>
+                            </div>
+                            <div class="form-group">
+                                <label class="field-title" for="id_primary_phone">Primary Cell #</label>
+                                {{ form.primary_phone }}
+                                <small class="form-text">Format: 123-456-7890</small>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label class="field-title" for="id_primary_contact">Primary Full Name:</label>
-                            {{ form.primary_contact }}
-                        </div>
-                        <div class="form-group">
-                            <label class="field-title" for="id_primary_email">Primary Email:</label>
-                            {{ form.primary_email }}
-                        </div>
-                        <div class="form-group">
-                            <label class="field-title" for="id_primary_phone">Primary Cell #:</label>
-                            {{ form.primary_phone }}
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="field-title" for="id_partner_contact">Partner Full Name:</label>
-                            {{ form.partner_contact }}
-                        </div>
-                        <div class="form-group">
-                            <label class="field-title" for="id_partner_email">Partner Email:</label>
-                            {{ form.partner_email }}
-                        </div>
-                        <div class="form-group">
-                            <label class="field-title" for="id_partner_phone">Partner Cell #:</label>
-                            {{ form.partner_phone }}
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="field-title" for="id_partner_contact">Partner Full Name</label>
+                                {{ form.partner_contact }}
+                            </div>
+                            <div class="form-group">
+                                <label class="field-title" for="id_partner_email">Partner Email</label>
+                                {{ form.partner_email }}
+                                <small class="form-text">e.g., partner@email.com</small>
+                            </div>
+                            <div class="form-group">
+                                <label class="field-title" for="id_partner_phone">Partner Cell #</label>
+                                {{ form.partner_phone }}
+                                <small class="form-text">Format: 123-456-7890</small>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Wedding Day Locations Section -->
-            <div class="section-box">
-                <div class="section-title">Wedding Day Locations</div>
-                <h4>For The Lead Photographer</h4>
-                <div class="mb-4">
-                    <h5>Primary Dressing Location</h5>
-                    <p>The photographer typically comes to the bride's dressing location 3 hours before the ceremony.</p>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="field-title" for="id_dressing_location">Dressing Location:</label>
-                                {{ form.dressing_location }}
-                            </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_dressing_start_time">Start Time:</label>
-                                {{ form.dressing_start_time }}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="field-title" for="id_dressing_address">Dressing Address:</label>
-                                {{ form.dressing_address }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mb-4">
-                    <h5>Ceremony Location</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="field-title" for="id_ceremony_location">Ceremony Location:</label>
-                                {{ form.ceremony_site }}
-                            </div>
+                <!-- Wedding Day Locations Section -->
+                <div class="section-box">
+                    <div class="section-title">Wedding Day Locations</div>
+                    <h4>For The Lead Photographer</h4>
+                    <div class="mb-2">
+                        <h5>Primary Dressing Location</h5>
+                        <p>The photographer typically comes to the bride's dressing location 3 hours before the ceremony.</p>
+                        <div class="row">
+                            <div class="col-md-6">
                                 <div class="form-group">
-                                  <label class="field-title" for="id_ceremony_start">Ceremony Start:</label>
-                                  {{ form.ceremony_start }}
+                                    <label class="field-title" for="id_dressing_location">Dressing Location</label>
+                                    {{ form.dressing_location }}
                                 </div>
                                 <div class="form-group">
-                                  <label class="field-title" for="id_ceremony_end">Ceremony End:</label>
-                                  {{ form.ceremony_end }}
+                                    <label class="field-title" for="id_dressing_start_time">Start Time</label>
+                                    {{ form.dressing_start_time }}
                                 </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="field-title" for="id_ceremony_address">Ceremony Address:</label>
-                                {{ form.ceremony_address }}
                             </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_ceremony_phone">Ceremony Phone #:</label>
-                                {{ form.ceremony_phone }}
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_dressing_address">Dressing Address</label>
+                                    {{ form.dressing_address }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <h5>Ceremony Location</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_ceremony_location">Ceremony Location</label>
+                                    {{ form.ceremony_site }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_ceremony_start">Ceremony Start</label>
+                                    {{ form.ceremony_start }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_ceremony_end">Ceremony End</label>
+                                    {{ form.ceremony_end }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_ceremony_address">Ceremony Address</label>
+                                    {{ form.ceremony_address }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_ceremony_phone">Ceremony Phone #</label>
+                                    {{ form.ceremony_phone }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <h5>Reception Location</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_reception_location">Reception Location</label>
+                                    {{ form.reception_site }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_reception_start">Cocktail Start Time</label>
+                                    {{ form.reception_start }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_reception_phone">Reception Phone #</label>
+                                    {{ form.reception_phone }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_reception_address">Reception Address</label>
+                                    {{ form.reception_address }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_dinner_start_time">Dinner Start Time</label>
+                                    {{ form.dinner_start }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_reception_end_time">Reception Ends</label>
+                                    {{ form.reception_end }}
+                                </div>
+                                <p>It is recommended that you seat your photographer/videographer in the room for dinner so that we don't miss anything.</p>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_staff_table">Table #</label>
+                                    {{ form.staff_table }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <h5>Location Photo Stops</h5>
+                        <p>It is recommended that you only have 1-2 photo location stops, and that you accurately factor in transportation time.</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_photo_stop1">Stop 1</label>
+                                    {{ form.photo_stop1 }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_photo_stop3">Stop 3</label>
+                                    {{ form.photo_stop3 }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_photo_stop2">Stop 2</label>
+                                    {{ form.photo_stop2 }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_photo_stop4">Stop 4</label>
+                                    {{ form.photo_stop4 }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <h4>For The 2nd Photographer</h4>
+                    <div class="mb-2">
+                        <h5>2nd Photographer</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_photographer2_start_location">Starting Location</label>
+                                    {{ form.photographer2_start_location }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_photographer2_start_location_address">Starting Location Address</label>
+                                    {{ form.photographer2_start_location_address }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_photographer2_start">Starting Time</label>
+                                    {{ form.photographer2_start }}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="mb-4">
-                    <h5>Reception Location</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="field-title" for="id_reception_location">Reception Location:</label>
-                                {{ form.reception_site }}
-                            </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_reception_start">Cocktail Start Time:</label>
-                                {{ form.reception_start }}
-                            </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_reception_phone">Reception Phone #:</label>
-                                {{ form.reception_phone }}
-                            </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_reception_address">Reception Address:</label>
-                                {{ form.reception_address }}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="field-title" for="id_dinner_start_time">Dinner Start Time:</label>
-                                {{ form.dinner_start }}
-                            </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_reception_end_time">Reception Ends:</label>
-                                {{ form.reception_end }}
-                            </div>
-                            <p>It is recommended that you seat your photographer/videographer in the room for dinner so that we don't miss anything.</p>
-                            <div class="form-group">
-                                <label class="field-title" for="id_staff_table">Table #:</label>
-                                {{ form.staff_table }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mb-4">
-                    <h5>Location Photo Stops</h5>
-                    <p>It is recommended that you only have 1-2 photo location stops, and that you accurately factor in transportation time.</p>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="field-title" for="id_photo_stop1">Stop 1:</label>
-                                {{ form.photo_stop1 }}
-                            </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_photo_stop3">Stop 3:</label>
-                                {{ form.photo_stop3 }}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="field-title" for="id_photo_stop2">Stop 2:</label>
-                                {{ form.photo_stop2 }}
-                            </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_photo_stop4">Stop 4:</label>
-                                {{ form.photo_stop4 }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <h4>For The 2nd Photographer</h4>
-                <div class="mb-4">
-                    <h5>2nd Photographer</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="field-title" for="id_photographer2_start_location">Starting Location:</label>
-                                {{ form.photographer2_start_location }}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="field-title" for="id_photographer2_start_location_address">Starting Location Address:</label>
-                                {{ form.photographer2_start_location_address }}
-                            </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_photographer2_start">Starting Time:</label>
-                                {{ form.photographer2_start }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
                 <!-- Shot List Section -->
                 <div class="section-box">
@@ -341,254 +586,244 @@
                     <div class="section-title">Family & Wedding Party Info</div>
                     <div class="row">
                         <div class="col-md-6">
-                            <h4>Wedding Party</h4>
-                            <div class="form-group">
-                                <label class="field-title" for="id_p1_attendant_of_honor">Attendant of Honor P1:</label>
-                                {{ form.p1_attendant_of_honor }}
+                            <div class="subsection">
+                                <h4>Wedding Party – Partner 1</h4>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_p1_attendant_of_honor">Attendant of Honor</label>
+                                    {{ form.p1_attendant_of_honor }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_p1_attendant_qty"># of Attendants</label>
+                                    {{ form.p1_attendant_qty }}
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_p2_attendant_of_honor">Attendant of Honor P2:</label>
-                                {{ form.p2_attendant_of_honor }}
+                            <div class="subsection mt-2">
+                                <h4>Wedding Party – Partner 2</h4>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_p2_attendant_of_honor">Attendant of Honor</label>
+                                    {{ form.p2_attendant_of_honor }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_p2_attendant_qty"># of Attendants</label>
+                                    {{ form.p2_attendant_qty }}
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_p1_attendant_qty"># of Attendants P1:</label>
-                                {{ form.p1_attendant_qty }}
-                            </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_p2_attendant_qty"># of Attendants P2:</label>
-                                {{ form.p2_attendant_qty }}
-                            </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_flower_attendant_qty"># of Flower Attendants:</label>
-                                {{ form.flower_attendant_qty }}
-                            </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_ring_bearer_qty"># of Ring Bearers:</label>
-                                {{ form.ring_bearer_qty }}
-                            </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_usher_qty"># of Ushers:</label>
-                                {{ form.usher_qty }}
+                            <div class="subsection mt-2">
+                                <h4>Other Wedding Party Roles</h4>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_flower_attendant_qty"># of Flower Attendants</label>
+                                    {{ form.flower_attendant_qty }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_ring_bearer_qty"># of Ring Bearers</label>
+                                    {{ form.ring_bearer_qty }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_usher_qty"># of Ushers</label>
+                                    {{ form.usher_qty }}
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <h4>Family</h4>
-                            <p><strong>Partner 1's Side</strong></p>
-                            <div class="form-group">
-                                <label class="field-title" for="id_p1_parents_name">P1's Parents:</label>
-                                {{ form.p1_parent_names }}
+                            <div class="subsection">
+                                <h4>Family – Partner 1</h4>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_p1_parent_names">Parents</label>
+                                    {{ form.p1_parent_names }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_p1_sibling_names">Siblings</label>
+                                    {{ form.p1_sibling_names }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_p1_grandparent_names">Grandparents</label>
+                                    {{ form.p1_grandparent_names }}
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_p1_sibling_names">P1's Siblings:</label>
-                                {{ form.p1_sibling_names }}
-                            </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_p1_grandparent_names">P1's Grandparents:</label>
-                                {{ form.p1_grandparent_names }}
-                            </div>
-                            <p><strong>Partner 2's Side</strong></p>
-                            <div class="form-group">
-                                <label class="field-title" for="id_p2_parent_names">P2's Parents:</label>
-                                {{ form.p2_parent_names }}
-                            </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_p2_sibling_names">P2's Siblings:</label>
-                                {{ form.p2_sibling_names }}
-                            </div>
-                            <div class="form-group">
-                                <label class="field-title" for="id_p2_grandparent_names">P2's Grandparents:</label>
-                                {{ form.p2_grandparent_names }}
+                            <div class="subsection mt-2">
+                                <h4>Family – Partner 2</h4>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_p2_parent_names">Parents</label>
+                                    {{ form.p2_parent_names }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_p2_sibling_names">Siblings</label>
+                                    {{ form.p2_sibling_names }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-title" for="id_p2_grandparent_names">Grandparents</label>
+                                    {{ form.p2_grandparent_names }}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
 
                 <!-- Additional Photography Requests Section -->
                 <div class="section-box">
                     <div class="section-title">Additional Photography Requests</div>
                     <p>Please add your photo requests below. We will do our best to get to all of them, time and weather permitting.</p>
-                    <div class="form-group">
-                        <label class="field-title" for="id_additional_photo_request1">Formal/Posed Photo Requests:</label>
-                        {{ form.additional_photo_request1 }}
-                    </div>
-                    <div class="form-group">
-                        <label class="field-title" for="id_additional_photo_request2">Formal/Posed Photo Requests (2):</label>
-                        {{ form.additional_photo_request2 }}
-                    </div>
-                    <div class="form-group">
-                        <label class="field-title" for="id_additional_photo_request3">Formal/Posed Photo Requests (3):</label>
-                        {{ form.additional_photo_request3 }}
-                    </div>
-                    <div class="form-group">
-                        <label class="field-title" for="id_additional_photo_request4">Other Photo Requests:</label>
-                        {{ form.additional_photo_request4 }}
-                    </div>
-                    <div class="form-group">
-                        <label class="field-title" for="id_additional_photo_request5">Other Photo Requests (2):</label>
-                        {{ form.additional_photo_request5 }}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="field-title" for="id_additional_photo_request1">Formal/Posed Photo Requests</label>
+                                {{ form.additional_photo_request1 }}
+                            </div>
+                            <div class="form-group">
+                                <label class="field-title" for="id_additional_photo_request2">Formal/Posed Photo Requests (2)</label>
+                                {{ form.additional_photo_request2 }}
+                            </div>
+                            <div class="form-group">
+                                <label class="field-title" for="id_additional_photo_request3">Formal/Posed Photo Requests (3)</label>
+                                {{ form.additional_photo_request3 }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="field-title" for="id_additional_photo_request4">Other Photo Requests</label>
+                                {{ form.additional_photo_request4 }}
+                            </div>
+                            <div class="form-group">
+                                <label class="field-title" for="id_additional_photo_request5">Other Photo Requests (2)</label>
+                                {{ form.additional_photo_request5 }}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Videography Customers Only Section */}
-                <div className="p-4 bg-gray-100 rounded-lg mb-6">
-                  <h2 className="font-bold text-lg mb-2">Videography Customers Only</h2>
-                  <p>Essence cannot process your video until you have provided us with the following information.</p>
-                  <p>Your final video will be delivered through Vimeo, the same cutting-edge platform trusted across the industry. We host it online for one year. Please be sure to download and save your video right away. After one year, the link will expire and be removed from our hosting. Feel free to store it wherever you like once you have it saved.</p>
-                  <p>Please type your names below EXACTLY as you would like them to appear in the final video. Traditionally the names are listed as John and Sara Flemming.</p>
-
-                  <label htmlFor="video_client_names" className="block text-sm font-medium text-gray-700">
-                    Names:
-                  </label>
-                  <input
-                    id="video_client_names"
-                    type="text"
-                    {...register("video_client_names")}
-                    className="border p-2 rounded-lg w-full"
-                  />
-
-                  {/* New Notes Below Names Field */}
-                  <div className="mt-4 p-4 border-l-4 border-blue-400 bg-blue-50 rounded">
-                    <p className="font-semibold mb-2">Notes:</p>
-                    <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
-                      <li>We arrive at least 1 hour before the ceremony to set up and capture essential highlight shots and set up sound for the ceremony.</li>
-                      <li>Most packages include 8 hours of coverage.</li>
-                      <li>Dance Highlight requires 2+ hours of open dancing.</li>
-                      <li>Early starts (getting ready/first look) may mean no dance highlight if time runs out.</li>
-                      <li><strong>Need more time?</strong> Overtime is available!</li>
-                    </ul>
-                  </div>
-
-                  <p className="mt-4">Questions? Message us anytime in the portal—we’re happy to help!</p>
-
-                  <h5 className="text-lg font-semibold mt-6">Wedding Story</h5>
-                  <p>Your wedding story will be a collection of highlights from your full wedding day. Your song selection should be one slow or medium tempo song. We strongly encourage you to pick a song with a length of 3–4 minutes, as a shorter song will decrease the amount of footage the editors are able to include in your highlight video. Re-edits of videos due to the choice of a short-length song will be charged a fee.</p>
-
-                  <div className="form-group mt-4">
-                    <label htmlFor="wedding_story_song_title" className="field-title">WS Song Title:</label>
-                    <input
-                      id="wedding_story_song_title"
-                      type="text"
-                      {...register("wedding_story_song_title")}
-                      className="border p-2 rounded-lg w-full"
-                    />
-                  </div>
-
-                  <div className="form-group mt-4">
-                    <label htmlFor="wedding_story_song_artist" className="field-title">WS Song Artist:</label>
-                    <input
-                      id="wedding_story_song_artist"
-                      type="text"
-                      {...register("wedding_story_song_artist")}
-                      className="border p-2 rounded-lg w-full"
-                    />
-                  </div>
-
-                  <h5 className="text-lg font-semibold mt-6">Dance Montage</h5>
-                  <p><strong className="text-red-600">Only if we’re there for 2 hours of open dancing.</strong> Make sure your timelines allow that before filling this out.</p>
-                  <p>Your dance montage will be an upbeat collection of footage shot during the general dancing portion of your evening paired with one song. Re-edits of videos due to the choice of a short-length song will be charged a fee. We cannot complete your video without BOTH your Wedding Story and Dance Montage songs.</p>
-
-                  <div className="form-group mt-4">
-                    <label htmlFor="dance_montage_song_title" className="field-title">DM Song Title:</label>
-                    <input
-                      id="dance_montage_song_title"
-                      type="text"
-                      {...register("dance_montage_song_title")}
-                      className="border p-2 rounded-lg w-full"
-                    />
-                  </div>
-
-                  <div className="form-group mt-4">
-                    <label htmlFor="dance_montage_song_artist" className="field-title">DM Song Artist:</label>
-                    <input
-                      id="dance_montage_song_artist"
-                      type="text"
-                      {...register("dance_montage_song_artist")}
-                      className="border p-2 rounded-lg w-full"
-                    />
-                  </div>
-
-                  <h5 className="text-lg font-semibold mt-6">Additional Editing Notes</h5>
-                  <p>Videography customers receive the two above highlight videos as well as other important portions of their day. Videography customers who have not added Bridal Prep / First Look to their video coverage receive the following live footage in their video: Ceremony, Introductions, Cake Cutting, Toasts, First Dance, Special Dances (i.e. Father/Daughter dance and Mother/Son dance), and Bouquet/Garter toss. These portions are only a part of the video if the events occurred and the videographer is present during the time they happen.</p>
-
-                  {/* New Additional Video Notes */}
-                  <div className="mt-4 p-4 border-l-4 border-blue-400 bg-blue-50 rounded">
-                    <p className="font-semibold mb-2">Additional Video Notes to Remember</p>
-                    <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
-                      <li>Videography customers receive one highlight video (their Wedding Story).</li>
-                      <li>If we're there for 2+ hours of open dancing late night, they'll get a dance highlight included.</li>
-                    </ul>
-                  </div>
-
-                  {/* Bridal Prep / First Look Notes */}
-                  <div className="mt-4 p-4 border-l-4 border-yellow-400 bg-yellow-50 rounded">
-                    <p className="font-semibold mb-2">Bridal Prep / First Look Coverage:</p>
-                    <p>Would be added to your Wedding Story (not a separate chapter).</p>
-                    <p>Just remember: if you want early coverage, you may need to extend hours to ensure we’re there late for open dancing.</p>
-                    <p className="mt-2">Other than our highlights, just a reminder of the specific chapters we showed you in your original meeting of our video:</p>
-                    <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
-                      <li>Ceremony</li>
-                      <li>Introductions</li>
-                      <li>Cake Cutting</li>
-                      <li>Toasts</li>
-                      <li>First Dance</li>
-                      <li>Special Dances (e.g. Father/Daughter, Mother/Son)</li>
-                      <li>Bouquet/Garter Toss</li>
-                    </ul>
-                    <p className="mt-2">These chapters are not edited—they are live.</p>
-                    <p>If you have any other special dances or important moments, please list them below so we can make sure to include them and we’re aware of it.</p>
-                  </div>
-
-                  <div className="form-group mt-4">
-                    <label htmlFor="video_special_dances" className="field-title">Other Special Dances to be Included:</label>
-                    <input
-                      id="video_special_dances"
-                      type="text"
-                      {...register("video_special_dances")}
-                      className="border p-2 rounded-lg w-full"
-                    />
-                  </div>
+                <!-- Videography Customers Only Section -->
+                <div class="section-box bg-light-gray">
+                    <div class="section-title">Videography Customers Only</div>
+                    <p>Essence cannot process your video until you have provided us with the following information. Please be aware that if you'd like your videographer to be there for bridal prep or a first look, this footage will be included in your <strong>Wedding Story Highlight Reel only</strong>.</p>
+                    <p>All video packages require our videographer to begin <strong>1 hour before the ceremony</strong> at the ceremony site for establishing footage and audio set-up.</p>
+                    <p>Including bridal prep or first look footage may reduce the time allowed for open dance floor coverage, which could impact our ability to produce a <strong>Dance Montage Highlight Reel</strong> if there are fewer than 2 hours of open dancing.</p>
+                    <p>Additional time can be added to your package by reaching out to our Director in your portal.</p>
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="field-title" for="id_video_arrival_time">Video Arrival Time</label>
+                                {{ form.video_arrival_time }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="field-title" for="id_video_arrival_location">Video Arrival Location</label>
+                                {{ form.video_arrival_location }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="field-title" for="id_video_client_names">Names for Final Video</label>
+                        {{ form.video_client_names }}
+                    </div>
+                    <div class="mt-2">
+                        <h5>Wedding Story Song</h5>
+                        <p>This is a highlight reel from your entire wedding day. Please choose one slow or medium-tempo song that is 3–4 minutes long. Shorter songs will reduce how much footage can be included. Re-edits due to song length will incur a fee.</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_wedding_story_song_title">WS Song Title</label>
+                                    {{ form.wedding_story_song_title }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_wedding_story_song_artist">WS Song Artist</label>
+                                    {{ form.wedding_story_song_artist }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <h5>Dance Montage Song</h5>
+                        <p><strong class="text-red-600">Only if we’re there for 2+ hours of open dancing.</strong></p>
+                        <p>Your Dance Montage will be an upbeat collection of footage shot during general dancing, paired with one energetic song.</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_dance_montage_song_title">DM Song Title</label>
+                                    {{ form.dance_montage_song_title }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-title" for="id_dance_montage_song_artist">DM Song Artist</label>
+                                    {{ form.dance_montage_song_artist }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <h5>Other Special Dances / Moments</h5>
+                        <p>In addition to your highlight videos, your final product will include other key live footage chapters: Ceremony, Introductions, Cake Cutting, Toasts, First Dance, Special Dances (e.g., Father/Daughter, Mother/Son), and Bouquet/Garter Toss — if those events occur while the videographer is present.</p>
+                        <p>If there are other special dances or moments you'd like us to capture, please list them below.</p>
+                        <div class="form-group">
+                            <label class="field-title" for="id_video_special_dances">Other Dances or Moments to Include</label>
+                            {{ form.video_special_dances }}
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Photo Booth Customers Only Section -->
-                <div class="section-box">
-                  <div class="section-title">Photo Booth Customers Only</div>
-                  <p>Your open-air photo booth, with sparkly, silver backdrop and props, opens during the last 3 hours of the open dance time at your wedding. The booth prints (2) 2x6 photo strips for each set of images. The digital images will be sent to you as well, after the wedding via Google Drive. (Essence does not provide an album for photo strips.)</p>
-
-                  <p>How would you like your names and wedding date to appear on your photo strip? (ie. Kim and Joe, Joe & Kim, May 22, 2025, or 05/22/25)</p>
-
-                  <div class="form-group">
-                    <label class="field-title" for="id_photo_booth_text_line1">Text Line 1 (up to 15 characters):</label>
-                    {{ form.photo_booth_text_line1 }}
-                  </div>
-
-                  <div class="form-group">
-                    <label class="field-title" for="id_photo_booth_text_line2">Text Line 2 (up to 15 characters):</label>
-                    {{ form.photo_booth_text_line2 }}
-                  </div>
-
-                  <!-- ✅ New Field: Party End Time -->
-                  <div class="form-group">
-                    <label class="field-title" for="id_photo_booth_end_time">What time does your party end? (enter time):</label>
-                    {{ form.photo_booth_end_time }}
-                  </div>
-                  <p class="text-sm text-gray-700 mb-4">We will do the last three hours of open dancing.</p>
-
-                  <p>Please describe the location in your facility where we will be setting up. Please remember that we will need a 5'x7' space within 15 feet of an outlet, and a skirted high-top table. (Example: You will be in the far corner of the room next to the head table. or You will be in the front, just inside the doors.)</p>
-
-                  <div class="form-group">
-                    <label class="field-title" for="id_photo_booth_placement">Placement:</label>
-                    {{ form.photo_booth_placement }}
-                  </div>
+                <div class="section-box bg-light-gray">
+                    <div class="section-title">Photo Booth Customers Only</div>
+                    <p>Your open-air photo booth, with sparkly, silver backdrop and props, opens during the last 3 hours of the open dance time at your wedding. The booth prints (2) 2x6 photo strips for each set of images. Digital images will be sent to you after the wedding via Google Drive. (Essence does not provide an album for photo strips.)</p>
+                    <p>How would you like your names and wedding date to appear on your photo strip? (e.g., Kim and Joe, Joe & Kim, May 22, 2025, or 05/22/25)</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="field-title" for="id_photo_booth_text_line1">Text Line 1 (up to 15 characters)</label>
+                                {{ form.photo_booth_text_line1 }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="field-title" for="id_photo_booth_text_line2">Text Line 2 (up to 15 characters)</label>
+                                {{ form.photo_booth_text_line2 }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2 p-2 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                        <h5 class="text-yellow-700">⏰ What Time Does Your Party End?</h5>
+                        <p>This determines when the photo booth operates. We’ll cover the <strong>last 3 hours of open dancing</strong>.</p>
+                        <div class="form-group">
+                            <label class="field-title" for="id_photo_booth_end_time">Party End Time</label>
+                            {{ form.photo_booth_end_time }}
+                        </div>
+                        <p>Please be accurate so we can plan accordingly.</p>
+                    </div>
+                    <p>Please describe the location in your facility where we will be setting up. We need a 5'x7' space within 15 feet of an outlet and a skirted high-top table.<br><span class="italic">Example: "In the far corner next to the head table" or "In the front near the entrance doors."</span></p>
+                    <div class="form-group">
+                        <label class="field-title" for="id_photo_booth_placement">Placement</label>
+                        {{ form.photo_booth_placement }}
+                    </div>
                 </div>
 
-                <div class="flex justify-between">
-                    <button type="submit" name="save" class="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition mr-2">Save</button>
-                    <button type="submit" name="submit" class="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition" onclick="return confirmSubmit()">Submit</button>
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <button type="submit" name="save">Save</button>
+                    </div>
+                    <div class="col-md-6">
+                        <button type="submit" name="submit" onclick="return confirmSubmit()">Submit</button>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
+
+    <footer class="bg-grayblue text-black py-4">
+        <div class="container-fluid">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-bold font-brittany">Essence Weddings</h3>
+                    <p class="text-sm font-albert">Creating memorable experiences</p>
+                </div>
+                <div>
+                    <p class="text-sm font-albert">© 2025 Essence Weddings. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <script>
         function confirmSubmit() {
@@ -601,3 +836,4 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
+```
