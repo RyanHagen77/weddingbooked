@@ -820,11 +820,7 @@ useEffect(() => {
                 <p className="text-sm text-gray-700 font-sans mb-4">
                   Additional time can be added to your package by reaching out to our Director in your portal.
                 </p>
-
                 <div>
-                  <label htmlFor="video_arrival_time" className="block text-sm font-medium text-gray-700">
-                    Video Arrival Time:
-                  </label>
                   <StyledTimePicker
                     label="Video Arrival Time"
                     value={videoArrivalTimeRaw}
@@ -834,7 +830,6 @@ useEffect(() => {
                     }}
                   />
                 </div>
-
                 <div>
                   <input type="hidden" {...register("video_arrival_time")} />
                   <p className="text-sm text-gray-600 mt-1">Please be accurate so we can plan accordingly.</p>
