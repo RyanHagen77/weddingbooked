@@ -825,12 +825,13 @@ useEffect(() => {
                   <label htmlFor="video_arrival_time" className="block text-sm font-medium text-gray-700">
                     Video Arrival Time:
                   </label>
-                  <input
-                      type="time"
-                      id="video_arrival_time"
-                      value={videoArrivalTimeRaw}
-                      onChange={(e) => setVideoArrivalTimeRaw(e.target.value)}
-                      className={inputClass}
+                  <StyledTimePicker
+                    label="Video Arrival Time"
+                    value={videoArrivalTimeRaw}
+                    onChange={(val) => {
+                      setVideoArrivalTimeRaw(val);
+                      setValue("video_arrival_time", val, { shouldValidate: false });
+                    }}
                   />
                 </div>
 
