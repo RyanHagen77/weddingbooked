@@ -100,6 +100,7 @@ const WeddingDayGuideForm: React.FC<WeddingDayGuideFormProps> = ({ contractId })
   const [receptionStartTimeRaw, setReceptionStartTimeRaw] = useState('00:00')
   const [dinnerStartTimeRaw, setDinnerStartTimeRaw] = useState('00:00')
   const [receptionEndTimeRaw, setReceptionEndTimeRaw] = useState('00:00');
+  const [videoArrivalTimeRaw, setVideoArrivalTimeRaw] = useState('00:00');
   const [photographer2StartRaw, setPhotographer2StartRaw] = useState('00:00');
   const [photoBoothEndTimeRaw, setPhotoBoothEndTimeRaw] = useState('00:00'); // 👈 Add here
 
@@ -172,6 +173,20 @@ useEffect(() => {
         const raw = `${hourStr.padStart(2, '0')}:${minuteStr.padStart(2, '0')}`;
         setPhotographer2StartRaw(raw);
         setValue('photographer2_start', raw, { shouldValidate: false });
+      }
+
+      if (data.video_arrival_time) {
+        const [hourStr, minuteStr] = data.video_arrival_time.split(':');
+        const raw = `${hourStr.padStart(2, '0')}:${minuteStr.padStart(2, '0')}`;
+        setVideoArrivalTimeRaw(raw);
+        setValue('video_arrival_time', raw, { shouldValidate: false });
+      }
+
+      if (data.photo_booth_end_time) {
+        const [hourStr, minuteStr] = data.photo_booth_end_time.split(':');
+        const raw = `${hourStr.padStart(2, '0')}:${minuteStr.padStart(2, '0')}`;
+        setPhotoBoothEndTimeRaw(raw);
+        setValue('photo_booth_end_time', raw, { shouldValidate: false });
       }
 
       setIsSubmitted(data.submitted || false);
@@ -794,16 +809,23 @@ useEffect(() => {
                     Additional time can be added to your package by reaching out to our Director in your portal.
                   </p>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                      <label htmlFor="video_arrival_time" className="block text-sm font-medium text-gray-700">Video Arrival Time:</label>
-                      <input type="text" id="video_arrival_time" {...register("video_arrival_time")} className={inputClass} />
-                    </div>
+                  <div>
+                    <label htmlFor="video_arrival_time" className="block text-sm font-medium text-gray-700">
+                      Video Arrival Time:
+                    </label>
+                    <input
+                      type="time"
+                      id="video_arrival_time"
+                      value={videoArrivalTimeRaw}
+                      onChange={(e) => setVideoArrivalTimeRaw(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+
                     <div>
                       <label htmlFor="video_arrival_location" className="block text-sm font-medium text-gray-700">Video Arrival Location:</label>
                       <input type="text" id="video_arrival_location" {...register("video_arrival_location")} className={inputClass} />
                     </div>
-                  </div>
 
                   <label htmlFor="video_client_names" className="block text-sm font-medium text-gray-700 mb-1">Please type your names below EXACTLY as you would like them to appear in the final video.</label>
                   <input id="video_client_names" type="text" {...register("video_client_names")} className={inputClass} />
