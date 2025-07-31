@@ -60,86 +60,71 @@ def generate_pdf(guide, contract, logger):
         logger.error("Error generating PDF for guide %s: %s", guide.pk, e)
         raise
 
+
 @login_required
 def wedding_day_guide(request, contract_id):
+    """
+    View and manage Wedding Day Guide for a specific contract.
+    """
     logger.info("Accessing wedding day guide for contract ID: %s by user: %s", contract_id, request.user)
-    is_office_staff = request.user.groups.filter(name='Office Staff').exists()
 
     try:
         contract = get_object_or_404(Contract, contract_id=contract_id)
-        guide = WeddingDayGuide.objects.filter(contract=contract).first()
+        guide, _ = WeddingDayGuide.objects.get_or_create(contract=contract)
 
-        if guide and guide.submitted and not is_office_staff:
-            logger.warning("Attempt to edit submitted guide by user: %s", request.user)
+        is_staff = request.user.groups.filter(name='Office Staff').exists()
+
+        if guide.submitted and not is_staff:
+            logger.warning("Attempt to edit submitted guide by non-staff user: %s", request.user)
             return render(request, 'wedding_day_guide/wedding_day_guide_submitted.html', {
                 'message': 'This Wedding Day Guide has already been submitted and cannot be edited.',
-                'contract': contract,
-                'is_office_staff': is_office_staff
             })
 
         if request.method == 'POST':
-            strict_validation = 'submit' in request.POST
-            logger.debug("POST data for contract ID %s: %s", contract_id, request.POST)
+            logger.info("Form submitted with POST keys: %s", list(request.POST.keys()))
 
-            # Use WeddingDayGuideForm to validate data, similar to API
-            form = WeddingDayGuideForm(
-                data=request.POST,
-                instance=guide,
-                strict_validation=strict_validation,
-                contract=contract
-            )
+            form = WeddingDayGuideForm(request.POST, instance=guide, contract=contract)
 
-            if form.is_valid() or not strict_validation:
+            if not form.is_valid():
+                logger.warning("Form validation failed. Errors: %s", form.errors)
+
+            guide = form.save(commit=False)
+            guide.contract = contract
+
+            if 'submit' in request.POST:
+                guide.submitted = True
+
+            guide.save()
+
+            if 'submit' in request.POST:
                 try:
-                    # Mimic API's update_or_create logic
-                    data = form.cleaned_data if form.is_valid() else request.POST.dict()
-                    defaults = {k: v for k, v in data.items() if k in WeddingDayGuide._meta.get_fields() and k != 'contract'}
-                    if strict_validation:
-                        defaults['submitted'] = True
-
-                    guide, created = WeddingDayGuide.objects.update_or_create(
-                        contract=contract,
-                        defaults=defaults
-                    )
-
-                    logger.info("Guide %s %s for contract ID: %s by user: %s",
-                                guide.pk, "created" if created else "updated", contract_id, request.user)
-
-                    if strict_validation:
-                        generate_pdf(guide, contract, logger)
-                        return redirect(f'/contracts/{contract.contract_id}/#docs')
-
-                    return redirect('wedding_day_guide:wedding_day_guide', contract_id=contract.contract_id)
+                    generate_pdf(guide, contract, logger)
                 except Exception as e:
-                    logger.error("Error saving guide for contract ID %s: %s", contract_id, str(e))
-                    form.add_error(None, f"Error saving form: {str(e)}")
-            else:
-                logger.error("Form validation failed for contract ID %s: %s", contract_id, form.errors)
+                    logger.error("PDF generation failed for contract ID %s: %s", contract_id, str(e))
+                    return HttpResponse(f"Error generating PDF: {e}")
 
-            return render(request, 'wedding_day_guide/wedding_day_guide.html', {
-                'form': form,
-                'contract': contract,
-                'guide': guide,
-                'submitted': guide.submitted if guide else False,
-                'is_office_staff': is_office_staff,
-                'error_message': 'Please correct the errors below.'
-            })
+                return redirect(f'/contracts/{contract.contract_id}/#docs')
 
-        form = WeddingDayGuideForm(instance=guide, strict_validation=False, contract=contract)
+            logger.info("Guide saved successfully for contract ID: %s by user: %s", contract_id, request.user)
+            return redirect('wedding_day_guide:wedding_day_guide', contract_id=contract.contract_id)
+
+        else:
+            form = WeddingDayGuideForm(instance=guide, contract=contract)
+
         return render(request, 'wedding_day_guide/wedding_day_guide.html', {
             'form': form,
-            'contract': contract,
-            'guide': guide,
-            'submitted': guide.submitted if guide else False,
-            'is_office_staff': is_office_staff
+            'submitted': guide.submitted,
         })
 
     except Contract.DoesNotExist:
         logger.error("Contract not found for contract ID: %s by user: %s", contract_id, request.user)
         return HttpResponse("Contract not found.", status=404)
+
     except Exception as e:
-        logger.error("Unexpected error for contract ID: %s by user: %s - %s", contract_id, request.user, str(e))
-        return HttpResponseServerError("An error occurred. Please contact support.")
+        logger.error("Unexpected error for contract ID: %s by user: %s - %s", contract_id, request.user, e)
+        return render(request, 'wedding_day_guide/wedding_day_guide_submitted.html', {
+            'message': 'Something went wrong while trying to load the Wedding Day Guide. Please try again or contact support.',
+        })
 
 
 @login_required
