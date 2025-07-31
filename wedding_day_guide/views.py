@@ -129,6 +129,7 @@ def wedding_day_guide(request, contract_id):
         return HttpResponseServerError("An error occurred. Please contact support.")
 
 
+
 @login_required
 def wedding_day_guide_view(request, pk):
     """
