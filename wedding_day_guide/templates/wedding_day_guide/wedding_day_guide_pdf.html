@@ -2,78 +2,56 @@
 <html lang="en">
 {% load static %}
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wedding Day Guide</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #fdf4f5;
-      color: #333;
-      margin: 0;
-      padding: 2rem;
-    }
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-    .logo img {
-      max-width: 180px;
-      margin-bottom: 1rem;
-    }
-    .title {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #a2585f;
-      margin-bottom: 1rem;
-    }
-    .section-box {
-      background-color: #fff;
-      border-left: 6px solid #a2585f;
-      padding: 1.5rem;
-      border-radius: 0.5rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-    }
-    .section-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: #a2585f;
-      margin-bottom: 1rem;
-    }
-    h3, h4, h5 {
-      color: #444;
-      margin-top: 1rem;
-    }
-    p {
-      margin: 0.4rem 0;
-    }
-    .field-title {
-      font-weight: 600;
-      color: #555;
-    }
-    ul {
-      list-style-type: disc;
-      padding-left: 1.2rem;
-      margin: 0.5rem 0 1rem;
-    }
-    ul li {
-      margin-bottom: 0.3rem;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wedding Day Guide</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .header, .section-box {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        .field-title {
+            font-weight: bold;
+            color: #34495e;
+        }
+        .logo img {
+            max-width: 200px;
+            max-height: 100px;
+            margin-bottom: 20px;
+        }
+        h4, h5 {
+            color: #2c3e50;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            margin-bottom: 5px;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="logo">
-        <img src="{{ logo_url }}" alt="Logo">
-      </div>
-      <div class="title">Wedding Day Guide</div>
+
+    <div class="header" style="text-align: center; margin-bottom: 20px;">
+        <div class="logo" style="display: inline-block;">
+            <img src="{{ logo_url }}" alt="Logo">
+        </div>
+        <h3 style="font-size: 1.5rem; font-weight: bold; text-align: center;">Wedding Day Guide</h3>
     </div>
 
     <div class="content">
@@ -296,6 +274,11 @@
         <div class="section-box">
             <div class="section-title">Videography Customers Only</div>
             <p>Essence cannot process your video until you have provided us with the following information.</p>
+            <p>All video packages require our videographer to begin <strong>1 hour before the ceremony</strong> at the ceremony site for establishing footage and audio set-up.</p>
+            <p>Including bridal prep or first look footage may reduce the time allowed for open dance floor coverage, which could impact our ability to produce a <strong>Dance Montage Highlight Reel</strong> if there are fewer than 2 hours of open dancing.</p>
+            <p>Additional time can be added to your package by reaching out to our Director in your portal.</p>
+            <p><strong>Video Arrival Time:</strong> {{ guide.video_arrival_time }}</p>
+            <p><strong>Video Arrival Location:</strong> {{ guide.video_arrival_location }}</p>
             <p>Please type your names below EXACTLY as you would like them to appear in the final video.</p>
             <p><strong>Names:</strong> {{ guide.video_client_names }}</p>
 
@@ -315,12 +298,12 @@
 
         <!-- Photo Booth Customers Only Section -->
         <div class="section-box">
-          <div class="section-title">Photo Booth Customers Only</div>
-          <p>Your open-air photo booth, with a sparkly, silver backdrop and props, opens during the last 3 hours of the open dance time at your wedding.</p>
-          <p><strong>Text Line 1 (up to 15 characters):</strong> {{ guide.photo_booth_text_line1 }}</p>
-          <p><strong>Text Line 2 (up to 15 characters):</strong> {{ guide.photo_booth_text_line2 }}</p>
-          <p><strong>Placement:</strong> {{ guide.photo_booth_placement }}</p>
-          <p><strong>Photo Booth End Time:</strong> {{ guide.photo_booth_end_time }}</p>
+            <div class="section-title">Photo Booth Customers Only</div>
+            <p>Your open-air photo booth, with a sparkly, silver backdrop and props, opens during the last 3 hours of the open dance time at your wedding.</p>
+            <p><strong>Text Line 1 (up to 15 characters):</strong> {{ guide.photo_booth_text_line1 }}</p>
+            <p><strong>Text Line 2 (up to 15 characters):</strong> {{ guide.photo_booth_text_line2 }}</p>
+            <p><strong>Party End Time:</strong> {{ guide.photo_booth_end_time }}</p>
+            <p><strong>Placement:</strong> {{ guide.photo_booth_placement }}</p>
         </div>
 
     </div>
