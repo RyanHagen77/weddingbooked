@@ -68,32 +68,36 @@ def wedding_day_guide(request, contract_id):
     """
     logger.info("Accessing wedding day guide for contract ID: %s by user: %s", contract_id, request.user)
 
+    is_office_staff = request.user.groups.filter(name='Office Staff').exists()
+
     try:
         contract = get_object_or_404(Contract, contract_id=contract_id)
-        guide, _ = WeddingDayGuide.objects.get_or_create(contract=contract)
-
-        is_staff = request.user.groups.filter(name='Office Staff').exists()
-
-        if guide.submitted and not is_staff:
-            logger.warning("Attempt to edit submitted guide by non-staff user: %s", request.user)
-            return render(request, 'wedding_day_guide/wedding_day_guide_submitted.html', {
-                'message': 'This Wedding Day Guide has already been submitted and cannot be edited.',
-            })
+        guide = WeddingDayGuide.objects.filter(contract=contract).first()
 
         if request.method == 'POST':
-            logger.info("Form submitted with POST keys: %s", list(request.POST.keys()))
+            # Prevent edits if already submitted and not staff
+            if guide and guide.submitted and not is_office_staff:
+                logger.warning("Attempt to edit submitted guide by user: %s", request.user)
+                return render(request, 'wedding_day_guide/wedding_day_guide.html', {
+                    'form': None,
+                    'submitted': True,
+                    'message': 'This Wedding Day Guide has already been submitted and cannot be edited.',
+                })
 
-            form = WeddingDayGuideForm(request.POST, instance=guide, contract=contract)
+            strict_validation = 'submit' in request.POST
+            form = WeddingDayGuideForm(request.POST, instance=guide, strict_validation=strict_validation, contract=contract)
 
             if not form.is_valid():
                 logger.warning("Form validation failed. Errors: %s", form.errors)
+                return render(request, 'wedding_day_guide/wedding_day_guide.html', {
+                    'form': form,
+                    'submitted': guide.submitted if guide else False,
+                })
 
             guide = form.save(commit=False)
             guide.contract = contract
-
             if 'submit' in request.POST:
                 guide.submitted = True
-
             guide.save()
 
             if 'submit' in request.POST:
@@ -109,11 +113,11 @@ def wedding_day_guide(request, contract_id):
             return redirect('wedding_day_guide:wedding_day_guide', contract_id=contract.contract_id)
 
         else:
-            form = WeddingDayGuideForm(instance=guide, contract=contract)
+            form = WeddingDayGuideForm(instance=guide, strict_validation=False, contract=contract)
 
         return render(request, 'wedding_day_guide/wedding_day_guide.html', {
             'form': form,
-            'submitted': guide.submitted,
+            'submitted': guide.submitted if guide else False,
         })
 
     except Contract.DoesNotExist:
@@ -122,9 +126,8 @@ def wedding_day_guide(request, contract_id):
 
     except Exception as e:
         logger.error("Unexpected error for contract ID: %s by user: %s - %s", contract_id, request.user, e)
-        return render(request, 'wedding_day_guide/wedding_day_guide_submitted.html', {
-            'message': 'Something went wrong while trying to load the Wedding Day Guide. Please try again or contact support.',
-        })
+        return HttpResponseServerError("An error occurred. Please contact support.")
+
 
 
 @login_required
