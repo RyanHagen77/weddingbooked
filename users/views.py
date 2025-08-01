@@ -2,6 +2,7 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.db.models import Q, Case, When, BooleanField, Value
 from django.conf import settings
+from django.contrib import messages
 from django.views.generic import ListView, CreateView, UpdateView
 from django.utils.timezone import now
 from django.urls import reverse_lazy
@@ -11,7 +12,10 @@ from django.contrib.auth.models import update_last_login
 from django.contrib.auth.views import (PasswordResetView, PasswordResetConfirmView, PasswordResetDoneView,
                                        PasswordResetCompleteView)
 
+from rest_framework_simplejwt.views import TokenObtainPairView
+from datetime import datetime, time, timedelta
 from django.utils import timezone
+
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, get_user_model, login, logout
@@ -25,15 +29,12 @@ from contracts.models import Contract, Client
 from bookings.models import EventStaffBooking, Availability
 from communication.models import Task
 from django.db import transaction
-from datetime import datetime, timedelta
 from django.views.decorators.http import require_http_methods
 import json
 
-from django.contrib import messages
 
-from rest_framework_simplejwt.views import TokenObtainPairView
+start_of_today = timezone.make_aware(datetime.combine(timezone.now().date(), time.min))
 
-import logging
 
 ROLE_DISPLAY_NAMES = {
     'PHOTOGRAPHER1': 'Photographer 1',
@@ -268,10 +269,15 @@ class OfficeStaffListView(ListView):
 @login_required
 def office_staff_dashboard(request, pk):
     staff_member = get_object_or_404(CustomUser, pk=pk)
-    today = timezone.now().date()
+
+    from datetime import datetime, time
+    from django.utils import timezone
+
+    start_of_today = timezone.make_aware(datetime.combine(timezone.now().date(), time.min))
+
     incomplete_tasks = Task.objects.filter(assigned_to=request.user, is_completed=False).annotate(
         is_overdue=Case(
-            When(due_date__lt=today, then=Value(True)),
+            When(due_date__lt=start_of_today, then=Value(True)),
             default=Value(False),
             output_field=BooleanField()
         )
@@ -286,7 +292,6 @@ def office_staff_dashboard(request, pk):
         'task_form': TaskForm(),
     }
     return render(request, 'users/office_staff_dashboard.html', context)
-
 
 class OfficeStaffCreateView(CreateView):
     model = CustomUser

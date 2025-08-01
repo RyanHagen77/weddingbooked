@@ -2,7 +2,7 @@ from django import forms
 from .models import UnifiedCommunication, Task
 from users.models import CustomUser, Role
 from django.core.exceptions import ValidationError
-
+from django.utils import timezone
 
 
 class CommunicationForm(forms.Form):
@@ -71,3 +71,9 @@ class TaskForm(forms.ModelForm):
 
         if task_type == 'contract' and not contract:
             raise ValidationError("Contract-related tasks must have a contract assigned.")
+
+    def clean_due_date(self):
+        due = self.cleaned_data.get('due_date')
+        if due and timezone.is_naive(due):
+            due = timezone.make_aware(due)
+        return due
