@@ -226,15 +226,18 @@ def create_task_for_coordinator(sender, contract, message, content):
 
     if contract.coordinator:
         try:
-            # Programmatically create the task
+            # Get aware due_date
+            due = timezone.now() + timedelta(days=3)
+            if timezone.is_naive(due):
+                due = timezone.make_aware(due)
+
             task = Task.objects.create(
                 sender=sender,
                 assigned_to=contract.coordinator,
                 contract=contract,
                 note=message,
-                due_date=now() + timedelta(days=3),  # Example: Due in 3 days
+                due_date=due,
                 description=f"Follow up on portal note: '{content[:50]}...'",
-                # Use the first 50 characters of the content
                 task_type='contract'
             )
             print(f"Task created successfully: {task}")

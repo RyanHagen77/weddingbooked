@@ -180,6 +180,7 @@ def wedding_day_guide_pdf(request, pk):
         logger.error("Error generating PDF for guide ID: %s - %s", pk, str(e))
         return HttpResponseServerError("Error generating PDF.")
 
+
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def wedding_day_guide_api(request, contract_id):
