@@ -39,7 +39,7 @@ class WeddingDayGuideForm(forms.ModelForm):
             'video_arrival_time', 'photo_booth_end_time'
         ]
         for field in time_fields:
-            self.fields[field].input_formats = ['%I:%M %p']
+            self.fields[field].input_formats = ['%H:%M']  # ✅ Matches "14:30"
 
         # Prepopulate fields from contract
         if contract:
