@@ -1,4 +1,5 @@
 import logging
+import traceback
 from django.conf import settings
 from django.shortcuts import render, get_object_or_404, redirect
 from rest_framework.decorators import api_view, permission_classes
@@ -109,8 +110,11 @@ def wedding_day_guide(request, contract_id):
 
                 return redirect(f'/contracts/{contract.contract_id}/#docs')
 
-            logger.info("Guide saved successfully for contract ID: %s by user: %s", contract_id, request.user)
-            return redirect('wedding_day_guide:wedding_day_guide', contract_id=contract.contract_id)
+            if contract and contract.contract_id:
+                return redirect('wedding_day_guide:wedding_day_guide', contract_id=contract.contract_id)
+            else:
+                logger.error("Invalid contract during redirect. Contract: %s", contract)
+                return HttpResponseServerError("Internal redirect error.")
 
         else:
             form = WeddingDayGuideForm(instance=guide, strict_validation=False, contract=contract)
@@ -125,9 +129,9 @@ def wedding_day_guide(request, contract_id):
         return HttpResponse("Contract not found.", status=404)
 
     except Exception as e:
+        traceback.print_exc()  # 👈 This line will output the full traceback to the console
         logger.error("Unexpected error for contract ID: %s by user: %s - %s", contract_id, request.user, e)
         return HttpResponseServerError("An error occurred. Please contact support.")
-
 
 
 @login_required

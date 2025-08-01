@@ -32,7 +32,6 @@ from django.db import transaction
 from django.views.decorators.http import require_http_methods
 import json
 
-
 start_of_today = timezone.make_aware(datetime.combine(timezone.now().date(), time.min))
 
 
@@ -261,10 +260,12 @@ def client_portal(request, contract_id):
 
     return render(request, 'users/client_portal.html', context)
 
+
 class OfficeStaffListView(ListView):
     model = CustomUser
     template_name = 'office_staff_list.html'
     queryset = CustomUser.objects.filter(role__name__in=['MANAGER', 'SALES_PERSON'])
+
 
 @login_required
 def office_staff_dashboard(request, pk):
@@ -292,6 +293,7 @@ def office_staff_dashboard(request, pk):
         'task_form': TaskForm(),
     }
     return render(request, 'users/office_staff_dashboard.html', context)
+
 
 class OfficeStaffCreateView(CreateView):
     model = CustomUser
