@@ -1,6 +1,10 @@
 /* src/global.css */
-@import url('https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,100..900;1,100..900&family=Dancing+Script:wght@400..700&family=Limelight&family=Parisienne&display=swap');
 
+/* Google fonts used across the app */
+@import url('https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,100..900;1,100..900&family=Dancing+Script:wght@400..700&family=Limelight&family=Parisienne&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&display=swap');
+
+/* Brand script */
 @font-face {
   font-family: 'Brittany Signature';
   src: url('/client_portal/fonts/BrittanySignature.ttf') format('truetype');
@@ -9,16 +13,53 @@
   font-display: swap;
 }
 
+/* If you have a licensed Century Gothic webfont, uncomment this and add the file:
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('/client_portal/fonts/CenturyGothic.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+*/
+
+/* Tailwind base layers */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ------------------------------
+   CSS Variables & Font Helpers
+--------------------------------*/
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
+  --background-start-rgb: 255, 255, 255;
   --background-end-rgb: 255, 255, 255;
+
+  /* Font stacks */
+  --font-gothic: "Century Gothic", "Avant Garde", "Trebuchet MS", system-ui, -apple-system, sans-serif;
+  --font-cormorant: "Cormorant Garamond", Garamond, "Times New Roman", serif;
 }
 
+.font-gothic { font-family: var(--font-gothic); }
+.font-cormorant { font-family: var(--font-cormorant); }
+.font-brittany { font-family: "Brittany Signature", "Parisienne", cursive; }
+
+/* ------------------------------
+   Base
+--------------------------------*/
+html, body, #__next {
+  height: 100%;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: #ffffff; /* Crisp white background to match the portal design */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optional dark scheme override if needed later */
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
@@ -27,53 +68,40 @@
   }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-}
-
+/* ------------------------------
+   Utilities
+--------------------------------*/
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+  .text-balance { text-wrap: balance; }
 }
 
-.embla {
-  overflow: hidden;
+/* Menu link styling for the header */
+.menu-link {
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 400;
+}
+.menu-link:hover { text-decoration: underline; }
+
+/* Dotted background used on sections */
+.bg-dot-grid {
+  background-image:
+    radial-gradient(circle, #1b254a30 1px, transparent 1px),
+    radial-gradient(circle, #1b254a30 1px, transparent 1px);
+  background-size: 50px 50px;
+  background-position: 0 0, 25px 25px;
 }
 
-.embla__viewport {
-  margin: auto;
-}
-
-.embla__container {
-  display: flex;
-}
-
-/* Commented out since it's not used */
-/* .embla__slide {
-  margin: 0;
-  padding: 0;
-} */
-
+/* ------------------------------
+   Embla carousel (if/when used)
+--------------------------------*/
+.embla { overflow: hidden; }
+.embla__viewport { margin: auto; }
+.embla__container { display: flex; }
+/* .embla__slide { }  not used */
 .embla__slide__inner {
   position: relative;
   width: 100%;
   height: 100%;
 }
-
-.is-active {
-  flex-grow: 1;
-}
-
-.bg-dot-grid {
-  background-image: radial-gradient(circle, #1b254a30 1px, transparent 1px),
-                    radial-gradient(circle, #1b254a30 1px, transparent 1px);
-  background-size: 50px 50px;
-  background-position: 0 0, 25px 25px;
-}
+.is-active { flex-grow: 1; }
