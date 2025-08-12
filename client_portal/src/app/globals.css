@@ -42,6 +42,9 @@
 }
 
 .font-gothic { font-family: var(--font-gothic); }
+.font-century {
+  font-family: 'Century Gothic', 'AppleGothic', sans-serif;
+}
 .font-cormorant { font-family: var(--font-cormorant); }
 .font-brittany { font-family: "Brittany Signature", "Parisienne", cursive; }
 
