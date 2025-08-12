@@ -80,8 +80,16 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.02em;
   font-weight: 400;
+  font-size: 1rem; /* 16px mobile */
 }
-.menu-link:hover { text-decoration: underline; }
+@media (min-width: 768px) {
+  .menu-link {
+    font-size: 1.125rem; /* 18px desktop */
+  }
+}
+.menu-link:hover {
+  text-decoration: underline;
+}
 
 /* Dotted background used on sections */
 .bg-dot-grid {

@@ -26,15 +26,108 @@ interface Document {
   url: string;
 }
 
-// Replace these with your actual image paths in /public
 const heroImages = [
-  '/client_portal/hero-1.jpg',
-  '/client_portal/hero-2.jpg',
-  '/client_portal/hero-3.jpg',
-  '/client_portal/hero-4.jpg',
-  '/client_portal/hero-5.jpg',
+  '/client_portal/top_5_placeholder.png',
+  '/client_portal/top_5_placeholder.png',
+  '/client_portal/top_5_placeholder.png',
+  '/client_portal/top_5_placeholder.png',
+  '/client_portal/top_5_placeholder.png',
+
 ];
 
+/* ========= Header ========= */
+function TopHeader({
+  scrollTo,
+  handleLogout,
+}: {
+  scrollTo: (id: string) => void;
+  handleLogout: () => void;
+}) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  return (
+    <header className="bg-white border-b border-neutral-200">
+      <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4">
+        {/* Row 1: centered logo */}
+        <div className="flex justify-center">
+          <Image
+            src="/client_portal/Final_Logo.png"
+            alt="Essence Weddings"
+            width={260}          /* bigger logo */
+            height={90}
+            priority
+            className="h-auto w-auto object-contain"
+          />
+        </div>
+
+        {/* Row 2: nav (centered) + hamburger on mobile */}
+        <div className="mt-4 flex items-center justify-center">
+          {/* Desktop nav */}
+          <nav className="hidden lg:block">
+            <ul className="flex items-center gap-10 text-2xl font-medium">
+              <li><a href="#photographers" className="hover:underline">Photographers</a></li>
+              <li><a href="#wedding-planning-guide" className="hover:underline">Planning Guide</a></li>
+              <li><a href="#Messages" className="hover:underline">Messages</a></li>
+              <li><a href="#files" className="hover:underline">Files</a></li>
+              <li><a href="#faq" className="hover:underline">FAQ</a></li>
+              <li><button onClick={handleLogout} className="hover:underline">Logout</button></li>
+            </ul>
+          </nav>
+
+          {/* Mobile hamburger */}
+          <button
+            className="lg:hidden inline-flex items-center justify-center text-5xl p-2"
+            onClick={() => setMenuOpen(v => !v)}
+            aria-label="Toggle menu"
+            aria-expanded={menuOpen}
+          >
+            ☰
+          </button>
+        </div>
+
+        {/* Mobile dropdown */}
+          {menuOpen && (
+            <nav className="lg:hidden mt-2 border-t border-neutral-200">
+              <ul className="flex flex-col gap-4 py-4 text-lg text-center">
+                <li><a href="#photographers" onClick={() => setMenuOpen(false)}>Photographers</a></li>
+                <li><a href="#wedding-planning-guide" onClick={() => setMenuOpen(false)}>Planning Guide</a></li>
+                <li><a href="#Messages" onClick={() => setMenuOpen(false)}>Messages</a></li>
+                <li><a href="#files" onClick={() => setMenuOpen(false)}>Files</a></li>
+                <li><a href="#faq" onClick={() => setMenuOpen(false)}>FAQ</a></li>
+                <li><button onClick={() => { setMenuOpen(false); handleLogout(); }}>Logout</button></li>
+              </ul>
+            </nav>
+          )}
+      </div>
+    </header>
+  );
+}
+
+/* ======= 5‑Image Strip (175x350 each) ======= */
+function HeroStrip() {
+  return (
+    <section className="bg-white">
+      <div className="max-w-7xl mx-auto px-4 lg:px-6 pb-6">
+        <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 place-items-center">
+          {heroImages.map((src, i) => (
+            <div key={i} className="relative w-[200px] h-[300px] overflow-hidden rounded">
+              <Image
+                src={src}
+                alt={`Essence gallery ${i + 1}`}
+                fill
+                className="object-cover"           /* use object-contain if you don’t want any crop */
+                sizes="200px"                        /* tells Next the rendered width */
+                priority={i < 2}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ========= Page ========= */
 export default function Home() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
   const [photographers, setPhotographers] = useState<Photographer[]>([]);
@@ -45,7 +138,7 @@ export default function Home() {
   const [formSubmitted] = useState<boolean>(false);
   const { isAuthenticated, contractId, logout } = useAuth();
 
-  // ----- token expiry -----
+  /* Token expiry */
   useEffect(() => {
     const check = () => {
       const tokenExpiration = localStorage.getItem('token_expiration');
@@ -59,7 +152,7 @@ export default function Home() {
     return () => clearInterval(id);
   }, [logout]);
 
-  // ----- fetch -----
+  /* Fetch data */
   useEffect(() => {
     if (!isAuthenticated || !contractId) {
       setPhotographers([]); setMessages([]); setDocuments([]); setIsLoading(false);
@@ -96,7 +189,7 @@ export default function Home() {
       .finally(() => setIsLoading(false));
   }, [isAuthenticated, contractId]);
 
-  // ----- post message -----
+  /* Post message */
   const handlePostMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const content = newMessage.trim();
@@ -135,109 +228,53 @@ export default function Home() {
 
   return (
     <main className={`bg-white text-black font-gothic ${cormorant.className}`}>
-      {/* HEADER */}
-      <header className="bg-white border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6">
-          <div className="flex items-center justify-between py-6">
-            {/* left: logo ~ 1/3 */}
-            <div className="w-1/3 min-w-[220px] pr-4">
-              <div className="relative w-full">
-                <Image
-                  src="/client_portal/Final_Logo.png"
-                  alt="Essence Weddings"
-                  width={600}
-                  height={160}
-                  priority
-                  className="h-auto w-full object-contain"
-                />
-              </div>
-            </div>
+      <TopHeader scrollTo={scrollTo} handleLogout={handleLogout} />
+      <HeroStrip />
 
-            {/* right: nav */}
-            <nav className="flex-1">
-              <ul className="flex justify-end items-center gap-6 md:gap-8 text-[15px] md:text-base">
-                <li><button onClick={() => scrollTo('photographers')} className="hover:underline">PHOTOGRAPHERS</button></li>
-                <li><button onClick={() => scrollTo('wedding-planning-guide')} className="hover:underline">PLANNING GUIDE</button></li>
-                <li><button onClick={() => scrollTo('Messages')} className="hover:underline">MESSAGES</button></li>
-                <li><button onClick={() => scrollTo('files')} className="hover:underline">FILES</button></li>
-                <li><button onClick={() => scrollTo('faq')} className="hover:underline">FAQ</button></li>
-              </ul>
-            </nav>
+      {/* ======= your existing sections below ======= */}
 
-            {/* logout */}
-            <div className="ml-4 hidden sm:block">
-              <button onClick={handleLogout} className="text-sm hover:underline">Logout</button>
-            </div>
-          </div>
-        </div>
-
-        {/* IMAGE STRIP (5 equal tiles) */}
-        <div className="max-w-7xl mx-auto px-4 lg:px-6 pb-6">
-          <div
-            className="
-              grid gap-3
-              grid-cols-2 sm:grid-cols-3 lg:grid-cols-5
-            "
-          >
-            {heroImages.map((src, i) => (
-              <div key={i} className="relative aspect-[4/3] overflow-hidden">
-                <Image
-                  src={src}
-                  alt={`Essence gallery ${i + 1}`}
-                  fill
-                  sizes="(max-width: 1024px) 33vw, 20vw"
-                  className="object-cover"
-                  priority={i < 2}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      </header>
-
-      {/* ======= rest of your page stays the same (sections below) ======= */}
-
-      {/* Photographers */}
+      {/* Photographers title stays the same */}
       <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
         <div className="flex-1">
           <div className="border-t-4 border-lightpink"></div>
           <div className="border-t-2 border-lightpink mt-[6px]"></div>
         </div>
-        <h2 className="px-16 text-5xl font-cormorant">Photographers</h2>
+        <h2 className="px-16 text-5xl font-cormorant tracking-wide">PHOTOGRAPHERS</h2>
         <div className="flex-1">
           <div className="border-t-4 border-lightpink"></div>
           <div className="border-t-2 border-lightpink mt-[6px]"></div>
         </div>
       </div>
 
-      <section id="photographers" className="py-6 px-6 bg-pistachio">
-        <div className="py-20 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-          {photographers.map(p => (
-            <div key={p.id}>
-              <a
-                href={p.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block bg-white rounded-lg shadow-lg transition-transform duration-300 hover:scale-[1.01]"
-              >
-                {p.profile_picture && (
-                  <Image
-                    src={p.profile_picture || '/default-profile.jpg'}
-                    alt={p.name || 'Photographer'}
-                    width={900}
-                    height={900}
-                    className="w-full h-auto object-cover rounded-lg"
-                  />
-                )}
-              </a>
-              <div className="mt-3 text-center">
+      <section id="photographers" className="py-8 px-4 md:px-6 bg-white">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 justify-items-center">
+          {photographers.map((p) => (
+            <div key={p.id} className="w-[360px]">
+              {/* Image + name ribbon */}
+              <div className="relative overflow-hidden">
+                <Image
+                  src={p.profile_picture || '/default-profile.jpg'}
+                  alt={p.name || 'Photographer'}
+                  width={360}
+                  height={480}
+                  className="w-[360px] h-[480px] object-cover"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-[#C18A8F] bg-opacity-95">
+                  <p className="text-white text-2xl md:text-[28px] font-cormorant text-center py-2">
+                    {p.name || 'Photographer'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Big rounded button */}
+              <div className="mt-6 flex justify-center">
                 <a
-                  href={p.website}
+                  href={p.website || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center underline"
+                  className="inline-flex items-center justify-center rounded-full px-8 py-3 text-white text-xl font-medium bg-[#C18A8F] hover:opacity-95 transition shadow-md"
                 >
-                  View My Demo <span className="ml-2 text-lg">&rsaquo;</span>
+                  View my Demo
                 </a>
               </div>
             </div>
@@ -245,7 +282,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* --- FAQ, Planning Guide, Messages, Files, Footer (unchanged from your version) --- */}
 
       {/* FAQ title */}
       <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
@@ -254,7 +290,7 @@ export default function Home() {
         <div className="flex-1"><div className="border-t-4 border-lightpink"></div><div className="border-t-2 border-lightpink mt-[6px]"></div></div>
       </div>
 
-      {/* FAQ section (same as yours) */}
+      {/* FAQ section */}
       <section id="faq" className="p-6 text-black font-albert py-24 bg-lightpink bg-dot-grid">
         <div className="divide-y divide-gray-200 max-w-4xl mx-auto">
           {[1,2,3,4,5].map((index) => (
