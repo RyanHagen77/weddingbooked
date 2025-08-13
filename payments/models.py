@@ -43,6 +43,7 @@ class Payment(models.Model):
     PAYMENT_CHOICES = [
         ('CASH', 'Cash'),
         ('CHECK', 'Check'),
+        ('E-CHECK', 'E-Check'),
         ('CREDIT_CARD', 'Credit Card'),
         ('ZELLE', 'Zelle'),
         ('VENMO', 'Venmo'),
