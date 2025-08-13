@@ -18,7 +18,8 @@ module.exports = {
       },
 
       colors: {
-        'lightpink': '#ebcdc3',
+        lightpink: '#ebcdc3',
+        'lightpink-dark': '#d4a69b',
         'dark-pistachio': '#495D4E',
         'pistachio': '#c8dcc9',
       },
