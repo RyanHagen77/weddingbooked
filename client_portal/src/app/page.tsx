@@ -111,86 +111,72 @@ function TopHeader({
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-white/85 backdrop-blur border-b border-neutralsoft-200">
-      <div className="max-w-7xl mx-auto px-4 lg:px-6 py-3">
-        <div className="flex items-center justify-between">
-          <a href="#" aria-label="Essence Weddings Home" className="inline-flex">
-            <Image
-              src="/client_portal/Final_Logo.png"
-              alt="Essence Weddings"
-              width={220}
-              height={72}
-              priority
-              className="h-auto w-auto object-contain"
-            />
-          </a>
+      <header className="sticky top-0 z-50 bg-white/85 backdrop-blur border-b border-neutralsoft-200">
+        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-3">
 
-          {/* Desktop nav */}
-          <nav className="hidden lg:block">
-            <ul className="flex items-center gap-8 font-ui tracking-wide">
-              {items.map(i => (
-                <li key={i.href}>
-                  <a
-                    href={i.href}
-                    className="relative uppercase text-sm text-neutral-700 hover:text-neutral-950 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 rounded"
+          {/* Mobile layout (logo stacked with hamburger) */}
+          <div className="flex flex-col items-center justify-center lg:hidden space-y-3">
+            <a href="#" aria-label="Essence Weddings Home">
+              <Image
+                  src="/client_portal/Final_Logo.png"
+                  alt="Essence Weddings"
+                  width={220}
+                  height={72}
+                  priority
+                  className="h-auto w-auto object-contain"
+              />
+            </a>
+
+            <button
+                className="text-3xl p-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200"
+                aria-label="Toggle menu"
+                aria-expanded={menuOpen}
+                onClick={() => setMenuOpen(v => !v)}
+            >
+              ☰
+            </button>
+          </div>
+
+          {/* Desktop layout (logo left, nav right) */}
+          <div className="hidden lg:flex items-center justify-between">
+            <a href="#" aria-label="Essence Weddings Home" className="inline-flex">
+              <Image
+                  src="/client_portal/Final_Logo.png"
+                  alt="Essence Weddings"
+                  width={220}
+                  height={72}
+                  priority
+                  className="h-auto w-auto object-contain"
+              />
+            </a>
+
+            <nav>
+              <ul className="flex items-center gap-8 font-ui tracking-wide">
+                {items.map(i => (
+                    <li key={i.href}>
+                      <a
+                          href={i.href}
+                          className="relative uppercase text-sm text-neutral-700 hover:text-neutral-950 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 rounded"
+                      >
+                        {i.label}
+                        <span
+                            className="absolute left-0 -bottom-1 h-[1px] w-0 bg-rose-200 transition-all duration-200 hover:w-full"/>
+                      </a>
+                    </li>
+                ))}
+                <li>
+                  <button
+                      onClick={handleLogout}
+                      className="text-sm text-neutral-700 hover:text-neutral-950 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 rounded"
                   >
-                    {i.label}
-                    <span className="absolute left-0 -bottom-1 h-[1px] w-0 bg-rose-200 transition-all duration-200 hover:w-full" />
-                  </a>
+                    Logout
+                  </button>
                 </li>
-              ))}
-              <li>
-                <button
-                  onClick={handleLogout}
-                  className="text-sm text-neutral-700 hover:text-neutral-950 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 rounded"
-                >
-                  Logout
-                </button>
-              </li>
-            </ul>
-          </nav>
-
-          {/* Mobile */}
-          <button
-            className="lg:hidden text-3xl p-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200"
-            aria-label="Toggle menu"
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen(v => !v)}
-          >
-            ☰
-          </button>
+              </ul>
+            </nav>
+          </div>
         </div>
-
-        {menuOpen && (
-          <nav className="lg:hidden mt-2 border-t border-neutralsoft-200">
-            <ul className="flex flex-col items-center gap-3 py-4 text-base font-ui">
-              {items.map(i => (
-                <li key={i.href}>
-                  <a
-                    href={i.href}
-                    onClick={() => setMenuOpen(false)}
-                    className="uppercase block px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 rounded"
-                  >
-                    {i.label}
-                  </a>
-                </li>
-              ))}
-              <li>
-                <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    handleLogout();
-                  }}
-                  className="px-2 py-1"
-                >
-                  Logout
-                </button>
-              </li>
-            </ul>
-          </nav>
-        )}
-      </div>
-    </header>
+      </header>
   );
 }
 
@@ -201,24 +187,24 @@ function HeroStrip() {
   const images = heroImages.slice(0, 4);
 
   return (
-    <section className="bg-white">
-      <div className="max-w-7xl mx-auto px-4 lg:px-6 pb-6">
-        <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-4">
-          {images.map((src, i) => (
-            <div key={i} className="group relative overflow-hidden rounded-2xl aspect-[7/10]">
-              <Image
-                src={src}
-                alt={`Essence gallery ${i + 1}`}
-                fill
-                className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                sizes="(min-width:1024px) 22vw, (min-width:640px) 30vw, 45vw"
-                priority={i === 0}
-              />
-            </div>
-          ))}
+      <section className="bg-white">
+        <div className="max-w-7xl mx-auto px-4 lg:px-6 pb-6">
+          <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-4">
+            {images.map((src, i) => (
+                <div key={i} className="group relative overflow-hidden rounded-2xl aspect-[7/10]">
+                  <Image
+                      src={src}
+                      alt={`Essence gallery ${i + 1}`}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                      sizes="(min-width:1024px) 22vw, (min-width:640px) 30vw, 45vw"
+                      priority={i === 0}
+                  />
+                </div>
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
   );
 }
 
@@ -234,7 +220,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [banner, setBanner] = useState<string | null>(null);
 
-  const { isAuthenticated, contractId, logout } = useAuth();
+  const {isAuthenticated, contractId, logout} = useAuth();
 
   /* Session expiry: inline banner, not alert */
   useEffect(() => {
@@ -262,7 +248,7 @@ export default function Home() {
     const accessToken = localStorage.getItem('access_token') || '';
 
     const fetchPhotographers = fetch(
-      `https://www.weddingbooked.app/bookings/api/prospect-photographers/?contract_id=${contractId}`,
+        `https://www.weddingbooked.app/bookings/api/prospect-photographers/?contract_id=${contractId}`,
       { headers: { Authorization: `Bearer ${accessToken}` } }
     ).then(r => r.json());
 
