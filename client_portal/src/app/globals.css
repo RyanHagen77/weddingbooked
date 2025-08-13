@@ -53,7 +53,10 @@
 --------------------------------*/
 html, body, #__next {
   height: 100%;
+  scroll-padding-top: 13rem;
+
 }
+
 
 body {
   color: rgb(var(--foreground-rgb));

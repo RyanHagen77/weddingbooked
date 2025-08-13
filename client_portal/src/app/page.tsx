@@ -362,7 +362,7 @@ export default function Home() {
       {/* ===================== Photographers ===================== */}
       <SectionTitle>PHOTOGRAPHERS</SectionTitle>
 
-      <section id="photographers" className="py-8 px-4 md:px-6 bg-white scroll-mt-24">
+      <section id="photographers" className="py-8 px-4 md:px-6 bg-white">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center">
           {photographers.map((p) => (
             <article key={p.id} className="w-[360px]">
@@ -404,7 +404,7 @@ export default function Home() {
       {/* ===================== Planning Guide ===================== */}
       <SectionTitle>WEDDING PLANNING GUIDE</SectionTitle>
 
-      <section id="wedding-planning-guide" className="scroll-mt-24 px-4 md:px-6 pb-24">
+      <section id="wedding-planning-guide" className="px-4 md:px-6 pb-24">
         <div className="max-w-6xl mx-auto">
           <div className="relative w-full overflow-hidden rounded-2xl">
             <Image
@@ -465,7 +465,7 @@ export default function Home() {
       {/* ===================== Messages ===================== */}
       <SectionTitle>MESSAGES</SectionTitle>
 
-      <section id="messages" className="px-4 md:px-6 pb-24 scroll-mt-24">
+      <section id="messages" className="px-4 md:px-6 pb-24">
         <div className="max-w-4xl mx-auto">
           <div
             role="list"
@@ -517,7 +517,7 @@ export default function Home() {
       {/* ===================== Files ===================== */}
       <SectionTitle>FILES</SectionTitle>
 
-      <section id="files" className="scroll-mt-24 px-4 md:px-6 pb-24">
+      <section id="files" className="px-4 md:px-6 pb-24">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
           {/* Left: hero image */}
           <div className="w-full">
@@ -592,7 +592,7 @@ export default function Home() {
       {/* ===================== FAQ ===================== */}
       <SectionTitle>FREQUENTLY ASKED QUESTIONS</SectionTitle>
 
-      <section id="faq" className="scroll-mt-24 px-4 md:px-6 pb-24 text-neutral-900">
+      <section id="faq" className="px-4 md:px-6 pb-24 text-neutral-900">
         <div className="max-w-5xl mx-auto">
           {[1, 2, 3, 4, 5].map((index) => {
             const open = faqOpen === index;
