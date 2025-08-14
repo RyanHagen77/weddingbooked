@@ -9,32 +9,24 @@ module.exports = {
     extend: {
       /* ---------- Typography ---------- */
       fontFamily: {
-        // your existing custom faces
         limelight: ['Limelight', 'sans-serif'],
         albert: ['Albert Sans', 'sans-serif'],
         paris: ['Parisienne', 'sans-serif'],
         dance: ['Dancing Script', 'sans-serif'],
         brittany: ['Brittany Signature', 'cursive'],
-
-        // modern, consistent mappings
         heading: ['var(--font-display)', 'serif'], // Cormorant Garamond
         ui: ['var(--font-sans)', 'sans-serif'],    // Libre Franklin
-        body: ['var(--font-sans)', 'sans-serif'],  // Libre Franklin
-
-        // keep these aliases if you already reference them elsewhere
+        body: ['var(--font-sans)', 'sans-serif'],
         display: ['var(--font-display)', 'serif'],
         sans: ['var(--font-sans)', 'sans-serif'],
       },
 
-      /* ---------- Color tokens ---------- */
+      /* ---------- Colors ---------- */
       colors: {
-        // keep existing named colors
         lightpink: '#ebcdc3',
         'lightpink-dark': '#d4a69b',
         'dark-pistachio': '#495D4E',
         pistachio: '#c8dcc9',
-
-        // soft scales you can use for subtle accents/dividers/backgrounds
         blush: { 50:'#fff7f9',100:'#feeef3',200:'#fbdbe6',300:'#f2c6d6' },
         rose: { 50:'#fff6f7',100:'#fdecee',200:'#f6d8dc',300:'#e1b8c0' },
         neutralsoft: { 25:'#fdfcfb',50:'#faf9f8',100:'#f4f2f1',200:'#e9e6e4',300:'#dcd8d5' },
@@ -52,6 +44,22 @@ module.exports = {
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+      },
+
+      /* ---------- Animations ---------- */
+      animation: {
+        typing: 'typing 3s steps(30, end), blink 0.75s step-end infinite',
+        blink: 'blink 1s step-end infinite',
+      },
+      keyframes: {
+        typing: {
+          from: { width: '0' },
+          to: { width: '100%' },
+        },
+        blink: {
+          '50%': { borderColor: 'transparent' },
+          '100%': { borderColor: 'black' },
+        },
       },
     },
   },

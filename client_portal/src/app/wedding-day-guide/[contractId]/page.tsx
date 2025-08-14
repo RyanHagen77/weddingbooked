@@ -17,7 +17,6 @@ const WeddingDayGuidePage = () => {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.heading}>Wedding Day Guide Form</h1>
       <WeddingDayGuideForm contractId={resolvedContractId} />
     </div>
   );

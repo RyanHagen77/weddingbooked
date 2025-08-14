@@ -362,7 +362,7 @@ export default function Home() {
       {/* ===================== Photographers ===================== */}
       <SectionTitle>PHOTOGRAPHERS</SectionTitle>
 
-      <section id="photographers" className="py-8 px-4 md:px-6 bg-white">
+      <section id="photographers" className="py-8 px-4 md:px-6 bg-white scroll-mt-24">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center">
           {photographers.map((p) => (
             <article key={p.id} className="w-[360px]">
@@ -592,7 +592,7 @@ export default function Home() {
       {/* ===================== FAQ ===================== */}
       <SectionTitle>FREQUENTLY ASKED QUESTIONS</SectionTitle>
 
-      <section id="faq" className="px-4 md:px-6 pb-24 text-neutral-900">
+      <section id="faq" className="scroll-mt-24 px-4 md:px-6 pb-24 text-neutral-900">
         <div className="max-w-5xl mx-auto">
           {[1, 2, 3, 4, 5].map((index) => {
             const open = faqOpen === index;
