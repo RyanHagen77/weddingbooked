@@ -119,3 +119,14 @@ body {
   height: 100%;
 }
 .is-active { flex-grow: 1; }
+
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+.animate-typing {
+  animation: typing 3s steps(30, end), blink 0.75s step-end infinite;
+}
+@keyframes blink {
+  50% { border-color: transparent; }
+}

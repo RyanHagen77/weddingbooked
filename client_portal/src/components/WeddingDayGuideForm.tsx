@@ -328,61 +328,66 @@ useEffect(() => {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
-              <section
-                  className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-[#fdf4f5] p-6 rounded-lg border border-gray-200 shadow-sm">
-                <div className="space-y-4">
-                  <label className="block text-sm font-medium text-gray-700">Wedding Date</label>
-                  <input
-                      type="date"
-                      {...register("event_date", {required: true})}
-                      className={inputClass}
-                  />
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-[#fdf4f5] p-6 rounded-lg border border-gray-200 shadow-sm">
+              {/* Partner 1 */}
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-700">Wedding Date</label>
+                <input
+                  type="date"
+                  {...register("event_date", { required: true })}
+                  className={inputClass}
+                />
 
-                  <label className="block text-sm font-medium text-gray-700">Partner 1</label>
-                  <input
-                      type="text"
-                      {...register("primary_contact", {required: true})}
-                      className={inputClass}
-                  />
+                <label className="block text-sm font-medium text-gray-700">Partner 1</label>
+                <input
+                  type="text"
+                  {...register("primary_contact", { required: true })}
+                  className={inputClass}
+                />
 
-                  <label className="block text-sm font-medium text-gray-700">Primary Email</label>
-                  <input
-                      type="email"
-                      {...register("primary_email", {required: true})}
-                      className={inputClass}
-                  />
+                <label className="block text-sm font-medium text-gray-700">Primary Email</label>
+                <input
+                  type="email"
+                  {...register("primary_email", { required: true })}
+                  className={inputClass}
+                />
+                <p className="text-xs text-gray-500 mt-1">Format: name@example.com</p>
 
-                  <label className="block text-sm font-medium text-gray-700">Primary Cell #</label>
-                  <input
-                      type="tel"
-                      {...register("primary_phone", {required: true})}
-                      className={inputClass}
-                  />
-                </div>
+                <label className="block text-sm font-medium text-gray-700">Primary Cell #</label>
+                <input
+                  type="tel"
+                  {...register("primary_phone", { required: true })}
+                  className={inputClass}
+                />
+                <p className="text-xs text-gray-500 mt-1">Format: 123-456-7890</p>
+              </div>
 
-                <div className="space-y-4">
-                  <label className="block text-sm font-medium text-gray-700">Partner 2</label>
-                  <input
-                      type="text"
-                      {...register("partner_contact", {required: true})}
-                      className={inputClass}
-                  />
+              {/* Partner 2 */}
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-700">Partner 2</label>
+                <input
+                  type="text"
+                  {...register("partner_contact", { required: true })}
+                  className={inputClass}
+                />
 
-                  <label className="block text-sm font-medium text-gray-700">Partner Email</label>
-                  <input
-                      type="email"
-                      {...register("partner_email", {required: true})}
-                      className={inputClass}
-                  />
+                <label className="block text-sm font-medium text-gray-700">Partner Email</label>
+                <input
+                  type="email"
+                  {...register("partner_email", { required: true })}
+                  className={inputClass}
+                />
+                <p className="text-xs text-gray-500 mt-1">Format: partner@example.com</p>
 
-                  <label className="block text-sm font-medium text-gray-700">Partner Cell #</label>
-                  <input
-                      type="tel"
-                      {...register("partner_phone", {required: true})}
-                      className={inputClass}
-                  />
-                </div>
-              </section>
+                <label className="block text-sm font-medium text-gray-700">Partner Cell #</label>
+                <input
+                  type="tel"
+                  {...register("partner_phone", { required: true })}
+                  className={inputClass}
+                />
+                <p className="text-xs text-gray-500 mt-1">Format: 123-456-7890</p>
+              </div>
+            </section>
 
               {/* For The Lead Photographer Section */}
               <section className="bg-[#fdf4f5] p-6 rounded-lg border border-pinkbrand shadow-sm">
