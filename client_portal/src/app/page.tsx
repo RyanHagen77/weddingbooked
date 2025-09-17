@@ -40,32 +40,29 @@ const heroImages = [
 ========================= */
 function TopHeader({
   handleLogout,
+  scrollTo,                      // ✅ add this
 }: {
   handleLogout: () => void;
+  scrollTo: (id: string) => void; // ✅ and type it
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Use ids that match your sections exactly
   const items = [
-    { href: '#photographers', label: 'Photographers' },
-    { href: '#wedding-planning-guide', label: 'Planning Guide' },
-    { href: '#messages', label: 'Messages' },
-    { href: '#files', label: 'Files' },
-    { href: '#faq', label: 'FAQ' },
+    { id: 'photographers', label: 'Photographers' },
+    { id: 'wedding-planning-guide', label: 'Planning Guide' },
+    { id: 'Messages', label: 'Messages' }, // Matches section id="Messages"
+    { id: 'files', label: 'Files' },
+    { id: 'faq', label: 'FAQ' },
   ];
 
   return (
     <header className="sticky top-0 z-50 bg-white/85 backdrop-blur border-b border-neutralsoft-200">
       <div className="max-w-7xl mx-auto px-4 lg:px-6 py-3">
-        {/* Mobile layout: centered logo + hamburger below */}
+        {/* Mobile layout */}
         <div className="flex flex-col items-center lg:hidden">
           <a href="#" aria-label="Essence Weddings Home" className="inline-flex">
-            <Image
-              src="/client_portal/Final_Logo.png"
-              alt="Essence Weddings"
-              width={220}
-              height={72}
-              priority
-              className="h-auto w-auto object-contain"
-            />
+            <Image src="/client_portal/Final_Logo.png" alt="Essence Weddings" width={220} height={72} priority />
           </a>
 
           <button
@@ -78,25 +75,19 @@ function TopHeader({
           </button>
         </div>
 
-        {/* Desktop layout: inline logo + nav + logout */}
+        {/* Desktop layout */}
         <div className="hidden lg:flex items-center justify-between">
           <a href="#" aria-label="Essence Weddings Home" className="inline-flex">
-            <Image
-              src="/client_portal/Final_Logo.png"
-              alt="Essence Weddings"
-              width={220}
-              height={72}
-              priority
-              className="h-auto w-auto object-contain"
-            />
+            <Image src="/client_portal/Final_Logo.png" alt="Essence Weddings" width={220} height={72} priority />
           </a>
 
           <nav>
             <ul className="flex items-center gap-8 font-ui tracking-wide">
               {items.map(i => (
-                <li key={i.href}>
+                <li key={i.id}>
                   <a
-                    href={i.href}
+                    href={`#${i.id}`}
+                    onClick={(e) => { e.preventDefault(); scrollTo(i.id); }}   // ✅ use smooth scroll
                     className="relative uppercase text-sm text-neutral-700 hover:text-neutral-950 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 rounded"
                   >
                     {i.label}
@@ -121,10 +112,10 @@ function TopHeader({
           <nav className="lg:hidden mt-2 border-t border-neutralsoft-200">
             <ul className="flex flex-col items-center gap-3 py-4 text-base font-ui">
               {items.map(i => (
-                <li key={i.href}>
+                <li key={i.id}>
                   <a
-                    href={i.href}
-                    onClick={() => setMenuOpen(false)}
+                    href={`#${i.id}`}
+                    onClick={(e) => { e.preventDefault(); setMenuOpen(false); scrollTo(i.id); }} // ✅ smooth + close
                     className="uppercase block px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 rounded"
                   >
                     {i.label}
@@ -133,10 +124,7 @@ function TopHeader({
               ))}
               <li>
                 <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    handleLogout();
-                  }}
+                  onClick={() => { setMenuOpen(false); handleLogout(); }}
                   className="px-2 py-1"
                 >
                   Logout
@@ -149,6 +137,7 @@ function TopHeader({
     </header>
   );
 }
+
 
 /* ======= 5-Image Strip (wider columns, closer to screenshot) ======= */
 function HeroStrip() {
