@@ -341,7 +341,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto">
           <div className="relative w-full">
             <Image
-              src="/client_portal/wdg-hero.png"
+              src="/client_portal/portal_wdg_photo.webp"
               alt="Wedding Planning Guide"
               width={1400}
               height={560}
@@ -472,7 +472,7 @@ export default function Home() {
           {/* Left: hero image */}
           <div className="w-full">
             <Image
-              src="/client_portal/files-hero.png"      // put your image in /public/client_portal/files-hero.png
+              src="/client_portal/portal_files_photo.webp"      // put your image in /public/client_portal/files-hero.png
               alt="Files section hero"
               width={800}
               height={600}
