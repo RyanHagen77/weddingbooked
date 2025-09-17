@@ -273,61 +273,70 @@ export default function Home() {
       <TopHeader scrollTo={scrollTo} handleLogout={handleLogout} />
       <HeroStrip />
 
-  {/* Photographers title stays the same */}
-  <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
-    <div className="flex-1"><div className="border-t-4 border-lightpink"></div><div className="border-t-2 border-lightpink mt-[6px]"></div></div>
-    <h2 className="px-16 text-5xl font-cormorant tracking-wide">PHOTOGRAPHERS</h2>
-    <div className="flex-1"><div className="border-t-4 border-lightpink"></div><div className="border-t-2 border-lightpink mt-[6px]"></div></div>
-  </div>
-
-  <section id="photographers" className="py-8 px-4 md:px-6 bg-white">
-    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 justify-items-center">
-      {photographers.map((p) => {
-        const first = (p.name || 'Photographer').split(' ')[0];
-        return (
-          <div key={p.id} className="w-[300px]">
-            {/* Image + dusty-rose name bar */}
-            <div className="relative overflow-hidden">
-              <Image
-                src={p.profile_picture || '/default-profile.jpg'}
-                alt={p.name || 'Photographer'}
-                width={300}
-                height={420}
-                className="w-[300px] h-[420px] object-cover object-top"
-              />
-              <div className="absolute bottom-0 left-0 right-0 bg-[#C18A8F]">
-                <p className="text-white text-3xl md:text-4xl font-cormorant text-center py-3">
-                  {first}
-                </p>
-              </div>
-            </div>
-
-            {/* Full-width button (larger text) */}
-            <a
-              href={p.website || '#'}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-5 inline-flex w-full items-center justify-center rounded-full px-8 py-4 text-white text-2xl font-medium bg-[#C18A8F] hover:opacity-95 transition shadow-md"
-            >
-              View my Demo
-            </a>
-          </div>
-        );
-      })}
-    </div>
-  </section>
-
-
-
-
-      {/* Planning Guide title (unchanged) */}
+      {/* Photographers title */}
       <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
-        <div className="flex-1"><div className="border-t-4 border-lightpink"></div><div className="border-t-2 border-lightpink mt-[6px]"></div></div>
-        <h2 className="px-16 text-5xl font-cormorant tracking-wide">WEDDING PLANNING GUIDE</h2>
-        <div className="flex-1"><div className="border-t-4 border-lightpink"></div><div className="border-t-2 border-lightpink mt-[6px]"></div></div>
+        <div className="flex-1">
+          <div className="border-t-4 border-[#C18A8F]"></div>
+          <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
+        </div>
+        <h2 className="px-16 text-5xl font-cormorant tracking-wide">PHOTOGRAPHERS</h2>
+        <div className="flex-1">
+          <div className="border-t-4 border-[#C18A8F]"></div>
+          <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
+        </div>
       </div>
 
-      <section id="wedding-planning-guide" className="scroll-mt-24 px-4 md:px-6 pb-24">
+      <section id="photographers" className="scroll-mt-0 py-8 px-4 md:px-6 bg-white">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 justify-items-center">
+          {photographers.map((p) => {
+            const first = (p.name || 'Photographer').split(' ')[0];
+            return (
+              <div key={p.id} className="w-[300px]">
+                {/* Image + dusty-rose name bar */}
+                <div className="relative overflow-hidden">
+                  <Image
+                    src={p.profile_picture || '/default-profile.jpg'}
+                    alt={p.name || 'Photographer'}
+                    width={300}
+                    height={420}
+                    className="w-[300px] h-[420px] object-cover object-top"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-[#C18A8F]">
+                    <p className="text-white text-3xl md:text-4xl font-cormorant text-center py-3">
+                      {first}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Full-width button (larger text) */}
+                <a
+                  href={p.website || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-5 inline-flex w-full items-center justify-center rounded-full px-8 py-4 text-white text-2xl font-medium bg-[#C18A8F] hover:opacity-95 transition shadow-md"
+                >
+                  View my Demo
+                </a>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Planning Guide title */}
+      <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
+        <div className="flex-1">
+          <div className="border-t-4 border-[#C18A8F]"></div>
+          <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
+        </div>
+        <h2 className="px-16 text-5xl font-cormorant tracking-wide">WEDDING PLANNING GUIDE</h2>
+        <div className="flex-1">
+          <div className="border-t-4 border-[#C18A8F]"></div>
+          <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
+        </div>
+      </div>
+
+      <section id="wedding-planning-guide" className="scroll-mt-0 px-4 md:px-6 pb-24">
         {/* Hero image (centered, narrower like screenshot) */}
         <div className="max-w-5xl mx-auto">
           <div className="relative w-full">
@@ -391,22 +400,21 @@ export default function Home() {
         </div>
       </section>
 
-
       {/* Messages title */}
       <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
         <div className="flex-1">
-          <div className="border-t-4 border-lightpink"></div>
-          <div className="border-t-2 border-lightpink mt-[6px]"></div>
+          <div className="border-t-4 border-[#C18A8F]"></div>
+          <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
         </div>
         <h2 className="px-16 text-5xl font-cormorant tracking-wide">MESSAGES</h2>
         <div className="flex-1">
-          <div className="border-t-4 border-lightpink"></div>
-          <div className="border-t-2 border-lightpink mt-[6px]"></div>
+          <div className="border-t-4 border-[#C18A8F]"></div>
+          <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
         </div>
       </div>
 
       {/* Messages Section */}
-      <section id="Messages" className="px-4 md:px-6 pb-24">
+      <section id="Messages" className="scroll-mt-0 px-4 md:px-6 pb-24">
         <div className="max-w-4xl mx-auto">
           {/* Message list */}
           <div className="bg-gray-100 rounded p-6 min-h-[120px]">
@@ -446,15 +454,20 @@ export default function Home() {
         </div>
       </section>
 
-
       {/* Files title */}
       <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
-        <div className="flex-1"><div className="border-t-4 border-lightpink"></div><div className="border-t-2 border-lightpink mt-[6px]"></div></div>
+        <div className="flex-1">
+          <div className="border-t-4 border-[#C18A8F]"></div>
+          <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
+        </div>
         <h2 className="px-16 text-5xl font-cormorant tracking-wide">FILES</h2>
-        <div className="flex-1"><div className="border-t-4 border-lightpink"></div><div className="border-t-2 border-lightpink mt-[6px]"></div></div>
+        <div className="flex-1">
+          <div className="border-t-4 border-[#C18A8F]"></div>
+          <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
+        </div>
       </div>
 
-      <section id="files" className="scroll-mt-24 px-4 md:px-6 pb-24">
+      <section id="files" className="scroll-mt-0 px-4 md:px-6 pb-24">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
           {/* Left: hero image */}
           <div className="w-full">
@@ -495,14 +508,31 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FAQ title */}
-      <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
-        <div className="flex-1"><div className="border-t-4 border-lightpink"></div><div className="border-t-2 border-lightpink mt-[6px]"></div></div>
-        <h2 className="px-16 text-5xl font-cormorant tracking-wide text-center">FREQUENTLY ASKED QUESTIONS</h2>
-        <div className="flex-1"><div className="border-t-4 border-lightpink"></div><div className="border-t-2 border-lightpink mt-[6px]"></div></div>
-      </div>
+      {/* FAQ (wrap title + content under one anchor) */}
+      <section id="faq" className="scroll-mt-0">
+        {/* Title row */}
+        <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
+          <div className="flex-1">
+            <div className="border-t-4 border-[#C18A8F]"></div>
+            <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
+          </div>
+          <h2 className="px-16 text-5xl font-cormorant tracking-wide text-center">
+            FREQUENTLY ASKED QUESTIONS
+          </h2>
+          <div className="flex-1">
+            <div className="border-t-4 border-[#C18A8F]"></div>
+            <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
+          </div>
+        </div>
 
-      <section id="faq" className="scroll-mt-24 px-4 md:px-6 pb-24 text-black font-albert">
+        {/* Content (used to be <section id="faq" ...>) */}
+        <div className="px-4 md:px-6 pb-24 text-black font-albert">
+          <div className="max-w-5xl mx-auto">
+            {/* ...your existing FAQ accordion code stays the same here... */}
+          </div>
+        </div>
+
+
         <div className="max-w-5xl mx-auto">
           {[1, 2, 3, 4, 5].map((index) => {
             const open = faqOpen === index;
@@ -609,7 +639,6 @@ export default function Home() {
           })}
         </div>
       </section>
-
 
       <footer className="bg-grayblue text-black py-6">
         <div className="max-w-4xl mx-auto flex justify-between items-center px-4">
