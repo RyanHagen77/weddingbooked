@@ -8,6 +8,7 @@ import { Cormorant_Garamond } from 'next/font/google';
 
 const cormorant = Cormorant_Garamond({ subsets: ['latin'], weight: ['400','600','700'] });
 
+/* ========= Types ========= */
 interface Photographer {
   id: string;
   name: string;
@@ -25,14 +26,20 @@ interface Document {
   name: string;
   url: string;
 }
+type NextDueLinkResponse = {
+  url?: string;
+  amount?: string;   // optional
+  due_date?: string; // optional
+  label?: string;    // optional
+};
 
+/* ========= Assets ========= */
 const heroImages = [
   '/client_portal/portal_header_photo1.webp',
   '/client_portal/portal_header_photo2.webp',
   '/client_portal/portal_header_photo3.webp',
   '/client_portal/portal_header_photo4.webp',
   '/client_portal/portal_header_photo5.webp',
-
 ];
 
 /* =========================
@@ -40,20 +47,22 @@ const heroImages = [
 ========================= */
 function TopHeader({
   handleLogout,
-  scrollTo,                      // ✅ add this
+  scrollTo,
+  onMakePayment,
 }: {
   handleLogout: () => void;
-  scrollTo: (id: string) => void; // ✅ and type it
+  scrollTo: (id: string) => void;
+  onMakePayment: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Use ids that match your sections exactly
   const items = [
     { id: 'photographers', label: 'Photographers' },
     { id: 'wedding-planning-guide', label: 'Planning Guide' },
-    { id: 'Messages', label: 'Messages' }, // Matches section id="Messages"
+    { id: 'Messages', label: 'Messages' },
     { id: 'files', label: 'Files' },
     { id: 'faq', label: 'FAQ' },
+    { id: 'payments', label: 'Make a Payment' }, // special-cased below
   ];
 
   return (
@@ -66,7 +75,8 @@ function TopHeader({
           </a>
 
           <button
-            className="mt-3 text-4xl p-3 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200"
+            type="button"
+            className="mt-3 text-4xl p-3 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C18A8F]/40"
             aria-label="Toggle menu"
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen(v => !v)}
@@ -85,20 +95,37 @@ function TopHeader({
             <ul className="flex items-center gap-8 font-ui tracking-wide">
               {items.map(i => (
                 <li key={i.id}>
-                  <a
-                    href={`#${i.id}`}
-                    onClick={(e) => { e.preventDefault(); scrollTo(i.id); }}   // ✅ use smooth scroll
-                    className="relative uppercase text-sm text-neutral-700 hover:text-neutral-950 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 rounded"
-                  >
-                    {i.label}
-                    <span className="absolute left-0 -bottom-1 h-[1px] w-0 bg-rose-200 transition-all duration-200 hover:w-full" />
-                  </a>
+                  {i.id === 'payments' ? (
+                    <button
+                      type="button"
+                      onClick={onMakePayment}
+                      className="text-sm font-medium rounded-full px-3 py-1.5 text-white
+                                 bg-[#C18A8F] hover:bg-[#B07A80] active:bg-[#A36C71]
+                                 border border-[#C18A8F] shadow-sm
+                                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C18A8F]/40"
+                    >
+                      {i.label}
+                    </button>
+                  ) : (
+                    <a
+                      href={`#${i.id}`}
+                      onClick={(e) => { e.preventDefault(); scrollTo(i.id); }}
+                      className="relative uppercase text-sm text-neutral-700 hover:text-neutral-950 transition-colors
+                                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C18A8F]/40 rounded"
+                    >
+                      {i.label}
+                      {/* underline accent uses the same pink */}
+                      <span className="absolute left-0 -bottom-1 h-[1px] w-0 bg-[#C18A8F]/70 transition-all duration-200 hover:w-full" />
+                    </a>
+                  )}
                 </li>
               ))}
               <li>
                 <button
+                  type="button"
                   onClick={handleLogout}
-                  className="text-sm text-neutral-700 hover:text-neutral-950 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 rounded"
+                  className="text-sm text-neutral-700 hover:text-neutral-950 transition-colors
+                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C18A8F]/40 rounded"
                 >
                   Logout
                 </button>
@@ -113,19 +140,34 @@ function TopHeader({
             <ul className="flex flex-col items-center gap-3 py-4 text-base font-ui">
               {items.map(i => (
                 <li key={i.id}>
-                  <a
-                    href={`#${i.id}`}
-                    onClick={(e) => { e.preventDefault(); setMenuOpen(false); scrollTo(i.id); }} // ✅ smooth + close
-                    className="uppercase block px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 rounded"
-                  >
-                    {i.label}
-                  </a>
+                  {i.id === 'payments' ? (
+                    <button
+                      type="button"
+                      onClick={() => { setMenuOpen(false); onMakePayment(); }}
+                      className="w-full rounded px-3 py-2 font-medium text-white
+                                 bg-[#C18A8F] hover:bg-[#B07A80] active:bg-[#A36C71]
+                                 border border-[#C18A8F] shadow-sm
+                                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C18A8F]/40"
+                    >
+                      {i.label}
+                    </button>
+                  ) : (
+                    <a
+                      href={`#${i.id}`}
+                      onClick={(e) => { e.preventDefault(); setMenuOpen(false); scrollTo(i.id); }}
+                      className="uppercase block px-2 py-1
+                                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C18A8F]/40 rounded"
+                    >
+                      {i.label}
+                    </a>
+                  )}
                 </li>
               ))}
               <li>
                 <button
+                  type="button"
                   onClick={() => { setMenuOpen(false); handleLogout(); }}
-                  className="px-2 py-1"
+                  className="px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C18A8F]/40 rounded"
                 >
                   Logout
                 </button>
@@ -138,20 +180,14 @@ function TopHeader({
   );
 }
 
-
-/* ======= 5-Image Strip (wider columns, closer to screenshot) ======= */
+/* ======= 5-Image Strip (wider columns) ======= */
 function HeroStrip() {
   return (
     <section className="bg-white">
-      {/* CHANGE #1: widen container on desktop */}
       <div className="max-w-screen-2xl mx-auto px-2 lg:px-4 py-6">
-        {/* CHANGE #2: slightly tighter gaps so more width goes to images */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {heroImages.map((src, i) => (
-            <div
-              key={i}
-              className="relative w-full aspect-[3/4] overflow-hidden rounded"
-            >
+            <div key={i} className="relative w-full aspect-[3/4] overflow-hidden rounded">
               <Image
                 src={src}
                 alt={`Essence gallery ${i + 1}`}
@@ -167,7 +203,6 @@ function HeroStrip() {
     </section>
   );
 }
-
 
 /* ========= Page ========= */
 export default function Home() {
@@ -256,6 +291,31 @@ export default function Home() {
     }
   };
 
+  /* Make payment: open soonest-due unpaid link */
+  const handleMakePayment = async () => {
+    if (!contractId) { alert('Missing contract. Please log in again.'); return; }
+    const accessToken = localStorage.getItem('access_token') || '';
+
+    try {
+      const resp = await fetch(
+        `https://www.weddingbooked.app/payments/api/next-due-link/${contractId}/`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      if (!resp.ok) throw new Error(`Failed to fetch payment link: ${resp.status}`);
+
+      const data: NextDueLinkResponse = await resp.json();
+
+      if (data?.url) {
+        window.open(data.url, '_blank', 'noopener,noreferrer');
+      } else {
+        alert('No unpaid payment is currently due.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Unable to load the payment link. Please try again.');
+    }
+  };
+
   if (!isAuthenticated) return <Login onLogin={() => window.location.reload()} />;
 
   const handleLogout = () => {
@@ -270,7 +330,12 @@ export default function Home() {
 
   return (
     <main className={`bg-white text-black font-gothic ${cormorant.className}`}>
-      <TopHeader scrollTo={scrollTo} handleLogout={handleLogout} />
+      <TopHeader
+        scrollTo={scrollTo}
+        handleLogout={handleLogout}
+        onMakePayment={handleMakePayment}
+      />
+
       <HeroStrip />
 
       {/* Photographers title */}
@@ -286,42 +351,41 @@ export default function Home() {
         </div>
       </div>
 
-      <section id="photographers" className="scroll-mt-0 py-8 px-4 md:px-6 bg-white">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 justify-items-center">
+      <section id="photographers" className="scroll-mt-0 py-8 px-0 bg-white"> {/* remove side padding */}
+        <div className="w-full mx-auto flex flex-wrap justify-center gap-x-4 gap-y-10">
           {photographers.map((p) => {
             const first = (p.name || 'Photographer').split(' ')[0];
             return (
-              <div key={p.id} className="w-[300px]">
-                {/* Image + dusty-rose name bar */}
-                <div className="relative overflow-hidden">
-                  <Image
-                    src={p.profile_picture || '/default-profile.jpg'}
-                    alt={p.name || 'Photographer'}
-                    width={300}
-                    height={420}
-                    className="w-[300px] h-[420px] object-cover object-top"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-[#C18A8F]">
-                    <p className="text-white text-3xl md:text-4xl font-cormorant text-center py-3">
-                      {first}
-                    </p>
+                <div key={p.id} className="w-[220px]"> {/* narrower card */}
+                  <div className="relative overflow-hidden">
+                    <Image
+                        src={p.profile_picture || '/default-profile.jpg'}
+                        alt={p.name || 'Photographer'}
+                        width={220}
+                        height={320}
+                        className="w-[220px] h-[320px] object-cover object-top"
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 bg-[#C18A8F]">
+                      <p className="text-white text-2xl font-cormorant text-center py-2">
+                        {first}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                {/* Full-width button (larger text) */}
-                <a
-                  href={p.website || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-5 inline-flex w-full items-center justify-center rounded-full px-8 py-4 text-white text-2xl font-medium bg-[#C18A8F] hover:opacity-95 transition shadow-md"
-                >
-                  View my Demo
-                </a>
-              </div>
+                  <a
+                      href={p.website || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-4 inline-flex w-full items-center justify-center rounded-full px-6 py-3 text-white text-xl font-medium bg-[#C18A8F] hover:opacity-95 transition shadow-md"
+                  >
+                    View my Demo
+                  </a>
+                </div>
             );
           })}
         </div>
       </section>
+
 
       {/* Planning Guide title */}
       <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
@@ -341,12 +405,12 @@ export default function Home() {
         <div className="max-w-5xl mx-auto">
           <div className="relative w-full">
             <Image
-              src="/client_portal/portal_wdg_photo.webp"
-              alt="Wedding Planning Guide"
-              width={1400}
-              height={560}
-              className="w-full h-auto object-cover rounded"
-              priority
+                src="/client_portal/portal_wdg_photo.webp"
+                alt="Wedding Planning Guide"
+                width={1400}
+                height={560}
+                className="w-full h-auto object-cover rounded"
+                priority
             />
           </div>
         </div>

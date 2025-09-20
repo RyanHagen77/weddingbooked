@@ -9,18 +9,19 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
+
       <div class="modal-body">
         <form id="scheduleForm" method="post" action="{% url 'payments:create_or_update_schedule' contract_id=contract.contract_id %}">
-          <input type="hidden" name="recalculate" id="recalculateFlag" value="true">
+        <input type="hidden" name="recalculate" id="recalculateFlag" value="false">
           {% csrf_token %}
           {{ schedule_payment_formset.management_form }}
+
           <hr>
-          <!-- Optional separate schedule form -->
           {{ schedule_form.as_p }}
           <hr>
 
           <!-- Empty Payment Form (used for cloning new schedule entries) -->
-          <div class="schedule-payment-form empty-schedule-payment-form" style="display: none;">
+          <div class="schedule-payment-form empty-schedule-payment-form" style="display:none;">
             {{ schedule_payment_formset.empty_form.as_p }}
           </div>
 
@@ -29,27 +30,71 @@
             {% for form in schedule_payment_formset %}
               <div class="schedule-payment-form mb-3">
                 <div class="form-check form-check-inline">
-                  <!-- We remove inline onclick; this checkbox will be targeted by our module -->
                   <input type="checkbox" class="form-check-input edit-toggle" id="edit_{{ forloop.counter }}">
                   <label for="edit_{{ forloop.counter }}" class="form-check-label ml-2 mb-0">Enable Editing</label>
                 </div>
+
                 <div class="form-fields mt-2" id="form_fields_{{ forloop.counter }}">
                   {{ form.as_p }}
                 </div>
+
+<!-- ========== Payment Links (AJAX managed) ========== -->
+<div class="payment-links mt-3" data-sp-id="{{ form.instance.pk|default_if_none:'' }}">
+  <div class="d-flex align-items-center justify-content-between">
+    <h6 class="mb-0">Payment Links</h6>
+    <button type="button" class="btn btn-sm btn-outline-secondary links-toggle" aria-expanded="false">
+      Show
+    </button>
+  </div>
+
+  <div class="links-panel mt-2" style="display:none;">
+    {% if form.instance.pk %}
+      <ul class="links-list list-unstyled small mb-3"></ul>
+
+      <!-- NOT A FORM to avoid nested form issues -->
+      <div class="add-link-block border rounded p-2">
+        <div class="form-row">
+          <div class="form-group col-4">
+            <label class="mb-1">Label</label>
+            <input name="label" class="form-control form-control-sm" placeholder="Stripe / Checkout" />
+          </div>
+          <div class="form-group col-8">
+            <label class="mb-1">URL</label>
+            <input name="url" type="url" class="form-control form-control-sm" placeholder="https://…" />
+          </div>
+        </div>
+        <div class="custom-control custom-checkbox">
+          <input name="active" type="checkbox" class="custom-control-input" id="active_{{ forloop.counter }}" checked>
+          <label class="custom-control-label" for="active_{{ forloop.counter }}">Active</label>
+        </div>
+        <button type="button" class="btn btn-sm mt-2 text-white add-link-btn" style="background:#c58a91;">
+          Add Link
+        </button>
+      </div>
+    {% else %}
+      <div class="alert alert-light small mb-0">
+        Save the schedule first, then you can add links to this payment.
+      </div>
+    {% endif %}
+  </div>
+</div>
+<!-- ================================================ -->
+
+
+
                 <hr>
               </div>
             {% endfor %}
           </div>
 
-          <!-- Button for adding a new schedule entry -->
           <button type="button" id="addEntryBtn" class="btn btn-dusty-pink mt-2">
             Add Payment Entry
           </button>
         </form>
       </div>
+
       <div class="modal-footer">
         <button type="button" class="btn btn-close" data-dismiss="modal">Close</button>
-        <!-- Save Changes button with an ID for our module to attach a listener -->
         <button type="submit" id="saveChangesBtn" class="btn btn-dusty-pink" form="scheduleForm">
           Save Changes
         </button>
@@ -57,3 +102,144 @@
     </div>
   </div>
 </div>
+
+<script>
+(function () {
+  // --- CSRF helper for Django session auth ---
+  function getCookie(name) {
+    const m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return m ? decodeURIComponent(m[2]) : undefined;
+  }
+  const csrftoken = getCookie('csrftoken');
+
+  function api(path, opts = {}) {
+    const headers = Object.assign({}, opts.headers);
+    headers['X-CSRFToken'] = csrftoken || '';
+    if (opts.body && !(opts.body instanceof FormData)) {
+      headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+    }
+    return fetch(path, { credentials: 'same-origin', ...opts, headers });
+  }
+
+  function renderLinks(listEl, links) {
+    listEl.innerHTML = '';
+    if (!links.length) {
+      listEl.innerHTML = '<li class="text-muted">No links yet.</li>';
+      return;
+    }
+    links.forEach(link => {
+      const li = document.createElement('li');
+      li.className = 'd-flex justify-content-between align-items-center py-1 border-bottom';
+      li.innerHTML = `
+        <div class="pr-2">
+          <strong>${link.label || 'Link'}</strong>
+          <a href="${link.url}" target="_blank" rel="noopener" class="ml-2">${link.url}</a>
+          ${!link.active ? '<span class="text-muted small ml-2">(inactive)</span>' : ''}
+        </div>
+        <div class="btn-group btn-group-sm">
+          <button type="button" class="btn btn-outline-secondary toggle-active" data-id="${link.id}">
+            ${link.active ? 'Deactivate' : 'Activate'}
+          </button>
+          <button type="button" class="btn btn-outline-danger delete-link" data-id="${link.id}">Delete</button>
+        </div>
+      `;
+      listEl.appendChild(li);
+    });
+  }
+
+  function fetchLinks(spId, listEl) {
+    api(`/payments/api/payment-links/by-payment/${spId}/`)
+      .then(r => r.ok ? r.json() : r.text().then(t => Promise.reject({status:r.status, text:t})))
+      .then(data => renderLinks(listEl, data))
+      .catch(err => { console.error('Fetch links failed', err); listEl.innerHTML = '<li class="text-danger">Failed to load links.</li>'; });
+  }
+
+  function patchLink(id, body, onDone) {
+    api(`/payments/api/payment-links/${id}/update/`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    })
+    .then(r => r.ok ? r.json() : r.text().then(t => Promise.reject({status:r.status, text:t})))
+    .then(() => onDone && onDone())
+    .catch(err => { alert(`Update failed (${err.status}). ${err.text||''}`); });
+  }
+
+  function deleteLink(id, onDone) {
+    api(`/payments/api/payment-links/${id}/delete/`, { method: 'DELETE' })
+      .then(r => r.ok ? onDone && onDone() : r.text().then(t => Promise.reject({status:r.status, text:t})))
+      .catch(err => { alert(`Delete failed (${err.status}). ${err.text||''}`); });
+  }
+
+  // --- Bind UI inside the modal ---
+  const modal = document.getElementById('scheduleModal');
+
+  modal.addEventListener('click', function (e) {
+    const tgt = e.target;
+
+    // Toggle links panel
+    if (tgt.classList.contains('links-toggle')) {
+      const container = tgt.closest('.payment-links');
+      const panel = container.querySelector('.links-panel');
+      const listEl = container.querySelector('.links-list');
+      const spId = container.getAttribute('data-sp-id');
+
+      const open = panel.style.display !== 'none';
+      if (open) {
+        panel.style.display = 'none';
+        tgt.setAttribute('aria-expanded', 'false');
+        tgt.textContent = 'Show';
+      } else {
+        panel.style.display = '';
+        tgt.setAttribute('aria-expanded', 'true');
+        tgt.textContent = 'Hide';
+        if (spId) fetchLinks(spId, listEl);
+      }
+    }
+
+    // Add Link (button)
+    if (tgt.classList.contains('add-link-btn')) {
+      const container = tgt.closest('.payment-links');
+      const spId = container.getAttribute('data-sp-id');
+      if (!spId) { alert('Save the schedule first, then add links.'); return; }
+
+      const block = container.querySelector('.add-link-block');
+      const label = (block.querySelector('[name="label"]').value || '').trim();
+      const url   = (block.querySelector('[name="url"]').value   || '').trim();
+      const active  = !!block.querySelector('[name="active"]').checked;
+
+      if (!url) { alert('Please enter a URL.'); return; }
+
+      api(`/payments/api/payment-links/by-payment/${spId}/create/`, {
+        method: 'POST',
+        body: JSON.stringify({ label, url, active }),
+      })
+      .then(r => r.ok ? r.json() : r.text().then(t => Promise.reject({status:r.status, text:t})))
+      .then(() => {
+        block.querySelector('[name="label"]').value = '';
+        block.querySelector('[name="url"]').value = '';
+        block.querySelector('[name="active"]').checked = true;
+        fetchLinks(spId, container.querySelector('.links-list'));
+      })
+      .catch(err => alert(`Could not save link (${err.status}). ${err.text||''}`));
+    }
+
+    // Toggle Active / Delete
+    if (tgt.classList.contains('toggle-active') || tgt.classList.contains('delete-link')) {
+      const container = tgt.closest('.payment-links');
+      const listEl = container.querySelector('.links-list');
+      const spId = container.getAttribute('data-sp-id');
+      const id = tgt.getAttribute('data-id');
+
+      if (tgt.classList.contains('toggle-active')) {
+        const makeInactive = tgt.textContent.trim().toLowerCase().startsWith('deactivate');
+        patchLink(id, { active: !makeInactive }, () => fetchLinks(spId, listEl));
+      } else if (tgt.classList.contains('delete-link')) {
+        if (confirm('Delete this link?')) {
+          deleteLink(id, () => fetchLinks(spId, listEl));
+        }
+      }
+    }
+  });
+})();
+</script>
+

@@ -2,14 +2,14 @@ from datetime import timedelta
 from django.utils.timezone import now
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404, redirect
+from django.views.decorators.http import require_http_methods
+from django.shortcuts import get_object_or_404
 from decimal import Decimal, ROUND_HALF_UP
 from .forms import PaymentForm, PaymentScheduleForm, SchedulePaymentFormSet
-from .models import Payment, PaymentPurpose, PaymentSchedule, SchedulePayment
+from .models import Payment, PaymentPurpose, PaymentSchedule, SchedulePayment, PaymentLink
 from contracts.models import ChangeLog, Contract
-from django.urls import reverse
 from django.db.models import Sum
+import json
 
 import logging
 # Logging setup
@@ -148,63 +148,42 @@ def create_custom_schedule_payments(contract_id):
 
 @login_required
 def create_or_update_schedule(request, contract_id):
-    """
-    AJAX view to create or update a payment schedule for a contract.
-
-    - For "schedule_a": Uses fixed logic.
-    - For "custom":
-       - If the user requests recalculation (or if no schedule payments exist), the default deposit-based schedule is created.
-       - Otherwise, custom changes made via the formset are saved.
-
-    This view always updates the PaymentSchedule.schedule_type based on the modal dropdown selection.
-    """
     contract = get_object_or_404(Contract, contract_id=contract_id)
-    # Get or create the existing schedule
-    schedule, created = PaymentSchedule.objects.get_or_create(contract=contract)
+    schedule, _ = PaymentSchedule.objects.get_or_create(contract=contract)
 
-    if request.method == 'POST':
-        schedule_form = PaymentScheduleForm(request.POST, instance=schedule)
-        schedule_payment_formset = SchedulePaymentFormSet(request.POST, instance=schedule)
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'GET request not allowed'}, status=405)
 
-        if schedule_form.is_valid() and schedule_payment_formset.is_valid():
-            # Retrieve the chosen schedule type from the cleaned form data.
-            new_schedule_type = schedule_form.cleaned_data.get('schedule_type', 'schedule_a')
+    schedule_form = PaymentScheduleForm(request.POST, instance=schedule)
+    schedule_payment_formset = SchedulePaymentFormSet(request.POST, instance=schedule)
 
-            # Delegate based on the new schedule type:
-            if new_schedule_type == 'schedule_a':
-                schedule = create_schedule_a_payments(contract_id)
-            elif new_schedule_type == 'custom':
-                # Check for a recalculation flag from the form (e.g., a hidden input named "recalculate")
-                recalc_flag = request.POST.get('recalculate', 'true').lower() == 'true'
-                if recalc_flag or not schedule.schedule_payments.exists():
-                    schedule = create_custom_schedule_payments(contract_id)
-                else:
-                    # Save the custom changes from the formset without recalculation.
-                    schedule_payment_formset.save()
-            else:
-                # If other schedule types are supported, update them directly.
-                schedule_payment_formset.save()
+    if not (schedule_form.is_valid() and schedule_payment_formset.is_valid()):
+        errors = {**schedule_form.errors, **schedule_payment_formset.errors}
+        return JsonResponse({'success': False, 'errors': errors}, status=400)
 
-            # *** Force update the schedule type based on the modal dropdown ***
-            # This ensures that even if helper functions override some values, the dropdown selection is preserved.
-            schedule.schedule_type = new_schedule_type
-            schedule.save()
+    # what the user selected
+    new_type = schedule_form.cleaned_data.get('schedule_type', schedule.schedule_type or 'schedule_a')
+    # only rebuild if explicitly requested
+    recalc_flag = (request.POST.get('recalculate', 'false').lower() == 'true')
+    # always rebuild if type changed
+    type_changed = (schedule.schedule_type != new_type)
+    if type_changed:
+        recalc_flag = True
 
-            return JsonResponse({
-                'success': True,
-                'schedule_type': schedule.schedule_type
-            })
-        else:
-            errors = {**schedule_form.errors, **schedule_payment_formset.errors}
-            return JsonResponse({
-                'success': False,
-                'errors': errors
-            }, status=400)
+    if recalc_flag:
+        if new_type == 'schedule_a':
+            schedule = create_schedule_a_payments(contract_id)
+        elif new_type == 'custom':
+            schedule = create_custom_schedule_payments(contract_id)
+        # (add other types here if you introduce them)
     else:
-        return JsonResponse({
-            'success': False,
-            'message': 'GET request not allowed'
-        }, status=405)
+        # just persist edits to existing schedule payments; links stay attached
+        schedule_payment_formset.save()
+
+    schedule.schedule_type = new_type
+    schedule.save()
+
+    return JsonResponse({'success': True, 'schedule_type': schedule.schedule_type})
 
 
 def get_schedule_payments_due(request, contract_id):
@@ -386,3 +365,117 @@ def get_existing_payments(request, contract_id):
         for payment in payments
     ]
     return JsonResponse(data, safe=False)
+
+@login_required
+@require_http_methods(["GET"])
+def payment_links_for_payment(request, schedule_payment_id):
+    sp = get_object_or_404(SchedulePayment, id=schedule_payment_id)
+    links = [
+        {
+            "id": l.id,
+            "label": l.label,
+            "url": l.url,
+            "active": l.active,
+            "created_at": l.created_at.isoformat(),
+        }
+        for l in sp.payment_links.order_by('-created_at')
+    ]
+    return JsonResponse(links, safe=False)
+
+
+@login_required
+@require_http_methods(["POST"])
+def create_payment_link(request, schedule_payment_id):
+    sp = get_object_or_404(SchedulePayment, id=schedule_payment_id)
+    try:
+        data = json.loads(request.body or "{}")
+    except Exception:
+        return JsonResponse({"detail": "Invalid JSON"}, status=400)
+
+    url = (data.get("url") or "").strip()
+    if not url:
+        return JsonResponse({"detail": "URL is required"}, status=400)
+
+    link = PaymentLink.objects.create(
+        payment=sp,
+        label=(data.get("label") or "").strip(),
+        url=url,
+        active=bool(data.get("active", True)),
+    )
+    return JsonResponse(
+        {
+            "id": link.id,
+            "label": link.label,
+            "url": link.url,
+            "active": link.active,
+            "created_at": link.created_at.isoformat(),
+        },
+        status=201,
+    )
+
+
+@login_required
+@require_http_methods(["PATCH", "POST"])  # allow POST if PATCH is awkward in some environments
+def update_payment_link(request, link_id):
+    link = get_object_or_404(PaymentLink, id=link_id)
+    try:
+        data = json.loads(request.body or "{}")
+    except Exception:
+        return JsonResponse({"detail": "Invalid JSON"}, status=400)
+
+    if "label" in data:
+        link.label = (data.get("label") or "").strip()
+    if "url" in data:
+        new_url = (data.get("url") or "").strip()
+        if not new_url:
+            return JsonResponse({"detail": "URL cannot be empty"}, status=400)
+        link.url = new_url
+    if "active" in data:
+        link.active = bool(data.get("active"))
+
+    link.save()
+    return JsonResponse(
+        {
+            "id": link.id,
+            "label": link.label,
+            "url": link.url,
+            "active": link.active,
+            "created_at": link.created_at.isoformat(),
+        }
+    )
+
+
+@login_required
+@require_http_methods(["DELETE", "POST"])  # allow POST for easier HTML-only calls
+def delete_payment_link(request, link_id):
+    link = get_object_or_404(PaymentLink, id=link_id)
+    link.delete()
+    # 204 with an empty body – browsers sometimes dislike empty JSON, so OK with empty response
+    return JsonResponse({}, status=204)
+
+
+@login_required
+@require_http_methods(["GET"])
+def next_due_payment_link(request, contract_id):
+    """
+    Return the most recent active link for the soonest-due unpaid SchedulePayment.
+    """
+    contract = get_object_or_404(Contract, contract_id=contract_id)
+    sched = getattr(contract, 'payment_schedule', None)
+    if not sched:
+        return JsonResponse({"url": None})
+
+    sp = sched.schedule_payments.filter(paid=False).order_by('due_date', 'id').first()
+    if not sp:
+        return JsonResponse({"url": None})
+
+    link = sp.payment_links.filter(active=True).order_by('-created_at').first()
+    if not link:
+        return JsonResponse({"url": None})
+
+    return JsonResponse({
+        "url": link.url,
+        "amount": str(sp.amount),
+        "due_date": sp.due_date.isoformat(),
+        "label": link.label or (sp.purpose.name if sp.purpose else "Payment"),
+    })
