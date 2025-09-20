@@ -22,5 +22,5 @@ urlpatterns = [
     path('api/payment-links/<int:link_id>/update/', views.update_payment_link, name='update_payment_link'),
     path('api/payment-links/<int:link_id>/delete/', views.delete_payment_link, name='delete_payment_link'),
 
-    path('api/next-due-link/<uuid:contract_id>/', views.next_due_payment_link, name='next_due_payment_link'),
+    path('api/next-due-link/<int:contract_id>/', views.next_due_payment_link, name='next_due_payment_link'),
 ]
