@@ -10,7 +10,7 @@ from .models import Payment, PaymentPurpose, PaymentSchedule, SchedulePayment, P
 from contracts.models import ChangeLog, Contract
 from django.db.models import Sum
 import json
-
+from django.core.exceptions import ValidationError
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -281,30 +281,34 @@ def get_custom_schedule(request, contract_id):
 
 
 @login_required
+@require_http_methods(["POST"])
 def add_payment(request, schedule_id):
-    schedule = get_object_or_404(PaymentSchedule, id=schedule_id)
-    contract = schedule.contract  # Get the associated contract
+    schedule = get_object_or_404(
+        PaymentSchedule.objects.select_related("contract"),
+        id=schedule_id
+    )
 
-    if request.method == 'POST':
-        form = PaymentForm(request.POST)
-        if form.is_valid():
-            payment = form.save(commit=False)
-            payment.contract = contract  # Set the contract for the payment
-            payment.save()
+    form = PaymentForm(request.POST)
+    # Do NOT run model.clean/full_clean via form if it’s going to hit bad queries.
+    if not form.is_valid():
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 
-            # Update payment status
-            update_payment_status(schedule)
+    payment = form.save(commit=False)
+    payment.contract_id = schedule.contract_id  # ensure FK present before save
 
-            # Return JSON with update_schedule flag
-            return JsonResponse({
-                'success': True,
-                'payment_id': payment.id,
-                'update_schedule': True
-            })
-        else:
-            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
-    else:
-        return JsonResponse({'success': False, 'message': 'GET request not allowed'}, status=405)
+    try:
+        payment.save()  # uses the simple guard above
+    except ValueError as e:
+        # your model's guard (amount > balance_due) bubbles up here
+        return JsonResponse({'success': False, 'errors': {'amount': [str(e)]}}, status=400)
+
+    update_payment_status(schedule)
+
+    return JsonResponse({
+        'success': True,
+        'payment_id': payment.id,
+        'update_schedule': True
+    })
 
 
 def update_payment_status(schedule):
@@ -401,6 +405,7 @@ def get_existing_payments(request, contract_id):
         for payment in payments
     ]
     return JsonResponse(data, safe=False)
+
 
 @login_required
 @require_http_methods(["GET"])

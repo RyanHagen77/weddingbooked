@@ -45,16 +45,12 @@ class Payment(models.Model):
     payment_purpose = models.ForeignKey(PaymentPurpose, on_delete=models.SET_NULL,
                                         null=True, blank=True, related_name='payments')
 
-    def clean(self):
-        # Validate against current balance due on create
-        if self._state.adding and self.contract and self.amount and self.contract.balance_due is not None:
-            if self.amount > self.contract.balance_due:
-                raise ValidationError('Payment cannot exceed balance due.')
-
     def save(self, *args, **kwargs):
-        self.full_clean()  # ensures clean() runs
+        if self._state.adding and self.contract_id and self.amount is not None:
+            # `balance_due` is a Python property; comparing in Python is fine
+            if self.amount > self.contract.balance_due:
+                raise ValueError('Payment cannot exceed balance due.')
         return super().save(*args, **kwargs)
-
     def __str__(self):
         return f'Payment {self.amount} on {self.date:%Y-%m-%d} ({self.get_payment_method_display()})'
 
