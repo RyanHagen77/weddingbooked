@@ -162,42 +162,64 @@ def create_custom_schedule_payments(contract_id):
 
 @login_required
 def create_or_update_schedule(request, contract_id):
+    """
+    AJAX view to create or update a payment schedule for a contract.
+
+    - For "schedule_a": Uses fixed logic.
+    - For "custom":
+       - If the user requests recalculation (or if no schedule payments exist), the default deposit-based schedule is created.
+       - Otherwise, custom changes made via the formset are saved.
+
+    This view always updates the PaymentSchedule.schedule_type based on the modal dropdown selection.
+    """
     contract = get_object_or_404(Contract, contract_id=contract_id)
-    schedule, _ = PaymentSchedule.objects.get_or_create(contract=contract)
+    # Get or create the existing schedule
+    schedule, created = PaymentSchedule.objects.get_or_create(contract=contract)
 
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'message': 'GET request not allowed'}, status=405)
+    if request.method == 'POST':
+        schedule_form = PaymentScheduleForm(request.POST, instance=schedule)
+        schedule_payment_formset = SchedulePaymentFormSet(request.POST, instance=schedule)
 
-    schedule_form = PaymentScheduleForm(request.POST, instance=schedule)
-    schedule_payment_formset = SchedulePaymentFormSet(request.POST, instance=schedule)
+        if schedule_form.is_valid() and schedule_payment_formset.is_valid():
+            # Retrieve the chosen schedule type from the cleaned form data.
+            new_schedule_type = schedule_form.cleaned_data.get('schedule_type', 'schedule_a')
 
-    if not (schedule_form.is_valid() and schedule_payment_formset.is_valid()):
-        errors = {**schedule_form.errors, **schedule_payment_formset.errors}
-        return JsonResponse({'success': False, 'errors': errors}, status=400)
+            # Delegate based on the new schedule type:
+            if new_schedule_type == 'schedule_a':
+                schedule = create_schedule_a_payments(contract_id)
+            elif new_schedule_type == 'custom':
+                # Check for a recalculation flag from the form (e.g., a hidden input named "recalculate")
+                recalc_flag = request.POST.get('recalculate', 'true').lower() == 'true'
+                if recalc_flag or not schedule.schedule_payments.exists():
+                    schedule = create_custom_schedule_payments(contract_id)
+                else:
+                    # Save the custom changes from the formset without recalculation.
+                    schedule_payment_formset.save()
+            else:
+                # If other schedule types are supported, update them directly.
+                schedule_payment_formset.save()
 
-    # what the user selected
-    new_type = schedule_form.cleaned_data.get('schedule_type', schedule.schedule_type or 'schedule_a')
-    # only rebuild if explicitly requested
-    recalc_flag = (request.POST.get('recalculate', 'false').lower() == 'true')
-    # always rebuild if type changed
-    type_changed = (schedule.schedule_type != new_type)
-    if type_changed:
-        recalc_flag = True
+            # *** Force update the schedule type based on the modal dropdown ***
+            # This ensures that even if helper functions override some values, the dropdown selection is preserved.
+            schedule.schedule_type = new_schedule_type
+            schedule.save()
 
-    if recalc_flag:
-        if new_type == 'schedule_a':
-            schedule = create_schedule_a_payments(contract_id)
-        elif new_type == 'custom':
-            schedule = create_custom_schedule_payments(contract_id)
-        # (add other types here if you introduce them)
+            return JsonResponse({
+                'success': True,
+                'schedule_type': schedule.schedule_type
+            })
+        else:
+            errors = {**schedule_form.errors, **schedule_payment_formset.errors}
+            return JsonResponse({
+                'success': False,
+                'errors': errors
+            }, status=400)
     else:
-        # just persist edits to existing schedule payments; links stay attached
-        schedule_payment_formset.save()
+        return JsonResponse({
+            'success': False,
+            'message': 'GET request not allowed'
+        }, status=405)
 
-    schedule.schedule_type = new_type
-    schedule.save()
-
-    return JsonResponse({'success': True, 'schedule_type': schedule.schedule_type})
 
 
 def get_schedule_payments_due(request, contract_id):
