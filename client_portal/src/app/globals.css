@@ -1,27 +1,5 @@
-/* src/global.css */
+/* client_portal/src/app/globals.css */
 
-/* Google fonts used across the app */
-@import url('https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,100..900;1,100..900&family=Dancing+Script:wght@400..700&family=Limelight&family=Parisienne&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&display=swap');
-
-/* Brand script */
-@font-face {
-  font-family: 'Brittany Signature';
-  src: url('/client_portal/fonts/BrittanySignature.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* If you have a licensed Century Gothic webfont, uncomment this and add the file:
-@font-face {
-  font-family: 'Century Gothic';
-  src: url('/client_portal/fonts/CenturyGothic.woff2') format('woff2');
-  font-weight: 400 700;
-  font-style: normal;
-  font-display: swap;
-}
-*/
 
 /* Tailwind base layers */
 @tailwind base;
@@ -30,21 +8,22 @@
 
 /* ------------------------------
    CSS Variables & Font Helpers
+   Use Adobe family names exactly:
+   - "cormorant-garamond"
+   - "century-gothic"
 --------------------------------*/
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 255, 255, 255;
   --background-end-rgb: 255, 255, 255;
 
-  /* Font stacks */
-  --font-gothic: "Century Gothic", "Avant Garde", "Trebuchet MS", system-ui, -apple-system, sans-serif;
-  --font-cormorant: "Cormorant Garamond", Garamond, "Times New Roman", serif;
+  /* Adobe Fonts stacks */
+  --font-gothic: "century-gothic", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --font-cormorant: "cormorant-garamond", Garamond, "Times New Roman", serif;
 }
 
+/* Utility classes (used by layout.tsx and components) */
 .font-gothic { font-family: var(--font-gothic); }
-.font-century {
-  font-family: 'Century Gothic', 'AppleGothic', sans-serif;
-}
 .font-cormorant { font-family: var(--font-cormorant); }
 .font-brittany { font-family: "Brittany Signature", "Parisienne", cursive; }
 
@@ -54,18 +33,21 @@
 html, body, #__next {
   height: 100%;
   scroll-padding-top: 13rem;
-
 }
 
+@layer base {
+  body { @apply font-cormorant font-normal; }
+  h1, h2, h3, h4, h5, h6 { @apply font-cormorant font-normal; }
+}
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: #ffffff; /* Crisp white background to match the portal design */
+  background: #ffffff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Optional dark scheme override if needed later */
+/* Optional dark scheme */
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
@@ -86,16 +68,12 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.02em;
   font-weight: 400;
-  font-size: 1rem; /* 16px mobile */
+  font-size: 1rem;
 }
 @media (min-width: 768px) {
-  .menu-link {
-    font-size: 1.125rem; /* 18px desktop */
-  }
+  .menu-link { font-size: 1.125rem; }
 }
-.menu-link:hover {
-  text-decoration: underline;
-}
+.menu-link:hover { text-decoration: underline; }
 
 /* Dotted background used on sections */
 .bg-dot-grid {
@@ -106,27 +84,14 @@ body {
   background-position: 0 0, 25px 25px;
 }
 
-/* ------------------------------
-   Embla carousel (if/when used)
---------------------------------*/
+/* Embla carousel (if/when used) */
 .embla { overflow: hidden; }
 .embla__viewport { margin: auto; }
 .embla__container { display: flex; }
-/* .embla__slide { }  not used */
-.embla__slide__inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
+.embla__slide__inner { position: relative; width: 100%; height: 100%; }
 .is-active { flex-grow: 1; }
 
-@keyframes typing {
-  from { width: 0 }
-  to { width: 100% }
-}
-.animate-typing {
-  animation: typing 3s steps(30, end), blink 0.75s step-end infinite;
-}
-@keyframes blink {
-  50% { border-color: transparent; }
-}
+/* Typing animation */
+@keyframes typing { from { width: 0 } to { width: 100% } }
+.animate-typing { animation: typing 3s steps(30, end), blink 0.75s step-end infinite; }
+@keyframes blink { 50% { border-color: transparent; } }

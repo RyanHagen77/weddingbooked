@@ -11,6 +11,20 @@ from contracts.models import ChangeLog, Contract
 from django.db.models import Sum
 import json
 
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.authentication import SessionAuthentication
+try:
+    # if you use SimpleJWT
+    from rest_framework_simplejwt.authentication import JWTAuthentication
+    AUTH_CLASSES = [JWTAuthentication, SessionAuthentication]
+except Exception:
+    # fallback: if you use DRF TokenAuth instead of JWT, swap this to TokenAuthentication
+    from rest_framework.authentication import TokenAuthentication
+    AUTH_CLASSES = [TokenAuthentication, SessionAuthentication]
+
+
 import logging
 # Logging setup
 logger = logging.getLogger(__name__)
@@ -454,26 +468,29 @@ def delete_payment_link(request, link_id):
     return JsonResponse({}, status=204)
 
 
-@login_required
-@require_http_methods(["GET"])
+@api_view(['GET'])
+@authentication_classes(AUTH_CLASSES)
+@permission_classes([IsAuthenticated])
 def next_due_payment_link(request, contract_id):
-    """
-    Return the most recent active link for the soonest-due unpaid SchedulePayment.
-    """
+    # identical logic, just return DRF Response instead of JsonResponse
+    from django.shortcuts import get_object_or_404
+    from .models import PaymentLink, SchedulePayment
+    from contracts.models import Contract
+
     contract = get_object_or_404(Contract, contract_id=contract_id)
     sched = getattr(contract, 'payment_schedule', None)
     if not sched:
-        return JsonResponse({"url": None})
+        return Response({"url": None})
 
     sp = sched.schedule_payments.filter(paid=False).order_by('due_date', 'id').first()
     if not sp:
-        return JsonResponse({"url": None})
+        return Response({"url": None})
 
     link = sp.payment_links.filter(active=True).order_by('-created_at').first()
     if not link:
-        return JsonResponse({"url": None})
+        return Response({"url": None})
 
-    return JsonResponse({
+    return Response({
         "url": link.url,
         "amount": str(sp.amount),
         "due_date": sp.due_date.isoformat(),

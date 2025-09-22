@@ -4,9 +4,6 @@ import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 import Login from '../components/Login';
 import { useAuth } from '../components/AuthContext';
-import { Cormorant_Garamond } from 'next/font/google';
-
-const cormorant = Cormorant_Garamond({ subsets: ['latin'], weight: ['400','600','700'] });
 
 /* ========= Types ========= */
 interface Photographer {
@@ -28,9 +25,9 @@ interface Document {
 }
 type NextDueLinkResponse = {
   url?: string;
-  amount?: string;   // optional
-  due_date?: string; // optional
-  label?: string;    // optional
+  amount?: string;
+  due_date?: string;
+  label?: string;
 };
 
 /* ========= Assets ========= */
@@ -62,11 +59,11 @@ function TopHeader({
     { id: 'Messages', label: 'Messages' },
     { id: 'files', label: 'Files' },
     { id: 'faq', label: 'FAQ' },
-    { id: 'payments', label: 'Make a Payment' }, // special-cased below
+    { id: 'payments', label: 'Make a Payment' },
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-white/85 backdrop-blur border-b border-neutralsoft-200">
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-neutral-200">
       <div className="max-w-7xl mx-auto px-4 lg:px-6 py-3">
         {/* Mobile layout */}
         <div className="flex flex-col items-center lg:hidden">
@@ -92,14 +89,14 @@ function TopHeader({
           </a>
 
           <nav>
-            <ul className="flex items-center gap-8 font-ui tracking-wide">
+            <ul className="flex items-center gap-8 font-gothic tracking-wide">
               {items.map(i => (
                 <li key={i.id}>
                   {i.id === 'payments' ? (
                     <button
                       type="button"
                       onClick={onMakePayment}
-                      className="text-sm font-medium rounded-full px-3 py-1.5 text-white
+                      className="text-sm font-semibold rounded-full px-3 py-1.5 text-white
                                  bg-[#C18A8F] hover:bg-[#B07A80] active:bg-[#A36C71]
                                  border border-[#C18A8F] shadow-sm
                                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C18A8F]/40"
@@ -110,12 +107,12 @@ function TopHeader({
                     <a
                       href={`#${i.id}`}
                       onClick={(e) => { e.preventDefault(); scrollTo(i.id); }}
-                      className="relative uppercase text-sm text-neutral-700 hover:text-neutral-950 transition-colors
+                      className="relative uppercase text-sm font-medium text-neutral-900 hover:text-neutral-950 transition-colors
                                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C18A8F]/40 rounded"
                     >
                       {i.label}
-                      {/* underline accent uses the same pink */}
-                      <span className="absolute left-0 -bottom-1 h-[1px] w-0 bg-[#C18A8F]/70 transition-all duration-200 hover:w-full" />
+                      {/* underline accent */}
+                      <span className="pointer-events-none absolute left-0 -bottom-1 h-[2px] w-0 bg-[#C18A8F]/80 transition-all duration-200 group-hover:w-full" />
                     </a>
                   )}
                 </li>
@@ -124,7 +121,7 @@ function TopHeader({
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="text-sm text-neutral-700 hover:text-neutral-950 transition-colors
+                  className="text-sm font-medium text-neutral-900 hover:text-neutral-950 transition-colors
                              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C18A8F]/40 rounded"
                 >
                   Logout
@@ -136,15 +133,15 @@ function TopHeader({
 
         {/* Mobile nav dropdown */}
         {menuOpen && (
-          <nav className="lg:hidden mt-2 border-t border-neutralsoft-200">
-            <ul className="flex flex-col items-center gap-3 py-4 text-base font-ui">
+          <nav className="lg:hidden mt-2 border-t border-neutral-200">
+            <ul className="flex flex-col items-center gap-3 py-4 text-base font-gothic">
               {items.map(i => (
                 <li key={i.id}>
                   {i.id === 'payments' ? (
                     <button
                       type="button"
                       onClick={() => { setMenuOpen(false); onMakePayment(); }}
-                      className="w-full rounded px-3 py-2 font-medium text-white
+                      className="w-full rounded px-3 py-2 font-semibold text-white
                                  bg-[#C18A8F] hover:bg-[#B07A80] active:bg-[#A36C71]
                                  border border-[#C18A8F] shadow-sm
                                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C18A8F]/40"
@@ -155,7 +152,7 @@ function TopHeader({
                     <a
                       href={`#${i.id}`}
                       onClick={(e) => { e.preventDefault(); setMenuOpen(false); scrollTo(i.id); }}
-                      className="uppercase block px-2 py-1
+                      className="uppercase block px-2 py-1 text-neutral-900 font-medium
                                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C18A8F]/40 rounded"
                     >
                       {i.label}
@@ -167,7 +164,8 @@ function TopHeader({
                 <button
                   type="button"
                   onClick={() => { setMenuOpen(false); handleLogout(); }}
-                  className="px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C18A8F]/40 rounded"
+                  className="px-2 py-1 text-neutral-900 font-medium
+                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C18A8F]/40 rounded"
                 >
                   Logout
                 </button>
@@ -329,7 +327,7 @@ export default function Home() {
   };
 
   return (
-    <main className={`bg-white text-black font-gothic ${cormorant.className}`}>
+    <main className="bg-white text-black font-cormorant">
       <TopHeader
         scrollTo={scrollTo}
         handleLogout={handleLogout}
@@ -341,76 +339,76 @@ export default function Home() {
       {/* Photographers title */}
       <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
         <div className="flex-1">
-          <div className="border-t-4 border-[#C18A8F]"></div>
-          <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
+          <div className="border-t-4 border-[#C18A8F]" />
+          <div className="border-t-2 border-[#C18A8F] mt-[6px]" />
         </div>
         <h2 className="px-16 text-5xl font-cormorant tracking-wide">PHOTOGRAPHERS</h2>
         <div className="flex-1">
-          <div className="border-t-4 border-[#C18A8F]"></div>
-          <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
+          <div className="border-t-4 border-[#C18A8F]" />
+          <div className="border-t-2 border-[#C18A8F] mt-[6px]" />
         </div>
       </div>
 
-      <section id="photographers" className="scroll-mt-0 py-8 px-0 bg-white"> {/* remove side padding */}
+      <section id="photographers" className="scroll-mt-0 py-8 px-0 bg-white">
         <div className="w-full mx-auto flex flex-wrap justify-center gap-x-4 gap-y-10">
           {photographers.map((p) => {
             const first = (p.name || 'Photographer').split(' ')[0];
             return (
-                <div key={p.id} className="w-[220px]"> {/* narrower card */}
-                  <div className="relative overflow-hidden">
-                    <Image
-                        src={p.profile_picture || '/default-profile.jpg'}
-                        alt={p.name || 'Photographer'}
-                        width={220}
-                        height={320}
-                        className="w-[220px] h-[320px] object-cover object-top"
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 bg-[#C18A8F]">
-                      <p className="text-white text-2xl font-cormorant text-center py-2">
-                        {first}
-                      </p>
-                    </div>
+              <div key={p.id} className="w-[220px]">
+                <div className="relative overflow-hidden">
+                  <Image
+                    src={p.profile_picture || '/default-profile.jpg'}
+                    alt={p.name || 'Photographer'}
+                    width={220}
+                    height={320}
+                    className="w-[220px] h-[320px] object-cover object-top"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-[#C18A8F]">
+                    <p className="text-white text-2xl font-cormorant text-center py-2">
+                      {first}
+                    </p>
                   </div>
-
-                  <a
-                      href={p.website || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-4 inline-flex w-full items-center justify-center rounded-full px-6 py-3 text-white text-xl font-medium bg-[#C18A8F] hover:opacity-95 transition shadow-md"
-                  >
-                    View my Demo
-                  </a>
                 </div>
+                <a
+                    href={p.website || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-flex w-full items-center justify-center rounded-full px-6 py-3 text-white text-2xl bg-[#C18A8F] hover:opacity-95 transition shadow-md"
+                >
+                  View my Demo
+                </a>
+
+
+              </div>
             );
           })}
         </div>
       </section>
 
-
       {/* Planning Guide title */}
       <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
         <div className="flex-1">
-          <div className="border-t-4 border-[#C18A8F]"></div>
-          <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
+        <div className="border-t-4 border-[#C18A8F]" />
+          <div className="border-t-2 border-[#C18A8F] mt-[6px]" />
         </div>
         <h2 className="px-16 text-5xl font-cormorant tracking-wide">WEDDING PLANNING GUIDE</h2>
         <div className="flex-1">
-          <div className="border-t-4 border-[#C18A8F]"></div>
-          <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
+          <div className="border-t-4 border-[#C18A8F]" />
+          <div className="border-t-2 border-[#C18A8F] mt-[6px]" />
         </div>
       </div>
 
       <section id="wedding-planning-guide" className="scroll-mt-0 px-4 md:px-6 pb-24">
-        {/* Hero image (centered, narrower like screenshot) */}
+        {/* Hero image */}
         <div className="max-w-5xl mx-auto">
           <div className="relative w-full">
             <Image
-                src="/client_portal/portal_wdg_photo.webp"
-                alt="Wedding Planning Guide"
-                width={1400}
-                height={560}
-                className="w-full h-auto object-cover rounded"
-                priority
+              src="/client_portal/portal_wdg_photo.webp"
+              alt="Wedding Planning Guide"
+              width={1400}
+              height={560}
+              className="w-full h-auto object-cover rounded"
+              priority
             />
           </div>
         </div>
@@ -429,15 +427,13 @@ export default function Home() {
 
             {contractId ? (
               <button
-                onClick={() =>
-                  window.open(`/client_portal/wedding-day-guide/${contractId}`, '_blank')
-                }
-                className="mt-8 mx-auto block w-[260px] md:w-[320px] rounded-full px-8 py-4 text-white text-2xl font-medium bg-[#C18A8F] hover:opacity-95 transition shadow-md"
+                onClick={() => window.open(`/client_portal/wedding-day-guide/${contractId}`, '_blank')}
+                className="mt-4 inline-flex w-full items-center justify-center rounded-full px-6 py-3 text-white text-xl bg-[#C18A8F] hover:opacity-95 transition shadow-md"
               >
                 Wedding Day Guide
               </button>
             ) : (
-              <span className="mt-8 mx-auto block w-[260px] md:w-[320px] rounded-full px-8 py-4 text-white text-2xl font-medium bg-[#C18A8F]/70 cursor-not-allowed text-center">
+              <span className="mt-8 mx-auto block w-[260px] md:w-[320px] rounded-full px-8 py-4 text-white text-2xl font-semibold bg-[#C18A8F]/70 cursor-not-allowed text-center">
                 Wedding Day Guide
               </span>
             )}
@@ -456,7 +452,7 @@ export default function Home() {
               href="https://www.essenceweddings.com/wedding-planning"
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-8 mx-auto block w-[260px] md:w-[320px] rounded-full px-8 py-4 text-white text-2xl font-medium bg-[#C18A8F] hover:opacity-95 transition shadow-md text-center"
+              className="mt-4 inline-flex w-full items-center justify-center rounded-full px-6 py-3 text-white text-2xl bg-[#C18A8F] hover:opacity-95 transition shadow-md"
             >
               Timeline Article
             </a>
@@ -467,13 +463,13 @@ export default function Home() {
       {/* Messages title */}
       <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
         <div className="flex-1">
-          <div className="border-t-4 border-[#C18A8F]"></div>
-          <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
+          <div className="border-t-4 border-[#C18A8F]" />
+          <div className="border-t-2 border-[#C18A8F] mt-[6px]" />
         </div>
         <h2 className="px-16 text-5xl font-cormorant tracking-wide">MESSAGES</h2>
         <div className="flex-1">
-          <div className="border-t-4 border-[#C18A8F]"></div>
-          <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
+          <div className="border-t-4 border-[#C18A8F]" />
+          <div className="border-t-2 border-[#C18A8F] mt-[6px]" />
         </div>
       </div>
 
@@ -484,18 +480,25 @@ export default function Home() {
           <div className="bg-gray-100 rounded p-6 min-h-[120px]">
             {messages.length > 0 ? (
               messages.map(note => (
-                <div key={note.id} className="border-b border-gray-300 pb-3 mb-3 last:border-none last:pb-0 last:mb-0">
-                  <p className="text-sm text-gray-600 italic mb-1">
-                    From {note.created_by.username} • {new Date(note.created_at).toLocaleString()}
+                <div
+                  key={note.id}
+                  className="border-b border-gray-300 pb-4 mb-4 last:border-none last:pb-0 last:mb-0"
+                >
+                  <p className="text-base text-gray-700 italic mb-1">
+                    From {note.created_by.username} •{" "}
+                    {new Date(note.created_at).toLocaleString()}
                   </p>
-                  <p className="text-black">{note.content}</p>
+                  <p className="text-black text-lg leading-relaxed">
+                    {note.content}
+                  </p>
                 </div>
               ))
             ) : (
-              <p className="italic text-gray-600">No contract messages available.</p>
+              <p className="italic text-gray-600 text-base">
+                No contract messages available.
+              </p>
             )}
           </div>
-
           {/* Message form */}
           <form onSubmit={handlePostMessage} className="mt-6">
             <textarea
@@ -503,13 +506,12 @@ export default function Home() {
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Write your message here..."
               rows={3}
-              className="w-full p-4 border border-gray-400 rounded focus:outline-none focus:border-lightpink"
-            ></textarea>
-
+              className="w-full p-4 text-lg leading-relaxed border border-gray-400 rounded focus:outline-none focus:border-[#C18A8F]"
+            />
             <div className="flex justify-end mt-4">
               <button
                 type="submit"
-                className="bg-[#C18A8F] text-white text-2xl font-medium rounded-full px-8 py-2 hover:opacity-95 transition"
+                className="bg-[#C18A8F] text-white text-2xl font-normal rounded-full px-8 py-3 hover:opacity-95 transition"
               >
                 Send Message
               </button>
@@ -521,13 +523,13 @@ export default function Home() {
       {/* Files title */}
       <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
         <div className="flex-1">
-          <div className="border-t-4 border-[#C18A8F]"></div>
-          <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
+          <div className="border-t-4 border-[#C18A8F]" />
+          <div className="border-t-2 border-[#C18A8F] mt-[6px]" />
         </div>
         <h2 className="px-16 text-5xl font-cormorant tracking-wide">FILES</h2>
         <div className="flex-1">
-          <div className="border-t-4 border-[#C18A8F]"></div>
-          <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
+          <div className="border-t-4 border-[#C18A8F]" />
+          <div className="border-t-2 border-[#C18A8F] mt-[6px]" />
         </div>
       </div>
 
@@ -536,7 +538,7 @@ export default function Home() {
           {/* Left: hero image */}
           <div className="w-full">
             <Image
-              src="/client_portal/portal_files_photo.webp"      // put your image in /public/client_portal/files-hero.png
+              src="/client_portal/portal_files_photo.webp"
               alt="Files section hero"
               width={800}
               height={600}
@@ -557,7 +559,7 @@ export default function Home() {
                       href={doc.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full md:w-[640px] inline-flex items-center rounded-full px-8 py-5 text-white text-xl font-medium bg-[#C18A8F] hover:opacity-95 transition shadow-md"
+                      className="w-full md:w-[640px] inline-flex items-center rounded-full px-8 py-5 text-white text-lg font-gothic font-normal bg-[#C18A8F] hover:opacity-95 transition shadow-md"
                       title={doc.name}
                     >
                       <span className="truncate">{doc.name}</span>
@@ -572,30 +574,27 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FAQ (wrap title + content under one anchor) */}
+      {/* FAQ */}
       <section id="faq" className="scroll-mt-0">
         {/* Title row */}
         <div className="text-black flex items-center justify-center my-8 max-w-[80%] mx-auto">
           <div className="flex-1">
-            <div className="border-t-4 border-[#C18A8F]"></div>
-            <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
+            <div className="border-t-4 border-[#C18A8F]" />
+            <div className="border-t-2 border-[#C18A8F] mt-[6px]" />
           </div>
           <h2 className="px-16 text-5xl font-cormorant tracking-wide text-center">
             FREQUENTLY ASKED QUESTIONS
           </h2>
           <div className="flex-1">
-            <div className="border-t-4 border-[#C18A8F]"></div>
-            <div className="border-t-2 border-[#C18A8F] mt-[6px]"></div>
+            <div className="border-t-4 border-[#C18A8F]" />
+            <div className="border-t-2 border-[#C18A8F] mt-[6px]" />
           </div>
         </div>
 
-        {/* Content (used to be <section id="faq" ...>) */}
-        <div className="px-4 md:px-6 pb-24 text-black font-albert">
-          <div className="max-w-5xl mx-auto">
-            {/* ...your existing FAQ accordion code stays the same here... */}
-          </div>
+        {/* Content */}
+        <div className="px-4 md:px-6 pb-24 text-black">
+          <div className="max-w-5xl mx-auto" />
         </div>
-
 
         <div className="max-w-5xl mx-auto">
           {[1, 2, 3, 4, 5].map((index) => {
@@ -609,16 +608,15 @@ export default function Home() {
 
             return (
               <div key={index} className="py-6">
-                {/* Row: question + chevron */}
                 <button
                   onClick={() => setFaqOpen(open ? null : index)}
                   className="w-full flex items-center justify-between text-left"
                   aria-expanded={open}
                   aria-controls={`faq-content-${index}`}
                 >
-                  <h3 className="text-2xl md:text-[26px] font-semibold font-century">{question}</h3>
+                  <h3 className="text-2xl md:text-[26px] font-semibold font-gothic">{question}</h3>
                   <svg
-                      className={`w-7 h-7 transition-transform ${open ? 'rotate-180' : 'rotate-0'}`}
+                    className={`w-7 h-7 transition-transform ${open ? 'rotate-180' : 'rotate-0'}`}
                     viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
                     aria-hidden="true"
                   >
@@ -626,74 +624,67 @@ export default function Home() {
                   </svg>
                 </button>
 
-                {/* Dusty-rose divider */}
                 <div className="mt-4 border-t-2 border-[#C18A8F]" />
 
-                {/* Answer */}
                 <div
                   id={`faq-content-${index}`}
                   className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
                 >
                   <div className="overflow-hidden">
-                    <div className="pt-6 text-base md:text-lg leading-relaxed font-century">
+                    <div className="pt-6 text-base md:text-lg leading-relaxed font-gothic">
                       {index === 1 && (
-                          <p>
-                            All payments are due 60 days before your wedding.
-                            You will receive an invoice from our office which will outline your services and your
-                            balance.
-                          </p>
+                        <p>
+                          All payments are due 60 days before your wedding.
+                          You will receive an invoice from our office which will outline your services and your
+                          balance.
+                        </p>
                       )}
 
                       {index === 2 && (
-                          <div className="space-y-2">
-                            <p>There are four ways to pay your balance:</p>
-                            <ul className="list-disc list-inside space-y-1">
-                              <li>Online with a credit card (There is a 3% credit/debit card fee)</li>
-                              <li>Online with an E‑Check (There is a $5 ACH fee)</li>
-                              <li>
-                                Mail a check payable to Essence Photo and Video (Send to 1300 Remington Rd Suite B,
-                                Schaumburg, IL 60173)
-                              </li>
-                              <li>Money Order payable to Essence Photo and Video (See address above)</li>
-                              <li>In person with cash at any of our locations by appointment</li>
-                            </ul>
-                            <p>We require deposits to hold your wedding day. Deposits may be paid in any of the options
-                              listed above.</p>
-                          </div>
+                        <div className="space-y-2">
+                          <p>There are four ways to pay your balance:</p>
+                          <ul className="list-disc list-inside space-y-1">
+                            <li>Online with a credit card (There is a 3% credit/debit card fee)</li>
+                            <li>Online with an E-Check (There is a $5 ACH fee)</li>
+                            <li>Mail a check payable to Essence Photo and Video (Send to 1300 Remington Rd Suite B, Schaumburg, IL 60173)</li>
+                            <li>Money Order payable to Essence Photo and Video (See address above)</li>
+                            <li>In person with cash at any of our locations by appointment</li>
+                          </ul>
+                          <p>We require deposits to hold your wedding day. Deposits may be paid in any of the options listed above.</p>
+                        </div>
                       )}
 
                       {index === 3 && (
-                          <p>
-                            Photographer demos are available above to preview. Once you have made a decision, please
-                            contact us below.
-                            If you do not have a preference for a photographer, Essence can choose one for you.
-                          </p>
+                        <p>
+                          Photographer demos are available above to preview. Once you have made a decision, please
+                          contact us below. If you do not have a preference for a photographer, Essence can choose one for you.
+                        </p>
                       )}
 
                       {index === 4 && (
-                          <p>
-                            Essence does not offer a face‑to‑face meeting with your photographer/videographer.
-                            They will call you the week of your wedding to go over the details of the day.
-                          </p>
+                        <p>
+                          Essence does not offer a face-to-face meeting with your photographer/videographer.
+                          They will call you the week of your wedding to go over the details of the day.
+                        </p>
                       )}
 
                       {index === 5 && (
-                          <div className="space-y-4">
-                            <p>
-                              You can send the event coordinator a message in the window below in the Messages section.
-                            </p>
-                            <p className="text-lg">
-                              Need help planning?{' '}
-                              <a
-                                  href="https://www.essenceweddings.com/wedding-planning"
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-goodblue underline hover:text-dark-pistachio"
-                              >
-                                Click here to read our article on timing for your wedding day
-                              </a>
-                            </p>
-                          </div>
+                        <div className="space-y-4">
+                          <p>
+                            You can send the event coordinator a message in the window below in the Messages section.
+                          </p>
+                          <p className="text-lg">
+                            Need help planning?{' '}
+                            <a
+                              href="https://www.essenceweddings.com/wedding-planning"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#1b254a] underline hover:text-[#0f1631]"
+                            >
+                              Click here to read our article on timing for your wedding day
+                            </a>
+                          </p>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -707,7 +698,7 @@ export default function Home() {
       <footer className="bg-grayblue text-black py-6">
         <div className="max-w-4xl mx-auto flex justify-between items-center px-4">
           <div>
-            <h3 className="text-xl font-bold">Essence Weddings</h3>
+            <h3 className="text-xl font-cormorant font-bold">Essence Weddings</h3>
             <p className="text-sm">Creating memorable experiences</p>
           </div>
           <div>
