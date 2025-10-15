@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% load static %}
+{% load app_filters %}
+
+{% block content %}
+<div class="outer-container">
+  <div class="search-results">
+    <h4>{{ heading }}</h4>
+    <button onclick="history.back()" class="btn-dusty-pink">Go Back</button>
+
+    <form method="get" class="report-form">
+      <!-- Date Range -->
+      <label for="date_range">Date Range:</label>
+      <select id="date_range" name="date_range" onchange="toggleCustomDates()">
+        {% for key, label in DATE_RANGE_DISPLAY.items %}
+          <option value="{{ key }}" {% if date_range == key %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+        <option value="custom" {% if date_range == "custom" %}selected{% endif %}>Custom</option>
+      </select>
+
+      <!-- Custom Dates -->
+      <div id="custom-dates" {% if date_range != "custom" %}style="display:none;"{% endif %}>
+        <label for="start_date">Start Date:</label>
+        <input type="date" id="start_date" name="start_date" value="{{ start_date|default_if_none:'' }}">
+        <label for="end_date">End Date:</label>
+        <input type="date" id="end_date" name="end_date" value="{{ end_date|default_if_none:'' }}">
+      </div>
+
+      <!-- Location -->
+      <label for="location">Location:</label>
+      <select id="location" name="location">
+        <option value="all" {% if selected_location == 'all' %}selected{% endif %}>All Locations</option>
+        {% for location in locations %}
+          <option value="{{ location.id }}" {% if selected_location == location.id|stringformat:"s" %}selected{% endif %}>{{ location.name }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Group By -->
+      <label for="group_by">Group By:</label>
+      <select id="group_by" name="group_by">
+        <option value="daily" {% if group_by == 'daily' %}selected{% endif %}>Daily</option>
+        <option value="weekly" {% if group_by == 'weekly' %}selected{% endif %}>Weekly</option>
+      </select>
+
+      <!-- Service Type -->
+      <label for="service_type">Service Type:</label>
+      <select id="service_type" name="service_type">
+        <option value="all" {% if selected_service_type == 'all' %}selected{% endif %}>All Types</option>
+        {% for st in service_types %}
+          <option value="{{ st.id }}" {% if selected_service_type == st.id|stringformat:"s" %}selected{% endif %}>{{ st.name }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Package -->
+      <label for="package">Package:</label>
+      <select id="package" name="package">
+        <option value="all" {% if selected_package == 'all' %}selected{% endif %}>All Packages</option>
+        {% for p in packages %}
+          <option value="{{ p.id }}" {% if selected_package == p.id|stringformat:"s" %}selected{% endif %}>
+            {{ p.service_type.name }} — {{ p.name }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <button type="submit" class="btn-dusty-pink">Generate</button>
+    </form>
+
+    <div class="search-results">
+      <h6>{{ group_by|title }} Services between {{ start_date }} and {{ end_date }}{% if selected_location != 'all' %} · {{ locations|get_location_name:selected_location }}{% endif %}</h6>
+    <table>
+      <thead>
+        <tr>
+          <th>{{ group_by|title }}</th>
+          <th>Photo (count • packages)</th>
+          <th>Video (count • packages)</th>
+          <th>DJ (count • packages)</th>
+          <th>Photobooth (count • packages)</th>
+          <th>Total Services</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr class="summary-row">
+          <td><strong>{{ r.period_label }}</strong></td>
+          <td>{{ r.photo.count }}{% if r.photo.names %}<br><small>{{ r.photo.names|join:", " }}</small>{% endif %}</td>
+          <td>{{ r.video.count }}{% if r.video.names %}<br><small>{{ r.video.names|join:", " }}</small>{% endif %}</td>
+          <td>{{ r.dj.count }}{% if r.dj.names %}<br><small>{{ r.dj.names|join:", " }}</small>{% endif %}</td>
+          <td>{{ r.booth.count }}{% if r.booth.names %}<br><small>{{ r.booth.names|join:", " }}</small>{% endif %}</td>
+          <td>{{ r.total_services }}</td>
+        </tr>
+
+        {% if r.contracts %}
+        <tr>
+          <td colspan="6">
+            <table class="inner-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Contract Number</th>
+                  <th>Event Date</th>
+                  <th>Location</th>
+                  <th>Photo</th>
+                  <th>Video</th>
+                  <th>DJ</th>
+                  <th>Photobooth</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for c in r.contracts %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>
+                    <a href="{% url 'contracts:contract_detail' c.id %}">
+                      {{ c.custom_number }}
+                    </a>
+                  </td>
+                  <td>{{ c.event_date|date:"M d, Y" }}</td>
+                  <td>{{ c.location }}</td>
+                  <td>{{ c.photo_pkg }}</td>
+                  <td>{{ c.video_pkg }}</td>
+                  <td>{{ c.dj_pkg }}</td>
+                  <td>{{ c.booth_pkg }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        {% endif %}
+        {% empty %}
+        <tr><td colspan="6">No services found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleCustomDates() {
+    const dateRange = document.getElementById("date_range").value;
+    const customDatesDiv = document.getElementById("custom-dates");
+    customDatesDiv.style.display = dateRange === "custom" ? "block" : "none";
+  }
+  toggleCustomDates();
+</script>
+{% endblock %}

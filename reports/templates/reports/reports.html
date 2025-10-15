@@ -48,6 +48,8 @@
                         <ul class="report-list">
                             {% if request.user|in_group:"AllReportViewer" or request.user|in_group:"EventStaffPayrollReportViewer" %}
                                 <li><a href="{% url 'reports:event_staff_payroll_report' %}">Event Staff Payroll Report</a></li>
+                                <li><a href="{% url 'reports:services_report' %}">Services Report</a></li>
+
                             {% endif %}
                         </ul>
                     </td>
