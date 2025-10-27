@@ -25,6 +25,9 @@ urlpatterns = [
 
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
+    path("api/", include("apps.backend.api.urls")),
+
+
 
     path('admin/', admin.site.urls),
     path('bookings/', include('bookings.urls', namespace='bookings')),

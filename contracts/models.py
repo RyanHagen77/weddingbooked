@@ -11,7 +11,7 @@ from django.utils import timezone
 import re
 from django.db import transaction
 from bookings.constants import SERVICE_ROLE_MAPPING  # Adjust the import path as needed
-from services.models import ServiceType
+from django.core.exceptions import ValidationError
 
 
 from communication.utils import send_contract_booked_email
@@ -146,6 +146,41 @@ class DiscountRule(models.Model):
     def __str__(self):
         return f"{self.get_discount_type_display()} - Version {self.version} - {self.base_amount}"
 
+    # ---- Prevent edits to a version once any contract references it ----
+    def clean(self):
+        # Only enforce when updating an existing rule
+        if not self.pk:
+            return
+
+        # Local import to avoid circular import at module load
+        from contracts.models import Contract
+
+        if self.discount_type == self.PACKAGE:
+            referenced = Contract.objects.filter(package_discount_version=self.version).exists()
+        else:  # self.SUNDAY
+            referenced = Contract.objects.filter(sunday_discount_version=self.version).exists()
+
+        if referenced:
+            # Compare with stored values to see what's changing
+            old = type(self).objects.get(pk=self.pk)
+
+            # Allow toggling is_active, but block changes to identity/amount/version
+            identity_or_amount_changed = any([
+                self.base_amount != old.base_amount,
+                self.discount_type != old.discount_type,
+                self.version != old.version,
+            ])
+
+            if identity_or_amount_changed:
+                raise ValidationError(
+                    "This rule version is referenced by existing contracts and cannot be modified. "
+                    "Create a new version instead."
+                )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
 
 class LeadSourceCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -197,21 +232,21 @@ class Contract(models.Model):
     # Contact Information
     is_code_92 = models.BooleanField(default=False, verbose_name="Code 92 Flag")
     lead_source_details = models.CharField(max_length=255, blank=True)
-    bridal_party_qty = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=True, blank=True)
-    guests_qty = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=True, blank=True)
+    bridal_party_qty = models.PositiveIntegerField(validators=[MinValueValidator(0)], null=True, blank=True)
+    guests_qty = models.PositiveIntegerField(validators=[MinValueValidator(0)], null=True, blank=True)
 
     # Ceremony and Reception Information
     ceremony_site = models.CharField(max_length=255, null=True, blank=True)
     ceremony_city = models.CharField(max_length=255, null=True, blank=True)
     ceremony_state = models.CharField(max_length=255, null=True, blank=True)
     ceremony_contact = models.CharField(max_length=255, null=True, blank=True)
-    ceremony_phone = models.CharField(max_length=12, validators=[phone_validator], blank=True, null=True)
+    ceremony_phone = models.CharField(max_length=20, validators=[phone_validator], blank=True, null=True)
     ceremony_email = models.EmailField(validators=[EmailValidator()], null=True, blank=True)
     reception_site = models.CharField(max_length=255, null=True, blank=True)
     reception_city = models.CharField(max_length=255, null=True, blank=True)
     reception_state = models.CharField(max_length=255, null=True, blank=True)
     reception_contact = models.CharField(max_length=255, null=True, blank=True)
-    reception_phone = models.CharField(max_length=12, validators=[phone_validator], blank=True, null=True)
+    reception_phone = models.CharField(max_length=20, validators=[phone_validator], blank=True, null=True)
     reception_email = models.EmailField(validators=[EmailValidator()], null=True, blank=True)
 
     # Miscellaneous Fields
@@ -238,11 +273,11 @@ class Contract(models.Model):
 
     # Additional Event Staff
     prospect_photographer1 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
-                                               related_name='prospect_photographer1_contracts')
+                                               blank=True, related_name='prospect_photographer1_contracts')
     prospect_photographer2 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
-                                               related_name='prospect_photographer2_contracts')
+                                               blank=True, related_name='prospect_photographer2_contracts')
     prospect_photographer3 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
-                                               related_name='prospect_photographer3_contracts')
+                                               blank=True, related_name='prospect_photographer3_contracts')
 
     # Service Packages and Options
     photography_package = models.ForeignKey('services.Package', on_delete=models.SET_NULL, null=True, blank=True,
@@ -287,6 +322,18 @@ class Contract(models.Model):
     custom_text = models.TextField(blank=True, null=True)
     package_discount_version = models.IntegerField(default=1)
     sunday_discount_version = models.IntegerField(default=1)
+
+    bypass_package_discount = models.BooleanField(default=False)
+    bypass_sunday_discount  = models.BooleanField(default=False)
+    bypass_all_discounts    = models.BooleanField(default=False)
+
+    # (optional) audit fields you already added:
+    discount_bypass_reason = models.CharField(max_length=255, blank=True)
+    discount_bypass_set_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="set_discount_bypass"
+    )
+    discount_bypass_set_at = models.DateTimeField(null=True, blank=True)
     other_discounts = models.ManyToManyField('Discount', related_name='contracts', blank=True)
     additional_products = models.ManyToManyField('products.AdditionalProduct', through='products.ContractProduct',
                                                  related_name='contracts')
@@ -301,8 +348,8 @@ class Contract(models.Model):
     calculated_discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    amount_paid_field = models.DecimalField(max_digits=10, decimal_places=2, default=0, editable=False)
-    balance_due_field = models.DecimalField(max_digits=10, decimal_places=2, default=0, editable=False)
+    amount_paid_field_legacy = models.DecimalField(max_digits=10, decimal_places=2, default=0, editable=False)
+    balance_due_field_legacy = models.DecimalField(max_digits=10, decimal_places=2, default=0, editable=False)
 
     def __str__(self):
         return self.custom_contract_number or f"Contract {self.contract_id}"
@@ -322,65 +369,102 @@ class Contract(models.Model):
             return self.lead_source_details
         return 'Unknown Source'
 
-    def calculate_photography_cost(self):
-        photography_base_cost = self.photography_package.price if self.photography_package else Decimal('0.00')
-        additional_photography_cost = self.photography_additional.price if self.photography_additional else Decimal(
-            '0.00')
-        engagement_session_cost = self.engagement_session.price if self.engagement_session else Decimal('0.00')
-        photography_service_type = ServiceType.objects.get(name='Photography')
-        photography_overtime_cost = sum(
-            overtime.hours * overtime.overtime_option.rate_per_hour
-            for overtime in self.overtimes.filter(overtime_option__service_type=photography_service_type)
-        )
-        total_photography_cost = (photography_base_cost + additional_photography_cost +
-                                  engagement_session_cost + photography_overtime_cost)
-        return total_photography_cost.quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
+    def _overtime_cost_for(self, service_type_name: str) -> Decimal:
+        """
+        Sum hours * rate for this contract's overtimes for a given service type name.
+        Uses __name filter to avoid a ServiceType lookup.
+        """
+        # If you often call this multiple times per request, consider
+        # self._overtimes_cache = list(self.overtimes.select_related('overtime_option','overtime_option__service_type').all())
+        # and sum from the cache instead of hitting DB repeatedly.
+        qs = self.overtimes.select_related(
+            "overtime_option", "overtime_option__service_type"
+        ).filter(overtime_option__service_type__name=service_type_name)
 
-    def calculate_videography_cost(self):
-        videography_base_cost = self.videography_package.price if self.videography_package else Decimal('0.00')
-        additional_videography_cost = self.videography_additional.price if self.videography_additional else Decimal(
-            '0.00')
-        videography_service_type = ServiceType.objects.get(name='Videography')
-        videography_overtime_cost = sum(
-            overtime.hours * overtime.overtime_option.rate_per_hour
-            for overtime in self.overtimes.filter(overtime_option__service_type=videography_service_type)
-        )
-        return (videography_base_cost + additional_videography_cost + videography_overtime_cost).quantize(
-            Decimal('.00'), rounding=ROUND_HALF_UP)
+        total = Decimal("0.00")
+        for ot in qs:
+            hours = getattr(ot, "hours", 0) or 0
+            rate = getattr(ot.overtime_option, "rate_per_hour", Decimal("0.00")) or Decimal("0.00")
+            total += Decimal(hours) * Decimal(rate)
+        return total
 
-    def calculate_dj_cost(self):
-        dj_base_cost = self.dj_package.price if self.dj_package else Decimal('0.00')
-        additional_dj_cost = self.dj_additional.price if self.dj_additional else Decimal('0.00')
-        dj_service_type = ServiceType.objects.get(name='Dj')
-        dj_overtime_cost = sum(
-            overtime.hours * overtime.overtime_option.rate_per_hour
-            for overtime in self.overtimes.filter(overtime_option__service_type=dj_service_type)
-        )
-        return (dj_base_cost + additional_dj_cost + dj_overtime_cost).quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
+    def _money(self, value) -> Decimal:
+        """Ensure Decimal with 2dp, safe for None."""
+        d = value if isinstance(value, Decimal) else Decimal(str(value or "0.00"))
+        return d.quantize(Decimal(".00"), rounding=ROUND_HALF_UP)
 
-    def calculate_photobooth_cost(self):
-        photobooth_base_cost = self.photobooth_package.price if self.photobooth_package else Decimal('0.00')
-        additional_photobooth_cost = self.photobooth_additional.price if self.photobooth_additional else Decimal('0.00')
-        photobooth_service_type = ServiceType.objects.get(name='Photobooth')
-        photobooth_overtime_cost = sum(
-            overtime.hours * overtime.overtime_option.rate_per_hour
-            for overtime in self.overtimes.filter(overtime_option__service_type=photobooth_service_type)
+    def _effective_tax_rate(self) -> Decimal:
+        """
+        Prefer the explicit field `self.tax_rate` (even before save),
+        else fall back to `self.location.tax_rate`. Always return Decimal.
+        """
+        if self.tax_rate is not None:
+            return Decimal(self.tax_rate)
+        return Decimal(getattr(self.location, "tax_rate", Decimal("0.00")) or Decimal("0.00"))
+
+    def _calc_service_cost(self, base_pkg, additional_opt, service_type_name: str,
+                           extra: Decimal = Decimal("0.00")) -> Decimal:
+        """
+        Generic calculator for service cost = base + additional + overtime(+ extra).
+        `base_pkg` and `additional_opt` are model instances (may be None) with a `.price` field.
+        `extra` lets you add one more number (e.g. engagement session).
+        """
+        base_price = getattr(base_pkg, "price", None) or Decimal("0.00")
+        additional_price = getattr(additional_opt, "price", None) or Decimal("0.00")
+        overtime_cost = self._overtime_cost_for(service_type_name)
+        total = Decimal(base_price) + Decimal(additional_price) + overtime_cost + Decimal(extra or "0.00")
+        return self._money(total)
+
+    def calculate_photography_cost(self) -> Decimal:
+        engagement = getattr(self.engagement_session, "price", None) or Decimal("0.00")
+        return self._calc_service_cost(
+            base_pkg=self.photography_package,
+            additional_opt=self.photography_additional,
+            service_type_name="Photography",
+            extra=engagement,
         )
-        return (photobooth_base_cost + additional_photobooth_cost +
-                photobooth_overtime_cost).quantize(Decimal('.00'),
-                                                   rounding=ROUND_HALF_UP)
+
+    def calculate_videography_cost(self) -> Decimal:
+        return self._calc_service_cost(
+            base_pkg=self.videography_package,
+            additional_opt=self.videography_additional,
+            service_type_name="Videography",
+        )
+
+    def calculate_dj_cost(self) -> Decimal:
+        # Your service type is spelled "Dj" elsewhere; if the service_type.name is actually "Dj",
+        # keep it. If it's "DJ", change the string here to match.
+        return self._calc_service_cost(
+            base_pkg=self.dj_package,
+            additional_opt=self.dj_additional,
+            service_type_name="Dj",
+        )
+
+    def calculate_photobooth_cost(self) -> Decimal:
+        return self._calc_service_cost(
+            base_pkg=self.photobooth_package,
+            additional_opt=self.photobooth_additional,
+            service_type_name="Photobooth",
+        )
 
     def is_sunday_event(self):
+        """Return True if the contract’s event_date falls on a Sunday."""
         return self.event_date.weekday() == 6
 
     def calculate_package_discount(self):
-        discount_rule = DiscountRule.objects.filter(
+        """Package discount (version-pinned, stable over time).
+        - Honors: bypass_package_discount and bypass_all_discounts.
+        - Uses DiscountRule(PACKAGE) for the version pinned on this contract.
+        - Ignores `is_active` so historical contracts remain stable even if the rule is later deactivated.
+        """
+        if getattr(self, 'bypass_all_discounts', False) or getattr(self, 'bypass_package_discount', False):
+            return Decimal('0.00')
+
+        rule = DiscountRule.objects.filter(
             discount_type=DiscountRule.PACKAGE,
             version=self.package_discount_version,
-            is_active=True
         ).first()
-
-        if not discount_rule:
+        if not rule:
             return Decimal('0.00')
 
         selected_services = [self.photography_package, self.videography_package, self.dj_package]
@@ -388,7 +472,7 @@ class Contract(models.Model):
         is_photobooth_selected = self.photobooth_package is not None
 
         discount = Decimal('0.00')
-        base_amount = discount_rule.base_amount
+        base_amount = rule.base_amount or Decimal('0.00')
 
         if len(selected_services) >= 2:
             discount += base_amount * len(selected_services)
@@ -400,25 +484,54 @@ class Contract(models.Model):
         return discount.quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
 
     def calculate_sunday_discount(self):
-        if self.is_sunday_event():
-            selected_services = [self.photography_package, self.videography_package, self.dj_package,
-                                 self.photobooth_package]
-            selected_services = [p for p in selected_services if p is not None]
-            discount = Decimal('100.00') * len(selected_services)
-            return discount.quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
-        return Decimal('0.00')
+        """Sunday discount (version-pinned, stable over time).
+        - Uses DiscountRule(Sunday) for the version pinned on this contract.
+        - FIXED amount 'base_amount' **per selected service**.
+        - Honors: bypass_sunday_discount and bypass_all_discounts.
+        - Ignores `is_active` so historical contracts remain stable even if the rule is later deactivated.
+        """
+        if getattr(self, 'bypass_all_discounts', False) or getattr(self, 'bypass_sunday_discount', False):
+            return Decimal('0.00')
+
+        if not self.is_sunday_event():
+            return Decimal('0.00')
+
+        rule = DiscountRule.objects.filter(
+            discount_type=DiscountRule.SUNDAY,
+            version=self.sunday_discount_version,
+        ).first()
+        if not rule:
+            return Decimal('0.00')
+
+        selected_services = [
+            self.photography_package, self.videography_package,
+            self.dj_package, self.photobooth_package
+        ]
+        count = sum(1 for s in selected_services if s is not None)
+
+        discount = (rule.base_amount or Decimal('0.00')) * Decimal(count or 0)
+        return Decimal(discount).quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
 
     @property
     def other_discounts_total(self):
+        """Total of manual/other discounts attached to this contract."""
         return self.other_discounts.aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
 
     def calculate_discount(self):
+        """Total discount across all categories."""
+        if getattr(self, 'bypass_all_discounts', False):
+            return Decimal('0.00')
+
         total_discount = Decimal('0.00')
-        total_discount += self.calculate_package_discount() + self.calculate_sunday_discount()
+        total_discount += self.calculate_package_discount()
+        total_discount += self.calculate_sunday_discount()
+        # Manual/other discounts are always included; delete to remove their effect
         total_discount += self.other_discounts_total
-        return total_discount
+
+        return total_discount.quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
 
     def calculate_total_service_cost_after_discounts(self):
+        """Subtotal of all services minus discounts (never below $0)."""
         subtotal = sum([
             self.calculate_photography_cost(),
             self.calculate_videography_cost(),
@@ -427,6 +540,10 @@ class Contract(models.Model):
         ])
         total_discount = self.calculate_discount()
         total_cost_after_discounts = subtotal - total_discount
+
+        if total_cost_after_discounts < Decimal('0.00'):
+            total_cost_after_discounts = Decimal('0.00')
+
         return total_cost_after_discounts.quantize(Decimal('.00'), rounding=ROUND_HALF_UP)
 
     def calculate_product_subtotal(self):
@@ -448,17 +565,13 @@ class Contract(models.Model):
         )
 
     def calculate_tax(self):
-        """
-        Calculate tax based on taxable products and formalwear rentals.
-        """
         taxable_amount = sum(
-            contract_product.product.price * contract_product.quantity
-            for contract_product in self.contract_products.all()
-            if contract_product.product.is_taxable
+            cp.product.price * cp.quantity
+            for cp in self.contract_products.all()
+            if getattr(cp.product, "is_taxable", False)
         )
-
-        tax_rate = self.location.tax_rate if self.location else Decimal('0.00')
-        return taxable_amount * tax_rate / 100
+        tax_rate = self._effective_tax_rate()
+        return self._money(taxable_amount * tax_rate / Decimal("100"))
 
     def calculate_total_service_fees(self):
         return sum(fee.amount for fee in self.servicefees.all())
@@ -539,14 +652,37 @@ class Contract(models.Model):
 
     display_total_cost.short_description = "Total Cost"
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['event_date']),
+            models.Index(fields=['status']),
+            models.Index(fields=['location']),
+            models.Index(fields=['csr']),
+            models.Index(fields=['coordinator']),
+            models.Index(fields=['status', 'event_date']),
+            models.Index(fields=['location', 'event_date']),
+            models.Index(fields=['csr', 'event_date']),
+        ]
+        ordering = ['-contract_date', '-event_date']
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(tax_rate__gte=0) & models.Q(tax_rate__lte=100),
+                name="contracts_tax_rate_0_100",
+            ),
+        ]
+
     def save(self, *args, **kwargs):
-        """Custom save method to handle custom contract number generation, tax calculations, status updates, and email notifications."""
+        """
+        Custom save with safe retry on custom_contract_number collisions.
+        - Generate number BEFORE first save.
+        - On duplicate, ALWAYS recompute max suffix from DB and retry.
+        """
+
         print("Entering save method")
 
-        # Check if the contract's status is changing to COMPLETED or BOOKED
+        # ----- side-effect flags (unchanged) -----
         user_status_update_needed = False
         send_salesperson_email = False
-
         if self.pk:
             old_status = Contract.objects.get(pk=self.pk).status
             if old_status != self.status:
@@ -555,71 +691,109 @@ class Contract(models.Model):
                 elif self.status == self.BOOKED:
                     send_salesperson_email = True
 
-        # Generate custom contract number if not already set
+        # ----- helpers -----
+        def _letters3_from_client_last():
+            name = (getattr(self.client, "primary_contact", "") or "").strip()
+            if not name:
+                return "UNK"
+            last = name.split()[-1]
+            letters = re.sub(r"[^A-Za-z]", "", last) or "UNK"
+            return letters[:3].upper()
+
+        def _next_suffix_for_month(yy: str, mm: str) -> int:
+            """
+            Look at ALL contracts that match -YY-MM-*, ignoring the AAA prefix,
+            and return max(suffix) + 1.
+            """
+            # pattern like 'AAA-25-10-<digits>' — AAA ignored
+            regex = rf'^[A-Z]{{3}}-{yy}-{mm}-(\d+)$'
+            existing = (Contract.objects
+                        .filter(custom_contract_number__regex=regex)
+                        .values_list("custom_contract_number", flat=True))
+            max_n = 0
+            for num in existing:
+                m = re.search(r'-(\d+)$', num or "")
+                if m:
+                    n = int(m.group(1))
+                    if n > max_n:
+                        max_n = n
+            return max_n + 1
+
+        def _format_number(prefix3: str, yy: str, mm: str, suffix_int: int) -> str:
+            return f"{prefix3}-{yy}-{mm}-{str(suffix_int).zfill(2)}"
+
+        # ----- ensure number BEFORE first save -----
         if not self.custom_contract_number:
-            year, month = timezone.now().strftime("%y"), timezone.now().strftime("%m")
-            primary_contact_last_name = "UNK"  # Default value
-            if self.client and self.client.primary_contact:
-                name_parts = self.client.primary_contact.split()
-                primary_contact_last_name = (
-                    name_parts[-1][:3].upper() if len(name_parts) > 1 else name_parts[0][:3].upper()
-                )
+            now = timezone.now()
+            yy, mm = now.strftime("%y"), now.strftime("%m")
+            prefix3 = _letters3_from_client_last()
+            next_n = _next_suffix_for_month(yy, mm)
+            self.custom_contract_number = _format_number(prefix3, yy, mm, next_n)
 
-            # Generate custom contract number
-            with transaction.atomic():
-                regex_pattern = rf'^[A-Z]{{3}}-{year}-{month}-(\d+)$'
-                contracts = Contract.objects.filter(custom_contract_number__regex=regex_pattern).order_by(
-                    '-custom_contract_number'
-                )
-                new_number = max(
-                    (
-                        int(re.search(r'-(\d+)$', contract.custom_contract_number).group(1))
-                        for contract in contracts if re.search(r'-(\d+)$', contract.custom_contract_number)
-                    ),
-                    default=0,
-                ) + 1
-                self.custom_contract_number = f"{primary_contact_last_name}-{year}-{month}-{str(new_number).zfill(2)}"
-
-        # Set tax rate based on location
-        self.tax_rate = self.location.tax_rate if self.location and self.location.tax_rate else Decimal("0.00")
-        if not self.location or not self.location.tax_rate:
+        # ----- tax rate (unchanged) -----
+        self.tax_rate = (getattr(self.location, "tax_rate", None) or Decimal("0.00"))
+        if not getattr(self.location, "tax_rate", None):
             print("Location or tax rate not set; defaulting to 0.")
 
-        # Save the instance to generate a primary key if not already saved
-        if not self.pk:
-            super().save(*args, **kwargs)
-            print("Initial save completed, primary key generated.")
+        # ----- save with retry on duplicate number -----
+        attempts = 0
+        while True:
+            try:
+                with transaction.atomic():
+                    # Recompute YY/MM and the candidate number *inside* the atomic block
+                    # so each attempt is self-contained.
+                    if not self.custom_contract_number:
+                        now = timezone.now()
+                        yy, mm = now.strftime("%y"), now.strftime("%m")
+                        prefix3 = _letters3_from_client_last()
+                        next_n = _next_suffix_for_month(yy, mm)
+                        self.custom_contract_number = _format_number(prefix3, yy, mm, next_n)
 
-        # Perform calculations requiring a saved instance
+                    super().save(*args, **kwargs)
+                # success
+                break
+
+            except IntegrityError as e:
+                if "custom_contract_number" not in str(e):
+                    # unrelated integrity problem: bubble up
+                    raise
+
+                attempts += 1
+                if attempts > 25:
+                    # give up clearly — protects against an infinite loop if something’s off
+                    raise
+
+                # Collision: recompute the suffix for the current month and retry
+                now = timezone.now()
+                yy, mm = now.strftime("%y"), now.strftime("%m")
+                prefix3 = _letters3_from_client_last()
+                next_n = _next_suffix_for_month(yy, mm)
+                self.custom_contract_number = _format_number(prefix3, yy, mm, next_n)
+                print(f"Duplicate detected, retrying as: {self.custom_contract_number}")
+                continue
+
+        # ----- post-insert calculations (unchanged) -----
         taxable_amount = Decimal("0.00")
-        for contract_product in self.contract_products.all():
-            if contract_product.product.is_taxable:
-                taxable_amount += contract_product.product.price * contract_product.quantity
+        for cp in self.contract_products.all():
+            if getattr(cp.product, "is_taxable", False):
+                taxable_amount += (cp.product.price * cp.quantity)
 
-        # Calculate tax amount
-        self.tax_amount = taxable_amount * self.tax_rate / 100
-
-        # Calculate discounts
+        self.tax_amount = taxable_amount * self.tax_rate / Decimal("100")
         self.calculated_discount = self.calculate_package_discount() or Decimal("0.00")
         self.total_discount = self.calculate_discount() or Decimal("0.00")
-
-        # Calculate total cost
         self.total_cost = self.calculate_total_cost()
 
-        # Save all calculated fields
-        super().save(*args, **kwargs)
+        super().save(update_fields=["tax_amount", "calculated_discount", "total_discount", "total_cost"])
         print("Final save completed with calculated fields.")
 
-        # Update the user's status if the contract is marked as COMPLETED
-        if user_status_update_needed:
+        # ----- side effects (unchanged) -----
+        if user_status_update_needed and getattr(self.client, "user", None):
             user = self.client.user
-            if user:
-                user.status = 'INACTIVE'
-                user.is_active = False
-                user.save(update_fields=['status', 'is_active'])
-                print(f"User {user.username} marked as INACTIVE.")
+            user.status = "INACTIVE"
+            user.is_active = False
+            user.save(update_fields=["status", "is_active"])
+            print(f"User {user.username} marked as INACTIVE.")
 
-        # Send email notification to salesperson if contract moves to BOOKED
         if send_salesperson_email:
             send_contract_booked_email(self)
 
