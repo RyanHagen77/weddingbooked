@@ -1,30 +1,7 @@
-# Python
+.env
+.env.*
+!.env.example
+.next
+node_modules
 __pycache__/
 *.pyc
-*.pyo
-*.egg-info/
-*.log
-
-# Django
-*.sqlite3
-db.sqlite3
-
-# Virtual environment
-venv/
-
-# Node (if you're using it in the project)
-node_modules/
-package-lock.json
-
-# Miscellaneous
-.DS_Store
-
-# Ignore nohup output file
-nohup.out
-
-# Ignore media files
-/media/contract_documents/
-
-# Ignore temp migrations directory
-temp_migrations/
-sendgrid.env
