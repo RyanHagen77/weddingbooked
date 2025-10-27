@@ -1,0 +1,53 @@
+{% extends "office_staff_base.html" %}
+{% load static %}
+{% block extra_head %}
+<!-- Load the static files template tag library -->
+
+<!-- Bootstrap CSS -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="{% static 'contracts/styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="task-container">
+    <h3>Tasks</h3>
+    <div class="task-actions">
+        <!-- Add Task Button -->
+        <button type="button" class="btn-dusty-pink mb-2" data-toggle="modal" data-target="#addTaskModal"
+                data-sender-id="{{ request.user.id }}">Add Task</button>
+        <!-- Refresh Tasks Button -->
+        <button type="button" class="btn-dusty-pink mb-2" onclick="window.location.reload();">Refresh Tasks</button>
+    </div>
+    <!-- Task List Container -->
+    <div id="taskListContainer">
+        <label>
+            <input type="checkbox" id="showCompletedTasks"> Show Completed Tasks
+        </label>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Sender</th>
+                    <th>Created</th>
+                    <th>Contract</th>
+                    <th>Note</th>
+                    <th>Due Date</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% include 'users/internal_task_list_snippet.html' %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+ <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Your custom JavaScript code -->
+    <script src="{% static 'communication/js/tasks.js' %}"></script>
+{% endblock %}
